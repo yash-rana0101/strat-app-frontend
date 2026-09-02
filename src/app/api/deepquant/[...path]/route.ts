@@ -23,7 +23,8 @@ export const dynamic = 'force-dynamic';
  * serverless hosts and harmless on the self-hosted standalone server, where the
  * connection lives as long as the client holds it.
  */
-export const maxDuration = 800;
+// ponytail: Vercel Hobby caps at 300s; upgrade plan to raise ceiling
+export const maxDuration = 300;
 
 type Ctx = { params: Promise<{ path?: string[] }> };
 
