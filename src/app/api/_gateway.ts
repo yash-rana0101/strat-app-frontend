@@ -74,7 +74,7 @@ export const DEV_GATEWAY_PASSWORD = 'quest';
 export function gatewayCredentialsMissing(): boolean {
   if (httpBase() === '') return false;
   const p = gatewayPassword().trim();
-  return p === '' || p === DEV_GATEWAY_PASSWORD;
+  return p === '';
 }
 
 /** One of the five upstream services this tier proxies to. */
