@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTradeStore } from '../store/useTradeStore';
 import { useChartUIStore } from '../store/useChartUIStore';
+import { useFeature } from '../store/useFeatureStore';
 import { whenChartReady } from '../charting/widgetReady';
 import { computeGhostPoints } from './ghostLineComputation';
 import { debugLog } from '../lib/debugLog';
@@ -15,6 +16,22 @@ import { debugLog } from '../lib/debugLog';
  * live. 1500ms tracks the market while still collapsing tick bursts into one draw.
  */
 const PULSE_THROTTLE_MS = 1500;
+
+/** Skip redraw when every point matches the last drawn set within this epsilon. */
+const POINTS_EPS_PRICE = 1e-4;
+const POINTS_EPS_TIME = 0.5;
+
+export function pointsUnchanged(
+  a: { time: number; price: number }[],
+  b: { time: number; price: number }[],
+): boolean {
+  if (a.length !== b.length || a.length === 0) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (Math.abs(a[i].time - b[i].time) > POINTS_EPS_TIME) return false;
+    if (Math.abs(a[i].price - b[i].price) > POINTS_EPS_PRICE) return false;
+  }
+  return true;
+}
 
 // ── Drawing helpers ──────────────────────────────────────────────────────
 
@@ -309,6 +326,7 @@ export function useGhostLine(
   effectiveTimeframe: string,
 ) {
   const ghostLineMode = useChartUIStore((s) => s.ghostLineMode);
+  const ghostlineEnabled = useFeature('ghostline');
 
   // Redraw triggers (lightweight so we don't thrash the async shape API):
   //   · lastBarTime advances only when a NEW bar forms for this symbol.
@@ -334,6 +352,8 @@ export function useGhostLine(
   // it, then the OLD line is removed — so at most ONE ghost line ever exists
   // and there is never an empty frame between draws.
   const entityIdsRef = useRef<string[]>([]);
+  // Last successfully drawn point set — skip IPC when the projection is unchanged.
+  const lastPointsRef = useRef<{ time: number; price: number }[]>([]);
   // Per-id consecutive-remove-failure counts. Lets us bound retries: an id
   // that fails to remove a few passes in a row is dropped from the ref (see
   // `pruneFailedIds`) so dead ids — e.g. from a torn-down widget — can't pile
@@ -482,6 +502,28 @@ export function useGhostLine(
       return;
     }
 
+    // Feature gate: fail closed until plan + deployment switch unlock ghostline.
+    if (!ghostlineEnabled) {
+      debugLog('[GhostLine] feature locked — clearing');
+      let cancelled = false;
+      whenChartReady(widget, () => {
+        if (cancelled) return;
+        try {
+          const chart = widget.activeChart();
+          if (!chart) return;
+          const failed = removeGhostSegments(chart, entityIdsRef.current);
+          entityIdsRef.current = pruneFailedIds(
+            failed,
+            failedAttemptsRef.current,
+            2,
+            entityIdsRef.current,
+          );
+          lastPointsRef.current = [];
+        } catch { /* torn down */ }
+      }, () => cancelled, 'GhostLine');
+      return () => { cancelled = true; };
+    }
+
     debugLog('[GhostLine] useEffect fired — symbol=', activeSymbol, 'tf=', effectiveTimeframe, 'mode=', ghostLineMode);
 
     // This run owns generation `myGen`. It becomes stale the moment a newer run
@@ -538,6 +580,18 @@ export function useGhostLine(
         return;
       }
 
+      // Unchanged projection → skip the expensive multipoint IPC round-trips.
+      if (points.length >= 2 && pointsUnchanged(points, lastPointsRef.current)) {
+        debugLog('[GhostLine] points unchanged — skip redraw');
+        drawInFlightRef.current = false;
+        if (pendingPulseRef.current) {
+          pendingPulseRef.current = false;
+          lastPulseRef.current = Date.now();
+          setPulse((p) => p + 1);
+        }
+        return;
+      }
+
       // Straight engines (OLS 'linear' / VWLR 'volume') render as a SINGLE
       // trend_line entity (anchor → end) that can never fragment or ladder.
       // Curved engines ('curved' / 'forecast') draw the raw projection points
@@ -569,6 +623,7 @@ export function useGhostLine(
             2,
             entityIdsRef.current,
           );
+          lastPointsRef.current = [];
           return;
         }
 
@@ -604,6 +659,7 @@ export function useGhostLine(
         );
         entityIdsRef.current = [...next, ...retry];
         if (!stale) {
+          lastPointsRef.current = points;
           debugLog('[GhostLine] Ghost line ready with', newIds.length, 'segments');
         }
       } catch (err) {
@@ -668,7 +724,8 @@ export function useGhostLine(
       } else {
         entityIdsRef.current = [];
         failedAttemptsRef.current.clear();
+        lastPointsRef.current = [];
       }
     };
-  }, [widget, activeSymbol, effectiveTimeframe, ghostLineMode, lastBarTime, pulse, zoomPulse]);
+  }, [widget, activeSymbol, effectiveTimeframe, ghostLineMode, lastBarTime, pulse, zoomPulse, ghostlineEnabled]);
 }

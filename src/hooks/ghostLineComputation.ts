@@ -31,6 +31,129 @@ const PROJECTION_FRACTION = 0.12;
 const MIN_PROJECTION_BARS = 3;
 const MAX_PROJECTION_BARS = 20;
 
+/**
+ * Hard price band around the anchor close. Engines used to floor at `0.01`,
+ * which on index-scale prices painted a vertical "crash" amber line. Every
+ * projected price must stay inside ± this fraction of the anchor; a first
+ * forward step that would leave the band rejects the whole projection.
+ */
+export const GHOST_PRICE_BAND = 0.20;
+/** Per-step cap as a fraction of anchor (curved/forecast clamp). */
+export const GHOST_MAX_STEP_FRAC = 0.02;
+/** Total deviation budget as a fraction of anchor (curved/forecast clamp). */
+export const GHOST_MAX_TOTAL_FRAC = 0.15;
+/** Minimum Path 1 ML confidence (R²×100). Below this, local forecast wins. */
+export const PATH1_MIN_CONFIDENCE = 30;
+
+export function priceBand(anchor: number): { lo: number; hi: number } {
+  return {
+    lo: anchor * (1 - GHOST_PRICE_BAND),
+    hi: anchor * (1 + GHOST_PRICE_BAND),
+  };
+}
+
+/**
+ * Bound (or reject) a raw engine projection so it can never paint a cliff to
+ * ~0 / infinity on the chart. Pure — unit-tested without stores/IPC.
+ *
+ * Straight engines (`linear`/`volume`): reject if the end price leaves the
+ * band (no per-step bending — must stay a rigid vector).
+ * Curved engines: price-relative step/total clamp, then clip into the band.
+ */
+export function applyGhostBounds(
+  points: { time: number; price: number }[],
+  ghostLineMode: string,
+  windowCloses: number[],
+  anchor: number,
+): { time: number; price: number }[] {
+  if (points.length < 2 || !(anchor > 0) || !Number.isFinite(anchor)) return [];
+  const { lo, hi } = priceBand(anchor);
+
+  const firstFwd = points[1].price;
+  if (!Number.isFinite(firstFwd) || firstFwd < lo || firstFwd > hi) {
+    console.warn('[GhostLine] first forward step outside price band — discarding projection');
+    return [];
+  }
+
+  const isStraight = ghostLineMode === 'linear' || ghostLineMode === 'volume';
+  if (isStraight) {
+    const end = points[points.length - 1].price;
+    if (!Number.isFinite(end) || end < lo || end > hi) {
+      console.warn('[GhostLine] straight projection end outside price band — discarding');
+      return [];
+    }
+    return points.map((p) => ({
+      time: p.time,
+      price: Number.isFinite(p.price) ? p.price : anchor,
+    }));
+  }
+
+  // Curved / forecast: avgStep-relative AND price-relative caps.
+  const recent = windowCloses.slice(-20);
+  let sumAbs = 0;
+  for (let i = 1; i < recent.length; i++) sumAbs += Math.abs(recent[i] - recent[i - 1]);
+  const avgStep =
+    (recent.length > 1 ? sumAbs / (recent.length - 1) : 0) || Math.max(0.01, anchor * 0.0005);
+  const maxStep = Math.min(avgStep * 12.0, anchor * GHOST_MAX_STEP_FRAC);
+  const maxTotal = Math.min(maxStep * (points.length - 1) * 2.0, anchor * GHOST_MAX_TOTAL_FRAC);
+
+  const out = points.map((p) => ({ ...p }));
+  const anchorPrice = Number.isFinite(out[0].price) ? out[0].price : anchor;
+  out[0] = { time: out[0].time, price: anchorPrice };
+  let prev = anchorPrice;
+  for (let i = 1; i < out.length; i++) {
+    let raw = Number.isFinite(out[i].price) ? out[i].price : prev;
+    let d = raw - prev;
+    if (d > maxStep) d = maxStep;
+    if (d < -maxStep) d = -maxStep;
+    let np = prev + d;
+    const dev = np - anchorPrice;
+    if (dev > maxTotal) np = anchorPrice + maxTotal;
+    if (dev < -maxTotal) np = anchorPrice - maxTotal;
+    if (np < lo) np = lo;
+    if (np > hi) np = hi;
+    out[i] = { time: out[i].time, price: np };
+    prev = np;
+  }
+  return out;
+}
+
+/**
+ * Pure Path 1 gate — predictive ML signal may drive the projection only in
+ * `forecast` mode, with finite positive predicted close, deviation &lt; band,
+ * fresh target, and confidence ≥ PATH1_MIN_CONFIDENCE.
+ */
+export function path1SignalApplies(opts: {
+  ghostLineMode: string;
+  predictiveSignals: Array<{
+    symbol?: string;
+    target_timestamp_ms?: number;
+    predicted_close_price?: number;
+    confidence_score?: number;
+  }>;
+  activeSymbol: string;
+  last: { time: number; close: number };
+  intervalSec: number;
+}): boolean {
+  const { ghostLineMode, predictiveSignals, activeSymbol, last, intervalSec } = opts;
+  if (ghostLineMode !== 'forecast') return false;
+  if (predictiveSignals.length === 0) return false;
+  const sigs = predictiveSignals.filter(
+    (s) => s.symbol?.toUpperCase() === activeSymbol.toUpperCase(),
+  );
+  const sig = sigs[sigs.length - 1] ?? null;
+  if (!sig) return false;
+  const targetSec = Math.floor(Number(sig.target_timestamp_ms) / 1000);
+  const predicted = Number(sig.predicted_close_price);
+  if (!(last.close > 0)) return false;
+  const dev = Math.abs(predicted - last.close) / last.close;
+  const conf = sig.confidence_score;
+  const confOk = Number.isFinite(conf) && (conf as number) >= PATH1_MIN_CONFIDENCE;
+  const ok =
+    Number.isFinite(predicted) && predicted > 0 && dev < GHOST_PRICE_BAND && confOk;
+  return Boolean(ok && Number.isFinite(targetSec) && targetSec > last.time - intervalSec * 10);
+}
+
 /** Compute how many bars to project from how many bars are visible. Counting
  *  ACTUAL bars (not raw seconds) makes this immune to overnight/weekend gaps. */
 function dynamicProjectionBars(lookback: { time: number }[], visibleFromSec: number): number {
@@ -57,6 +180,20 @@ type LookbackCandle = {
   high: number;
   low: number;
 };
+
+/** Drop bars with non-finite / non-positive OHLC before any regression fit. */
+export function sanitizeLookback(bars: LookbackCandle[]): LookbackCandle[] {
+  return bars.filter(
+    (c) =>
+      Number.isFinite(c.time) &&
+      c.time > 0 &&
+      Number.isFinite(c.close) &&
+      c.close > 0 &&
+      Number.isFinite(c.high) &&
+      Number.isFinite(c.low) &&
+      Number.isFinite(c.volume),
+  );
+}
 
 // ── NSE Session constants ─────────────────────────────────────────────────
 // NSE trading hours: 09:15 – 15:30 IST (UTC+5:30)
@@ -316,9 +453,12 @@ function olsProjection(
 
   const pts: { time: number; price: number }[] = [];
   for (let i = 0; i <= projLen; i++) {
+    const raw = intercept + slope * (n - 1 + i) + correction;
     pts.push({
       time:  lastTime + i * intervalSec,
-      price: Math.max(0.01, intercept + slope * (n - 1 + i) + correction),
+      // No absolute 0.01 floor — that painted index-scale "crash to zero" lines.
+      // `applyGhostBounds` rejects / clips relative to the anchor after fit.
+      price: Number.isFinite(raw) ? raw : closes[n - 1],
     });
   }
   return pts;
@@ -345,7 +485,8 @@ function vwlrProjection(
   const anchor = candles[n - 1].close;
   const pts: { time: number; price: number }[] = [];
   for (let i = 0; i <= projLen; i++) {
-    pts.push({ time: lastTime + i * intervalSec, price: Math.max(0.01, anchor + slope * i) });
+    const raw = anchor + slope * i;
+    pts.push({ time: lastTime + i * intervalSec, price: Number.isFinite(raw) ? raw : anchor });
   }
   return pts;
 }
@@ -371,11 +512,13 @@ export function vweprProjection(
 
   const [a0, a1, a2] = coeffs;
   const correction = candles[n-1].close - (a0 + a1*(n-1) + a2*(n-1)*(n-1));
+  const anchor = candles[n - 1].close;
 
   const pts: { time: number; price: number }[] = [];
   for (let i = 0; i <= projLen; i++) {
     const x = n - 1 + i;
-    pts.push({ time: lastTime + i * intervalSec, price: Math.max(0.01, a0 + a1*x + a2*x*x + correction) });
+    const raw = a0 + a1 * x + a2 * x * x + correction;
+    pts.push({ time: lastTime + i * intervalSec, price: Number.isFinite(raw) ? raw : anchor });
   }
   return pts;
 }
@@ -527,7 +670,8 @@ export function forecastProjection(
   const anchor = closes[n - 1];
   const pts: { time: number; price: number }[] = [];
   for (let i = 0; i <= projLen; i++) {
-    pts.push({ time: lastTime + i * intervalSec, price: Math.max(0.01, anchor * Math.exp(drift * i)) });
+    const raw = anchor * Math.exp(drift * i);
+    pts.push({ time: lastTime + i * intervalSec, price: Number.isFinite(raw) ? raw : anchor });
   }
   return pts;
 }
@@ -543,7 +687,8 @@ export async function computeGhostPoints(
 ): Promise<{ time: number; price: number }[]> {
   debugLog(`[GhostLine] computeGhostPoints — symbol=${activeSymbol} tf=${effectiveTimeframe} mode=${ghostLineMode}`);
 
-  const lookback = await fetchLookbackCandles(activeSymbol, effectiveTimeframe);
+  const rawLookback = await fetchLookbackCandles(activeSymbol, effectiveTimeframe);
+  const lookback = sanitizeLookback(rawLookback);
   if (lookback.length < 20) {
     console.warn(`[GhostLine] Not enough candles (${lookback.length})`);
     return [];
@@ -580,30 +725,29 @@ export async function computeGhostPoints(
   let points: { time: number; price: number }[] = [];
 
   // ── Path 1: backend predictive signal (forecast-mode ML close) ──────
-  // The predictive signal is the ML/forward-looking engine, so it only drives
-  // the projection when the user selected `forecast`. The other modes
-  // (`linear` OLS / `volume` VWLR / `curved` VWEPR) must win via Path 2 (Rust)
-  // or Path 3 (pure-JS) so toggling the engine in GhostLineToggle actually
-  // changes which projection is drawn while a signal is live.
-  if (ghostLineMode === 'forecast' && predictiveSignals.length > 0) {
-    const sigs = predictiveSignals.filter(s => s.symbol?.toUpperCase() === activeSymbol.toUpperCase());
-    const sig  = sigs[sigs.length - 1] ?? null;
-    if (sig) {
-      const targetSec = Math.floor(sig.target_timestamp_ms / 1000);
-      const predicted = sig.predicted_close_price;
-      const dev = Math.abs(predicted - last.close) / last.close;
-      const ok  = Number.isFinite(predicted) && predicted > 0 && dev < 0.20;
-      if (ok && targetSec > last.time - intervalSec * 10) {
-        const N   = projBars;
-        const end = Math.max(targetSec, last.time + intervalSec * N);
-        const m   = (predicted - last.close) / N;
-        points = Array.from({ length: N + 1 }, (_, i) => ({
-          time:  last.time + i * intervalSec,
-          price: last.close + m * i,
-        }));
-        points[points.length - 1] = { time: end, price: predicted };
-      }
-    }
+  // Uniform interval grid only — do NOT rewrite the last point's time to a
+  // separate `target_timestamp_ms` (that kinked spacing vs the bar grid).
+  // Confidence + deviation gates live in `path1SignalApplies`.
+  if (
+    path1SignalApplies({
+      ghostLineMode,
+      predictiveSignals,
+      activeSymbol,
+      last: { time: last.time, close: last.close },
+      intervalSec,
+    })
+  ) {
+    const sigs = predictiveSignals.filter(
+      (s) => s.symbol?.toUpperCase() === activeSymbol.toUpperCase(),
+    );
+    const sig = sigs[sigs.length - 1];
+    const predicted = sig.predicted_close_price as number;
+    const N = projBars;
+    const m = (predicted - last.close) / N;
+    points = Array.from({ length: N + 1 }, (_, i) => ({
+      time: last.time + i * intervalSec,
+      price: last.close + m * i,
+    }));
   }
 
   // ── Projection engines ──────────────────────────────────────────────
@@ -641,51 +785,17 @@ export async function computeGhostPoints(
     }
   }
 
-  // ── Bound the curve so it stays a smooth continuation (no cliff) ─────
-  // Only the CURVED engines ('curved' VWEPR / 'forecast') can produce a runaway
-  // cliff that needs clamping. The straight-line engines ('linear' OLS and
-  // 'volume' VWLR) must stay perfectly straight — a per-step clamp would bend
-  // them into a curve, violating the "rigid straight vector" definition — so we
-  // skip the clamp entirely for them (isStraightLine).
-  //
-  // Tuning (loosened so genuine curvature survives):
-  //   · maxStep = avgStep * 12   — per-step cap kept ONLY as a guard against
-  //     truly pathological single-step spikes (a bad tick / NaN blow-up). It is
-  //     deliberately generous: a VWEPR parabola or a Forecast
-  //     anchor·exp(drift·i) on a volatile instrument legitimately produces steps
-  //     far larger than the trailing average as it accelerates.
-  //   · maxTotal = maxStep * (points.length - 1) * 2 — the total deviation
-  //     budget SCALES WITH PROJECTION LENGTH instead of a flat 5×. The old
-  //     `maxStep * (N-1) * 5` (= avgStep * 40 * (N-1)) bit for accelerating
-  //     curves, flattening the projection to anchorPrice ± maxTotal so the line
-  //     looked like it "gave up" / pointed the wrong way. Scaling at 2× the
-  //     per-step budget over the projection length lets a real curve reach its
-  //     natural apex while still rejecting a flat-out vertical blow-up.
-  const isStraightLine = ghostLineMode === 'linear' || ghostLineMode === 'volume';
-  if (points.length > 1 && !isStraightLine) {
-    const recent = window.slice(-20).map((c) => c.close);
-    let sumAbs = 0;
-    for (let i = 1; i < recent.length; i++) sumAbs += Math.abs(recent[i] - recent[i - 1]);
-    const avgStep  = (recent.length > 1 ? sumAbs / (recent.length - 1) : 0) || Math.max(0.01, last.close * 0.0005);
-    const maxStep  = avgStep * 12.0;
-    const maxTotal = maxStep * (points.length - 1) * 2.0;
-    const anchorPrice = points[0].price;
-    let prev = anchorPrice;
-    for (let i = 1; i < points.length; i++) {
-      let d = points[i].price - prev;
-      if (d >  maxStep) d =  maxStep;
-      if (d < -maxStep) d = -maxStep;
-      let np = prev + d;
-      const dev = np - anchorPrice;
-      if (dev >  maxTotal) np = anchorPrice + maxTotal;
-      if (dev < -maxTotal) np = anchorPrice - maxTotal;
-      points[i] = { time: points[i].time, price: np };
-      // Carry FULL precision forward. Reading `prev` back from a 2dp-rounded
-      // value quantized every step to one paisa, so a curve whose true per-step
-      // delta is sub-paisa collapsed into flat runs with 0.01 risers — a literal
-      // staircase. This is the "ladder" artefact.
-      prev = np;
-    }
+  // ── Bound / reject runaway prices (no cliff to ~0) ───────────────────
+  // Replaces the old avgStep-only clamp and the absolute 0.01 engine floors.
+  // See `applyGhostBounds` for the price-relative band + step/total caps.
+  if (points.length > 1) {
+    const anchor = points[0].price;
+    points = applyGhostBounds(
+      points,
+      ghostLineMode,
+      window.map((c) => c.close),
+      anchor,
+    );
   }
 
   // ── Align projected points to contiguous future NSE session slots ────

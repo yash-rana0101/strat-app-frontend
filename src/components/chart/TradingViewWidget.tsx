@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useTradeStore } from '../../store/useTradeStore';
 import { useChartUIStore, type PaneId } from '../../store/useChartUIStore';
+import { useFeature, useFeatureStore } from '../../store/useFeatureStore';
 import { createDatafeed, invalidateScrollBackCache } from '../../charting/datafeed';
 import { useGhostLine } from '../../hooks/useGhostLine';
 import type { IChartingLibraryWidget } from '../../charting/datafeedTypes';
@@ -13,6 +14,7 @@ import { AlertTriangle } from 'lucide-react';
 import { showIframeDropdown, injectIframeDropdownStyles } from '../../utils/iframeDropdown';
 import { whenChartReady } from '../../charting/widgetReady';
 import { SVGS } from './toolbarIcons';
+import { openExternalUrl, dashboardUrl } from '../../lib/redirect';
 
 /**
  * Point the widget at `theme` and re-assert our colour overrides.
@@ -112,6 +114,7 @@ export default function TradingViewWidget({
   const sidebarOpen = useChartUIStore((s) => s.sidebarOpen);
   const ghostLineMode = useChartUIStore((s) => s.ghostLineMode);
   const splitView = useChartUIStore((s) => s.splitView);
+  const ghostlineEnabled = useFeature('ghostline');
 
   const activeSymbol = useMemo(() => {
     if (symbolOverride) return symbolOverride.toUpperCase();
@@ -275,8 +278,14 @@ export default function TradingViewWidget({
           const ghostLineBtn = (tvWidget as any).createButton();
           ghostLineBtn.id = 'tv-btn-ghost-line';
           ghostLineBtn.className = 'tv-custom-toolbar-btn';
-          ghostLineBtn.title = 'Projection Engine';
+          ghostLineBtn.title = ghostlineEnabled
+            ? 'Projection Engine'
+            : 'Ghostline requires a subscription';
           ghostLineBtn.addEventListener('click', () => {
+            if (!useFeatureStore.getState().access.ghostline) {
+              openExternalUrl(dashboardUrl());
+              return;
+            }
             const currentMode = useChartUIStore.getState().ghostLineMode;
             showIframeDropdown(ghostLineBtn, [
               { value: 'linear' as const, label: 'OLS', description: 'Linear regression baseline' },

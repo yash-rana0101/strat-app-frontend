@@ -26,15 +26,25 @@ import { renderHook, act } from '@testing-library/react';
 import { useGhostLine } from '../useGhostLine';
 import { useTradeStore, type PredictiveSignal, type OhlcCandle } from '../../store/useTradeStore';
 import { useChartUIStore } from '../../store/useChartUIStore';
+import { useFeatureStore } from '../../store/useFeatureStore';
+import { ALL_SWITCHES_OFF } from '../../lib/featureFlags';
 
 // Stub the pure computation module so the effect does not depend on real
 // market data — it just returns deterministic points so the draw path runs.
-vi.mock('../ghostLineComputation', () => ({
-  computeGhostPoints: vi.fn(async () => [
-    { time: 1000, price: 10 },
-    { time: 2000, price: 11 },
-  ]),
-}));
+// Each call bumps the price slightly so the epsilon skip-redraw guard does
+// not swallow a legitimate lastBarTime-triggered redraw in the sanity check.
+vi.mock('../ghostLineComputation', () => {
+  let n = 0;
+  return {
+    computeGhostPoints: vi.fn(async () => {
+      n += 1;
+      return [
+        { time: 1000, price: 10 + n * 0.01 },
+        { time: 2000, price: 11 + n * 0.01 },
+      ];
+    }),
+  };
+});
 
 /**
  * Build a mock TradingView widget whose chart records every draw side-effect.
@@ -62,6 +72,8 @@ function makeCountingWidget() {
       // Run synchronously so the effect completes inside act().
       cb();
     },
+    // whenChartReady prefers chartReady() when present
+    chartReady: async () => {},
     activeChart: () => chart,
   };
   return { widget, drawCalls };
@@ -73,6 +85,10 @@ function resetStores() {
     predictiveSignals: [] as PredictiveSignal[],
   } as any);
   useChartUIStore.setState({ ghostLineMode: 'curved' } as any);
+  // Feature gate fails closed; unlock ghostline so the draw path runs.
+  useFeatureStore.setState({
+    access: { ...ALL_SWITCHES_OFF, ghostline: true },
+  } as any);
 }
 
 describe('useGhostLine redraw cadence', () => {

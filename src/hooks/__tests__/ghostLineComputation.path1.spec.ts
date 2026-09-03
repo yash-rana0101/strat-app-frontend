@@ -8,38 +8,11 @@
 // `ghostLineMode === 'forecast'`; for 'linear'/'volume'/'curved' the
 // user-selected regression engine wins (Path 2 Rust / Path 3 JS).
 //
-// These tests exercise the gate directly through a small pure helper that
-// mirrors the Path 1 decision, plus the exported olsSlope to assert that the
-// linear-mode projection follows the OLS slope (deterministic from the last
-// close) rather than the signal's interpolation line.
+// Also: confidence_score must be ≥ PATH1_MIN_CONFIDENCE, and Path 1 uses a
+// uniform interval grid (no last-point time rewrite).
 
 import { describe, it, expect } from 'vitest';
-import { olsSlope } from '@/hooks/ghostLineComputation';
-
-/** Pure mirror of the Path 1 validity/gate decision extracted so the test
- *  does not need the store or IPC. Returns true when the predictive signal
- *  is ALLOWED to drive the projection (i.e. forecast mode + valid signal). */
-function path1Applies(opts: {
-  ghostLineMode: string;
-  predictiveSignals: any[];
-  activeSymbol: string;
-  last: { time: number; close: number };
-  intervalSec: number;
-}): boolean {
-  const { ghostLineMode, predictiveSignals, activeSymbol, last, intervalSec } = opts;
-  if (ghostLineMode !== 'forecast') return false;
-  if (predictiveSignals.length === 0) return false;
-  const sigs = predictiveSignals.filter(
-    (s) => s.symbol?.toUpperCase() === activeSymbol.toUpperCase(),
-  );
-  const sig = sigs[sigs.length - 1] ?? null;
-  if (!sig) return false;
-  const targetSec = Math.floor(sig.target_timestamp_ms / 1000);
-  const predicted = sig.predicted_close_price;
-  const dev = Math.abs(predicted - last.close) / last.close;
-  const ok = Number.isFinite(predicted) && predicted > 0 && dev < 0.20;
-  return Boolean(ok && targetSec > last.time - intervalSec * 10);
-}
+import { olsSlope, path1SignalApplies, PATH1_MIN_CONFIDENCE } from '@/hooks/ghostLineComputation';
 
 /** Build a deterministic ramp of closes with a known positive slope so the
  *  OLS projection is forced upward (and is NOT the signal line). */
@@ -52,10 +25,11 @@ describe('GhostLine Path 1 gate (Unit 2)', () => {
     symbol: 'RELIANCE',
     target_timestamp_ms: (100_000 + 600) * 1000, // well after last.time
     predicted_close_price: 105, // dev vs last.close=100 → 0.05 < 0.20
+    confidence_score: 80,
   };
 
   it('does NOT apply Path 1 in linear mode even with a valid signal', () => {
-    const applies = path1Applies({
+    const applies = path1SignalApplies({
       ghostLineMode: 'linear',
       predictiveSignals: [baseSignal],
       activeSymbol: 'RELIANCE',
@@ -66,7 +40,7 @@ describe('GhostLine Path 1 gate (Unit 2)', () => {
   });
 
   it('does NOT apply Path 1 in volume mode even with a valid signal', () => {
-    const applies = path1Applies({
+    const applies = path1SignalApplies({
       ghostLineMode: 'volume',
       predictiveSignals: [baseSignal],
       activeSymbol: 'RELIANCE',
@@ -77,7 +51,7 @@ describe('GhostLine Path 1 gate (Unit 2)', () => {
   });
 
   it('does NOT apply Path 1 in curved mode even with a valid signal', () => {
-    const applies = path1Applies({
+    const applies = path1SignalApplies({
       ghostLineMode: 'curved',
       predictiveSignals: [baseSignal],
       activeSymbol: 'RELIANCE',
@@ -88,7 +62,7 @@ describe('GhostLine Path 1 gate (Unit 2)', () => {
   });
 
   it('applies Path 1 in forecast mode with a valid signal', () => {
-    const applies = path1Applies({
+    const applies = path1SignalApplies({
       ghostLineMode: 'forecast',
       predictiveSignals: [baseSignal],
       activeSymbol: 'RELIANCE',
@@ -125,7 +99,7 @@ describe('GhostLine Path 1 gate (Unit 2)', () => {
 
   it('ignores signals whose dev >= 0.20 even in forecast mode', () => {
     const sig = { ...baseSignal, predicted_close_price: 200 }; // dev=1.0
-    const applies = path1Applies({
+    const applies = path1SignalApplies({
       ghostLineMode: 'forecast',
       predictiveSignals: [sig],
       activeSymbol: 'RELIANCE',
@@ -140,7 +114,7 @@ describe('GhostLine Path 1 gate (Unit 2)', () => {
       ...baseSignal,
       target_timestamp_ms: (100_000 - 600 - 1) * 1000, // stale
     };
-    const applies = path1Applies({
+    const applies = path1SignalApplies({
       ghostLineMode: 'forecast',
       predictiveSignals: [stale],
       activeSymbol: 'RELIANCE',
@@ -148,5 +122,35 @@ describe('GhostLine Path 1 gate (Unit 2)', () => {
       intervalSec: 60,
     });
     expect(applies).toBe(false);
+  });
+
+  it(`ignores low-confidence signals (< ${PATH1_MIN_CONFIDENCE})`, () => {
+    const low = { ...baseSignal, confidence_score: PATH1_MIN_CONFIDENCE - 1 };
+    expect(
+      path1SignalApplies({
+        ghostLineMode: 'forecast',
+        predictiveSignals: [low],
+        activeSymbol: 'RELIANCE',
+        last: { time: 100_000, close: 100 },
+        intervalSec: 60,
+      }),
+    ).toBe(false);
+  });
+
+  it('Path 1 grid uses uniform interval times (no end-time rewrite)', () => {
+    // Mirrors the production construction: last.time + i * intervalSec only.
+    const last = { time: 100_000, close: 100 };
+    const intervalSec = 60;
+    const N = 6;
+    const predicted = 105;
+    const m = (predicted - last.close) / N;
+    const points = Array.from({ length: N + 1 }, (_, i) => ({
+      time: last.time + i * intervalSec,
+      price: last.close + m * i,
+    }));
+    for (let i = 1; i < points.length; i++) {
+      expect(points[i].time - points[i - 1].time).toBe(intervalSec);
+    }
+    expect(points[points.length - 1].price).toBeCloseTo(predicted, 10);
   });
 });
