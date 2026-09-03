@@ -11,8 +11,11 @@
 
 import React from 'react';
 import { AlertTriangle, History } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
+import { fqKeys } from '../../../lib/fq/queries';
 import { useActivateSession } from '../../../lib/fq/useActivateSession';
+import { useSessionStore } from '../../../store/useSessionStore';
 import SessionHistory from './SessionHistory';
 import SessionTabBar from './SessionTabBar';
 
@@ -20,6 +23,26 @@ export default function SessionTabBarConnected() {
   const activate = useActivateSession();
   const [historyOpen, setHistoryOpen] = React.useState(false);
   const [openError, setOpenError] = React.useState<string | null>(null);
+
+  // Refetch the list when the active session changes underneath the query layer.
+  //
+  // `useCreateSession` invalidates on its own, but it is not the only thing that creates
+  // sessions any more: pressing FIND QUANT TRADE with no session selected now creates one
+  // from `useQuantStore` (`ensureActiveSession`), which is plain store code with no access
+  // to a query client — the provider is mounted here, below the button. Without this the
+  // new conversation existed on the server and streamed correctly, but no tab appeared for
+  // it until something else happened to invalidate.
+  //
+  // Watching `activeSessionId` rather than exposing the client through a module-scope
+  // variable, because a shared client is exactly what `FqQueryProvider` documents as
+  // unsafe: one instance per mount is what keeps one user's cached session list from being
+  // served to another during SSR.
+  const client = useQueryClient();
+  const activeSessionId = useSessionStore((s) => s.activeSessionId);
+  React.useEffect(() => {
+    if (!activeSessionId) return;
+    void client.invalidateQueries({ queryKey: fqKeys.sessions() });
+  }, [activeSessionId, client]);
 
   const open = React.useCallback(
     async (sessionId: string) => {

@@ -16,6 +16,14 @@
 // This module is intentionally thin. Caching, invalidation and optimistic updates belong to
 // the query layer (Phase 7), not here — a second ad-hoc cache is exactly what the migration
 // plan forbids.
+//
+// The ONE thing borrowed from that client is `fetchWithRefresh`. The paragraph above says a
+// refresh loop "does not apply" here, and that was wrong in a way that broke the whole
+// surface: these calls are same-origin, but the route tier behind them resolves identity
+// from the SAME httpOnly access cookie, so an expired token 401s here exactly as it does
+// cross-origin. Only the single-flight refresh is taken; the envelope shape is not.
+
+import { fetchWithRefresh } from '../api/client';
 
 const BASE = '/api/deepquant';
 
@@ -130,17 +138,19 @@ export class FqApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
   try {
-    res = await fetch(`${BASE}${path}`, {
-      ...init,
-      // The live session surface — never serve a cached answer, or an archived session
-      // reappears in the tab bar after the user closed it.
-      cache: 'no-store',
-      headers: {
-        Accept: 'application/json',
-        ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-        ...(init?.headers ?? {}),
-      },
-    });
+    res = await fetchWithRefresh(() =>
+      fetch(`${BASE}${path}`, {
+        ...init,
+        // The live session surface — never serve a cached answer, or an archived session
+        // reappears in the tab bar after the user closed it.
+        cache: 'no-store',
+        headers: {
+          Accept: 'application/json',
+          ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+          ...(init?.headers ?? {}),
+        },
+      }),
+    );
   } catch (err) {
     // A transport failure is not a 4xx, and must not be reported as one — "session not
     // found" for an offline client would send the user to delete and recreate it.

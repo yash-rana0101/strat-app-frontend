@@ -17,6 +17,57 @@ import { getUnderlyingFromSymbol } from '../components/fno/symbolParser';
 // `handleStreamEvent` would put an await on the hot path of every streamed frame.
 import { useSessionStore } from './useSessionStore';
 
+/**
+ * The session this run belongs to, CREATING one when nothing is active.
+ *
+ * Without this, pressing FIND QUANT TRADE with no session selected fell through to the
+ * legacy branch in `webAdapters.startAgentRun` — a client-minted `thread_${symbol}_${now}`
+ * with no `sessions` row and no `runs` row. The run streamed and rendered, so nothing
+ * looked wrong, but it left nothing listable behind: the ONLY thing in the app that ever
+ * created a session was the `+` button. That is why the terminal showed one chat no matter
+ * how many analyses had been run — measured on the droplet's `sessions.db`, where users had
+ * a handful of rows against a dozen runs.
+ *
+ * Creating here rather than in the button handler is deliberate: this is the choke point
+ * every entry point already goes through (FIND, VERIFY, and any future caller), and the
+ * button lives outside `FqQueryProvider`, so it cannot reach `useCreateSession` anyway.
+ *
+ * `setActiveSession` creates the blank local session as a side effect, which is all a
+ * brand-new session needs — there is no stored transcript to rehydrate.
+ *
+ * FAILS SOFT. A creation failure returns `undefined` and the run proceeds on the legacy
+ * thread path, which is exactly what happened before this existed. Refusing to analyse
+ * because a conversation could not be filed would be a worse trade than an unfiled run.
+ */
+async function ensureActiveSession(
+  symbol: string,
+  timeframe: string,
+  profile: string,
+): Promise<string | undefined> {
+  if (!FQ_MULTI_SESSION) return undefined;
+
+  const existing = useSessionStore.getState().activeSessionId;
+  if (existing) return existing;
+
+  const trimmed = (symbol || '').trim();
+  // The server rejects an empty symbol with a 422, and there is nothing useful to file a
+  // conversation under anyway.
+  if (!trimmed) return undefined;
+
+  try {
+    const { createSession } = await import('../lib/fq/api');
+    const created = await createSession({ symbol: trimmed, timeframe, profile });
+    useSessionStore.getState().setActiveSession(created.session_id);
+    return created.session_id;
+  } catch (err) {
+    console.warn(
+      '[QuantStore] Could not create a session for this run; continuing on the legacy thread path.',
+      err,
+    );
+    return undefined;
+  }
+}
+
 // ── TypeScript interfaces matching Rust backend structs ─────────────────
 
 export interface ConsensusReport {
@@ -1355,6 +1406,11 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       debugLog(`[QuantStore] → invoking 'run_deep_quant_agent'…`);
       const tInvoke = (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
+      // Resolved BEFORE the invoke so the adapter sees a session id on the very first call.
+      // Awaited rather than fired in parallel because the branch it selects (session vs
+      // legacy thread) has to be decided before the request is built.
+      const runSessionId = await ensureActiveSession(symbol, activeTimeframe, activeProfile);
+
       const threadId = await bridgeInvoke<string>(
         'run_deep_quant_agent',
         {
@@ -1385,11 +1441,13 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
           // bound, so they were dropped into `unroutableFrames` and the transcript stayed empty.
           // Found by the e2e journey, which is exactly what that job is for.
           //
-          // `undefined` when the flag is off or nothing is active, which keeps the legacy path
-          // byte-identical.
-          session_id: FQ_MULTI_SESSION
-            ? useSessionStore.getState().activeSessionId ?? undefined
-            : undefined,
+          // Reading the active id was still not enough on its own: when NOTHING was active it
+          // resolved to `undefined` and silently took that same legacy branch, so a run was never
+          // filed under a conversation. `ensureActiveSession` creates one in that case.
+          //
+          // `undefined` when the flag is off, when there is no symbol, or when creation failed —
+          // which keeps the legacy path byte-identical.
+          session_id: runSessionId,
         }
       );
 

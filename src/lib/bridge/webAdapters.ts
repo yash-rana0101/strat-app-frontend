@@ -12,6 +12,7 @@
 // unit tests assert the union covers `invoke_handler![]` completely, so a new
 // command cannot quietly reach a browser as an undefined-`invoke` TypeError.
 
+import { fetchWithRefresh } from '../api/client';
 import { emitBridgeEvent, relaySse } from './events';
 import {
   isSafeName,
@@ -85,6 +86,22 @@ function postJson(body: unknown): RequestInit {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   };
+}
+
+/**
+ * `fetch` for the deep-quant agent surface, with a refresh-and-retry on 401.
+ *
+ * Every `/api/deepquant/*` agent route is authenticated by the httpOnly access cookie,
+ * which the Next route tier turns into the assertion deep-quant verifies. When that cookie
+ * expires there is nothing to mint from, and the session surface refuses outright — so a
+ * terminal that had been open for twenty minutes answered every question with a 401. Going
+ * through `fetchWithRefresh` rotates the cookie and retries once, which is what the remote
+ * API client has always done for its own calls.
+ *
+ * Used by the SSE call sites here; `lib/fq/api.ts` wraps its JSON calls the same way.
+ */
+function agentFetch(path: string, init?: RequestInit): Promise<Response> {
+  return fetchWithRefresh(() => fetch(path, { cache: 'no-store', ...init }));
 }
 
 // ── Argument helpers ────────────────────────────────────────────────────────
@@ -343,7 +360,7 @@ async function startSessionRun(args: Args): Promise<string> {
   // as it did before.
   void (async () => {
     try {
-      const res = await fetch('/api/deepquant/run', {
+      const res = await agentFetch('/api/deepquant/run', {
         ...postJson(payload),
         signal: controller.signal,
       });
@@ -459,7 +476,7 @@ async function startAgentRun(args: Args): Promise<string> {
   // thread id straight away so the UI can transition into its streaming state.
   void (async () => {
     try {
-      const res = await fetch('/api/deepquant/run', {
+      const res = await agentFetch('/api/deepquant/run', {
         ...postJson(payload),
         signal: controller.signal,
       });
@@ -468,9 +485,8 @@ async function startAgentRun(args: Args): Promise<string> {
       let outcome = await relayAgentStream(res, controller.signal);
 
       while (outcome === 'paused' && !controller.signal.aborted) {
-        const hub = await fetch(`/api/deepquant/stream/${encodeURIComponent(threadId)}`, {
+        const hub = await agentFetch(`/api/deepquant/stream/${encodeURIComponent(threadId)}`, {
           signal: controller.signal,
-          cache: 'no-store',
         });
         if (!hub.ok) break;
         outcome = await relayAgentStream(hub, controller.signal);
@@ -807,7 +823,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     void (async () => {
       let sawRunFinished = false;
       try {
-        const res = await fetch('/api/deepquant/qa', postJson(payload));
+        const res = await agentFetch('/api/deepquant/qa', postJson(payload));
         if (!res.ok || !res.body) {
           throw await failure(res, `deep-quant /qa failed with HTTP ${res.status}`);
         }

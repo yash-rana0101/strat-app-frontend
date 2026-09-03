@@ -14,6 +14,7 @@ import {
   describeUpstreamFailure,
   forwardHeaders,
   isCredentialFault,
+  isGatewayChallenge,
   passthroughHeaders,
   proxyError,
   upstreamBase,
@@ -100,9 +101,24 @@ export async function proxyRequest(
     if (timer) clearTimeout(timer);
   }
 
-  if (isCredentialFault(upstream.status)) {
+  // A 401/403 is a GATEWAY credential fault only when the GATEWAY is the one refusing.
+  //
+  // This used to fire on any upstream 401/403, which made it actively misleading: the
+  // deep-quant service answers 401 itself when the caller's identity cannot be verified
+  // (`session_api.py::_caller`), and that got rewritten into "the configured
+  // QUESTDB_USER/QUESTDB_PASSWORD is not accepted by app-api.stratai.live". A user whose
+  // session had simply expired was told the deployment's gateway password was wrong, and
+  // the real cause — an unminted identity assertion — was erased from the response.
+  //
+  // `WWW-Authenticate` is the discriminator, and it is measured, not assumed. Caddy's
+  // `basic_auth` answers `401` with `WWW-Authenticate: Basic realm="restricted"` and an
+  // empty body; deep-quant's own 401 carries `{"detail": "authentication required"}` and
+  // no such header. Anything else is the upstream's own answer and is passed through
+  // untouched, so the service's message reaches the UI that already renders it.
+  if (isCredentialFault(upstream.status) && isGatewayChallenge(upstream)) {
     return proxyError(upstream.status, credentialFaultMessage(target));
   }
+
 
   const headers = passthroughHeaders(upstream);
   if (stream) {

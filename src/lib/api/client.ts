@@ -64,6 +64,46 @@ async function refreshSession(): Promise<void> {
   return refreshPromise;
 }
 
+/**
+ * Run `send`, and if it answers 401, mint a fresh access cookie and retry once.
+ *
+ * WHY THIS EXISTS, and why it lives here rather than in the caller.
+ *
+ * The same-origin `/api/deepquant/*` tier resolves the caller from the httpOnly
+ * `access_token` cookie (`app/api/_identity.ts`) and mints the assertion deep-quant
+ * verifies. That resolver had no refresh: it called `/users/me` once, and a 401 there
+ * meant "no identity", so it forwarded UNMINTED. The whole session surface hard-requires
+ * an assertion (`session_api.py::_caller` has no body-`user_id` fallback even with
+ * `DEEP_QUANT_REQUIRE_IDENTITY` off), so the moment the short-lived access token expired,
+ * every session call — the list, `/run`, `/qa` — answered 401. Measured in production:
+ * a `/qa` at 200, then twenty minutes of idle, then the same `/qa` at 401.
+ *
+ * The browser is the right place to fix it because the browser owns the cookie. The auth
+ * API rotates the refresh token, so a server-side refresh in the route handler would have
+ * to relay `Set-Cookie` back or it would invalidate the browser's copy and log the user
+ * out. Refreshing here updates the cookie jar natively and needs no relay.
+ *
+ * Retrying the send is safe on the two POSTs that matter: a 401 is refused at the route
+ * tier before any upstream work happens, and `/qa` and `/run` are both idempotent on
+ * `client_msg_id` server-side.
+ *
+ * ponytail: costs one wasted round trip per expiry. Proactive refresh on a timer only if
+ * that shows up as latency — it cannot, since the token outlives a typical turn.
+ */
+export async function fetchWithRefresh(send: () => Promise<Response>): Promise<Response> {
+  const res = await send();
+  if (res.status !== 401) return res;
+  try {
+    await refreshSession();
+  } catch {
+    // The session is genuinely over (`refreshSession` has already cleared local state).
+    // Surface the original 401 rather than a refresh error: the caller's job is to report
+    // that this request was unauthenticated, not to explain the refresh attempt.
+    return res;
+  }
+  return send();
+}
+
 async function parseEnvelope<T>(res: Response): Promise<T> {
   const json = (await res.json().catch(() => null)) as ApiResponse<T> | null;
   if (!json) {

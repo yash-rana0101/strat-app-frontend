@@ -252,6 +252,32 @@ export function isCredentialFault(status: number): boolean {
   return status === 401 || status === 403;
 }
 
+/**
+ * True when the refusal came from the GATEWAY's basic auth, not from the service behind it.
+ *
+ * Caddy's `basic_auth` (`infra/caddy/Caddyfile`, on /questdb/*, /deepquant/*, /kite/*,
+ * /tools/*) answers with `WWW-Authenticate: Basic realm="restricted"`, which is exactly
+ * what RFC 7235 requires of a challenge. An application 401 — deep-quant refusing a caller
+ * whose identity could not be verified — carries no challenge header, because it is not
+ * asking for a different credential.
+ *
+ * Both signatures were measured against the deployed stack before this was written:
+ *
+ *   $ curl -D- https://app-api.stratai.live/deepquant/health
+ *   HTTP/2 401 ... server: Caddy ... www-authenticate: Basic realm="restricted"
+ *
+ *   $ POST http://deep-quant:8086/qa   (unauthenticated)
+ *   401 ... server: uvicorn ... {"detail":"authentication required"}   # no challenge
+ *
+ * Being strict about `Basic` matters: a future bearer-token upstream that challenges with
+ * `WWW-Authenticate: Bearer` is refusing the USER's credential, not ours, and must not be
+ * reported to an operator as a gateway misconfiguration.
+ */
+export function isGatewayChallenge(upstream: Response): boolean {
+  const challenge = upstream.headers.get('www-authenticate');
+  return challenge !== null && challenge.toLowerCase().includes('basic');
+}
+
 /** The actionable message for a credential fault, mirroring `kite_fetch`. */
 export function credentialFaultMessage(target: Upstream): string {
   return gatewayCredentialsMissing()

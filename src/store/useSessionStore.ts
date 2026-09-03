@@ -162,8 +162,29 @@ function applyQaFrame(session: QuantSession, payload: StreamEventPayload): Quant
   const turn = messages[index];
 
   switch (payload.event) {
-    case 'RUN_STARTED':
-      return session;
+    case 'RUN_STARTED': {
+      // COMMIT the turn created above instead of discarding it.
+      //
+      // This case used to `return session`, which threw away the freshly-pushed turn along
+      // with the rest of `messages`. That is why nothing appeared between pressing send and
+      // the first content-bearing frame: `QaMessages` renders "Thinking…" for an assistant
+      // turn that is `streaming` with empty `content`, and no such turn existed. The user
+      // saw their question, then a still transcript for as long as the model took to reach
+      // its first token — which, with tool calls, is tens of seconds.
+      //
+      // `useFqSession` deliberately does not insert the placeholder optimistically, because
+      // the id has to be `qa-<run_id>` and the run id does not exist until the server
+      // answers. RUN_STARTED is the first frame that carries one, so it is the earliest
+      // point at which the turn CAN be created — which makes it the right place.
+      //
+      // Guarded on `turn.streaming` for the same reason RUN_FINISHED is idempotent: a
+      // reattach replays the whole frame sequence, and resurrecting a finished turn would
+      // set `qaStatus` back to 'streaming' and lock the composer with no later frame able
+      // to unlock it.
+      if (!turn.streaming) return session;
+      messages[index] = turn;
+      return { ...session, qaMessages: messages, qaStatus: 'streaming', updatedAt: Date.now() };
+    }
     case 'REASONING':
     case 'TEXT_MESSAGE': {
       const content = typeof data?.content === 'string' ? data.content : '';
