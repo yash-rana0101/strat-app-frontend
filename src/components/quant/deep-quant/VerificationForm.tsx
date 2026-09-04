@@ -45,18 +45,18 @@ export default function VerificationForm({
   dataReady,
 }: VerificationFormProps) {
   return (
-    <div className="mx-3 mt-3 p-3 rounded-none border border-border-default bg-surface flex flex-col gap-3">
+    <div className="mx-3 mt-3 p-3 rounded-lg border border-border-default bg-surface flex flex-col gap-3">
       <div className="flex items-center justify-between border-b border-border-default pb-1.5">
         <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Configure Setup</span>
         <span className="text-[9px] text-text-muted">Auto-filled via NSE LTP</span>
       </div>
 
       {/* Side selector */}
-      <div className="flex rounded-none bg-muted p-0.5 border border-border-default">
+      <div className="flex rounded-md bg-muted p-0.5 border border-border-default">
         <button
           type="button"
           onClick={() => setSide('BUY')}
-          className={`flex-grow py-1 rounded-none text-[10px] font-bold transition-all ${
+          className={`flex-grow py-1 rounded text-[10px] font-bold transition-all ${
             side === 'BUY'
               ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/20'
               : 'text-text-secondary hover:text-text-primary'
@@ -67,7 +67,7 @@ export default function VerificationForm({
         <button
           type="button"
           onClick={() => setSide('SELL')}
-          className={`flex-grow py-1 rounded-none text-[10px] font-bold transition-all ${
+          className={`flex-grow py-1 rounded text-[10px] font-bold transition-all ${
             side === 'SELL'
               ? 'bg-rose-500/15 text-rose-500 border border-rose-500/20'
               : 'text-text-secondary hover:text-text-primary'
@@ -89,7 +89,7 @@ export default function VerificationForm({
               setEntry(e.target.value);
               setHasManuallySetEntry(true);
             }}
-            className="w-full bg-elevated border border-border-default rounded-none px-2 py-1 text-xs text-text-primary font-mono focus:border-emerald-500 focus:outline-none"
+            className="w-full bg-elevated border border-border-default rounded-md px-2 py-1 text-xs text-text-primary font-mono focus:border-emerald-500 focus:outline-none"
           />
         </div>
 
@@ -103,7 +103,7 @@ export default function VerificationForm({
               setStopLoss(e.target.value);
               setHasManuallySetSL(true);
             }}
-            className={`w-full bg-elevated border rounded-none px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${
+            className={`w-full bg-elevated border rounded-md px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${
               side === 'BUY'
                 ? 'border-border-default focus:border-rose-500'
                 : 'border-border-default focus:border-emerald-500'
@@ -130,7 +130,7 @@ export default function VerificationForm({
               setTakeProfit(e.target.value);
               setHasManuallySetTP(true);
             }}
-            className={`w-full bg-elevated border rounded-none px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${
+            className={`w-full bg-elevated border rounded-md px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${
               side === 'BUY'
                 ? 'border-border-default focus:border-emerald-500'
                 : 'border-border-default focus:border-rose-500'
@@ -151,10 +151,10 @@ export default function VerificationForm({
 
       {/* Risk-to-Reward Badge */}
       {riskToReward && (
-        <div className="flex justify-between items-center rounded-none bg-muted p-2 border border-border-default text-[10px]">
+        <div className="flex justify-between items-center rounded-md bg-muted p-2 border border-border-default text-[10px]">
           <span className="text-text-secondary font-semibold">Risk:Reward Ratio</span>
           <span
-            className="font-black font-mono px-2 py-0.5 rounded-none bg-elevated text-text-primary border border-border-default"
+            className="font-black font-mono px-2 py-0.5 rounded bg-elevated text-text-primary border border-border-default"
           >
             1 : {riskToReward}
           </span>
@@ -169,7 +169,7 @@ export default function VerificationForm({
           value={userAnalysis}
           onChange={(e) => setUserAnalysis(e.target.value)}
           placeholder="E.g. Bullish engulfing on 10m VWAP bounce, expecting target resistance test..."
-          className="w-full bg-elevated border border-border-default rounded-none px-2 py-1.5 text-xs text-text-primary placeholder:text-text-muted/65 focus:border-text-primary focus:outline-none resize-none"
+          className="w-full bg-elevated border border-border-default rounded-md px-2 py-1.5 text-xs text-text-primary placeholder:text-text-muted/65 focus:border-emerald-500 focus:outline-none resize-none"
         />
       </div>
 
@@ -179,21 +179,21 @@ export default function VerificationForm({
         disabled={isAnalyzing || !dataReady}
         onClick={onSubmit}
         className={`
-          w-full flex h-8 items-center justify-center gap-1.5 rounded-none text-[10px] font-bold uppercase tracking-wider transition-all duration-300
+          w-full flex h-8 items-center justify-center gap-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-300 shadow-sm
           ${(isAnalyzing || !dataReady)
-            ? 'bg-elevated text-text-muted/50 border-border-default opacity-50 cursor-not-allowed'
-            : 'bg-text-primary text-surface border-text-primary hover:bg-text-secondary hover:border-text-secondary active:scale-[0.98]'
+            ? 'bg-elevated text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
+            : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-600 hover:border-emerald-500 active:scale-[0.98]'
           }
         `}
       >
         {isAnalyzing ? (
           <>
-            <Loader2 size={12} className="animate-spin text-surface" />
+            <Loader2 size={12} className="animate-spin text-white" />
             VERIFYING SETUP...
           </>
         ) : (
           <>
-            <Shield size={12} className="animate-pulse" />
+            <Shield size={12} className="animate-pulse text-white" />
             VERIFY MY SETUP
           </>
         )}
