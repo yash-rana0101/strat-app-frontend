@@ -63,12 +63,12 @@ export default function UserProfileModal({ isOpen, onClose }: UserProfileModalPr
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md transition-all duration-300">
       <div
-        className="relative flex h-[720px] w-full max-w-5xl overflow-hidden rounded-none border border-border-default bg-surface shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+        className="relative flex h-[720px] w-full max-w-5xl overflow-hidden rounded-xl border border-border-default bg-surface shadow-2xl animate-in fade-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-none border border-border-default bg-elevated text-text-secondary hover:bg-elevated hover:text-text-primary transition-all"
+          className="absolute top-4 right-4 z-10 flex h-8 w-8 items-center justify-center rounded-md border border-border-default bg-elevated text-text-secondary hover:bg-elevated hover:text-text-primary transition-all"
         >
           <X size={16} />
         </button>

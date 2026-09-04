@@ -147,7 +147,7 @@ export default function NotificationBell({ align = 'header', label }: Notificati
       </button>
 
       {isOpen && (
-        <div className={`absolute z-[999] flex w-80 flex-col rounded-none border border-border-default bg-surface/95 shadow-2xl backdrop-blur-xl ${
+        <div className={`absolute z-[999] flex w-80 flex-col rounded-xl overflow-hidden border border-border-default bg-surface/95 shadow-2xl backdrop-blur-xl ${
           isRail ? 'left-14 bottom-0 ml-1' : 'right-0 top-full mt-2'
         }`}>
           <div className="flex items-center justify-between border-b border-border-default px-3 py-2">

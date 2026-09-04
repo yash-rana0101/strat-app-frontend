@@ -365,17 +365,17 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
 
       {/* ── Dropdown Panel ── */}
       {isOpen && (
-        <div className={`absolute z-[999] flex flex-col w-[400px] max-h-[560px] rounded-none border border-border-default bg-surface/95 backdrop-blur-xl shadow-2xl ${
+        <div className={`absolute z-[999] flex flex-col w-[400px] max-h-[560px] rounded-xl overflow-hidden border border-border-default bg-surface/95 backdrop-blur-xl shadow-2xl ${
           isRail ? 'left-14 bottom-0 ml-1' : 'right-0 top-full mt-2'
         }`}>
           {/* ── Header ── */}
-          <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border-default bg-surface/80 rounded-none">
+          <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border-default bg-surface/80">
             <div className="flex items-center gap-2">
               <Radar size={15} className="text-emerald-400" />
               <span className="text-xs font-bold tracking-wide text-text-primary uppercase">
                 Quant Radar
               </span>
-              <span className="rounded-none bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold text-emerald-400 tabular-nums">
+              <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold text-emerald-400 tabular-nums">
                 {symbols.length} symbol{symbols.length !== 1 ? 's' : ''}
               </span>
             </div>
