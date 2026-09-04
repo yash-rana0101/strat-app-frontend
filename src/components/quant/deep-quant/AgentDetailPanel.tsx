@@ -131,12 +131,11 @@ function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; s
   const side = finalTrade.action ?? '—';
   const conviction =
     typeof finalTrade.conviction_score === 'number' ? `${finalTrade.conviction_score}%` : '—';
-  const consensusReport = useQuantStore((s) => s.consensusReport);
+  const consensusReport = useQuantStore((s) => s.consensusData);
   const atr = consensusReport?.atr_14 != null ? consensusReport.atr_14.toFixed(2) : null;
   // Read existing calculated risk/reward if provided
-  const riskReward = (finalTrade as Record<string, unknown>).risk_reward
-    ? String((finalTrade as Record<string, unknown>).risk_reward)
-    : null;
+  const tradeRecord = finalTrade as unknown as Record<string, unknown>;
+  const riskReward = tradeRecord.risk_reward ? String(tradeRecord.risk_reward) : null;
 
   return (
     <div className="flex flex-col gap-3 p-4">

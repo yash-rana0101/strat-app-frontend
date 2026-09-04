@@ -110,7 +110,7 @@ export default function TradeQaPanel() {
               <div className="flex items-center gap-0.5 mr-1 text-[10px] text-text-muted select-none">
                 <button
                   type="button"
-                  onClick={() => setDraft((d) => `${d}@`)}
+                  onClick={() => setDraft(`${draft}@`)}
                   title="Mention symbol or metric (@)"
                   className="px-1.5 py-0.5 rounded hover:bg-elevated text-text-muted hover:text-text-primary transition-colors font-mono cursor-pointer"
                 >
@@ -118,7 +118,7 @@ export default function TradeQaPanel() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setDraft((d) => `${d}/`)}
+                  onClick={() => setDraft(`${draft}/`)}
                   title="Actions (/)"
                   className="px-1.5 py-0.5 rounded hover:bg-elevated text-text-muted hover:text-text-primary transition-colors font-mono cursor-pointer"
                 >
