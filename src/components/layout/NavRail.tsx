@@ -261,7 +261,16 @@ export default function NavRail({
                 {getInitials(user?.name)}
               </span>
             </span>
-            <RailLabel>Account</RailLabel>
+            <RailLabel>
+              <span className="flex flex-col text-left justify-center min-w-0 leading-tight">
+                <span className="truncate text-xs font-semibold text-text-primary">
+                  {user?.name?.trim() || 'Account'}
+                </span>
+                <span className="text-[10px] font-normal text-text-muted font-[family-name:var(--font-inter)] tracking-normal">
+                  Account
+                </span>
+              </span>
+            </RailLabel>
           </button>
         </div>
       </nav>
