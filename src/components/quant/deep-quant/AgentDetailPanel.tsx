@@ -1,7 +1,7 @@
 'use client';
 
 // components/quant/deep-quant/AgentDetailPanel.tsx
-//  push to new one
+//
 // The Agent View's right-hand column: the selected step, and the committed plan, in full.
 //
 // This is where the text that used to crush the sidebar belongs. `setup_validation` and the
@@ -148,9 +148,8 @@ function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; s
         <div className="rounded border border-emerald-500/20 bg-gradient-to-b from-emerald-500/5 to-transparent p-3">
           <div className="flex items-baseline justify-between mb-2">
             <span
-              className={`text-base font-black tracking-tight ${
-                side === 'SELL' ? 'text-rose-400' : 'text-emerald-400'
-              }`}
+              className={`text-base font-black tracking-tight ${side === 'SELL' ? 'text-rose-400' : 'text-emerald-400'
+                }`}
             >
               {side} {symbol}
             </span>
