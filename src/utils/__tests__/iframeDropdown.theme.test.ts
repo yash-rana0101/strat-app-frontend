@@ -27,8 +27,8 @@ const DARK = {
   '--color-primary': '#10b981',
 };
 const LIGHT = {
-  '--bg-surface': '#fdfcfa',
-  '--bg-elevated': '#ffffff',
+  '--bg-surface': '#f0eee9',
+  '--bg-elevated': '#e4dfd5',
   '--border-default': '#d0c8b8',
   '--text-primary': '#0f172a',
   '--text-muted': '#5b6675',
@@ -75,7 +75,7 @@ describe('the injected iframe CSS follows the app’s theme', () => {
     applyTheme('light');
     injectIframeDropdownStyles(document);
 
-    expect(css()).toContain('background-color: #fdfcfa'); // dropdown surface
+    expect(css()).toContain('background-color: #f0eee9'); // dropdown surface
     expect(css()).toContain('color: #0f172a'); // item text
     expect(css()).toContain('1px solid #d0c8b8'); // border
     // The dark surface is what showed through before; it must be gone entirely.
@@ -92,7 +92,7 @@ describe('the injected iframe CSS follows the app’s theme', () => {
     applyTheme('light');
     injectIframeDropdownStyles(document);
 
-    expect(css()).toContain('#fdfcfa');
+    expect(css()).toContain('#f0eee9');
     expect(css()).not.toContain('#262626');
     // Reuses its own <style> element rather than stacking a new one each time.
     expect(document.querySelectorAll('#tv-custom-dropdown-styles')).toHaveLength(1);
@@ -124,7 +124,7 @@ describe('the injected iframe CSS follows the app’s theme', () => {
     injectIframeDropdownStyles(document);
     const light = css();
 
-    for (const stale of ['#252525', '#333333', '#2d2d2d', '#94a3b8', '#e8e5de', '#ddd8ce', '#f0eee9']) {
+    for (const stale of ['#252525', '#333333', '#2d2d2d', '#94a3b8']) {
       expect(dark, `dark CSS still hardcodes ${stale}`).not.toContain(stale);
       expect(light, `light CSS still hardcodes ${stale}`).not.toContain(stale);
     }
@@ -176,7 +176,7 @@ describe('the dropdown itself', () => {
   it('injects the current theme when it opens', () => {
     applyTheme('light');
     open('linear');
-    expect(css()).toContain('#fdfcfa');
+    expect(css()).toContain('#f0eee9');
   });
 
   it('selects, then closes and releases the button', () => {

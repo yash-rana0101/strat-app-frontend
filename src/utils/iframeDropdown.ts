@@ -26,8 +26,8 @@ export interface DropdownItem {
 
 const THEME_DEFAULTS = {
   light: {
-    surface: '#fdfcfa',
-    elevated: '#ffffff',
+    surface: '#f0eee9',
+    elevated: '#e4dfd5',
     border: '#d0c8b8',
     textPrimary: '#0f172a',
     textMuted: '#5b6675',
