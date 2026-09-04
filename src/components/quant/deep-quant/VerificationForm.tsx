@@ -52,7 +52,7 @@ export default function VerificationForm({
       </div>
 
       {/* Side selector */}
-      <div className="flex rounded-none bg-black p-0.5 border border-border-default">
+      <div className="flex rounded-none bg-muted p-0.5 border border-border-default">
         <button
           type="button"
           onClick={() => setSide('BUY')}
@@ -89,7 +89,7 @@ export default function VerificationForm({
               setEntry(e.target.value);
               setHasManuallySetEntry(true);
             }}
-            className="w-full bg-black border border-border-default rounded-none px-2 py-1 text-xs text-text-primary font-mono focus:border-emerald-500 focus:outline-none"
+            className="w-full bg-elevated border border-border-default rounded-none px-2 py-1 text-xs text-text-primary font-mono focus:border-emerald-500 focus:outline-none"
           />
         </div>
 
@@ -103,7 +103,7 @@ export default function VerificationForm({
               setStopLoss(e.target.value);
               setHasManuallySetSL(true);
             }}
-            className={`w-full bg-black border rounded-none px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${
+            className={`w-full bg-elevated border rounded-none px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${
               side === 'BUY'
                 ? 'border-border-default focus:border-rose-500'
                 : 'border-border-default focus:border-emerald-500'
@@ -130,7 +130,7 @@ export default function VerificationForm({
               setTakeProfit(e.target.value);
               setHasManuallySetTP(true);
             }}
-            className={`w-full bg-black border rounded-none px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${
+            className={`w-full bg-elevated border rounded-none px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${
               side === 'BUY'
                 ? 'border-border-default focus:border-emerald-500'
                 : 'border-border-default focus:border-rose-500'
@@ -151,7 +151,7 @@ export default function VerificationForm({
 
       {/* Risk-to-Reward Badge */}
       {riskToReward && (
-        <div className="flex justify-between items-center rounded-none bg-black p-2 border border-border-default text-[10px]">
+        <div className="flex justify-between items-center rounded-none bg-muted p-2 border border-border-default text-[10px]">
           <span className="text-text-secondary font-semibold">Risk:Reward Ratio</span>
           <span
             className="font-black font-mono px-2 py-0.5 rounded-none bg-elevated text-text-primary border border-border-default"
@@ -169,7 +169,7 @@ export default function VerificationForm({
           value={userAnalysis}
           onChange={(e) => setUserAnalysis(e.target.value)}
           placeholder="E.g. Bullish engulfing on 10m VWAP bounce, expecting target resistance test..."
-          className="w-full bg-black border border-border-default rounded-none px-2 py-1.5 text-xs text-text-primary placeholder:text-text-muted/65 focus:border-text-primary focus:outline-none resize-none"
+          className="w-full bg-elevated border border-border-default rounded-none px-2 py-1.5 text-xs text-text-primary placeholder:text-text-muted/65 focus:border-text-primary focus:outline-none resize-none"
         />
       </div>
 
