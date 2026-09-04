@@ -482,3 +482,42 @@ describe('archive and reopen', () => {
     expect(onOpen).not.toHaveBeenCalled();
   });
 });
+
+describe('delete', () => {
+  it('shows delete confirmation and deletes the session when confirmed', async () => {
+    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
+      if (init?.method === 'DELETE') {
+        return Promise.resolve(json({ session_id: 'a', status: 'deleted', hard: false }));
+      }
+      return Promise.resolve(json({ items: [summary({ session_id: 'a' })], next_cursor: null }));
+    });
+    useSessionStore.getState().setActiveSession('a');
+    renderHistory();
+
+    await clickAsync(await screen.findByRole('button', { name: /^Delete/ }));
+    const confirmBtn = await screen.findByRole('button', { name: /^Confirm delete/ });
+    expect(confirmBtn).toBeTruthy();
+
+    await clickAsync(confirmBtn);
+
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(([, i]) => (i as RequestInit | undefined)?.method === 'DELETE');
+      expect(call).toBeTruthy();
+      expect(String(call![0])).toMatch(/\/sessions\/a/);
+    });
+    expect(useSessionStore.getState().activeSessionId).toBeNull();
+  });
+
+  it('cancels deletion when cancel button is clicked', async () => {
+    fetchMock.mockResolvedValue(json({ items: [summary({ session_id: 'a' })], next_cursor: null }));
+    renderHistory();
+
+    await clickAsync(await screen.findByRole('button', { name: /^Delete/ }));
+    const cancelBtn = await screen.findByRole('button', { name: 'Cancel delete' });
+    await clickAsync(cancelBtn);
+
+    expect(screen.queryByRole('button', { name: /^Confirm delete/ })).toBeNull();
+    expect(fetchMock.mock.calls.some(([, i]) => (i as RequestInit | undefined)?.method === 'DELETE')).toBe(false);
+  });
+});
+

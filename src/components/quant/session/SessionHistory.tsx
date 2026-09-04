@@ -12,9 +12,18 @@
 
 import React from 'react';
 import { AlertTriangle, Loader2, RefreshCw, Search } from 'lucide-react';
+import { AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
 
 import { useArchiveSession, useRenameSession, useReopenSession, useSessions } from '../../../lib/fq/queries';
+import {
+  useArchiveSession,
+  useDeleteSession,
+  useRenameSession,
+  useReopenSession,
+  useSessions,
+} from '../../../lib/fq/queries';
 import { useSessionStore } from '../../../store/useSessionStore';
+import SessionHistoryControls from './SessionHistoryControls';
 import SessionHistoryRow from './SessionHistoryRow';
 
 export interface SessionHistoryProps {
@@ -65,6 +74,7 @@ export default function SessionHistory({
   const rename = useRenameSession();
   const archive = useArchiveSession();
   const reopen = useReopenSession();
+  const deleteSession = useDeleteSession();
 
   const sessions = React.useMemo(
     () => (list.data?.pages ?? []).flatMap((page) => page.items),
@@ -141,6 +151,16 @@ export default function SessionHistory({
       onOpen(sessionId);
     });
 
+  const handleDelete = (sessionId: string) =>
+    void run(sessionId, 'delete this session', async () => {
+      await deleteSession.mutateAsync({ sessionId });
+      // Dropped only after the server agrees, and only if it was on screen.
+      if (useSessionStore.getState().activeSessionId === sessionId) {
+        useSessionStore.getState().setActiveSession(null);
+      }
+      useSessionStore.getState().dropSession(sessionId);
+    });
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       {showStatusFilter && !controlledStatus && (
@@ -173,6 +193,19 @@ export default function SessionHistory({
           </button>
         </div>
       )}
+      <SessionHistoryControls
+        showStatusFilter={showStatusFilter}
+        controlledStatus={controlledStatus}
+        status={status}
+        onStatusChange={setInternalStatus}
+        everPaged={everPaged}
+        rawQuery={rawQuery}
+        onQueryChange={setRawQuery}
+        isFetching={list.isFetching}
+        isFetchingNextPage={list.isFetchingNextPage}
+        actionError={actionError}
+        onDismissError={() => setActionError(null)}
+      />
 
       {everPaged && (
         <div className="shrink-0 border-b border-border-default/40 p-2">
@@ -264,6 +297,7 @@ export default function SessionHistory({
                   onRename={handleRename}
                   onArchive={handleArchive}
                   onReopen={handleReopen}
+                  onDelete={handleDelete}
                 />
               ))}
             </ul>

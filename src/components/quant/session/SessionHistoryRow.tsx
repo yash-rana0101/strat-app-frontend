@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { Archive, Check, Loader2, Pencil, RotateCcw, X } from 'lucide-react';
+import { Archive, Check, Loader2, Pencil, RotateCcw, Trash2, X } from 'lucide-react';
 
 import type { SessionSummary } from '../../../lib/fq/api';
 import { formatSessionDay, formatSessionTime, sessionTabLabel } from './sessionLabel';
@@ -20,6 +21,7 @@ export interface SessionHistoryRowProps {
   onRename: (sessionId: string, title: string | null) => void;
   onArchive: (sessionId: string) => void;
   onReopen: (sessionId: string) => void;
+  onDelete?: (sessionId: string) => void;
 }
 
 /**
@@ -62,9 +64,11 @@ export default function SessionHistoryRow({
   onRename,
   onArchive,
   onReopen,
+  onDelete,
 }: SessionHistoryRowProps) {
   const [editing, setEditing] = React.useState(false);
   const [draft, setDraft] = React.useState('');
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const label = sessionTabLabel(session);
@@ -76,6 +80,7 @@ export default function SessionHistoryRow({
     // pinned title they never chose.
     setDraft(session.title ?? '');
     setEditing(true);
+    setConfirmDelete(false);
   };
 
   React.useEffect(() => {
@@ -193,6 +198,30 @@ export default function SessionHistoryRow({
             >
               <RotateCcw size={12} aria-hidden="true" />
             </button>
+          {confirmDelete ? (
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                aria-label={`Confirm delete ${label}`}
+                title="Confirm delete"
+                onClick={() => {
+                  setConfirmDelete(false);
+                  onDelete?.(session.session_id);
+                }}
+                className="rounded bg-status-error/15 px-1.5 py-0.5 text-[10px] font-semibold text-status-error hover:bg-status-error/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-status-error/60 cursor-pointer"
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                aria-label="Cancel delete"
+                title="Cancel"
+                onClick={() => setConfirmDelete(false)}
+                className="rounded p-0.5 text-text-muted hover:text-text-primary focus:outline-none cursor-pointer"
+              >
+                <X size={12} aria-hidden="true" />
+              </button>
+            </div>
           ) : (
             <button
               type="button"
@@ -203,6 +232,49 @@ export default function SessionHistoryRow({
             >
               <Archive size={12} aria-hidden="true" />
             </button>
+            <>
+              <button
+                type="button"
+                aria-label={`Rename ${label}`}
+                title="Rename"
+                onClick={beginEdit}
+                className="rounded p-1 text-text-muted opacity-0 transition-opacity hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-text-primary/60 group-hover:opacity-100 cursor-pointer"
+              >
+                <Pencil size={12} aria-hidden="true" />
+              </button>
+              {archived ? (
+                <button
+                  type="button"
+                  aria-label={`Reopen ${label}`}
+                  title="Reopen"
+                  onClick={() => onReopen(session.session_id)}
+                  className="rounded p-1 text-text-muted opacity-0 transition-opacity hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-text-primary/60 group-hover:opacity-100 cursor-pointer"
+                >
+                  <RotateCcw size={12} aria-hidden="true" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  aria-label={`Archive ${label}`}
+                  title="Archive"
+                  onClick={() => onArchive(session.session_id)}
+                  className="rounded p-1 text-text-muted opacity-0 transition-opacity hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-text-primary/60 group-hover:opacity-100 cursor-pointer"
+                >
+                  <Archive size={12} aria-hidden="true" />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  type="button"
+                  aria-label={`Delete ${label}`}
+                  title="Delete session"
+                  onClick={() => setConfirmDelete(true)}
+                  className="rounded p-1 text-text-muted opacity-0 transition-opacity hover:bg-surface hover:text-status-error focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-status-error/60 group-hover:opacity-100 cursor-pointer"
+                >
+                  <Trash2 size={12} aria-hidden="true" />
+                </button>
+              )}
+            </>
           )}
         </div>
       )}

@@ -17,10 +17,12 @@
 // Layout: two columns on desktop — transcript left, selected step right. On a narrow viewport the
 // dialog becomes a full-screen sheet and the right column stacks BELOW the transcript rather than
 // shrinking, because a 360px-wide two-column split leaves neither side readable.
+// Renders transcript, progress timeline, detail column, Q&A composer, and right-side session history.
 
 import React from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { Coins, Loader2, Minimize2, Shield, Square, X, Zap } from 'lucide-react';
+import { History, Minimize2, Square, X } from 'lucide-react';
 
 import { useQuantStore, type ReasoningStep } from '../../store/useQuantStore';
 import { useTradeStore } from '../../store/useTradeStore';
@@ -32,10 +34,13 @@ import TradeQaPanel from './TradeQaPanel';
 import ModelSelector from './deep-quant/ModelSelector';
 import AgentDetailPanel from './deep-quant/AgentDetailPanel';
 import AgentProgressTimeline from './deep-quant/AgentProgressTimeline';
+import AgentDialogMetaBar from './deep-quant/AgentDialogMetaBar';
+import AgentHistoryPanel from './deep-quant/AgentHistoryPanel';
 import ErrorState from './deep-quant/ErrorState';
 import EmptyState from './deep-quant/EmptyState';
 import type { QuantMode } from './deep-quant/QuantActionBar';
 import QuantStatusPill from './deep-quant/QuantStatusPill';
+import { FQ_MULTI_SESSION } from '../../lib/env';
 import {
   useFqAnalysisError,
   useFqFinalTrade,
@@ -78,6 +83,7 @@ export default function DeepQuantAgentDialog({
   const sessionTime = React.useMemo(() => formatSessionTime(Math.floor(Date.now() / 1000)), []);
 
   const [selectedId, setSelectedId] = React.useState<string | null>(initialSelectedId);
+  const [historyOpen, setHistoryOpen] = React.useState(false);
 
   // Re-sync when the caller opens the dialog on a different row. Adjusted during render (the
   // React-recommended derive-from-prop pattern) rather than in an effect, so the panel never
@@ -169,6 +175,25 @@ export default function DeepQuantAgentDialog({
                 </span>
               </div>
 
+              {/* History Button (toggles right-side panel) */}
+              {FQ_MULTI_SESSION && (
+                <button
+                  type="button"
+                  onClick={() => setHistoryOpen((v) => !v)}
+                  aria-expanded={historyOpen}
+                  aria-label="Session history"
+                  title="Session history"
+                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                    historyOpen
+                      ? 'bg-elevated border-primary/50 text-text-primary shadow-xs'
+                      : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
+                  }`}
+                >
+                  <History size={11} aria-hidden="true" />
+                  <span>History</span>
+                </button>
+              )}
+
               {run.isAnalyzing && (
                 <button
                   type="button"
@@ -205,6 +230,25 @@ export default function DeepQuantAgentDialog({
                 {qaMessages.length > 0 ? ` · ${qaMessages.length} messages` : ''}
                 {sessionTime ? ` · ${sessionTime}` : ''}
               </span>
+          <AgentDialogMetaBar
+            symbol={run.symbol}
+            activeTimeframe={run.activeTimeframe}
+            activeProfile={activeProfile}
+            dataReady={run.dataReady}
+            insufficientData={run.insufficientData}
+            symbolCandleCount={run.symbolCandleCount}
+            reasoningStepsCount={reasoningSteps.length}
+            qaMessagesCount={qaMessages.length}
+            sessionTime={sessionTime}
+            selectedModel={selectedModel}
+            onModelChange={setSelectedModel}
+            isAnalyzing={run.isAnalyzing}
+            credit={credit}
+            mode={mode}
+            onModeChange={onModeChange}
+            onRun={onRetry}
+            onStop={run.cancelAnalysis}
+          />
 
               {/* Model Selector badge */}
               <div className="scale-90 origin-left">
@@ -306,6 +350,7 @@ export default function DeepQuantAgentDialog({
           {/* `min-h-0` is load-bearing in a flex column: without it the scroll containers grow to
               their content and the composer is pushed off screen. */}
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
+          <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
             {/* Reasoning timeline. The plan card is suppressed here because the right column
                 already shows those levels — see `showTradePlan`. */}
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:border-r lg:border-border-default/40">
@@ -347,6 +392,11 @@ export default function DeepQuantAgentDialog({
                   sessionStatus={sessionStatus}
                 />
               </aside>
+            )}
+
+            {/* ── Right-Side History Panel ─────────────────────────────── */}
+            {historyOpen && FQ_MULTI_SESSION && (
+              <AgentHistoryPanel onClose={() => setHistoryOpen(false)} />
             )}
           </div>
 
