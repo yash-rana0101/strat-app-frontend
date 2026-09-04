@@ -8,6 +8,7 @@ import { isFnoSymbol } from '../../../charting/symbolUtils';
 import WatchlistSkeleton from './WatchlistSkeleton';
 import { kiteFetch } from '../../../lib/kiteFetch';
 import { bridgeInvoke } from '../../../lib/bridge';
+import { useLiveTickPrices } from '../../../hooks/useLiveTickPrices';
 
 interface ResolvedContract {
   tradingsymbol: string;
@@ -69,6 +70,10 @@ export default function WatchlistBlock() {
   const activePaneId = useChartUIStore((s) => s.activePaneId);
   const setPaneSymbol = useChartUIStore((s) => s.setPaneSymbol);
   const panes = useChartUIStore((s) => s.panes);
+
+  // Live tick prices from the Alpha WebSocket candle stream (:8081).
+  // Updates every ~16ms (animation frame), zero network cost — already flowing.
+  const liveTicks = useLiveTickPrices();
 
   const routeSymbolToChart = useCallback(
     async (symbol: string) => {
@@ -303,6 +308,10 @@ export default function WatchlistBlock() {
                 : selectedSymbol;
               const isActive = chartedSymbol === item.symbol;
               const quote = quotes[item.symbol];
+              // Live tick from the Alpha WebSocket candle stream (updates ~16ms).
+              // Falls back to polled REST quote, then cached item price.
+              const liveTick = liveTicks.get(item.symbol);
+              const displayPrice = liveTick?.price ?? quote?.last_price ?? item.lastPrice;
               // `null` when the upstream reported no previous close, in which case
               // there is no direction to show — no arrow, no bull/bear colour.
               const changeVal: number | null = quote ? quote.change : item.change;
@@ -389,20 +398,12 @@ export default function WatchlistBlock() {
 
                   {/* Price & Change % — visible by default, hidden on hover */}
                   <div className="flex flex-col items-end justify-center gap-0.5 shrink-0 min-w-[75px] group-hover:hidden transition-all">
-                    {quote ? (
+                    {displayPrice > 0 ? (
                       <>
-                        <span className="font-extrabold text-text-primary tabular-nums text-[13px]">{formatPrice(quote.last_price)}</span>
+                        <span className="font-extrabold text-text-primary tabular-nums text-[13px]">{formatPrice(displayPrice)}</span>
                         <span className={`flex items-center gap-0.5 text-[10px] font-bold tabular-nums ${changeVal === null ? 'text-text-muted' : isPositive ? 'text-bull' : 'text-bear'}`}>
                           {changeVal !== null && (isPositive ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />)}
-                          {formatChange(quote.change)}
-                        </span>
-                      </>
-                    ) : item.lastPrice > 0 ? (
-                      <>
-                        <span className="font-extrabold text-text-primary tabular-nums text-[13px]">{formatPrice(item.lastPrice)}</span>
-                        <span className={`flex items-center gap-0.5 text-[10px] font-bold tabular-nums ${isPositive ? 'text-bull' : 'text-bear'}`}>
-                          {isPositive ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-                          {formatChange(item.change)}
+                          {formatChange(changeVal)}
                         </span>
                       </>
                     ) : (

@@ -70,11 +70,18 @@
 
 /* ── Light theme (fallback — matches .light class from globals.css) ─── */
 :root:not(.theme-dark) {
+  /* Warm palette — matches .light in globals.css. Chrome lifted to --bg-surface
+     (#fdfcfa) above the pane canvas (--bg-base #f0eee9) for the same separation. */
+  --tv-color-platform-background: #fdfcfa;
   /* Warm palette — matches .light in globals.css. Chrome aligned with
      the off-white canvas (--bg-base #f0eee9) for a seamless blended workspace. */
   --tv-color-platform-background: #f0eee9;
   --tv-color-pane-background: #f0eee9;
 
+  --tv-color-toolbar-button-background-hover: #e8e5de;
+  --tv-color-toolbar-button-background-expanded: #e8e5de;
+  --tv-color-toolbar-button-background-active: #f7f5f1;
+  --tv-color-toolbar-button-background-active-hover: #e8e5de;
   --tv-color-toolbar-button-background-hover: #e4dfd5;
   --tv-color-toolbar-button-background-expanded: #e4dfd5;
   --tv-color-toolbar-button-background-active: #ddd8ce;
@@ -82,30 +89,45 @@
 
   --tv-color-toolbar-button-text: #5b6675;
   --tv-color-toolbar-button-text-hover: #0f172a;
+  --tv-color-toolbar-button-text-active: #059669;
+  --tv-color-toolbar-button-text-active-hover: #059669;
   --tv-color-toolbar-button-text-active: #047857;
   --tv-color-toolbar-button-text-active-hover: #047857;
 
+  --tv-color-item-active-text: #059669;
   --tv-color-item-active-text: #047857;
 
+  --tv-color-toolbar-toggle-button-background-active: rgba(5, 150, 105, 0.1);
+  --tv-color-toolbar-toggle-button-background-active-hover: rgba(5, 150, 105, 0.2);
   --tv-color-toolbar-toggle-button-background-active: rgba(4, 120, 87, 0.12);
   --tv-color-toolbar-toggle-button-background-active-hover: rgba(4, 120, 87, 0.2);
 
+  --tv-color-toolbar-divider-background: #ddd8ce;
   --tv-color-toolbar-divider-background: #d0c8b8;
   --tv-color-toolbar-save-layout-loader: #5b6675;
 
+  --tv-color-popup-background: #fdfcfa;
   --tv-color-popup-background: #f0eee9;
   --tv-color-popup-element-text: #0f172a;
   --tv-color-popup-element-text-hover: #000000;
+  --tv-color-popup-element-background-hover: #f0eee9;
+  --tv-color-popup-element-divider-background: #ddd8ce;
   --tv-color-popup-element-background-hover: #e4dfd5;
   --tv-color-popup-element-divider-background: #d0c8b8;
   --tv-color-popup-element-secondary-text: #5b6675;
+  --tv-color-popup-element-hint-text: #94a3b8;
   --tv-color-popup-element-hint-text: #788596;
 
+  --tv-color-popup-element-text-active: #059669;
+  --tv-color-popup-element-background-active: rgba(5, 150, 105, 0.08);
   --tv-color-popup-element-text-active: #047857;
   --tv-color-popup-element-background-active: rgba(4, 120, 87, 0.12);
 
   --tv-color-popup-element-toolbox-text: #5b6675;
   --tv-color-popup-element-toolbox-text-hover: #0f172a;
+  --tv-color-popup-element-toolbox-text-active-hover: #059669;
+  --tv-color-popup-element-toolbox-background-hover: #f0eee9;
+  --tv-color-popup-element-toolbox-background-active-hover: rgba(5, 150, 105, 0.1);
   --tv-color-popup-element-toolbox-text-active-hover: #047857;
   --tv-color-popup-element-toolbox-background-hover: #e4dfd5;
   --tv-color-popup-element-toolbox-background-active-hover: rgba(4, 120, 87, 0.15);

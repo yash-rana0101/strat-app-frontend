@@ -90,18 +90,26 @@
 .light {
   --bg-base: #f0eee9;
   --bg-main: var(--bg-base);
+  --bg-surface: #fdfcfa;
+  --bg-card: #f7f5f1;
+  --bg-elevated: #ffffff;
+  --bg-muted: #e8e5de;
+  /* Panel dividers — darkened from #ddd8ce for clearer separation on #f0eee9. */
   --bg-surface: #f0eee9;
   --bg-card: #e8e5de;
   --bg-elevated: #e4dfd5;
   --bg-muted: #ded9cf;
   /* Panel dividers — warm subtle separation on #f0eee9. */
   --border-default: #d0c8b8;
+  --border-subtle: #e2ddd2;
   --border-subtle: #ddd8ce;
   --text-primary: #0f172a;
   --text-secondary: #334155;
   /* Darkened from #64748b: the warmer #f0eee9 base dropped it to 4.1:1, under
      WCAG AA. #5b6675 restores ~5.0:1 while staying in the same slate family. */
   --text-muted: #5b6675;
+  --text-muted-soft: #94a3b8;
+  --chart-bg: var(--bg-card);
   --text-muted-soft: #788596;
   --chart-bg: var(--bg-surface);
   /* Subtle warm gridlines, independent of the panel-divider colour. */
