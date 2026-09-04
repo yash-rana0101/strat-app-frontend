@@ -1,10 +1,30 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { Coins, Zap, Loader2, Shield, ChevronDown, Cpu, Square } from 'lucide-react';
+// components/quant/DeepQuantPanel.tsx
+//
+// The SIDEBAR VIEW. "What is happening?" — and a way into "show me everything".
+//
+// What changed, and why
+// ---------------------
+// This panel used to render the whole glass box in a ~380px column: the full transcript, every
+// tool argument, and the model's `setup_validation` paragraph. The result was that the one thing
+// the user opens the panel for — action, conviction, entry/target/stop — sat below several screens
+// of reasoning. So the surface is now split:
+//
+//   * here: session tabs, the run control, metadata, status, a CONDENSED progress list, the
+//     compact result card, and the composer;
+//   * `DeepQuantAgentDialog`: the complete transcript, the full setup validation, the tool
+//     arguments and results, the metrics and the execution plan.
+//
+// What did NOT change: the store, the stream, the modes, the gating, the placeholder ladder, the
+// error strings, session handling. The run handlers moved to `useQuantRunActions` so the dialog
+// presses the same code rather than holding a copy, and `FIND`/`VERIFY` moved from component
+// `useState` to `useFqMode`, which is per session — so the dialog and the sidebar read one mode
+// and switching tabs no longer silently resets it.
+
+import React from 'react';
+import { Coins, Maximize2 } from 'lucide-react';
 import { useQuantStore } from '../../store/useQuantStore';
-import type { StreamEventPayload } from '../../store/useQuantStore';
-import { useSessionStore } from '../../store/useSessionStore';
 import { FQ_MULTI_SESSION } from '../../lib/env';
 import { FqQueryProvider } from '../../lib/fq/FqQueryProvider';
 import SessionTabBarConnected from './session/SessionTabBarConnected';
@@ -12,30 +32,35 @@ import { useFqStreamListeners } from './useFqStreamListeners';
 import {
   useFqAiPlan,
   useFqAnalysisError,
+  useFqFinalTrade,
   useFqIsAnalyzing,
+  useFqMode,
   useFqReasoningSteps,
   useFqSessionStatus,
-  useFqThreadId,
 } from './useFqSession';
+import { useQuantRunActions } from './useQuantRunActions';
 import { useTradeStore } from '../../store/useTradeStore';
-import { useChartUIStore } from '../../store/useChartUIStore';
-import AgentTerminal from './AgentTerminal';
 import TradeQaPanel from './TradeQaPanel';
 import ModelSelector from './deep-quant/ModelSelector';
 import { useAuthStore } from '../../store/useAuthStore';
 
 // ── Subcomponents ──────────────────────────────────────────────────────
-import LoadingState from './deep-quant/LoadingState';
 import VerificationForm from './deep-quant/VerificationForm';
-import AiExecutionPlanView from './deep-quant/AiExecutionPlanView';
 import PremiumPaywall from './deep-quant/PremiumPaywall';
 import ErrorState from './deep-quant/ErrorState';
 import EmptyState from './deep-quant/EmptyState';
+import QaMessages from './deep-quant/QaMessages';
+import QuantActionBar from './deep-quant/QuantActionBar';
+import QuantStatusPill from './deep-quant/QuantStatusPill';
+import QuantCompactProgress from './deep-quant/QuantCompactProgress';
+import QuantSidebarResult from './deep-quant/QuantSidebarResult';
+import DeepQuantAgentDialog from './DeepQuantAgentDialog';
+import WatchingIndicator from './deep-quant/WatchingIndicator';
 import { useVerificationForm } from './deep-quant/useVerificationForm';
 import { useFeature } from '../../store/useFeatureStore';
 import { dashboardUrl, openExternalUrl } from '../../lib/redirect';
 import { useCredit } from '../../hooks/useApi';
-import { bridgeInvoke, bridgeListen } from '../../lib/bridge';
+import { bridgeListen } from '../../lib/bridge';
 
 export default function DeepQuantPanel() {
   const user = useAuthStore((s) => s.user);
@@ -50,19 +75,16 @@ export default function DeepQuantPanel() {
 
   // Actions and global preferences stay on the legacy store; per-session STATE is read through
   // the `useFq*` layer so this component does not know which path is live.
-  const {
-    fetchDeepAnalysis,
-    clearAiPlan,
-    selectedModel,
-    setSelectedModel,
-    cancelAnalysis,
-  } = useQuantStore();
-  const aiPlan = useFqAiPlan();
+  const selectedModel = useQuantStore((s) => s.selectedModel);
+  const setSelectedModel = useQuantStore((s) => s.setSelectedModel);
   const isAnalyzing = useFqIsAnalyzing();
   const analysisError = useFqAnalysisError();
   const reasoningSteps = useFqReasoningSteps();
   const sessionStatus = useFqSessionStatus();
-  const currentThreadId = useFqThreadId();
+  const finalTrade = useFqFinalTrade();
+  // Read only to gate the VERIFY form below, exactly as before. `aiPlan` and `finalTrade` are set
+  // together by the DECISION branch, but the condition is left on the field it always used.
+  const aiPlan = useFqAiPlan();
 
   // Both bridge listeners, mounted at the CONTAINER level so they exist before any run starts.
   // (`AgentTerminal` only mounts once a run is in flight, which raced the backend SSE stream and
@@ -73,34 +95,30 @@ export default function DeepQuantPanel() {
   // stays stable.
   useFqStreamListeners();
 
-  const selectedSymbol = useTradeStore((s) => s.selectedSymbol);
-  const historicalCache = useTradeStore((s) => s.historicalCache);
-  const activeTimeframe = useTradeStore((s) => s.activeTimeframe);
-  const symbol = selectedSymbol || 'RELIANCE';
-  const activeSymbol = symbol;
+  // The run controls, shared with the dialog. Holds `symbol`, the candle count, `dataReady` and
+  // the FIND/VERIFY handlers — all moved out of this file unchanged.
+  const run = useQuantRunActions();
+  const { symbol, activeTimeframe, dataReady, insufficientData, symbolCandleCount } = run;
 
-  // ── AI Handoff State Guard ────────────────────────────────────────────
-  const symbolCandleCount = useMemo(() => {
-    const symUpper = symbol.toUpperCase();
-    let maxCount = 0;
-    for (const [key, val] of Object.entries(historicalCache)) {
-      if (key.startsWith(`${symUpper}::`) && val && val.length > maxCount) {
-        maxCount = val.length;
-      }
-    }
-    return maxCount;
-  }, [historicalCache, symbol]);
+  // Only the setter is used — see the listener note below.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [agentStatus, setAgentStatus] = React.useState<string>('Awaiting trigger...');
 
-  const dataReady = symbolCandleCount > 0;
-  const insufficientData = symbolCandleCount > 0 && symbolCandleCount < 50;
+  // Per SESSION, not per component. As `useState` here the mode was effectively global and the
+  // dialog would have needed its own copy — two controls that could disagree about which mode the
+  // next press runs.
+  const [activeMode, setActiveMode] = useFqMode();
 
-  const [agentStatus, setAgentStatus] = React.useState<string>("Awaiting trigger...");
+  // Which surface is on screen, and which row the dialog opens on. `null` = closed.
+  const [dialogStepId, setDialogStepId] = React.useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
 
-  // ── Split Dropdown & Verification State ──
-  const [activeMode, setActiveMode] = React.useState<'FIND' | 'VERIFY'>('FIND');
-  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const openDialog = (stepId: string | null) => {
+    setDialogStepId(stepId);
+    setDialogOpen(true);
+  };
 
-  const livePrice = useTradeStore((s) => s.ohlcCandles.find(c => c.symbol === symbol)?.close) || 0;
+  const livePrice = useTradeStore((s) => s.ohlcCandles.find((c) => c.symbol === symbol)?.close) || 0;
 
   // Use modular verification form hook
   const {
@@ -122,6 +140,13 @@ export default function DeepQuantPanel() {
     tpPercent,
   } = useVerificationForm(symbol, livePrice);
 
+  // Kept as it was, INCLUDING the fact that nothing renders `agentStatus`.
+  //
+  // Nothing on the web path emits this event: there is no `emitBridgeEvent('agent_status', …)`
+  // anywhere in `lib/bridge`, so the state is frozen at its initial value — it was a Tauri-era
+  // channel. Left in place because whether to remove the listener is a transport question and this
+  // change is scoped to presentation. Do NOT wire it into the status row: it would print a stale
+  // "Awaiting trigger…" beside a live run.
   React.useEffect(() => {
     let unlisten: (() => void) | undefined;
     const setupListener = async () => {
@@ -144,53 +169,23 @@ export default function DeepQuantPanel() {
   // FNO — never wipes or stalls the analysis.
   const activeProfile = useTradeStore((s) => s.activeProfile);
   React.useEffect(() => {
-    useQuantStore.getState().activateSymbolSession(activeSymbol, activeProfile);
-  }, [activeSymbol, activeProfile]);
+    useQuantStore.getState().activateSymbolSession(symbol, activeProfile);
+  }, [symbol, activeProfile]);
 
   if (!user || !deepseekGlmEnabled) {
     return <PremiumPaywall onUpgradeClick={handleUpgrade} />;
   }
 
-  const handleAIAnalysis = () => {
-    useQuantStore.getState().resetTerminal();
-    // Compute the technical consensus for THIS press, alongside the agent run.
-    //
-    // Deliberately here and not on symbol change: it is a technical read the user
-    // asks for, so a watchlist click should not fire a tool-server computation per
-    // symbol, and an agent-run output should not be presented as ambient telemetry.
-    //
-    // Fired in parallel rather than awaited — the agent stream is the primary
-    // result and must not wait on the HUD. If the agent's own
-    // `get_consensus_report` tool result arrives first, `quant-consensus` sets the
-    // same state; whichever lands later simply wins with equivalent data.
-    void useQuantStore.getState().fetchConsensusForSymbol(activeSymbol, activeTimeframe);
-    fetchDeepAnalysis(activeSymbol);
-  };
+  // The two run entry points. Wrapped rather than passed directly because VERIFY needs the form's
+  // current values, which live in this component.
+  const handleAIAnalysis = () => run.handleFind();
+  const handleVerifyAnalysis = () =>
+    run.handleVerify({ side, entry, stopLoss, takeProfit, userAnalysis });
+  const handleRun = () => (activeMode === 'FIND' ? handleAIAnalysis() : handleVerifyAnalysis());
 
-  const handleVerifyAnalysis = () => {
-    const entryNum = parseFloat(entry);
-    const slNum = parseFloat(stopLoss);
-    const tpNum = parseFloat(takeProfit);
-
-    if (isNaN(entryNum) || entryNum <= 0) {
-      console.warn("Invalid entry price");
-      return;
-    }
-
-    useQuantStore.getState().resetTerminal();
-    // VERIFY reads the same consensus indicators (ATR sizes the stop, RSI/MACD/EMA
-    // corroborate the user's direction), so the HUD is populated for this press too
-    // — same reasoning as handleAIAnalysis above.
-    void useQuantStore.getState().fetchConsensusForSymbol(activeSymbol, activeTimeframe);
-    fetchDeepAnalysis(activeSymbol, 'VERIFY', {
-      side,
-      entry: entryNum,
-      stopLoss: slNum,
-      takeProfit: tpNum,
-      userAnalysis,
-    });
-  };
-
+  // Whether a session has anything to show. Same condition the panel has always used to decide
+  // between the transcript and the empty state.
+  const hasRun = reasoningSteps.length > 0 || sessionStatus !== 'idle';
 
   return (
     <div className="flex h-full flex-col text-sm select-none overflow-hidden">
@@ -212,112 +207,14 @@ export default function DeepQuantPanel() {
 
       {/* ── Trigger Button ────────────────────────────────── */}
       <div className="shrink-0 p-3 border-b border-border-default relative">
-        <div className="flex items-center gap-0">
-          <button
-            id="btn-run-deep-quant"
-            type="button"
-            disabled={!isAnalyzing && !dataReady}
-            onClick={() => {
-              if (isAnalyzing) {
-                cancelAnalysis();
-              } else if (activeMode === 'FIND') {
-                handleAIAnalysis();
-              } else {
-                handleVerifyAnalysis();
-              }
-            }}
-            className={`
-              relative flex-grow flex h-8 items-center justify-center gap-1.5
-              rounded-l-md px-3 text-[10px] font-bold uppercase tracking-wider
-              transition-all duration-300 ease-out border border-r-0
-              ${!dataReady && !isAnalyzing
-                ? 'bg-elevated/40 text-text-muted/50 border-border-default opacity-50 cursor-not-allowed'
-                : isAnalyzing
-                  ? 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700 hover:border-rose-700 active:scale-[0.99] cursor-pointer'
-                  : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 active:scale-[0.99]'
-              }
-            `}
-          >
-            <span className="relative flex items-center gap-1.5">
-              {!dataReady && !isAnalyzing ? (
-                <Loader2 size={11} className="animate-spin text-text-muted" />
-              ) : isAnalyzing ? (
-                <Square size={11} />
-              ) : activeMode === 'VERIFY' ? (
-                <Shield size={11} className="group-hover:animate-pulse" />
-              ) : (
-                <Zap size={11} className="group-hover:animate-pulse" />
-              )}
-              {!dataReady && !isAnalyzing
-                ? 'AWAITING DATA…'
-                : isAnalyzing
-                  ? 'STOP ANALYSIS'
-                  : activeMode === 'VERIFY'
-                    ? 'VERIFY MY SETUP'
-                    : 'FIND QUANT TRADE'}
-            </span>
-          </button>
-
-          {/* Dropdown Toggle */}
-          <button
-            type="button"
-            disabled={isAnalyzing}
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className={`
-              h-8 w-8 rounded-r-md border transition-all duration-300 flex items-center justify-center
-              ${isAnalyzing
-                ? 'bg-elevated/40 border-border-default text-text-muted/50 cursor-not-allowed'
-                : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 border-l-emerald-700/50'
-              }
-            `}
-          >
-            <ChevronDown size={11} className={`transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`} />
-          </button>
-        </div>
-
-        {/* Dropdown Menu */}
-        {isDropdownOpen && (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
-            <div className="absolute right-3 left-3 mt-1.5 z-50 rounded bg-surface/95 backdrop-blur-xl border border-border-default/60 shadow-2xl p-1.5 flex flex-col gap-1">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveMode('FIND');
-                  setIsDropdownOpen(false);
-                }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-sm text-left transition-all ${activeMode === 'FIND' ? 'bg-elevated text-text-primary' : 'text-text-secondary hover:bg-elevated hover:text-text-primary'}`}
-              >
-                <Zap size={13} className="text-text-secondary" />
-                <div className="flex flex-col">
-                  {/* Compliance: was "Find High-Probability Trade" / "Autonomous
-                      breakouts & quant scanning". "High-Probability" states a
-                      probability about the outcome, which is the reading
-                      docs/compliance/BRAND_GUIDELINES.md §1.2 exists to prevent, and
-                      "Autonomous" reads as acting without the user (§1.1 rule 11).
-                      The mode scans and proposes; it never acts. */}
-                  <span>Find a Trade Setup</span>
-                  <span className="text-[8px] font-normal text-text-muted">Scans breakouts & quant signals</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveMode('VERIFY');
-                  setIsDropdownOpen(false);
-                }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-sm text-left transition-all ${activeMode === 'VERIFY' ? 'bg-elevated text-text-primary' : 'text-text-secondary hover:bg-elevated hover:text-text-primary'}`}
-              >
-                <Shield size={13} className="text-text-secondary" />
-                <div className="flex flex-col">
-                  <span>Verify My Trade Idea</span>
-                  <span className="text-[8px] font-normal text-text-muted">Co-pilot critical Risk Manager critique</span>
-                </div>
-              </button>
-            </div>
-          </>
-        )}
+        <QuantActionBar
+          mode={activeMode}
+          onModeChange={setActiveMode}
+          isAnalyzing={isAnalyzing}
+          dataReady={dataReady}
+          onRun={handleRun}
+          onStop={run.cancelAnalysis}
+        />
 
         {/* ── Footer Controls (Responsive 3 equal-width boxes) ── */}
         <div className="mt-2 pt-1.5 border-t border-border-default/20 flex flex-wrap items-center gap-1.5 text-[10px]">
@@ -421,32 +318,112 @@ export default function DeepQuantPanel() {
         />
       )}
 
+      {/* ── Status row ──────────────────────────────────────
+          The one line that answers "is it running". Deliberately just the pill and the way in:
+          `agentStatus` is NOT shown beside it, because nothing on the web path emits
+          `agent_status` — no `emitBridgeEvent('agent_status', …)` exists anywhere in `lib/bridge`,
+          so that state is frozen at its initial "Awaiting trigger..." and would render as
+          "Analysing · Awaiting trigger…" mid-run. Which step is live is answered honestly by the
+          progress list below, from real frames. */}
+      <div className="shrink-0 flex items-center justify-between border-b border-border-default/40 px-3 py-1.5">
+        <QuantStatusPill status={sessionStatus} />
+
+        {/* Mode Switcher: Chat Mode <-> Agent Mode */}
+        <div className="flex items-center rounded-md bg-elevated/40 p-0.5 border border-border-default/60 text-[9px] font-bold uppercase tracking-wider">
+          <span className="rounded px-2 py-0.5 bg-elevated text-text-primary shadow-xs">
+            Chat
+          </span>
+          <button
+            type="button"
+            onClick={() => openDialog(finalTrade ? 'decision' : null)}
+            aria-label="Open full analysis"
+            title="Switch to Agent Mode (Dialog View)"
+            className="rounded px-2 py-0.5 text-text-muted hover:text-text-primary transition-colors flex items-center gap-1 cursor-pointer"
+          >
+            <span>Agent Mode</span>
+            <Maximize2 size={10} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+
       {/* ── Content Area ──────────────────────────────────── */}
-      {/* A flex column: ONLY the agent/analysis region scrolls; the Q&A composer
-          is pinned as a fixed footer so the input never scrolls away with the
-          agent log. */}
+      {/* A flex column: ONLY the progress/result region scrolls; the Q&A composer is pinned as a
+          fixed footer so the input never scrolls away. */}
       <div className="flex-grow flex-shrink min-h-0 flex flex-col overflow-hidden">
-        {/* Scrollable agent / analysis region */}
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin flex flex-col">
-          {reasoningSteps.length > 0 || sessionStatus !== 'idle' ? (
-            <div className="h-full p-0 min-h-[380px]">
-              <AgentTerminal />
-            </div>
+          {hasRun ? (
+            <>
+              {/* Condensed progress — one row per tool the agent actually called. The full tool
+                  output and the reasoning prose are in the dialog, not here. */}
+              <QuantCompactProgress
+                reasoningSteps={reasoningSteps}
+                sessionStatus={sessionStatus}
+                finalTrade={finalTrade}
+                onSelect={(stepId) => openDialog(stepId)}
+              />
+
+              {/* Empty-state guards. The sidebar must never render visually blank, and the two
+                  cases below are the ones the transcript used to cover. */}
+              {reasoningSteps.length === 0 && sessionStatus === 'running' && (
+                <p className="px-3 py-2 text-[10px] text-text-muted/70 animate-pulse">
+                  Connecting to Deep Quant agent — awaiting first reasoning step…
+                </p>
+              )}
+
+              {reasoningSteps.length === 0 && sessionStatus === 'complete' && (
+                <div className="mx-2 my-2 rounded border border-amber-500/25 bg-amber-500/5 px-2.5 py-2">
+                  <p className="text-[10px] font-bold text-amber-500">No reasoning was streamed</p>
+                  <p className="mt-1 text-[9px] leading-relaxed text-amber-600 dark:text-amber-300/80">
+                    The agent run completed but produced no visible reasoning, tool, or decision
+                    steps. Press <span className="font-bold">Find Quant Trade</span> again to retry.
+                  </p>
+                </div>
+              )}
+
+              {/* Dedicated watching state indicator */}
+              {sessionStatus === 'watching' && (
+                <div className="px-2 my-1">
+                  <WatchingIndicator />
+                </div>
+              )}
+
+              {/* The result, compact. `View Full Analysis` is the way to the reasoning. */}
+              {(sessionStatus === 'complete' || sessionStatus === 'watching') && (
+                <QuantSidebarResult
+                  finalTrade={finalTrade}
+                  onOpenFullAnalysis={() => openDialog('decision')}
+                />
+              )}
+
+              {/* The existing error card, with the existing strings and the existing Retry gate. */}
+              {sessionStatus === 'error' && analysisError && (
+                <ErrorState
+                  error={analysisError}
+                  dataReady={dataReady}
+                  activeMode={activeMode}
+                  onRetryFind={handleAIAnalysis}
+                  onRetryVerify={handleVerifyAnalysis}
+                />
+              )}
+
+              {/* Q&A turns stay HERE as well as in the dialog, and that is not an oversight: the
+                  composer below is in the sidebar, so an answer that only appeared in the Agent View
+                  would make asking from here look like nothing happened. What the redesign moves out
+                  of this column is the AGENT's reasoning and tool output — the user's own
+                  conversation is what they asked for, so it stays where they asked. Same component,
+                  same store, so the two surfaces show one thread. */}
+              <QaMessages />
+            </>
           ) : analysisError ? (
-            <ErrorState 
-              error={analysisError} 
-              dataReady={dataReady} 
-              activeMode={activeMode} 
-              onRetryFind={handleAIAnalysis} 
-              onRetryVerify={handleVerifyAnalysis} 
-            />
-          ) : aiPlan ? (
-            <AiExecutionPlanView
-              aiPlan={aiPlan}
-              onClear={clearAiPlan}
+            <ErrorState
+              error={analysisError}
+              dataReady={dataReady}
+              activeMode={activeMode}
+              onRetryFind={handleAIAnalysis}
+              onRetryVerify={handleVerifyAnalysis}
             />
           ) : (
-            <EmptyState symbol={symbol} />
+            <EmptyState symbol={symbol} compact />
           )}
         </div>
 
@@ -454,14 +431,29 @@ export default function DeepQuantPanel() {
             stays fixed at the bottom of the agent section. It renders whenever a
             session is active (disabled during the run) and unlocks the moment the
             agent hits the AI-watcher state, letting the user chat while the AI
-            keeps watching for the price trigger. Its own message list scrolls
-            internally within a bounded height. */}
-        {(reasoningSteps.length > 0 || sessionStatus !== 'idle') && (
+            keeps watching for the price trigger. */}
+        {hasRun && (
           <div className="shrink-0">
             <TradeQaPanel />
           </div>
         )}
       </div>
+
+      {/* ── AGENT VIEW ──────────────────────────────────────
+          Mounted only while open, so the dialog's `AgentTerminal` and composer do not subscribe to
+          the store behind a closed overlay. Both surfaces read the same hooks, so no state is
+          handed across — only which row to open on. */}
+      {dialogOpen && (
+        <DeepQuantAgentDialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          initialSelectedId={dialogStepId}
+          mode={activeMode}
+          onModeChange={setActiveMode}
+          run={run}
+          onRetry={handleRun}
+        />
+      )}
     </div>
   );
 }

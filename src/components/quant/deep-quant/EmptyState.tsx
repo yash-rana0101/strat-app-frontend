@@ -4,11 +4,30 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { staggerContainerSlow, fadeInUp } from '../../../lib/motionVariants';
 
+import { Zap } from 'lucide-react';
+
 interface EmptyStateProps {
   symbol: string;
+  compact?: boolean;
 }
 
-export default function EmptyState({ symbol }: EmptyStateProps) {
+export default function EmptyState({ symbol, compact = false }: EmptyStateProps) {
+  if (compact) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-2.5 p-4 py-8 w-full text-center select-none">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 shadow-sm">
+          <Zap size={18} />
+        </div>
+        <div>
+          <p className="text-[11px] font-bold text-text-primary tracking-wider">Deep Quant Engine Ready</p>
+          <p className="text-[9.5px] text-text-muted mt-1 leading-relaxed max-w-[200px] mx-auto">
+            Press the button above to run the full AI analysis pipeline for <span className="text-emerald-500 font-bold">{symbol}</span>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       variants={staggerContainerSlow}

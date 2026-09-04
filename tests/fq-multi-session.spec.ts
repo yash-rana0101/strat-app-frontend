@@ -24,7 +24,13 @@
 
 import { test, expect, type Page } from '@playwright/test';
 
-import { expandAllThinking, seedCandles, tokenForTest } from './support/e2e';
+import {
+  closeFullAnalysis,
+  expandAllThinking,
+  openFullAnalysis,
+  seedCandles,
+  tokenForTest,
+} from './support/e2e';
 
 const ALICE = 'e2e-alice-token';
 
@@ -126,7 +132,6 @@ async function runFind(page: Page) {
 async function waitForComplete(page: Page) {
   await expect(page.getByRole('textbox').first()).toBeEnabled({ timeout: 60_000 });
 }
-
 test.describe('Find Quant multi-session workspace', () => {
   /** Every `/api/deepquant/*` call the browser made, with its status. Reset per test. */
   const agentCalls: string[] = [];
@@ -216,8 +221,15 @@ test.describe('Find Quant multi-session workspace', () => {
     await runFind(page);
     // The opening frames must arrive. The panel-level listener exists precisely because
     // `AgentTerminal` mounts late and used to miss them.
+    //
+    // Asserted inside the AGENT VIEW: the sidebar now shows a condensed progress list and the
+    // compact trade card, so the agent's prose is only in the DOM once the dialog is open. The
+    // frames are still routed by the same panel-level listener either way — what moved is where
+    // they are rendered, not whether they arrive.
+    await openFullAnalysis(page);
     await expect(page.getByText(/Scanning RELIANCE/)).toBeVisible({ timeout: 30_000 });
     await expect(page.getByText(/Momentum is intact/)).toBeVisible();
+    await closeFullAnalysis(page);
     await waitForComplete(page);
 
     // ── ask a follow-up ───────────────────────────────────────────────────────
@@ -225,7 +237,8 @@ test.describe('Find Quant multi-session workspace', () => {
     await expect(composer).toBeEnabled();
     await composer.fill('why is the stop there?');
     await composer.press('Enter');
-    // The question appears optimistically, then the answer streams into the CHAT.
+    // The question appears optimistically, then the answer streams into the CHAT — which stays in
+    // the sidebar beside the composer that sent it, so no dialog is needed here.
     await expect(page.getByText('why is the stop there?')).toBeVisible();
     await expect(page.getByText(/swing low at 2,435/)).toBeVisible({ timeout: 30_000 });
 
@@ -235,7 +248,9 @@ test.describe('Find Quant multi-session workspace', () => {
 
     // The new session is empty. Under the old flat mirror the first session's transcript was
     // projected over whatever was on screen, so this is the assertion that would have failed.
-    await expect(page.getByText(/Scanning RELIANCE/)).toHaveCount(0);
+    // Checked against the QA turn rather than the agent prose, because the latter is no longer in
+    // the sidebar at all and would pass vacuously.
+    await expect(page.getByText('why is the stop there?')).toHaveCount(0);
 
     // ── run in the second, then switch back mid-flight ────────────────────────
     await runFind(page);
@@ -243,8 +258,10 @@ test.describe('Find Quant multi-session workspace', () => {
 
     // Session one still shows ITS OWN finished analysis while session two streams in the
     // background. This is the isolation the whole migration is for.
+    await openFullAnalysis(page);
     await expandAllThinking(page);
     await expect(page.getByText(/Momentum is intact/)).toBeVisible();
+    await closeFullAnalysis(page);
     await expect(page.getByText('why is the stop there?')).toBeVisible();
 
     // ── reload -> restore ─────────────────────────────────────────────────────
@@ -260,8 +277,10 @@ test.describe('Find Quant multi-session workspace', () => {
     await expect(page.getByRole('tab')).toHaveCount(before + 2);
     await tabFor(page, firstId).click();
     // Nothing is in memory after a reload: every word here came back from the stored frames.
+    await openFullAnalysis(page);
     await expandAllThinking(page);
     await expect(page.getByText(/Momentum is intact/)).toBeVisible({ timeout: 30_000 });
+    await closeFullAnalysis(page);
     // And the Q&A turn is restored as a CHAT turn, not as glass-box reasoning — the `turn` marker
     // is what makes the live and restored views agree.
     await expect(page.getByText('why is the stop there?')).toBeVisible();

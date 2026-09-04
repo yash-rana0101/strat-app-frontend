@@ -79,6 +79,33 @@ export async function seedCandles(page: Page) {
 }
 
 /**
+ * Open the Agent View — the centered dialog that holds the FULL reasoning.
+ *
+ * Needed by every assertion on agent prose or tool output. The sidebar deliberately no longer
+ * renders those: it shows a condensed one-row-per-tool progress list and the compact trade card,
+ * because the full transcript in a ~380px column buried the trade under several screens of text.
+ * So `Scanning RELIANCE` and friends are only in the DOM once this dialog is open.
+ *
+ * The user's own Q&A turns are NOT behind this — they still render in the sidebar next to the
+ * composer that sent them, so those assertions need no dialog.
+ */
+export async function openFullAnalysis(page: Page) {
+  // Present only once a run has started (`hasRun`), so this waits rather than assuming.
+  const details = page.getByRole('button', { name: 'Open full analysis' });
+  await expect(details, 'the Details control never appeared, so no run had started').toBeVisible({
+    timeout: 30_000,
+  });
+  await details.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+}
+
+/** Close the Agent View, so subsequent assertions see the sidebar alone. */
+export async function closeFullAnalysis(page: Page) {
+  await page.getByRole('button', { name: 'Close full analysis' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+}
+
+/**
  * Expand EVERY collapsed "Thinking" group.
  *
  * `ThinkingGroupRenderer` opens only while a run is LIVE, so a finished run — restored, switched
@@ -92,6 +119,10 @@ export async function seedCandles(page: Page) {
  * breaks the group. The canned script reasons, calls `get_ohlc`, then reasons again, so "Scanning
  * RELIANCE" and "Momentum is intact" land in DIFFERENT groups — expanding only the first left the
  * second hidden and the failure read as "the frames never arrived".
+ *
+ * Call with the transcript on screen: in the side panel that means the Agent View is open
+ * (`openFullAnalysis`); on the standalone `/find-trade/session/{id}` route the transcript IS the
+ * page, so no dialog is involved.
  */
 export async function expandAllThinking(page: Page) {
   // POLLED, not counted once. `locator.count()` resolves immediately, so on a freshly opened session

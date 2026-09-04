@@ -104,9 +104,28 @@ export default function TradeQaPanel() {
             )}
           </div>
 
-          {/* Right items: Mic + Purple Circle Send Button */}
-          <div className="flex items-center gap-2">
-
+          {/* Right items: @, / actions and Send Button */}
+          <div className="flex items-center gap-1.5">
+            {canInteract && (
+              <div className="flex items-center gap-0.5 mr-1 text-[10px] text-text-muted select-none">
+                <button
+                  type="button"
+                  onClick={() => setDraft((d) => `${d}@`)}
+                  title="Mention symbol or metric (@)"
+                  className="px-1.5 py-0.5 rounded hover:bg-elevated text-text-muted hover:text-text-primary transition-colors font-mono cursor-pointer"
+                >
+                  @
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDraft((d) => `${d}/`)}
+                  title="Actions (/)"
+                  className="px-1.5 py-0.5 rounded hover:bg-elevated text-text-muted hover:text-text-primary transition-colors font-mono cursor-pointer"
+                >
+                  /
+                </button>
+              </div>
+            )}
 
             <button
               type="button"

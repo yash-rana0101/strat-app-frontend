@@ -23,11 +23,15 @@ import {
 } from 'lucide-react';
 import { ReasoningStep } from '../../../store/useQuantStore';
 import { highlightNumbers } from './textHighlighter';
+import { isToolStepCompleted } from './agentTimeline';
 
 interface ToolExecutionStepProps {
   step: ReasoningStep;
   reasoningSteps: ReasoningStep[];
   sessionStatus: string;
+  /** Given by the Agent View, which opens the step in its detail panel. Omitted in the sidebar. */
+  onSelect?: (step: ReasoningStep) => void;
+  isSelected?: boolean;
 }
 
 function getToolIcon(toolName: string | undefined) {
@@ -90,29 +94,47 @@ export default function ToolExecutionStep({
   step,
   reasoningSteps,
   sessionStatus,
+  onSelect,
+  isSelected = false,
 }: ToolExecutionStepProps) {
   if (step.type !== 'tool_start') return null;
 
-  // sequential counting to match tool_start to tool_end
-  const stepIdx = reasoningSteps.indexOf(step);
-  const startsUpToHere = reasoningSteps
-    .slice(0, stepIdx + 1)
-    .filter((s) => s.type === 'tool_start' && s.toolName === step.toolName).length;
-  const endsAfterHere = reasoningSteps
-    .slice(stepIdx + 1)
-    .filter((s) => s.type === 'tool_end' && s.toolName === step.toolName).length;
-
-  const runSettled = sessionStatus !== 'running';
-  const isCompleted = endsAfterHere >= startsUpToHere || runSettled;
+  // Pairing moved to `agentTimeline.isToolStepCompleted` so the sidebar's condensed progress
+  // cannot disagree with this row about whether the tool finished.
+  const isCompleted = isToolStepCompleted(step, reasoningSteps, sessionStatus);
   const formattedToolName = step.toolName ? step.toolName.replace(/_/g, ' ') : '';
 
   const borderClass = isCompleted
     ? 'border border-emerald-500/15 bg-gradient-to-r from-emerald-500/5 via-elevated/20 to-elevated/5'
     : 'border border-amber-500/15 bg-gradient-to-r from-amber-500/5 via-elevated/35 to-elevated/10';
 
+  // A button ONLY when a selection handler was given. In the sidebar there is nothing to select,
+  // and a button that does nothing is worse than a div — it takes focus and announces itself.
+  const interactive = !!onSelect;
+
   return (
     <div className="flex justify-start animate-fade-in font-sans pl-1 w-full my-2 select-text">
-      <div className={`rounded px-3 py-2.5 text-[10px] leading-relaxed shadow-md w-full ${borderClass}`}>
+      <div
+        {...(interactive
+          ? {
+              role: 'button' as const,
+              tabIndex: 0,
+              'aria-pressed': isSelected,
+              onClick: () => onSelect?.(step),
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelect?.(step);
+                }
+              },
+            }
+          : {})}
+        className={`rounded px-3 py-2.5 text-[10px] leading-relaxed shadow-md w-full ${borderClass} ${
+          interactive
+            ? 'cursor-pointer transition-colors hover:border-primary/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary'
+            : ''
+        } ${isSelected ? 'ring-1 ring-primary/60' : ''}`}
+      >
         <div className="flex items-center justify-between gap-2 font-sans select-none text-text-primary w-full">
           <div className="flex items-center gap-1.5">
             {getToolIcon(step.toolName)}

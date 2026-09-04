@@ -20,8 +20,33 @@ import ActionableTradePlan from './deep-quant/ActionableTradePlan';
 import ThinkingGroupRenderer from './deep-quant/ThinkingGroupRenderer';
 import { classifyAgentError } from './deep-quant/agentErrorClassifier';
 import { highlightNumbers } from './deep-quant/textHighlighter';
+import { buildRenderGroups } from './deep-quant/agentTimeline';
+import type { ReasoningStep } from '../../store/useQuantStore';
 
-export default function AgentTerminal() {
+interface AgentTerminalProps {
+  /**
+   * Given by the Agent View, where clicking a tool row opens it in the detail panel. Omitted
+   * everywhere else (the sidebar, the standalone session route), which leaves the transcript
+   * exactly as it was — see `ToolExecutionStep`, which only becomes a button when this is set.
+   */
+  onSelectStep?: (step: ReasoningStep) => void;
+  selectedStepId?: string | null;
+  /**
+   * Whether the committed plan card renders inside the transcript.
+   *
+   * The Agent View shows those same levels in its right-hand detail column, so leaving this on
+   * there would print entry/target/stop twice in one dialog. Defaults to TRUE, which is the
+   * existing behaviour — and `AgentTerminal.planOrder.test.tsx` pins both that the card renders
+   * and that it sits above the Q&A turns.
+   */
+  showTradePlan?: boolean;
+}
+
+export default function AgentTerminal({
+  onSelectStep,
+  selectedStepId = null,
+  showTradePlan = true,
+}: AgentTerminalProps = {}) {
   // Read through the `useFq*` layer, not the store directly: it resolves per-session state or
   // the legacy flat fields depending on the rollout flag, so this component holds no knowledge
   // of which one is live. One field per hook, matching the previous selectors exactly — a
@@ -41,75 +66,10 @@ export default function AgentTerminal() {
     terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [reasoningSteps, sessionStatus, qaMessages, qaStatus]);
 
-  // Group consecutive standard message steps (thinking steps) together to avoid excessive nested components
-  const renderGroups: Array<
-    | { type: 'thinking_group'; steps: typeof reasoningSteps; id: string }
-    | { type: 'decision'; step: (typeof reasoningSteps)[0]; id: string }
-    | { type: 'tool_start'; step: (typeof reasoningSteps)[0]; id: string }
-    | { type: 'legacy'; step: (typeof reasoningSteps)[0]; id: string }
-  > = [];
-
-  let currentThinkingGroup: typeof reasoningSteps = [];
-
-  for (const step of reasoningSteps) {
-    if (step.type === 'message') {
-      const cleanContent = step.content.replace(/\{[\s\S]*\}/g, '').trim();
-      const isJsonDecision =
-        !cleanContent &&
-        (() => {
-          try {
-            const jsonMatch = step.content.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              const parsed = JSON.parse(jsonMatch[0]);
-              const conviction = parsed.conviction_score ?? parsed.conviction;
-              const validation = parsed.setup_validation ?? parsed.validation ?? parsed.setup;
-              const plan = parsed.execution_plan ?? parsed.plan;
-              return conviction !== undefined || validation || plan;
-            }
-          } catch {}
-          return false;
-        })();
-
-      if (isJsonDecision) {
-        if (currentThinkingGroup.length > 0) {
-          renderGroups.push({
-            type: 'thinking_group',
-            steps: currentThinkingGroup,
-            id: currentThinkingGroup[0].id,
-          });
-          currentThinkingGroup = [];
-        }
-        renderGroups.push({ type: 'decision', step, id: step.id });
-      } else {
-        currentThinkingGroup.push(step);
-      }
-    } else {
-      if (currentThinkingGroup.length > 0) {
-        renderGroups.push({
-          type: 'thinking_group',
-          steps: currentThinkingGroup,
-          id: currentThinkingGroup[0].id,
-        });
-        currentThinkingGroup = [];
-      }
-
-      if (step.type === 'tool_start') {
-        renderGroups.push({ type: 'tool_start', step, id: step.id });
-      } else if (step.type === 'tool_end') {
-        // Skip rendering tool_end
-      } else {
-        renderGroups.push({ type: 'legacy', step, id: step.id });
-      }
-    }
-  }
-
-  if (currentThinkingGroup.length > 0) {
-    renderGroups.push({
-      type: 'thinking_group',
-      steps: currentThinkingGroup,
-      id: currentThinkingGroup[0].id,
-    });
-  }
+  // Grouping moved to `agentTimeline.buildRenderGroups`, unchanged: the sidebar's condensed
+  // progress derives from the same steps and must not disagree with this transcript about what
+  // ran. Four property suites pin the behaviour, so there is one copy rather than two.
+  const renderGroups = buildRenderGroups(reasoningSteps);
 
   return (
     <div className="flex h-full flex-col font-sans bg-surface overflow-hidden relative">
@@ -133,6 +93,8 @@ export default function AgentTerminal() {
                 step={group.step}
                 reasoningSteps={reasoningSteps}
                 sessionStatus={sessionStatus}
+                onSelect={onSelectStep}
+                isSelected={selectedStepId === group.id}
               />
             );
           } else {
@@ -277,7 +239,7 @@ export default function AgentTerminal() {
             rendered inline this way while this branch did not. Ordering is the
             whole fix — both blocks are plain flow children, neither is
             position: sticky. */}
-        {sessionStatus === 'complete' && isActionableTrade(finalTrade) && (
+        {sessionStatus === 'complete' && isActionableTrade(finalTrade) && showTradePlan && (
           <ActionableTradePlan finalTrade={finalTrade} />
         )}
 

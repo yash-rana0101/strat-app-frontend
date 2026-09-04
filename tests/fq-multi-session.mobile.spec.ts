@@ -10,7 +10,7 @@
 
 import { test, expect, type Page } from '@playwright/test';
 
-import { expandAllThinking, seedCandles, tokenForTest } from './support/e2e';
+import { closeFullAnalysis, expandAllThinking, openFullAnalysis, seedCandles, tokenForTest } from './support/e2e';
 
 async function signIn(page: Page, token: string) {
   await page.context().addCookies([
@@ -58,12 +58,24 @@ test.describe('the workspace at 360 px', () => {
       'the FIND button never enabled: no candles in historicalCache, so `dataReady` is false',
     ).toBeEnabled({ timeout: 20_000 });
     await find.click();
+    // The reasoning lives in the Agent View now, which at 360 px is a FULL-SCREEN sheet rather
+    // than a centered dialog — asserted here because that responsive branch only exists at a real
+    // viewport.
+    await openFullAnalysis(page);
     // Expanded first, and it is not ceremony: a FINISHED run renders its reasoning collapsed, so
     // asserting the text directly only passed while the stub happened to still be streaming. Once
     // the canned script finished before the assertion, both groups were closed and the text was not
     // in the DOM — the same gate the desktop spec goes through.
     await expandAllThinking(page);
     await expect(page.getByText(/Momentum is intact/)).toBeVisible({ timeout: 30_000 });
+
+    // The dialog's own composer is sticky at its foot, and must be on screen there too — this is
+    // where a full-screen sheet with a scrolling body usually pushes it below the fold.
+    const dialogComposer = page.getByRole('dialog').getByRole('textbox').first();
+    await expect(dialogComposer).toBeVisible();
+    expect(await isWithinViewport(page, dialogComposer)).toBe(true);
+
+    await closeFullAnalysis(page);
 
     // The composer is the control the whole surface exists to reach. Pinned above the keyboard
     // inset, it must be on screen rather than pushed below the fold by the transcript.
