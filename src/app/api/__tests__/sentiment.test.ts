@@ -90,6 +90,24 @@ describe('toSentimentPayload', () => {
       'SBIN-EQ',
     );
   });
+
+  it('maps rich articles when present in upstream verdict', () => {
+    const out = toSentimentPayload('RELIANCE', {
+      conviction_score: 75,
+      headlines: ['Headline 1'],
+      articles: [
+        {
+          title: 'Headline 1',
+          url: 'https://news.google.com/articles/123',
+          source: 'The Economic Times',
+          published_at: 'Fri, 21 Aug 2026',
+        },
+      ],
+    });
+    expect(out.articles).toHaveLength(1);
+    expect(out.articles?.[0].url).toBe('https://news.google.com/articles/123');
+    expect(out.articles?.[0].source).toBe('The Economic Times');
+  });
 });
 
 // ── The two very different reasons a verdict can be missing ─────────────────

@@ -22,19 +22,14 @@ export interface SummaryStripProps {
   onClick: () => void;
   state?: SummaryStripState;
   /**
-   * The compact reading, right-aligned. Rendered in `ready` only.
-   *
-   * Free-form so each strip can compose its own badges/numbers, but keep it to
-   * one line — the panel is 224px wide at its default.
+   * The compact reading. Rendered in `ready` only.
    */
   value?: React.ReactNode;
   /** Optional second line in `ready` (a gauge bar, a supporting phrase). */
   detail?: React.ReactNode;
   /**
    * Spoken description of `value`, since `value` is arbitrary JSX and often
-   * conveys meaning through colour and bar position. Without this the strip
-   * would announce only its label, which tells a screen-reader user nothing
-   * about the reading they are being offered.
+   * conveys meaning through colour and bar position.
    */
   valueText?: string;
   /** Small qualifier beside the label (e.g. "on RELIANCE", "stale"). */
@@ -46,10 +41,10 @@ export interface SummaryStripProps {
 
 /** Icon-chip background/foreground per state — the first thing the eye reads. */
 const ICON_TONE: Record<SummaryStripState, string> = {
-  ready: 'bg-elevated text-text-secondary',
-  loading: 'bg-primary/10 text-primary',
-  error: 'bg-bear/10 text-bear',
-  empty: 'bg-elevated/70 text-text-muted',
+  ready: 'text-text-secondary group-hover:text-text-primary',
+  loading: 'text-primary',
+  error: 'text-bear',
+  empty: 'text-text-muted',
 };
 
 export default function SummaryStrip({
@@ -76,85 +71,86 @@ export default function SummaryStrip({
           ? (emptyMessage ?? 'No data')
           : (valueText ?? '');
 
+  const isEmptyCta = state === 'empty' && emptyMessage === 'Run Deep Quant';
+
   return (
     <button
       type="button"
       onClick={onClick}
       aria-haspopup="dialog"
-      // Composed rather than left implicit: the visible value is colour-coded
-      // JSX, so the accessible name has to restate it as text.
       aria-label={`${label}${statusText ? `, ${statusText}` : ''}. Open details.`}
       className="
-        group relative flex w-full flex-col gap-1.5 border-0 border-b border-border-default/40
-        bg-transparent px-2.5 py-2.5 text-left last:border-b-0
-        transition-colors duration-150 hover:bg-elevated/40
-        focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-primary
+        group relative flex w-full flex-col gap-2 rounded-xl border border-border-default/50
+        bg-elevated/20 p-2.5 text-left
+        transition-all duration-150 hover:bg-elevated/60 hover:border-border-default
+        focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary
+        cursor-pointer
       "
     >
-      <div className="flex items-start gap-2">
-        <span
-          aria-hidden="true"
-          className={`mt-px flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-md transition-colors ${ICON_TONE[state]}`}
-        >
-          {icon}
-        </span>
+      {/* ── Upper: Large Icon + Section Name + Chevron ── */}
+      <div className="flex items-center justify-between gap-2 w-full">
+        <div className="flex items-center gap-2 min-w-0">
+          <span
+            aria-hidden="true"
+            className={`flex shrink-0 items-center justify-center transition-colors ${ICON_TONE[state]}`}
+          >
+            {icon}
+          </span>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <div className="flex items-center gap-1.5">
-            {/* The label yields first when the column is dragged down to its
-                180px minimum. The reading on the right is the point of the row,
-                so it keeps its space and the name truncates instead. */}
-            <span className="truncate text-[9.5px] font-bold uppercase tracking-wide text-text-secondary">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="truncate text-[10px] font-extrabold uppercase tracking-wider text-text-secondary group-hover:text-text-primary transition-colors">
               {label}
             </span>
             {badge}
           </div>
-
-          {/* Second line. In `ready` it belongs to the strip (a gauge, a
-              headline). In `error` it carries the actual failure text, which
-              has to be readable without opening the sheet — the status chip
-              on the right only says that something went wrong, not what.
-              `loading` and `empty` say everything they have to say in that
-              chip, so they add no second line. */}
-          {state === 'ready' && detail ? (
-            <div className="min-w-0">{detail}</div>
-          ) : state === 'error' && errorMessage ? (
-            <p className="truncate text-[9px] leading-snug text-bear/90">{errorMessage}</p>
-          ) : null}
         </div>
 
-        <span className="ml-auto flex shrink-0 items-center gap-1 self-start pt-px">
-          {state === 'ready' ? (
-            value
-          ) : state === 'loading' ? (
-            <span
-              role="status"
-              className="flex items-center gap-1 rounded-full bg-primary/10 px-1.5 py-0.5"
-            >
-              <Loader2 size={9} aria-hidden="true" className="animate-spin text-primary" />
-              <span className="text-[8px] font-bold uppercase tracking-wider text-primary">
-                {loadingMessage}
-              </span>
-            </span>
-          ) : state === 'error' ? (
-            <span className="flex items-center gap-1 rounded-full bg-bear/10 px-1.5 py-0.5">
-              <AlertTriangle size={9} aria-hidden="true" className="shrink-0 text-bear" />
-              <span className="text-[8px] font-black uppercase tracking-wider text-bear">
-                Unavailable
-              </span>
-            </span>
-          ) : (
-            <span className="rounded-full bg-elevated/70 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-text-muted">
-              {emptyMessage ?? 'No data'}
-            </span>
-          )}
+        <ChevronRight
+          size={13}
+          aria-hidden="true"
+          className="shrink-0 text-text-muted/60 transition-transform duration-150 group-hover:translate-x-0.5 group-hover:text-text-primary"
+        />
+      </div>
 
-          <ChevronRight
-            size={12}
-            aria-hidden="true"
-            className="shrink-0 text-text-muted/50 transition-colors group-hover:text-text-secondary"
-          />
-        </span>
+      {/* ── Below: Summary Data & Details ── */}
+      <div className="flex flex-col gap-1.5 w-full">
+        {state === 'ready' ? (
+          value && <div className="flex items-center justify-between gap-2 w-full">{value}</div>
+        ) : state === 'loading' ? (
+          <span
+            role="status"
+            className="flex items-center gap-1.5 self-start rounded-md bg-primary/10 border border-primary/20 px-2 py-0.5"
+          >
+            <Loader2 size={10} aria-hidden="true" className="animate-spin text-primary" />
+            <span className="text-[8.5px] font-bold uppercase tracking-wider text-primary">
+              {loadingMessage}
+            </span>
+          </span>
+        ) : state === 'error' ? (
+          <span className="flex items-center gap-1.5 self-start rounded-md bg-bear/10 border border-bear/20 px-2 py-0.5">
+            <AlertTriangle size={10} aria-hidden="true" className="shrink-0 text-bear" />
+            <span className="text-[8.5px] font-black uppercase tracking-wider text-bear">
+              Unavailable
+            </span>
+          </span>
+        ) : (
+          <span
+            className={`self-start rounded-md px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-wider ${
+              isEmptyCta
+                ? 'bg-primary/10 border border-primary/30 text-primary'
+                : 'bg-elevated/80 border border-border-default text-text-muted'
+            }`}
+          >
+            {emptyMessage ?? 'No data'}
+          </span>
+        )}
+
+        {/* Second line / detail */}
+        {state === 'ready' && detail ? (
+          <div className="min-w-0 w-full">{detail}</div>
+        ) : state === 'error' && errorMessage ? (
+          <p className="truncate text-[9px] leading-snug text-bear/90">{errorMessage}</p>
+        ) : null}
       </div>
     </button>
   );

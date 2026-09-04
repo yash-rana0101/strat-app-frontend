@@ -34,14 +34,22 @@ import {
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+export interface SentimentArticle {
+  title: string;
+  url?: string;
+  source?: string;
+  published_at?: string;
+}
+
 /** The frontend contract — mirrors `commands/sentiment.rs::SentimentPayload`. */
-interface SentimentPayload {
+export interface SentimentPayload {
   symbol: string;
   score: number;
   label: string;
   top_headline: string;
   impact: string;
   headlines: string[];
+  articles?: SentimentArticle[];
 }
 
 /** The upstream verdict — mirrors `agents/sentiment/src/index.js`'s cache entry. */
@@ -52,6 +60,7 @@ interface StrategicVerdict {
   thesis?: string;
   drivers?: Array<{ headline?: string; impact?: string }>;
   headlines?: string[];
+  articles?: Array<{ title?: string; url?: string; source?: string; published_at?: string }>;
 }
 
 /**
@@ -90,6 +99,18 @@ export function toSentimentPayload(symbol: string, verdict: StrategicVerdict): S
   const topHeadline =
     driverHeadline?.trim() || headlines[0] || `No notable headline for ${symbol}.`;
 
+  const articles: SentimentArticle[] = Array.isArray(verdict.articles)
+    ? verdict.articles
+      .filter((a): a is NonNullable<typeof a> => !!a && (typeof a.title === 'string' || typeof a.url === 'string'))
+      .map((a) => ({
+        title: typeof a.title === 'string' ? a.title.trim() : '',
+        url: typeof a.url === 'string' && a.url.trim() ? a.url.trim() : undefined,
+        source: typeof a.source === 'string' && a.source.trim() ? a.source.trim() : undefined,
+        published_at: typeof a.published_at === 'string' && a.published_at.trim() ? a.published_at.trim() : undefined,
+      }))
+      .filter((a) => a.title.length > 0 || !!a.url)
+    : [];
+
   return {
     symbol: typeof verdict.symbol === 'string' && verdict.symbol.trim() ? verdict.symbol : symbol,
     score,
@@ -97,6 +118,7 @@ export function toSentimentPayload(symbol: string, verdict: StrategicVerdict): S
     top_headline: topHeadline,
     impact: scoreToImpact(score),
     headlines,
+    ...(articles.length > 0 ? { articles } : {}),
   };
 }
 

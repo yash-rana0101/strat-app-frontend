@@ -29,10 +29,6 @@ export default function PatternsStrip({
   const bestTf = bestPatternTimeframe(multiTfPatterns);
   const bestTfCount = patternCountFor(multiTfPatterns, bestTf);
 
-  // Error outranks a zero count, and this is the whole point of the state.
-  // `fetchMultiTfPatterns` used to swallow failures into an empty list, so an
-  // unreachable tool-server rendered as the reassuring "No patterns forming" — a
-  // broken scan reading as a calm market. The strip must not reintroduce that.
   const state = isLoading
     ? 'loading'
     : error
@@ -43,7 +39,7 @@ export default function PatternsStrip({
 
   return (
     <SummaryStrip
-      icon={<Sparkles size={10} />}
+      icon={<Sparkles size={16} />}
       label="Patterns"
       state={state}
       onClick={onClick}
@@ -57,21 +53,23 @@ export default function PatternsStrip({
       }
       value={
         total > 0 ? (
-          <span className="flex items-center gap-1.5">
+          <div className="flex items-center justify-between w-full">
+            <span className="flex items-center gap-1.5">
+              <span className="text-sm font-black tabular-nums text-text-primary">{total}</span>
+              <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-secondary">
+                {total === 1 ? 'pattern' : 'patterns'}
+              </span>
+            </span>
             {forming > 0 && (
               <span
                 title={`${forming} of ${total} still forming`}
-                className="flex items-center gap-0.5 rounded-none border border-neutral/40 bg-neutral/12 px-1 py-px text-[7.5px] font-black uppercase tracking-wider text-neutral"
+                className="flex items-center gap-1 rounded-md border border-neutral/40 bg-neutral/12 px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider text-neutral"
               >
                 <Radio size={7} aria-hidden="true" />
                 {forming}
               </span>
             )}
-            <span className="text-[11px] font-black tabular-nums text-text-primary">{total}</span>
-            <span className="text-[8px] font-bold uppercase tracking-wider text-text-muted">
-              {total === 1 ? 'pattern' : 'patterns'}
-            </span>
-          </span>
+          </div>
         ) : null
       }
       detail={
