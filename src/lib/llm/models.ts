@@ -101,22 +101,6 @@ export const MODEL_PROVIDERS_OMNIROUTE: ModelProviderGroup[] = [
       { id: 'antigravity/gemini-2.5-flash-thinking', label: 'Gemini 2.5 Flash Thinking' },
     ],
   },
-  {
-    provider: 'Open Models',
-    models: [
-      { id: 'antigravity/gpt-oss-120b-medium', label: 'GPT-OSS 120B (Medium)' },
-    ],
-  },
-  {
-    provider: 'Auto (Smart Routing)',
-    models: [
-      { id: 'auto/best-reasoning', label: 'Best Reasoning' },
-      { id: 'auto/smart', label: 'Smart' },
-      { id: 'auto/best-coding', label: 'Best Coding' },
-      { id: 'auto/best-fast', label: 'Best Fast' },
-      { id: 'auto/best-chat', label: 'Best Chat' },
-    ],
-  },
 ];
 
 // Which LLM gateway this build targets: 'openrouter' (production, per-user keys)
