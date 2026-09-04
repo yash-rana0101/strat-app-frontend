@@ -24,12 +24,41 @@ export interface DropdownItem {
   description?: string;
 }
 
+const THEME_DEFAULTS = {
+  light: {
+    surface: '#fdfcfa',
+    elevated: '#ffffff',
+    border: '#d0c8b8',
+    textPrimary: '#0f172a',
+    textMuted: '#5b6675',
+    accent: '#10b981',
+  },
+  dark: {
+    surface: '#262626',
+    elevated: '#323232',
+    border: '#3d3d3d',
+    textPrimary: '#f5f5f5',
+    textMuted: '#9ca3af',
+    accent: '#10b981',
+  },
+} as const;
+
+/** Determine whether the app is currently showing the light theme. */
+export function isLightMode(): boolean {
+  if (typeof document !== 'undefined' && document.documentElement.classList.contains('light')) {
+    return true;
+  }
+  if (typeof window !== 'undefined') {
+    try {
+      const stored = localStorage.getItem('stratai.theme');
+      if (stored === 'light') return true;
+    } catch {}
+  }
+  return false;
+}
+
 /**
  * One design token off the parent document, or `fallback` when it cannot be read.
- *
- * The fallbacks are the dark defaults from `globals.css`, used only when there is
- * no document at all (SSR) or the variable is genuinely undefined. They are NOT a
- * light/dark palette — the point is that only one palette exists.
  */
 function token(name: string, fallback: string): string {
   if (typeof document === 'undefined') return fallback;
@@ -39,19 +68,17 @@ function token(name: string, fallback: string): string {
 
 /** The resolved palette for whatever theme the app is currently showing. */
 function palette() {
+  const isLight = isLightMode();
+  const d = isLight ? THEME_DEFAULTS.light : THEME_DEFAULTS.dark;
+
   return {
-    surface: token('--bg-surface', '#262626'),
-    elevated: token('--bg-elevated', '#323232'),
-    border: token('--border-default', '#3d3d3d'),
-    textPrimary: token('--text-primary', '#f5f5f5'),
-    textMuted: token('--text-muted', '#9ca3af'),
-    accent: token('--color-primary', '#10b981'),
-    // Read off the DOM rather than the store, because the shadow has to match
-    // what is RENDERED. If the two ever disagree, the document is the one the user
-    // is looking at.
-    isLight:
-      typeof document !== 'undefined' &&
-      document.documentElement.classList.contains('light'),
+    surface: token('--bg-surface', d.surface),
+    elevated: token('--bg-elevated', d.elevated),
+    border: token('--border-default', d.border),
+    textPrimary: token('--text-primary', d.textPrimary),
+    textMuted: token('--text-muted', d.textMuted),
+    accent: token('--color-primary', d.accent),
+    isLight,
   };
 }
 

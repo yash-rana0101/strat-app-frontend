@@ -26,7 +26,11 @@ import { openExternalUrl, dashboardUrl } from '../../lib/redirect';
  * Chaining off the promise removes the race; the callback form is still handled
  * for older bundles.
  */
-function applyChartTheme(widget: unknown, theme: 'light' | 'dark'): void {
+function applyChartTheme(
+  widget: unknown,
+  theme: 'light' | 'dark',
+  onThemeApplied?: () => void,
+): void {
   const w = widget as {
     changeTheme?: (t: string) => unknown;
     applyOverrides?: (o: Record<string, unknown>) => void;
@@ -41,6 +45,7 @@ function applyChartTheme(widget: unknown, theme: 'light' | 'dark'): void {
       // the old theme" bug hid for so long.
       console.warn('[TradingViewWidget] applyOverrides failed:', err);
     }
+    onThemeApplied?.();
   };
 
   try {
@@ -52,6 +57,7 @@ function applyChartTheme(widget: unknown, theme: 'light' | 'dark'): void {
     }
   } catch (err) {
     console.warn('[TradingViewWidget] changeTheme failed:', err);
+    overrides();
   }
 }
 
@@ -423,10 +429,7 @@ export default function TradingViewWidget({
   useEffect(() => {
     const doc = containerRef.current?.querySelector('iframe')?.contentDocument;
     if (doc) {
-      // Re-read the tokens now that `.light` has been added or removed. The
-      // `theme` dep is what schedules this; the colours themselves come from the
-      // document, not from `theme`.
-      injectIframeDropdownStyles(doc);
+      syncButtonStates(doc);
     }
     const widget = widgetRef.current;
     if (!widget) return;
@@ -434,7 +437,13 @@ export default function TradingViewWidget({
     // instead of guessing with a timeout — see its doc comment.
     whenChartReady(
       widget,
-      () => applyChartTheme(widget, theme),
+      () =>
+        applyChartTheme(widget, theme, () => {
+          const docAfter = containerRef.current?.querySelector('iframe')?.contentDocument;
+          if (docAfter) {
+            syncButtonStates(docAfter);
+          }
+        }),
       () => widgetRef.current !== widget,
       'TradingViewWidget',
     );
@@ -448,7 +457,7 @@ export default function TradingViewWidget({
     }
     // `chartMode` was a dependency here purely to re-render the removed button's
     // icon. Dropped with it — nothing in syncButtonStates reads it any more.
-  }, [ghostLineMode, splitView, sidebarOpen, buttonsCreated]);
+  }, [ghostLineMode, splitView, sidebarOpen, buttonsCreated, theme]);
 
   useGhostLine(widgetState, activeSymbol, effectiveTimeframe);
 
