@@ -1,7 +1,7 @@
 'use client';
 
 // components/quant/deep-quant/AgentDetailPanel.tsx
-//
+//  push to new one
 // The Agent View's right-hand column: the selected step, and the committed plan, in full.
 //
 // This is where the text that used to crush the sidebar belongs. `setup_validation` and the
