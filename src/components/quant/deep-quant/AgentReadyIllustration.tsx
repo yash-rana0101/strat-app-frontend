@@ -25,10 +25,6 @@ export default function AgentReadyIllustration({ className = 'w-full h-full' }: 
           <stop offset="0.5" stopColor="#10b981"/>
           <stop offset="1" stopColor="#34d399"/>
         </linearGradient>
-        <radialGradient id="emerald-glow-ready" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#10b981" stopOpacity="0.18"/>
-          <stop offset="100%" stopColor="#10b981" stopOpacity="0"/>
-        </radialGradient>
         <clipPath id="d-27">
           <rect width="230.509" height="55.001" fill="#fff"/>
         </clipPath>
@@ -47,11 +43,7 @@ export default function AgentReadyIllustration({ className = 'w-full h-full' }: 
           }
           @keyframes agentSparkle {
             0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
-            50% { transform: scale(1.22) rotate(15deg); opacity: 1; filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.7)); }
-          }
-          @keyframes agentPulseGlow {
-            0%, 100% { opacity: 0.25; transform: scale(0.95); }
-            50% { opacity: 0.6; transform: scale(1.08); }
+            50% { transform: scale(1.2) rotate(12deg); opacity: 1; }
           }
           .agent-float-1 {
             animation: agentFloat1 3.8s ease-in-out infinite;
@@ -67,22 +59,14 @@ export default function AgentReadyIllustration({ className = 'w-full h-full' }: 
             transform-origin: center;
             animation: agentSparkle 2.8s ease-in-out infinite;
           }
-          .agent-ambient-glow {
-            transform-box: fill-box;
-            transform-origin: center;
-            animation: agentPulseGlow 4s ease-in-out infinite;
-          }
           @media (prefers-reduced-motion: reduce) {
-            .agent-float-1, .agent-float-2, .agent-float-3, .agent-sparkle, .agent-ambient-glow {
+            .agent-float-1, .agent-float-2, .agent-float-3, .agent-sparkle {
               animation: none !important;
             }
           }
         `}</style>
       </defs>
       <g transform="translate(-633.001 -366.421)">
-        {/* Ambient Pulse Glow behind AI badges */}
-        <circle cx="1180" cy="460" r="150" fill="url(#emerald-glow-ready)" className="agent-ambient-glow" pointerEvents="none"/>
-
         {/* Skin / Accent Details */}
         <path d="M186.973,73.262a68.641,68.641,0,1,1,89.2,65.5l-2.3,132.1L168.97,167.313s40.907-15.839,48.744-36.827a68.566,68.566,0,0,1-30.74-57.224Z" transform="translate(567.362 363.636)" className="fill-emerald-500/20"/>
         <path d="M218.819,130.3s-23.42-8.341-35.425-32.7c-11.028-22.379-12.237-60.491,19.075-69.749,0,0-18.039-15.575,15.219-25.068l-4.424,4.082s3.9-7.051,23.182-2.881c0,0,71.237-8.3,83.881,15.158,0,0,38.234,7.835,17.873,36.92,0,0-1.057,5.66-8.318,5.553l3.63-4.748L322.45,61.615s-15.386-24.506-29.907-10.956c0,0-27.772-1.169-41.056-3.6,0,0,2.666,35.675-22.828,42.623s-9.84,40.616-9.84,40.616Z" transform="translate(566.563 363.861)" className="fill-text-primary opacity-90"/>
