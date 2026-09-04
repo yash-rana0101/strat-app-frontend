@@ -68,12 +68,9 @@ export default function SwingConfluencePanel() {
   const [newestId, setNewestId] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Trigger loading of AI News Sentiment from the store
-  useEffect(() => {
-    if (selectedSymbol) {
-      loadSentimentForSymbol(selectedSymbol);
-    }
-  }, [selectedSymbol, loadSentimentForSymbol]);
+  // Sentiment is NOT auto-loaded on symbol switch — it is computed on demand
+  // when the user triggers Find Trade analysis. The manual refresh button below
+  // still calls loadSentimentForSymbol for explicit re-fetches.
 
   // Reset insight history when selectedSymbol changes, and append newly
   // arrived live ticks. Both are derived from props (`selectedSymbol` /

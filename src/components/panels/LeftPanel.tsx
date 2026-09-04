@@ -32,14 +32,11 @@ export default function LeftPanel() {
   const activeSentiment = useQuantStore((s) => s.activeSentiment);
   const isFetchingSentiment = useQuantStore((s) => s.isFetchingSentiment);
   const sentimentError = useQuantStore((s) => s.sentimentError);
-  const loadSentimentForSymbol = useQuantStore((s) => s.loadSentimentForSymbol);
-
-  // Trigger sentiment fetch on symbol change — fully independent of market hours
+  const clearActiveSentiment = useQuantStore((s) => s.clearActiveSentiment);
+  // Clear stale sentiment on symbol switch — it is re-computed only when Find Trade is triggered.
   useEffect(() => {
-    if (selectedSymbol) {
-      loadSentimentForSymbol(selectedSymbol);
-    }
-  }, [selectedSymbol, loadSentimentForSymbol]);
+    clearActiveSentiment();
+  }, [selectedSymbol, clearActiveSentiment]);
 
   // Load cached consensus for the selected symbol (or clear if no cache exists)
   useEffect(() => {

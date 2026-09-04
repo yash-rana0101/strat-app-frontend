@@ -351,6 +351,8 @@ interface QuantStore {
   ) => Promise<void>;
   loadSentimentForSymbol: (symbol: string) => Promise<void>;
   refreshSentimentForSymbol: (symbol: string) => Promise<void>;
+  /** Clear stale sentiment from a previous symbol without triggering an LLM fetch. */
+  clearActiveSentiment: () => void;
   clearAiPlan: () => void;
   handleStreamEvent: (payload: StreamEventPayload) => void;
   /** (internal) Arm/re-arm the activity-based stall watchdog for a run key.
@@ -1229,6 +1231,12 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     } finally {
       sentimentInFlight.delete(symbol);
     }
+  },
+
+  // Clears stale sentiment without triggering an LLM fetch.
+  // Called on symbol switch so the panel shows no stale data until Find Trade is triggered.
+  clearActiveSentiment: () => {
+    set({ activeSentiment: null, sentimentError: null, isFetchingSentiment: false });
   },
 
   fetchDeepAnalysis: async (
