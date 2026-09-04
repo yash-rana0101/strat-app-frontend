@@ -1,12 +1,10 @@
 'use client';
 
 // components/quant/session/SessionHistoryRow.tsx
-//
-// One row of session history. Presentational plus its own inline-rename state; every mutation is
-// handed upward so the list owns the server interaction and this stays testable as markup.
+// One row of session history. Presentational plus its own inline-rename state;
+// every mutation is handed upward so the list owns the server interaction.
 
 import React from 'react';
-import { Archive, Check, Loader2, Pencil, RotateCcw, X } from 'lucide-react';
 import { Archive, Check, Loader2, Pencil, RotateCcw, Trash2, X } from 'lucide-react';
 
 import type { SessionSummary } from '../../../lib/fq/api';
@@ -24,18 +22,9 @@ export interface SessionHistoryRowProps {
   onDelete?: (sessionId: string) => void;
 }
 
-/**
- * How long ago, in words.
- *
- * Relative for anything recent because "3m ago" is what a trader is actually asking, and absolute
- * past a day because "412h ago" is not readable. Deliberately coarse — a history list that reflows
- * every second is a distraction, and nothing here needs second precision.
- */
 export function relativeUpdated(epochSeconds: number, now: number = Date.now()): string {
   if (!Number.isFinite(epochSeconds) || epochSeconds <= 0) return '';
   const seconds = Math.floor((now - epochSeconds * 1000) / 1000);
-  // A clock skew between server and browser can make a fresh row look like it is from the future.
-  // "just now" is honest and does not print a negative.
   if (seconds < 60) return 'just now';
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
@@ -46,13 +35,10 @@ export function relativeUpdated(epochSeconds: number, now: number = Date.now()):
   return `${formatSessionDay(epochSeconds)} ${formatSessionTime(epochSeconds)}`;
 }
 
-/** What the last run concluded, for the one-glance "was this useful" read. */
 function lastRunSummary(session: SessionSummary): string | null {
   const run = session.last_run;
   if (!run) return null;
   const kind = run.kind === 'verify' ? 'VERIFY' : 'FIND';
-  // The run's own status, not a guess from `ended_at`: `watching` is a live, non-terminal state that
-  // a null `ended_at` would otherwise render as "still running" forever.
   return `${kind} · ${run.status}`;
 }
 
@@ -75,9 +61,6 @@ export default function SessionHistoryRow({
   const archived = session.status === 'archived';
 
   const beginEdit = () => {
-    // Seeded with the CURRENT title, or empty when the label is derived — pre-filling the derived
-    // label would turn "rename" into "accept this generated name", and the user would end up with a
-    // pinned title they never chose.
     setDraft(session.title ?? '');
     setEditing(true);
     setConfirmDelete(false);
@@ -90,8 +73,6 @@ export default function SessionHistoryRow({
   const commit = () => {
     const next = draft.trim();
     setEditing(false);
-    // Empty clears the title, which restores the derived label. That is the only way back once a
-    // session has been named.
     const title = next.length > 0 ? next : null;
     if (title === (session.title ?? null)) return;
     onRename(session.session_id, title);
@@ -114,8 +95,6 @@ export default function SessionHistoryRow({
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') commit();
-                // Escape must abandon the edit without saving — otherwise the only way out of a
-                // half-typed rename is to save it.
                 if (e.key === 'Escape') setEditing(false);
               }}
               className="w-full rounded border border-border-default/60 bg-surface px-1.5 py-0.5 text-xs text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60"
@@ -124,7 +103,7 @@ export default function SessionHistoryRow({
               type="button"
               aria-label="Save name"
               onClick={commit}
-              className="shrink-0 rounded p-1 text-text-secondary hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60"
+              className="shrink-0 rounded p-1 text-text-secondary hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60 cursor-pointer"
             >
               <Check size={12} aria-hidden="true" />
             </button>
@@ -132,7 +111,7 @@ export default function SessionHistoryRow({
               type="button"
               aria-label="Cancel rename"
               onClick={() => setEditing(false)}
-              className="shrink-0 rounded p-1 text-text-secondary hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60"
+              className="shrink-0 rounded p-1 text-text-secondary hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60 cursor-pointer"
             >
               <X size={12} aria-hidden="true" />
             </button>
@@ -141,19 +120,13 @@ export default function SessionHistoryRow({
           <button
             type="button"
             onClick={() => (archived ? onReopen(session.session_id) : onOpen(session.session_id))}
-            // Named explicitly. Derived from content the name would be the label plus every metadata
-            // fragment beneath it — "RELIANCE · 10m · 9:15 AM RELIANCE · 10m just now FIND · complete"
-            // — which says nothing about what activating it does.
             aria-label={archived ? `Open archived ${label}` : `Open ${label}`}
-            className="block w-full truncate text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60"
+            className="block w-full truncate text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60 cursor-pointer"
           >
             <span className={`truncate font-medium ${isActive ? 'text-text-primary' : 'text-text-secondary'}`}>
               {label}
             </span>
             <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-text-muted">
-              {/* The symbol and timeframe are repeated here on purpose: once a session is renamed the
-                  label no longer carries them, and they are the one thing a user cannot re-derive
-                  from a custom title. */}
               <span className="truncate">
                 {session.symbol} · {session.timeframe}
               </span>
@@ -179,25 +152,6 @@ export default function SessionHistoryRow({
       {!editing && (
         <div className="flex shrink-0 items-center gap-0.5">
           {isBusy && <Loader2 size={12} className="animate-spin text-text-muted" aria-hidden="true" />}
-          <button
-            type="button"
-            aria-label={`Rename ${label}`}
-            title="Rename"
-            onClick={beginEdit}
-            className="rounded p-1 text-text-muted opacity-0 transition-opacity hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-text-primary/60 group-hover:opacity-100"
-          >
-            <Pencil size={12} aria-hidden="true" />
-          </button>
-          {archived ? (
-            <button
-              type="button"
-              aria-label={`Reopen ${label}`}
-              title="Reopen"
-              onClick={() => onReopen(session.session_id)}
-              className="rounded p-1 text-text-muted opacity-0 transition-opacity hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-text-primary/60 group-hover:opacity-100"
-            >
-              <RotateCcw size={12} aria-hidden="true" />
-            </button>
           {confirmDelete ? (
             <div className="flex items-center gap-1">
               <button
@@ -223,15 +177,6 @@ export default function SessionHistoryRow({
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              aria-label={`Archive ${label}`}
-              title="Archive"
-              onClick={() => onArchive(session.session_id)}
-              className="rounded p-1 text-text-muted opacity-0 transition-opacity hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-text-primary/60 group-hover:opacity-100"
-            >
-              <Archive size={12} aria-hidden="true" />
-            </button>
             <>
               <button
                 type="button"
