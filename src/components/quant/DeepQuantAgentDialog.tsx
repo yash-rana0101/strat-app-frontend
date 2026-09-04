@@ -142,7 +142,7 @@ export default function DeepQuantAgentDialog({
           <div className="flex shrink-0 items-start gap-3 border-b border-border-default px-4 py-3">
             <div className="min-w-0 flex-1">
               <Dialog.Title className="text-xs font-black uppercase tracking-wider text-text-primary">
-                Deep Quant Agent
+                Strat Agent
               </Dialog.Title>
               <p className="mt-0.5 text-[10px] text-text-muted">
                 AI-powered trading analysis for smarter decisions

@@ -366,7 +366,7 @@ export default function DeepQuantPanel() {
                   cases below are the ones the transcript used to cover. */}
               {reasoningSteps.length === 0 && sessionStatus === 'running' && (
                 <p className="px-3 py-2 text-[10px] text-text-muted/70 animate-pulse">
-                  Connecting to Deep Quant agent — awaiting first reasoning step…
+                  Connecting to Strat Agent — awaiting first reasoning step…
                 </p>
               )}
 

@@ -116,7 +116,7 @@ export default function AgentTerminal({
         {reasoningSteps.length === 0 && sessionStatus === 'running' && (
           <div className="flex items-center gap-2 pl-3 py-2 text-[10px] text-text-muted/60 animate-pulse">
             <Loader2 size={11} className="animate-spin text-text-muted" />
-            <span>Connecting to Deep Quant agent — awaiting first reasoning step…</span>
+            <span>Connecting to Strat Agent — awaiting first reasoning step…</span>
           </div>
         )}
 

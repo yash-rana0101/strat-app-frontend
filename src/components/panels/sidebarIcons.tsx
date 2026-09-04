@@ -38,7 +38,7 @@ interface SidebarIconProps {
   className?: string;
 }
 
-/** Remix Icon `brain-ai-3-line` — the Deep Quant agent. */
+/** Remix Icon `brain-ai-3-line` — the Strat Agent. */
 export function BrainAiIcon({ size = 24, className }: SidebarIconProps) {
   return (
     <svg
