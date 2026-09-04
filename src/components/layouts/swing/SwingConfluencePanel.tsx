@@ -53,7 +53,7 @@ export default function SwingConfluencePanel() {
   const latestInsight = useTradeStore((s) => s.latestInsight);
   const selectedSymbol = useTradeStore((s) => s.selectedSymbol);
   const timeframeTrends = useMultiTimeframeTrend();
-  
+
   const activeSentiment = useQuantStore((s) => s.activeSentiment);
   const loadSentimentForSymbol = useQuantStore((s) => s.loadSentimentForSymbol);
   // The panel used to subscribe to `activeSentiment` ONLY, so a 503 from
@@ -126,7 +126,7 @@ export default function SwingConfluencePanel() {
 
   return (
     <div id="swing-confluence-panel" className="flex h-full flex-col rounded-none border-0 bg-surface text-sm select-none overflow-hidden">
-      
+
       {/* ── Multi-Timeframe Trend ────────────────────────────── */}
       <div className="shrink-0 flex flex-col border-b border-border-default/80 pb-2">
         <div className="px-3 pt-2.5 pb-1.5 flex items-center justify-between">
@@ -135,12 +135,12 @@ export default function SwingConfluencePanel() {
             Multi-Timeframe Trend
           </h3>
         </div>
-        
+
         <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-col gap-1.5 px-3">
           {timeframeTrends.map((t) => {
             const theme = getBiasTheme(t.bias);
             return (
-              <motion.div 
+              <motion.div
                 key={t.timeframe}
                 variants={fadeInUp}
                 className="flex items-center justify-between py-1 px-2 rounded-lg border border-border-default/60 bg-card/70 shadow-xs"
@@ -148,7 +148,7 @@ export default function SwingConfluencePanel() {
                 <div className="flex items-center gap-2.5 min-w-8">
                   <span className="text-[11px] font-extrabold text-text-secondary leading-none">{t.timeframe}</span>
                 </div>
-                
+
                 {/* Compact progress bar */}
                 <div className="flex-1 max-w-35 mx-2 h-1.5 rounded-full bg-elevated/80 overflow-hidden">
                   <motion.div
@@ -158,7 +158,7 @@ export default function SwingConfluencePanel() {
                     transition={{ type: 'spring', stiffness: 100, damping: 15, delay: 0.1 }}
                   />
                 </div>
-                
+
                 {/* Bias Pill Badge */}
                 <span className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8.5px] font-extrabold border leading-none tracking-wide ${theme.bg} ${theme.text}`}>
                   {t.bias === 'BULLISH' ? <TrendingUp size={8} /> : t.bias === 'BEARISH' ? <TrendingDown size={8} /> : <Minus size={8} />}

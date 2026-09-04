@@ -20,7 +20,7 @@ export default function LeftPanel() {
    * whole panel: every strip opens the same one, on its own tab.
    */
   const [sheetTab, setSheetTab] = useState<AnalysisTab | null>(null);
-  
+
   const consensusData = useQuantStore((s) => s.consensusData);
   const consensusComputedAt = useQuantStore((s) => s.consensusComputedAt);
   const loadConsensusForSymbol = useQuantStore((s) => s.loadConsensusForSymbol);
