@@ -215,7 +215,7 @@ export default function WatchlistBlock() {
   }, [watchlistLength]);
 
   // `null` means the upstream did not report it — render an em-dash rather than
-// standing in a zero, which would read as a real reading of 0.
+  // standing in a zero, which would read as a real reading of 0.
   const formatPrice = (price: number | null) => price ? '₹' + price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
   const formatChange = (change: number | null) =>
     change === null ? '—' : `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
@@ -227,9 +227,8 @@ export default function WatchlistBlock() {
        now one-line strips pinned at the bottom, so the watchlist gets the height
        that was being rationed. */
     <div
-      className={`flex min-h-0 flex-col gap-0 border-b border-border-default ${
-        watchlistCollapsed ? 'shrink-0' : 'flex-1'
-      }`}
+      className={`flex min-h-0 flex-col gap-0 border-b border-border-default ${watchlistCollapsed ? 'shrink-0' : 'flex-1'
+        }`}
     >
       {/* Watchlist toggle header */}
       <div className="flex shrink-0 items-center justify-between px-3 py-1.5 bg-surface/50 border-b border-border-subtle">
@@ -250,11 +249,10 @@ export default function WatchlistBlock() {
           disabled={quotesLoading}
           aria-label="Refresh watchlist quotes"
           title={quotesError ?? 'Refresh quotes'}
-          className={`ml-1 shrink-0 rounded p-0.5 transition-colors disabled:opacity-40 ${
-            quotesError
+          className={`ml-1 shrink-0 rounded p-0.5 transition-colors disabled:opacity-40 ${quotesError
               ? 'text-amber-500 hover:bg-amber-500/10 dark:text-amber-400'
               : 'text-text-muted hover:bg-elevated hover:text-text-primary'
-          }`}
+            }`}
         >
           <RefreshCw size={11} className={quotesLoading ? 'animate-spin' : ''} />
         </button>
@@ -280,11 +278,10 @@ export default function WatchlistBlock() {
 
       {/* Watchlist content with smooth CSS Grid expand/collapse animation */}
       <div
-        className={`grid min-h-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] border-b border-border-default ${
-          watchlistCollapsed
+        className={`grid min-h-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] border-b border-border-default ${watchlistCollapsed
             ? 'grid-rows-[0fr] opacity-0 pointer-events-none'
             : 'flex-1 grid-rows-[1fr] opacity-100'
-        }`}
+          }`}
       >
         <div className="overflow-hidden min-h-0">
           <div className="h-full overflow-y-auto scrollbar-thin">
@@ -295,138 +292,136 @@ export default function WatchlistBlock() {
                 <p className="text-xs text-text-muted/60 italic">Search and add symbols to your watchlist</p>
               </div>
             ) : (
-            // Rendered newest-first: reverse a copy for display while keeping
-            // `idx` bound to the item's real position in the store array, so
-            // drag-and-drop reordering (reorderWatchlist) and the drag/hover
-            // highlights still operate on the true indices.
-            watchlist
-              .map((item, originalIdx) => ({ item, idx: originalIdx }))
-              .reverse()
-              .map(({ item, idx }) => {
-              const chartedSymbol = splitView
-                ? panes.find((p) => p.id === activePaneId)?.symbol
-                : selectedSymbol;
-              const isActive = chartedSymbol === item.symbol;
-              const quote = quotes[item.symbol];
-              // Live tick from the Alpha WebSocket candle stream (updates ~16ms).
-              // Falls back to polled REST quote, then cached item price.
-              const liveTick = liveTicks.get(item.symbol);
-              const displayPrice = liveTick?.price ?? quote?.last_price ?? item.lastPrice;
-              // `null` when the upstream reported no previous close, in which case
-              // there is no direction to show — no arrow, no bull/bear colour.
-              const changeVal: number | null = quote ? quote.change : item.change;
-              const isPositive = changeVal !== null && changeVal >= 0;
-              const sectorColor = SECTOR_COLORS[item.sector] ?? SECTOR_COLORS['EQ'] ?? 'bg-slate-500/10 text-slate-400';
-              const isDragging = dragIndex === idx;
-              const isDragOver = dragOverIndex === idx;
+              // Rendered newest-first: reverse a copy for display while keeping
+              // `idx` bound to the item's real position in the store array, so
+              // drag-and-drop reordering (reorderWatchlist) and the drag/hover
+              // highlights still operate on the true indices.
+              watchlist
+                .map((item, originalIdx) => ({ item, idx: originalIdx }))
+                .reverse()
+                .map(({ item, idx }) => {
+                  const chartedSymbol = splitView
+                    ? panes.find((p) => p.id === activePaneId)?.symbol
+                    : selectedSymbol;
+                  const isActive = chartedSymbol === item.symbol;
+                  const quote = quotes[item.symbol];
+                  // Live tick from the Alpha WebSocket candle stream (updates ~16ms).
+                  // Falls back to polled REST quote, then cached item price.
+                  const liveTick = liveTicks.get(item.symbol);
+                  const displayPrice = liveTick?.price ?? quote?.last_price ?? item.lastPrice;
+                  // `null` when the upstream reported no previous close, in which case
+                  // there is no direction to show — no arrow, no bull/bear colour.
+                  const changeVal: number | null = quote ? quote.change : item.change;
+                  const isPositive = changeVal !== null && changeVal >= 0;
+                  const sectorColor = SECTOR_COLORS[item.sector] ?? SECTOR_COLORS['EQ'] ?? 'bg-slate-500/10 text-slate-400';
+                  const isDragging = dragIndex === idx;
+                  const isDragOver = dragOverIndex === idx;
 
-              return (
-                <div
-                  key={item.symbol}
-                  draggable
-                  onDragStart={(e) => {
-                    const target = e.target as HTMLElement;
-                    if (target.closest('button') || target.closest('input')) {
-                      e.preventDefault();
-                      return;
-                    }
-                    setDragIndex(idx);
-                    globalDragIndex = idx;
-                    e.dataTransfer.setData('text/plain', idx.toString());
-                    e.dataTransfer.effectAllowed = 'move';
-                  }}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setDragOverIndex(idx);
-                    e.dataTransfer.dropEffect = 'move';
-                  }}
-                  onDragLeave={() => setDragOverIndex(null)}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    const fromIndex = globalDragIndex ?? (() => {
-                      const fromIndexStr = e.dataTransfer.getData('text/plain');
-                      return fromIndexStr !== '' ? parseInt(fromIndexStr, 10) : null;
-                    })();
+                  return (
+                    <div
+                      key={item.symbol}
+                      draggable
+                      onDragStart={(e) => {
+                        const target = e.target as HTMLElement;
+                        if (target.closest('button') || target.closest('input')) {
+                          e.preventDefault();
+                          return;
+                        }
+                        setDragIndex(idx);
+                        globalDragIndex = idx;
+                        e.dataTransfer.setData('text/plain', idx.toString());
+                        e.dataTransfer.effectAllowed = 'move';
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setDragOverIndex(idx);
+                        e.dataTransfer.dropEffect = 'move';
+                      }}
+                      onDragLeave={() => setDragOverIndex(null)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const fromIndex = globalDragIndex ?? (() => {
+                          const fromIndexStr = e.dataTransfer.getData('text/plain');
+                          return fromIndexStr !== '' ? parseInt(fromIndexStr, 10) : null;
+                        })();
 
-                    if (fromIndex !== null && !isNaN(fromIndex) && fromIndex !== idx) {
-                      reorderWatchlist(fromIndex, idx);
-                    }
-                    globalDragIndex = null;
-                    setDragIndex(null);
-                    setDragOverIndex(null);
-                  }}
-                  onDragEnd={() => {
-                    globalDragIndex = null;
-                    setDragIndex(null);
-                    setDragOverIndex(null);
-                  }}
-                  onClick={() => routeSymbolToChart(item.symbol)}
-                  className={`group flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left cursor-pointer transition-all border-l-2 ${
-                    isDragging ? 'opacity-40 scale-95' : ''
-                  } ${isDragOver ? 'bg-primary/5 border-t-2 border-t-primary/40' : ''} ${
-                    isActive
-                      ? 'bg-primary/10 border-primary text-text-primary'
-                      : 'hover:bg-elevated/70 border-transparent hover:border-primary/50'
-                  }`}
-                >
-                  {/* Reorder Grip Handle — hidden by default, expands on hover without overlapping text */}
-                  <div className="w-0 group-hover:w-4 opacity-0 group-hover:opacity-75 transition-all overflow-hidden shrink-0 flex items-center justify-center cursor-grab active:cursor-grabbing -ml-1 group-hover:mr-1">
-                    <GripVertical size={13} className="text-text-muted" />
-                  </div>
+                        if (fromIndex !== null && !isNaN(fromIndex) && fromIndex !== idx) {
+                          reorderWatchlist(fromIndex, idx);
+                        }
+                        globalDragIndex = null;
+                        setDragIndex(null);
+                        setDragOverIndex(null);
+                      }}
+                      onDragEnd={() => {
+                        globalDragIndex = null;
+                        setDragIndex(null);
+                        setDragOverIndex(null);
+                      }}
+                      onClick={() => routeSymbolToChart(item.symbol)}
+                      className={`group flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left cursor-pointer transition-all border-l-2 ${isDragging ? 'opacity-40 scale-95' : ''
+                        } ${isDragOver ? 'bg-primary/5 border-t-2 border-t-primary/40' : ''} ${isActive
+                          ? 'bg-primary/10 border-primary text-text-primary'
+                          : 'hover:bg-elevated/70 border-transparent hover:border-primary/50'
+                        }`}
+                    >
+                      {/* Reorder Grip Handle — hidden by default, expands on hover without overlapping text */}
+                      <div className="w-0 group-hover:w-4 opacity-0 group-hover:opacity-75 transition-all overflow-hidden shrink-0 flex items-center justify-center cursor-grab active:cursor-grabbing -ml-1 group-hover:mr-1">
+                        <GripVertical size={13} className="text-text-muted" />
+                      </div>
 
-                  {(() => {
-                    const isFnoItem = item.sector === 'CE' || item.sector === 'PE' || item.sector === 'FUT';
-                    const displayName = (isFnoItem ? (item.name || item.symbol) : item.symbol).replace(/"/g, '');
-                    const subtitle = isFnoItem ? null : (item.name !== item.symbol ? item.name.replace(/"/g, '') : null);
+                      {(() => {
+                        const isFnoItem = item.sector === 'CE' || item.sector === 'PE' || item.sector === 'FUT';
+                        const displayName = (isFnoItem ? (item.name || item.symbol) : item.symbol).replace(/"/g, '');
+                        const subtitle = isFnoItem ? null : (item.name !== item.symbol ? item.name.replace(/"/g, '') : null);
 
-                    return (
-                      <div className="flex flex-col items-start text-left min-w-0 flex-1 w-full select-none">
-                        <div className="flex items-center gap-1.5 w-full min-w-0">
-                          <span className="font-extrabold text-[13px] text-text-primary truncate">{displayName}</span>
-                          <span className={`rounded-sm px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider ${sectorColor} shrink-0`}>
-                            {item.sector}
-                          </span>
-                        </div>
-                        {subtitle && (
-                          <span className="text-[10px] font-medium text-text-muted/80 truncate mt-0.5 w-full">
-                            {subtitle}
-                          </span>
+                        return (
+                          <div className="flex flex-col items-start text-left min-w-0 flex-1 w-full select-none">
+                            <div className="flex items-center gap-1.5 w-full min-w-0">
+                              <span className="font-extrabold text-[13px] text-text-primary truncate">{displayName}</span>
+                              <span className={`rounded-sm px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider ${sectorColor} shrink-0`}>
+                                {item.sector}
+                              </span>
+                            </div>
+                            {subtitle && (
+                              <span className="text-[10px] font-medium text-text-muted/80 truncate mt-0.5 w-full">
+                                {subtitle}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
+
+                      {/* Price & Change % — visible by default, hidden on hover */}
+                      <div className="flex flex-col items-end justify-center gap-0.5 shrink-0 min-w-[75px] group-hover:hidden transition-all">
+                        {displayPrice > 0 ? (
+                          <>
+                            <span className="font-extrabold text-text-primary tabular-nums text-[13px]">{formatPrice(displayPrice)}</span>
+                            <span className={`flex items-center gap-0.5 text-[10px] font-bold tabular-nums ${changeVal === null ? 'text-text-muted' : isPositive ? 'text-bull' : 'text-bear'}`}>
+                              {changeVal !== null && (isPositive ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />)}
+                              {formatChange(changeVal)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-xs text-text-muted/50 font-medium">—</span>
                         )}
                       </div>
-                    );
-                  })()}
 
-                  {/* Price & Change % — visible by default, hidden on hover */}
-                  <div className="flex flex-col items-end justify-center gap-0.5 shrink-0 min-w-[75px] group-hover:hidden transition-all">
-                    {displayPrice > 0 ? (
-                      <>
-                        <span className="font-extrabold text-text-primary tabular-nums text-[13px]">{formatPrice(displayPrice)}</span>
-                        <span className={`flex items-center gap-0.5 text-[10px] font-bold tabular-nums ${changeVal === null ? 'text-text-muted' : isPositive ? 'text-bull' : 'text-bear'}`}>
-                          {changeVal !== null && (isPositive ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />)}
-                          {formatChange(changeVal)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-xs text-text-muted/50 font-medium">—</span>
-                    )}
-                  </div>
-
-                  {/* Trash Delete Button — hidden by default, replaces price on hover */}
-                  <div className="hidden group-hover:flex items-center justify-end shrink-0 min-w-[75px] transition-all">
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); removeFromWatchlist(item.symbol); }}
-                      className="p-1.5 rounded-md text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center justify-center"
-                      title={`Remove ${item.symbol} from watchlist`}
-                      draggable={false}
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })
-          )}
+                      {/* Trash Delete Button — hidden by default, replaces price on hover */}
+                      <div className="hidden group-hover:flex items-center justify-end shrink-0 min-w-[75px] transition-all">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); removeFromWatchlist(item.symbol); }}
+                          className="p-1.5 rounded-md text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center justify-center"
+                          title={`Remove ${item.symbol} from watchlist`}
+                          draggable={false}
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+            )}
           </div>
         </div>
       </div>

@@ -5,6 +5,29 @@ import { cn } from "@/lib/utils";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
+// Startup fast path. The chart cannot mount before the session is confirmed,
+// but nothing stops the browser from doing the slow network work meanwhile:
+//   * the TradingView library is injected late by useTradingViewScript (same
+//     path, keep in sync) - preloading starts that download at HTML parse;
+//   * the live feeds and the auth API are cross-origin, so each first request
+//     pays DNS + TCP + TLS - preconnect pays it now, in parallel.
+const TV_SCRIPT = '/static/charting_library/charting_library/charting_library.standalone.js';
+const PRECONNECT_ORIGINS = Array.from(
+  new Set(
+    [
+      process.env.NEXT_PUBLIC_ALPHA_WS_URL,
+      process.env.NEXT_PUBLIC_AGGREGATOR_WS_URL,
+      process.env.NEXT_PUBLIC_API_BASE_URL,
+    ].flatMap((u) => {
+      try {
+        return u ? [new URL(u).origin.replace(/^ws/, 'http')] : [];
+      } catch {
+        return [];
+      }
+    }),
+  ),
+);
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -34,6 +57,10 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="preload" as="script" href={TV_SCRIPT} />
+        {PRECONNECT_ORIGINS.map((origin) => (
+          <link key={origin} rel="preconnect" href={origin} />
+        ))}
         {/*
           Apply the persisted theme BEFORE first paint.
 

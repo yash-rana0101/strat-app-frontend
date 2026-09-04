@@ -293,6 +293,26 @@ interface TradeStore {
 const wsFlags = { alpha: false, predictive: false, insight: false, orderFlow: false };
 
 /**
+ * Reconnect delay schedule: 0, 250, 500, 1000, 2000, then 3000ms.
+ *
+ * Every socket waited a flat 3s after ANY close. A blip on the gateway or a
+ * server restart therefore cost 3s of no data even when the server was back
+ * in 50ms. Retry at once, then back off so a genuinely dead server is not
+ * hammered. eset() on open so the next drop starts fast again.
+ */
+function reconnectBackoff() {
+  let attempt = 0;
+  return {
+    reset: () => { attempt = 0; },
+    next: () => {
+      const delay = attempt === 0 ? 0 : Math.min(3000, 250 * 2 ** (attempt - 1));
+      attempt++;
+      return delay;
+    },
+  };
+}
+
+/**
  * Whether `url` can actually be opened from the current page, logging once if not.
  *
  * Every `connect*WebSocket` call site falls back to a `ws://127.0.0.1:<port>`
@@ -814,6 +834,7 @@ export const useTradeStore = create<TradeStore>((set) => {
       // BUG-5: wsFlags.alpha replaces `const destroyed = false` which could
       // never be set to true — causing infinite reconnect loops on app unmount.
       wsFlags.alpha = false;
+      const backoff = reconnectBackoff();
 
       const connect = () => {
         if (wsFlags.alpha) return;
@@ -822,6 +843,7 @@ export const useTradeStore = create<TradeStore>((set) => {
 
         alphaWs.onopen = () => {
           syslog('INFO', 'Alpha OHLC WS connected. Streaming candle data.');
+          backoff.reset();
         };
 
         alphaWs.onmessage = (event) => {
@@ -847,8 +869,9 @@ export const useTradeStore = create<TradeStore>((set) => {
         };
 
         alphaWs.onclose = () => {
-          syslog('WARN', 'Alpha OHLC WS disconnected. Reconnecting in 3s...');
-          if (!wsFlags.alpha) setTimeout(connect, 3000);
+          const delay = backoff.next();
+          syslog('WARN', `Alpha OHLC WS disconnected. Reconnecting in ${delay}ms...`);
+          if (!wsFlags.alpha) setTimeout(connect, delay);
         };
 
         alphaWs.onerror = () => {
@@ -862,6 +885,7 @@ export const useTradeStore = create<TradeStore>((set) => {
     connectPredictiveWebSocket: (url: string) => {
       if (!wsUrlIsUsable(url, 'Predictive')) return;
       wsFlags.predictive = false; // BUG-5: mutable flag
+      const backoff = reconnectBackoff();
 
       const connect = () => {
         if (wsFlags.predictive) return;
@@ -870,6 +894,7 @@ export const useTradeStore = create<TradeStore>((set) => {
 
         predictiveWs.onopen = () => {
           syslog('INFO', 'Predictive WS connected. Ghost line projections active.');
+          backoff.reset();
         };
 
         predictiveWs.onmessage = (event) => {
@@ -884,8 +909,9 @@ export const useTradeStore = create<TradeStore>((set) => {
         };
 
         predictiveWs.onclose = () => {
-          syslog('WARN', 'Predictive WS disconnected. Reconnecting in 3s...');
-          if (!wsFlags.predictive) setTimeout(connect, 3000);
+          const delay = backoff.next();
+          syslog('WARN', `Predictive WS disconnected. Reconnecting in ${delay}ms...`);
+          if (!wsFlags.predictive) setTimeout(connect, delay);
         };
 
         predictiveWs.onerror = () => {
@@ -899,6 +925,7 @@ export const useTradeStore = create<TradeStore>((set) => {
     connectInsightWebSocket: (url: string) => {
       if (!wsUrlIsUsable(url, 'Insight')) return;
       wsFlags.insight = false; // BUG-5: mutable flag
+      const backoff = reconnectBackoff();
 
       const connect = () => {
         if (wsFlags.insight) return;
@@ -907,6 +934,7 @@ export const useTradeStore = create<TradeStore>((set) => {
 
         insightWs.onopen = () => {
           syslog('INFO', 'Insight WS connected. DeepSeek anomaly detection active.');
+          backoff.reset();
         };
 
         insightWs.onmessage = (event) => {
@@ -924,8 +952,9 @@ export const useTradeStore = create<TradeStore>((set) => {
         };
 
         insightWs.onclose = () => {
-          syslog('WARN', 'Insight WS disconnected. Reconnecting in 3s...');
-          if (!wsFlags.insight) setTimeout(connect, 3000);
+          const delay = backoff.next();
+          syslog('WARN', `Insight WS disconnected. Reconnecting in ${delay}ms...`);
+          if (!wsFlags.insight) setTimeout(connect, delay);
         };
 
         insightWs.onerror = () => {
@@ -967,6 +996,7 @@ export const useTradeStore = create<TradeStore>((set) => {
     connectOrderFlowWebSocket: (url: string) => {
       if (!wsUrlIsUsable(url, 'Order Flow')) return;
       wsFlags.orderFlow = false;
+      const backoff = reconnectBackoff();
 
       const connect = () => {
         if (wsFlags.orderFlow) return;
@@ -975,6 +1005,7 @@ export const useTradeStore = create<TradeStore>((set) => {
 
         orderFlowWs.onopen = () => {
           syslog('INFO', 'Order Flow WS connected. Streaming L2 tick data.');
+          backoff.reset();
         };
 
         orderFlowWs.onmessage = (event) => {
@@ -1000,8 +1031,9 @@ export const useTradeStore = create<TradeStore>((set) => {
         };
 
         orderFlowWs.onclose = () => {
-          syslog('WARN', 'Order Flow WS disconnected. Reconnecting in 3s...');
-          if (!wsFlags.orderFlow) setTimeout(connect, 3000);
+          const delay = backoff.next();
+          syslog('WARN', `Order Flow WS disconnected. Reconnecting in ${delay}ms...`);
+          if (!wsFlags.orderFlow) setTimeout(connect, delay);
         };
 
         orderFlowWs.onerror = () => {
@@ -1090,6 +1122,8 @@ export const useTradeStore = create<TradeStore>((set) => {
         return;
       }
 
+      const backoff = reconnectBackoff();
+
       const connect = () => {
         set({ wsStatus: 'connecting', connectionStatus: 'CONNECTING' });
 
@@ -1099,6 +1133,7 @@ export const useTradeStore = create<TradeStore>((set) => {
           ws.onopen = () => {
             syslog('INFO', `Decision WS connected → ${wsUrl}`);
             set({ wsStatus: 'connected', connectionStatus: 'CONNECTED' });
+            backoff.reset();
           };
 
           ws.onmessage = (event) => {
@@ -1127,9 +1162,9 @@ export const useTradeStore = create<TradeStore>((set) => {
           ws.onclose = () => {
             set({ wsStatus: 'disconnected', connectionStatus: 'DISCONNECTED' });
             ws = null;
-            // Auto-reconnect after 3s (matches other WS connections)
-            syslog('WARN', 'Decision WS disconnected. Reconnecting in 3s...');
-            setTimeout(connect, 3000);
+            const delay = backoff.next();
+            syslog('WARN', `Decision WS disconnected. Reconnecting in ${delay}ms...`);
+            setTimeout(connect, delay);
           };
 
           ws.onerror = () => {
@@ -1142,8 +1177,8 @@ export const useTradeStore = create<TradeStore>((set) => {
         } catch (error) {
           syslog('ERROR', `Decision WS init failed: ${error}`);
           set({ wsStatus: 'error', connectionStatus: 'DISCONNECTED' });
-          // Retry after 3s
-          setTimeout(connect, 3000);
+          // Retry with backoff
+          setTimeout(connect, backoff.next());
         }
       };
 
