@@ -213,136 +213,24 @@ export interface QaChatMessage {
 // deployment's LLM gateway (a unified OpenAI-compatible gateway such as
 // OpenRouter can serve Claude/GPT/DeepSeek via one endpoint); adjust the ids
 // here to match your gateway's catalog.
-export interface ModelOption { id: string; label: string; recommended?: boolean; }
-export interface ModelProviderGroup { provider: string; models: ModelOption[]; }
+import {
+  type ModelOption,
+  type ModelProviderGroup,
+  MODEL_PROVIDERS_OPENROUTER,
+  MODEL_PROVIDERS_OMNIROUTE,
+  LLM_GATEWAY,
+  MODEL_SELECTION_LOCKED,
+  MODEL_PROVIDERS,
+} from '@/lib/llm/models';
 
-// Comprehensive, current (non-deprecated) model catalog grouped by provider.
-// NOTE ON IDS: the `id` is passed verbatim to the backend, which forwards it as
-// the `model` to the provider gateway. The exact string a gateway expects
-// varies — a native provider SDK uses e.g. "gpt-4o" / "claude-3-5-sonnet" /
-// "gemini-2.5-pro" / "deepseek-chat", while a unified gateway like OpenRouter
-// expects a "vendor/model" form (e.g. "anthropic/claude-3.5-sonnet"). These are
-// the native ids; adjust the prefixes to match your deployment's gateway.
-// The LLM gateway differs by deployment:
-//   • beta       → omniroute (our shared key/model/URL) — omniroute model ids
-//   • production → OpenRouter (per-user keys)            — provider/model ids
-// The active list is selected by NEXT_PUBLIC_LLM_GATEWAY at build time and must
-// match the server's OPENROUTER_BASE_URL / LLM_MODEL for that deployment. All
-// listed models support tool calling (the glass-box agent requires it).
-// Empty id = the deployment's default model (server LLM_MODEL).
-
-// ── OpenRouter (production) — canonical provider/model ids ───────────────────
-const MODEL_PROVIDERS_OPENROUTER: ModelProviderGroup[] = [
-  {
-    provider: 'Default', models: [
-      { id: '', label: 'Auto' },
-    ]
-  },
-  {
-    provider: 'Anthropic (Claude)', models: [
-      { id: 'anthropic/claude-sonnet-4.5', label: 'Claude Sonnet 4.5', recommended: true },
-      { id: 'anthropic/claude-opus-4.5', label: 'Claude Opus 4.5' },
-      { id: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4' },
-      { id: 'anthropic/claude-opus-4.1', label: 'Claude Opus 4.1' },
-      { id: 'anthropic/claude-haiku-4.5', label: 'Claude Haiku 4.5' },
-      { id: 'anthropic/claude-3-haiku', label: 'Claude 3 Haiku' },
-    ]
-  },
-  {
-    provider: 'OpenAI', models: [
-      { id: 'openai/gpt-4o', label: 'GPT-4o', recommended: true },
-      { id: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
-      { id: 'openai/gpt-4.1', label: 'GPT-4.1' },
-      { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 mini' },
-      { id: 'openai/gpt-5', label: 'GPT-5' },
-      { id: 'openai/gpt-5-mini', label: 'GPT-5 mini' },
-      { id: 'openai/o3', label: 'o3' },
-      { id: 'openai/o4-mini', label: 'o4-mini' },
-    ]
-  },
-  {
-    provider: 'Google (Gemini)', models: [
-      { id: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro', recommended: true },
-      { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-      { id: 'google/gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
-    ]
-  },
-  {
-    provider: 'DeepSeek', models: [
-      { id: 'deepseek/deepseek-r1', label: 'DeepSeek R1', recommended: true },
-      { id: 'deepseek/deepseek-chat-v3.1', label: 'DeepSeek V3.1 (Chat)' },
-      { id: 'deepseek/deepseek-v3.2', label: 'DeepSeek V3.2' },
-    ]
-  },
-  {
-    provider: 'xAI (Grok)', models: [
-      { id: 'x-ai/grok-4.5', label: 'Grok 4.5' },
-      { id: 'x-ai/grok-4.3', label: 'Grok 4.3' },
-    ]
-  },
-];
-
-// ── omniroute (beta) — omniroute gateway model ids ───────────────────────────
-// `auto/*` are smart-routing combos (safest); `aug/*` are specific tuned models.
-const MODEL_PROVIDERS_OMNIROUTE: ModelProviderGroup[] = [
-  {
-    provider: 'Default', models: [
-      { id: '', label: 'Auto' },
-    ]
-  },
-  {
-    provider: 'Auto (Smart Routing)', models: [
-      { id: 'auto/best-reasoning', label: 'Best Reasoning', recommended: true },
-      { id: 'auto/smart', label: 'Smart' },
-      { id: 'auto/best-fast', label: 'Best Fast' },
-      { id: 'auto/best-chat', label: 'Best Chat' },
-      { id: 'auto/best-coding', label: 'Best Coding' },
-    ]
-  },
-  {
-    provider: 'Anthropic (Claude)', models: [
-      { id: 'auto/claude-sonnet', label: 'Claude Sonnet (auto)', recommended: true },
-      { id: 'auto/claude-opus', label: 'Claude Opus (auto)' },
-      { id: 'aug/claude-sonnet-4.6-thinking', label: 'Claude Sonnet 4.6 (thinking)' },
-      { id: 'aug/claude-opus-4.6', label: 'Claude Opus 4.6' },
-      { id: 'aug/claude-haiku-4.5', label: 'Claude Haiku 4.5' },
-    ]
-  },
-  {
-    provider: 'OpenAI (GPT)', models: [
-      { id: 'aug/gpt-5.5-high', label: 'GPT-5.5 (high)' },
-      { id: 'aug/gpt-5.5-medium', label: 'GPT-5.5 (medium)' },
-      { id: 'aug/gpt-5.4-high', label: 'GPT-5.4 (high)' },
-    ]
-  },
-  {
-    provider: 'Google (Gemini)', models: [
-      { id: 'auto/gemini', label: 'Gemini (auto)' },
-      { id: 'aug/gemini-3.1-pro', label: 'Gemini 3.1 Pro' },
-      { id: 'aug/gemini-3.0-flash', label: 'Gemini 3.0 Flash' },
-    ]
-  },
-  {
-    provider: 'DeepSeek', models: [
-      { id: 'tllm/deepseek_v4', label: 'DeepSeek V4' },
-    ]
-  },
-];
-
-// Which LLM gateway this build targets: 'openrouter' (production, per-user keys)
-// or 'omniroute' (beta, shared key). Defaults to omniroute.
-export const LLM_GATEWAY: 'openrouter' | 'omniroute' =
-  process.env.NEXT_PUBLIC_LLM_GATEWAY === 'openrouter' ? 'openrouter' : 'omniroute';
-
-// Model selection is LOCKED on the beta (omniroute) gateway — beta users run the
-// deployment's default model and cannot switch. On OpenRouter (production) every
-// model is selectable (billed to the user's own credits).
-export const MODEL_SELECTION_LOCKED = LLM_GATEWAY !== 'openrouter';
-
-// Active list for this build. Defaults to omniroute (beta); production builds set
-// NEXT_PUBLIC_LLM_GATEWAY=openrouter.
-export const MODEL_PROVIDERS: ModelProviderGroup[] =
-  LLM_GATEWAY === 'openrouter' ? MODEL_PROVIDERS_OPENROUTER : MODEL_PROVIDERS_OMNIROUTE;
+export type { ModelOption, ModelProviderGroup };
+export {
+  MODEL_PROVIDERS_OPENROUTER,
+  MODEL_PROVIDERS_OMNIROUTE,
+  LLM_GATEWAY,
+  MODEL_SELECTION_LOCKED,
+  MODEL_PROVIDERS,
+};
 
 // ── Decoupled Sentiment Payload (independent of Kafka/WS ticks) ─────────
 
