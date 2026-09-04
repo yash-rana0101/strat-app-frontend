@@ -228,13 +228,13 @@ export default function DeepQuantPanel() {
             }}
             className={`
               relative flex-grow flex h-8 items-center justify-center gap-1.5
-              rounded-l px-3 text-[10px] font-bold uppercase tracking-wider
+              rounded-l-md px-3 text-[10px] font-bold uppercase tracking-wider
               transition-all duration-300 ease-out border border-r-0
               ${!dataReady && !isAnalyzing
                 ? 'bg-elevated/40 text-text-muted/50 border-border-default opacity-50 cursor-not-allowed'
                 : isAnalyzing
                   ? 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700 hover:border-rose-700 active:scale-[0.99] cursor-pointer'
-                  : 'bg-text-primary text-surface border-text-primary hover:bg-text-secondary hover:border-text-secondary active:scale-[0.99]'
+                  : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 active:scale-[0.99]'
               }
             `}
           >
@@ -264,10 +264,10 @@ export default function DeepQuantPanel() {
             disabled={isAnalyzing}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className={`
-              h-8 w-8 rounded-r border transition-all duration-300 flex items-center justify-center
+              h-8 w-8 rounded-r-md border transition-all duration-300 flex items-center justify-center
               ${isAnalyzing
                 ? 'bg-elevated/40 border-border-default text-text-muted/50 cursor-not-allowed'
-                : 'bg-text-primary text-surface border-text-primary hover:bg-text-secondary hover:border-text-secondary border-l-surface/20'
+                : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 border-l-emerald-700/50'
               }
             `}
           >
