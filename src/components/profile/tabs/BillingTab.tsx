@@ -49,7 +49,7 @@ export default function BillingTab({ history, loading, error, refetch }: Billing
         </div>
         <button
           onClick={handleViewInvoices}
-          className="flex items-center gap-2 rounded-none border border-border-default bg-elevated hover:bg-elevated hover:text-text-primary px-4 py-2 text-xs font-bold text-text-secondary transition-all active:scale-[0.98]"
+          className="flex items-center gap-2 rounded-lg border border-border-default bg-elevated hover:bg-elevated hover:text-text-primary px-4 py-2 text-xs font-bold text-text-secondary transition-all active:scale-[0.98]"
         >
           <span>VIEW INVOICES</span>
           <ArrowRight size={14} />
@@ -57,12 +57,12 @@ export default function BillingTab({ history, loading, error, refetch }: Billing
       </div>
 
       {error && !loading ? (
-        <div className="flex flex-col items-center justify-center p-8 text-center rounded-none border border-border-default bg-elevated/60">
+        <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-border-default bg-elevated/60">
           <p className="text-sm font-semibold text-rose-400">Failed to load billing history</p>
           <p className="text-xs text-text-secondary mt-1">{error}</p>
           <button
             onClick={refetch}
-            className="mt-3 rounded-none border border-border-default bg-elevated px-3 py-1.5 text-xs font-semibold text-text-primary hover:bg-elevated"
+            className="mt-3 rounded-md border border-border-default bg-elevated px-3 py-1.5 text-xs font-semibold text-text-primary hover:bg-elevated"
           >
             Retry
           </button>
@@ -70,13 +70,13 @@ export default function BillingTab({ history, loading, error, refetch }: Billing
       ) : loading && payments.length === 0 ? (
         <BillingTabSkeleton />
       ) : payments.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-8 text-center rounded-none border border-border-default bg-elevated/60">
+        <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-border-default bg-elevated/60">
           <Receipt size={40} className="text-text-secondary mb-3 opacity-40" />
           <h4 className="text-sm font-bold text-text-primary">No Payments Yet</h4>
           <p className="text-xs text-text-secondary mt-1">Your invoices will appear here after your first subscription or top-up.</p>
         </div>
       ) : (
-        <div className="rounded-none border border-border-default overflow-hidden flex flex-col">
+        <div className="rounded-xl border border-border-default overflow-hidden flex flex-col">
           <div className="flex-1 overflow-auto max-h-120 scrollbar-none">
             <table className="w-full text-left border-collapse">
               <thead className="sticky top-0 z-10 bg-elevated border-b border-border-default">
@@ -96,7 +96,7 @@ export default function BillingTab({ history, loading, error, refetch }: Billing
                     <tr key={p.id} className="hover:bg-elevated transition-colors">
                       <td className="px-4 py-3 text-xs font-mono text-text-primary">{p.invoiceId || '—'}</td>
                       <td className="px-4 py-3 text-xs">
-                        <span className={`rounded-none px-2 py-0.5 text-[9px] font-bold uppercase border ${isSub ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'}`}>
+                        <span className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase border ${isSub ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'}`}>
                           {p.type}
                         </span>
                       </td>
@@ -104,7 +104,7 @@ export default function BillingTab({ history, loading, error, refetch }: Billing
                         ₹{p.amount.toLocaleString('en-IN')}
                       </td>
                       <td className="px-4 py-3 text-xs">
-                        <span className={`rounded-none px-2 py-0.5 text-[9px] font-bold uppercase border ${STATUS_COLORS[status] ?? STATUS_COLORS.pending}`}>
+                        <span className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase border ${STATUS_COLORS[status] ?? STATUS_COLORS.pending}`}>
                           {status}
                         </span>
                       </td>

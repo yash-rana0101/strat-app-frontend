@@ -4,7 +4,7 @@ import { Skeleton } from '../../common/Skeleton';
 /** Layout-accurate skeleton matching the billing table: header + 4 invoice rows. */
 export default function BillingTabSkeleton() {
   return (
-    <div className="rounded-none border border-border-default overflow-hidden flex flex-col">
+    <div className="rounded-xl border border-border-default overflow-hidden flex flex-col">
       {/* Table header */}
       <div className="grid grid-cols-4 gap-3 px-4 py-2.5 bg-elevated/30 border-b border-border-default">
         <Skeleton width="48px" height="8px" />

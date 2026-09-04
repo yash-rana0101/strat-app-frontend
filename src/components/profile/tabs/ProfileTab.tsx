@@ -78,13 +78,13 @@ export default function ProfileTab({
                   if (e.key === 'Enter') saveName();
                   if (e.key === 'Escape') cancelEdit();
                 }}
-                className="flex-1 rounded-none border border-emerald-500/40 bg-elevated px-3 py-1.5 text-sm text-text-primary outline-none focus:border-emerald-500"
+                className="flex-1 rounded-md border border-emerald-500/40 bg-elevated px-3 py-1.5 text-sm text-text-primary outline-none focus:border-emerald-500"
                 placeholder="Enter your name"
               />
               <button
                 onClick={saveName}
                 disabled={saving}
-                className="flex items-center gap-1 rounded-none bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50 transition-all"
+                className="flex items-center gap-1 rounded-md bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50 transition-all"
               >
                 {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
                 Save
@@ -92,7 +92,7 @@ export default function ProfileTab({
               <button
                 onClick={cancelEdit}
                 disabled={saving}
-                className="rounded-none border border-border-default bg-elevated px-3 py-1.5 text-xs font-bold text-text-secondary hover:bg-elevated disabled:opacity-50"
+                className="rounded-md border border-border-default bg-elevated px-3 py-1.5 text-xs font-bold text-text-secondary hover:bg-elevated disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -103,7 +103,7 @@ export default function ProfileTab({
                 <span className="text-sm font-bold text-text-primary">{user?.name || '—'}</span>
                 <button
                   onClick={startEdit}
-                  className="flex items-center gap-1 rounded-none border border-border-default bg-elevated px-2 py-0.5 text-[10px] font-semibold text-text-secondary hover:bg-elevated hover:text-text-primary"
+                  className="flex items-center gap-1 rounded border border-border-default bg-elevated px-2 py-0.5 text-[10px] font-semibold text-text-secondary hover:bg-elevated hover:text-text-primary"
                   title="Edit display name"
                 >
                   <Pencil size={11} />
@@ -112,7 +112,7 @@ export default function ProfileTab({
               </div>
               <button
                 onClick={handleManageAccount}
-                className="flex items-center gap-2 rounded-none border border-border-default bg-elevated hover:bg-elevated hover:text-text-primary px-3 py-1.5 text-xs font-bold text-text-secondary transition-all"
+                className="flex items-center gap-2 rounded-lg border border-border-default bg-elevated hover:bg-elevated hover:text-text-primary px-3 py-1.5 text-xs font-bold text-text-secondary transition-all"
               >
                 <span>MANAGE ACCOUNT</span>
                 <ArrowRight size={12} />
