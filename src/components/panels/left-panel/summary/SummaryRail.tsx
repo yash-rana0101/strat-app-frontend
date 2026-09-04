@@ -28,12 +28,8 @@ export interface SummaryRailProps {
 }
 
 /**
- * The three analytical readings, one line each, pinned below the watchlist.
- *
- * `shrink-0` is the point of this container. The rail is the only entry point to
- * the detail sheet, so it must not be scrolled out of reach by a long watchlist —
- * which is exactly what happened when these three sections were tall blocks
- * sharing one scroll container with the list above them.
+ * The three analytical readings, cleanly formatted as modular summary cards,
+ * pinned below the watchlist.
  */
 export default function SummaryRail({
   symbol,
@@ -50,36 +46,38 @@ export default function SummaryRail({
   return (
     <div
       aria-label="Analysis summary"
-      className="shrink-0 border-t border-border-default bg-surface"
+      className="shrink-0 border-t border-border-default bg-surface pb-2"
     >
-      <div className="flex items-center gap-1.5 px-2.5 pt-2 pb-1">
-        <span className="text-[9px] font-black uppercase tracking-wider text-text-muted/70">
+      <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-2">
+        <span className="text-[9.5px] font-black uppercase tracking-wider text-text-muted/80">
           AI Analysis
         </span>
         <span className="h-px flex-1 bg-border-default/50" aria-hidden="true" />
       </div>
 
-      <SentimentStrip
-        symbol={symbol}
-        sentiment={sentiment}
-        isLoading={isSentimentLoading}
-        error={sentimentError}
-        onClick={() => onOpen('sentiment')}
-      />
+      <div className="flex flex-col gap-1.5 px-2">
+        <SentimentStrip
+          symbol={symbol}
+          sentiment={sentiment}
+          isLoading={isSentimentLoading}
+          error={sentimentError}
+          onClick={() => onOpen('sentiment')}
+        />
 
-      <TechnicalStrip
-        symbol={symbol}
-        consensus={consensus}
-        computedAt={consensusComputedAt}
-        onClick={() => onOpen('technical')}
-      />
+        <TechnicalStrip
+          symbol={symbol}
+          consensus={consensus}
+          computedAt={consensusComputedAt}
+          onClick={() => onOpen('technical')}
+        />
 
-      <PatternsStrip
-        multiTfPatterns={multiTfPatterns}
-        isLoading={isPatternsLoading}
-        error={patternsError}
-        onClick={() => onOpen('patterns')}
-      />
+        <PatternsStrip
+          multiTfPatterns={multiTfPatterns}
+          isLoading={isPatternsLoading}
+          error={patternsError}
+          onClick={() => onOpen('patterns')}
+        />
+      </div>
     </div>
   );
 }

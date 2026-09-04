@@ -28,6 +28,7 @@ import { useTradeStore, type OhlcCandle } from '../store/useTradeStore';
 import { kiteFetch } from '../lib/kiteFetch';
 import { bridgeInvoke } from '../lib/bridge';
 import { debugLog } from '../lib/debugLog';
+import { markOnce } from '../lib/perfMarks';
 
 // ── Resolution Mapping ────────────────────────────────────────────────────
 // Maps TV resolution strings to Kite Historical API interval strings.
@@ -110,13 +111,80 @@ const SUPPORTED_RESOLUTIONS: ResolutionString[] = [
 // window from memory instantly, and only fetch the missing older slice.
 const scrollBackCache = new Map<string, Map<number, Bar>>();
 
+// -- Persisted across reloads ------------------------------------------------
+//
+// The map above used to be memory-only, so every refresh started cold and
+// re-paged TradingView's whole opening window through Kite before the first
+// bar rendered. The last PERSIST_BARS bars per key are mirrored to
+// localStorage as compact [t,o,h,l,c,v] rows and hydrated on first access;
+// `getBars` then serves the run from memory and fetches only the tail that
+// has formed since the last session (see the head/tail gap logic there).
+// ponytail: localStorage (~5MB, sync) with a 12-key LRU; IndexedDB is the
+// upgrade if the per-key bar budget ever needs to grow.
+const PERSIST_PREFIX = 'stratai.bars.';
+const PERSIST_INDEX = 'stratai.bars.index';
+const PERSIST_BARS = 1500;
+const PERSIST_KEYS = 12;
+const hydrated = new Set<string>();
+const persistTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+/** The bar map for `key`, hydrated from localStorage the first time it is touched. */
+function storeFor(key: string): Map<number, Bar> {
+  let store = scrollBackCache.get(key);
+  if (!store) {
+    store = new Map<number, Bar>();
+    scrollBackCache.set(key, store);
+  }
+  if (!hydrated.has(key)) {
+    hydrated.add(key);
+    try {
+      const raw = typeof localStorage === 'undefined' ? null : localStorage.getItem(PERSIST_PREFIX + key);
+      if (raw) {
+        for (const [time, open, high, low, close, volume] of JSON.parse(raw) as number[][]) {
+          if (!store.has(time)) store.set(time, { time, open, high, low, close, volume });
+        }
+      }
+    } catch {
+      // Corrupt entry or storage unavailable: behave as a cold cache.
+    }
+  }
+  return store;
+}
+
+/** Debounced mirror of `key` to localStorage, evicting the least recently written keys. */
+function schedulePersist(key: string): void {
+  if (typeof localStorage === 'undefined' || persistTimers.has(key)) return;
+  persistTimers.set(
+    key,
+    setTimeout(() => {
+      persistTimers.delete(key);
+      const store = scrollBackCache.get(key);
+      if (!store) return;
+      const rows = [...store.values()]
+        .sort((a, b) => a.time - b.time)
+        .slice(-PERSIST_BARS)
+        .map((b) => [b.time, b.open, b.high, b.low, b.close, b.volume ?? 0]);
+      try {
+        localStorage.setItem(PERSIST_PREFIX + key, JSON.stringify(rows));
+        const index = (JSON.parse(localStorage.getItem(PERSIST_INDEX) ?? '[]') as string[]).filter((k) => k !== key);
+        index.push(key);
+        for (const old of index.splice(0, Math.max(0, index.length - PERSIST_KEYS))) {
+          localStorage.removeItem(PERSIST_PREFIX + old);
+        }
+        localStorage.setItem(PERSIST_INDEX, JSON.stringify(index));
+      } catch {
+        // Quota / private mode: the in-memory cache still works.
+      }
+    }, 1000),
+  );
+}
+
 function scrollBackKey(symbol: string, timeframe: string): string {
   return `${symbol.toUpperCase()}::${timeframe}`;
 }
 
 function readScrollBackCache(symbol: string, timeframe: string, fromMs: number, toMs: number): Bar[] {
-  const store = scrollBackCache.get(scrollBackKey(symbol, timeframe));
-  if (!store) return [];
+  const store = storeFor(scrollBackKey(symbol, timeframe));
   const out: Bar[] = [];
   for (const bar of store.values()) {
     if (bar.time >= fromMs && bar.time <= toMs) out.push(bar);
@@ -128,19 +196,19 @@ function readScrollBackCache(symbol: string, timeframe: string, fromMs: number, 
 function mergeScrollBackCache(symbol: string, timeframe: string, bars: Bar[]): void {
   if (bars.length === 0) return;
   const key = scrollBackKey(symbol, timeframe);
-  let store = scrollBackCache.get(key);
-  if (!store) {
-    store = new Map<number, Bar>();
-    scrollBackCache.set(key, store);
-  }
+  const store = storeFor(key);
   for (const b of bars) store.set(b.time, b);
+  schedulePersist(key);
 }
 
 /** Drop every scroll-back cache entry for a symbol (called on symbol change). */
 export function invalidateScrollBackCache(symbol: string): void {
   const prefix = `${symbol.toUpperCase()}::`;
   for (const key of scrollBackCache.keys()) {
-    if (key.startsWith(prefix)) scrollBackCache.delete(key);
+    if (key.startsWith(prefix)) {
+      scrollBackCache.delete(key);
+      hydrated.delete(key); // so the persisted run is re-read on the next access
+    }
   }
   for (const key of exhaustedWindows.keys()) {
     if (key.startsWith(prefix)) exhaustedWindows.delete(key);
@@ -161,8 +229,8 @@ function exhaustionKey(symbol: string, timeframe: string, fromSec: number): stri
 
 /** Get the earliest bar time (ms) we've ever seen for a symbol+timeframe. */
 function earliestKnownBar(symbol: string, timeframe: string): number | undefined {
-  const store = scrollBackCache.get(scrollBackKey(symbol, timeframe));
-  if (!store || store.size === 0) return undefined;
+  const store = storeFor(scrollBackKey(symbol, timeframe));
+  if (store.size === 0) return undefined;
   let min = Infinity;
   for (const t of store.keys()) {
     if (t < min) min = t;
@@ -170,6 +238,20 @@ function earliestKnownBar(symbol: string, timeframe: string): number | undefined
   return min === Infinity ? undefined : min;
 }
 
+/** The newest bar time (ms) cached for a symbol+timeframe, if any. */
+function newestKnownBar(symbol: string, timeframe: string): number | undefined {
+  let max = -Infinity;
+  for (const t of storeFor(scrollBackKey(symbol, timeframe)).keys()) {
+    if (t > max) max = t;
+  }
+  return max === -Infinity ? undefined : max;
+}
+
+/** Width of one Kite candle for interval (minute, 5minute, ..., day). */
+function kiteIntervalMs(interval: string): number {
+  if (interval === 'day') return 86_400_000;
+  return (parseInt(interval, 10) || 1) * 60_000;
+}
 // ── Instrument Token Cache ────────────────────────────────────────────────
 const tokenCache = new Map<string, number>();
 
@@ -357,8 +439,43 @@ export async function fetchKiteBatch(
   return all;
 }
 
+// -- History prefetch --------------------------------------------------------
+//
+// TradingView only calls getBars once its library has downloaded and the
+// widget has booted, which on a cold load is seconds after the symbol is
+// already known. Warming the cache from the widget's mount effect overlaps
+// the Kite round trip with that boot, so the first getBars is served from
+// memory. getBars awaits any in-flight prefetch for its key so the two
+// never race the same page.
+const pendingFetch = new Map<string, Promise<void>>();
+
+/** Start fetching the most recent Kite page for symbolName at esolution into the cache. */
+export function prefetchHistory(symbolName: string, resolution: string): void {
+  const [exchange, symbol] = symbolName.includes(':')
+    ? symbolName.split(':', 2)
+    : ['NSE', symbolName];
+  const interval = RESOLUTION_TO_KITE_INTERVAL[resolution] ?? 'minute';
+  const timeframe = RESOLUTION_TO_TIMEFRAME[resolution] ?? '1m';
+  const key = scrollBackKey(symbol, timeframe);
+  if (pendingFetch.has(key)) return;
+
+  const now = Date.now();
+  const newest = newestKnownBar(symbol, timeframe);
+  if (newest !== undefined && newest + kiteIntervalMs(interval) > now) return; // already current
+
+  // From the newest persisted bar when there is one (tail only), else one
+  // full Kite page ending now. Either way this is exactly one request.
+  const days = KITE_INTERVAL_MAX_DAYS[interval] ?? 60;
+  const from = new Date(newest ?? now - (days - 1) * 86_400_000);
+  const run = fetchKiteBatch(symbol.toUpperCase(), interval, from, new Date(now), exchange, timeframe)
+    .then((bars) => mergeScrollBackCache(symbol, timeframe, bars))
+    .catch((err) => console.warn('[Datafeed] prefetch failed:', err))
+    .finally(() => pendingFetch.delete(key));
+  pendingFetch.set(key, run);
+}
+
 /**
- * Ask TradingView to re-request bars for every live subscription on `symbol`.
+ * Ask TradingView to re-request bars for every live subscription on symbol.
  *
  * TV hands each subscription an `onResetCacheNeededCallback`; calling it makes
  * the widget drop its own bar cache and call `getBars` again.
@@ -444,6 +561,7 @@ function startLiveSubscription(
 
     lastBarTime = barTimeMs;
     tickCount++;
+    markOnce('first-live-bar');
     if (tickCount <= 5) {
       debugLog(`[Datafeed] Live tick #${tickCount} for ${symbolUpper}: time=${barTimeMs} O=${candle.open} H=${candle.high} L=${candle.low} C=${candle.close}`);
     }
@@ -738,26 +856,37 @@ export function createDatafeed(): IBasicDatafeed {
       const toMs = to.getTime();
 
       try {
+        // 0. A prefetch for this key may be mid-flight (see prefetchHistory);
+        //    let it land so the cache read below sees its bars.
+        await pendingFetch.get(scrollBackKey(symbol, timeframe));
+
         // 1. Pull any bars we already fetched for this symbol/timeframe that
         //    overlap the requested window. If the cache already fully covers
         //    the window, we don't hit the network at all — TV re-renders from
         //    memory and scroll-back is instant.
         const cached = readScrollBackCache(symbol, timeframe, fromMs, toMs);
 
-        // 2. Find the oldest cached bar inside the requested window. If we have
-        //    a continuous run covering [oldestCachedAt, to], we only need to
-        //    fetch the missing slice [from, oldestCachedAt). Otherwise fetch
-        //    the full window.
+        // 2. Work out which EDGE of the window the cache is missing.
+        //    * A run persisted from an earlier session covers the head but
+        //      ends where that session did: fetch the TAIL (newest, to].
+        //    * A scroll-back page covers the tail and misses the HEAD: fetch
+        //      [from, oldest). (This used to re-fetch [oldest, to], i.e. the
+        //      part already cached, and never the gap.)
+        //    * Both covered: answer from memory, no network round trip.
         let fetchFrom = from;
+        let fetchTo = new Date(toMs);
         if (cached.length > 0) {
-          const oldestCached = cached[0].time;
-          if (oldestCached <= fromMs) {
-            // Cache fully covers the window — no network roundtrip.
+          const oldest = cached[0].time;
+          const newest = cached[cached.length - 1].time;
+          const headCovered = oldest <= fromMs;
+          const tailCovered = newest + kiteIntervalMs(kiteInterval) > toMs;
+          if (headCovered && tailCovered) {
+            markOnce('first-history');
             onResult(cached, { noData: false });
             return;
           }
-          fetchFrom = new Date(oldestCached - 1);
-          // Re-filter cached bars to the actual gap we're filling.
+          if (headCovered) fetchFrom = new Date(newest);
+          else if (tailCovered) fetchTo = new Date(oldest - 1);
         }
 
         // 3. Fetch the missing slice (or the whole window on a cold cache).
@@ -765,7 +894,7 @@ export function createDatafeed(): IBasicDatafeed {
           symbol,
           kiteInterval,
           fetchFrom,
-          new Date(toMs),
+          fetchTo,
           exchange,
           timeframe,
         );
@@ -865,6 +994,7 @@ export function createDatafeed(): IBasicDatafeed {
           console.warn('[Datafeed] historicalCache mirror failed:', cacheErr);
         }
 
+        markOnce('first-history');
         onResult(bars, { noData: false });
       } catch (err) {
         console.error('[Datafeed] getBars failed:', err);

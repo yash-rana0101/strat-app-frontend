@@ -31,14 +31,9 @@ export default function TechnicalStrip({
   onClick,
   now,
 }: TechnicalStripProps) {
-  // The store retains the last report no matter what is charted now, so a report
-  // for another symbol is treated as no report at all. Showing RELIANCE's trend
-  // score under TCS would be worse than showing nothing.
   const matches = consensus ? consensusMatchesSymbol(consensus.symbol, symbol) : false;
   const report = matches ? consensus : null;
 
-  // Re-tick while the panel sits open so the age label stays truthful rather than
-  // freezing at whatever it read on mount.
   const [tick, setTick] = React.useState(() => Date.now());
   React.useEffect(() => {
     if (!computedAt || now !== undefined) return;
@@ -53,11 +48,9 @@ export default function TechnicalStrip({
   if (!report) {
     return (
       <SummaryStrip
-        icon={<TrendingUp size={10} />}
+        icon={<TrendingUp size={16} />}
         label="Technical Consensus"
         state="empty"
-        // A call to action, not a placeholder: the reading is absent because
-        // nothing has computed it yet, and the user is the one who triggers it.
         emptyMessage="Run Deep Quant"
         onClick={onClick}
       />
@@ -69,7 +62,7 @@ export default function TechnicalStrip({
 
   return (
     <SummaryStrip
-      icon={<TrendingUp size={10} />}
+      icon={<TrendingUp size={16} />}
       label="Technical Consensus"
       onClick={onClick}
       badge={
@@ -80,9 +73,9 @@ export default function TechnicalStrip({
                 ? `Computed at ${new Date(computedAt).toLocaleTimeString()}. Re-run analysis to refresh.`
                 : undefined
             }
-            className="inline-flex items-center gap-0.5 rounded-none border border-neutral/40 bg-neutral/10 px-1 py-px text-[7.5px] font-bold uppercase tracking-wider text-neutral"
+            className="inline-flex items-center gap-1 rounded-md border border-neutral/40 bg-neutral/10 px-1.5 py-0.5 text-[7.5px] font-bold uppercase tracking-wider text-neutral"
           >
-            <AlertTriangle size={7} aria-hidden="true" />
+            <AlertTriangle size={8} aria-hidden="true" />
             {ageMs !== null ? formatAge(ageMs) : 'stale'}
           </span>
         ) : null
@@ -95,23 +88,25 @@ export default function TechnicalStrip({
             : ''
       }`}
       value={
-        <span className="flex items-center gap-1.5">
-          <span className={`text-[11px] font-black tabular-nums ${trendColor(score)}`}>
+        <div className="flex items-center justify-between w-full">
+          <span className={`text-sm font-black tabular-nums ${trendColor(score)}`}>
             {score > 0 ? '+' : ''}
             {score}
           </span>
-          <span className={`text-[8px] font-bold uppercase tracking-wider ${trendColor(score)}`}>
+          <span
+            className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[8.5px] font-bold uppercase tracking-wider border border-current/20 ${trendBg(score)}/10 ${trendColor(score)}`}
+          >
             {verdict}
           </span>
-        </span>
+        </div>
       }
       detail={
-        <div className="relative h-1 w-full overflow-hidden rounded-none border border-border-default/50 bg-elevated/60">
+        <div className="relative h-1.5 w-full overflow-hidden rounded-full border border-border-default/50 bg-elevated/60">
           <div
             className={`h-full ${trendBg(score)} ${isStale ? 'opacity-50' : ''}`}
             style={{ width: `${trendGaugePercent(score)}%` }}
           />
-          {/* Neutral datum, so a half-filled bar is not mistaken for "no signal". */}
+          {/* Neutral datum */}
           <div className="absolute left-1/2 top-0 h-full w-px -translate-x-px bg-text-muted/40" />
         </div>
       }

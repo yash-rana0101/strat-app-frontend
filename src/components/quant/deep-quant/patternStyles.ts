@@ -51,29 +51,35 @@ export interface SentimentTheme {
 const THEMES: Record<PatternSentiment, SentimentTheme> = {
   bullish: {
     text: 'text-bull',
-    badge: 'bg-bull/10 text-bull border-bull/40',
+    badge: 'bg-bull/10 text-bull border-bull/20',
+    bar: 'bg-bull',
     bar: 'from-bull/45 via-bull to-bull',
     edge: 'bg-bull',
-    wash: 'group-hover:bg-bull/6',
+    wash: 'hover:border-bull/30',
     dot: 'bg-bull',
+    glow: '',
     glow: 'shadow-[0_0_6px_var(--color-bull)]',
   },
   bearish: {
     text: 'text-bear',
-    badge: 'bg-bear/10 text-bear border-bear/40',
+    badge: 'bg-bear/10 text-bear border-bear/20',
+    bar: 'bg-bear',
     bar: 'from-bear/45 via-bear to-bear',
     edge: 'bg-bear',
-    wash: 'group-hover:bg-bear/6',
+    wash: 'hover:border-bear/30',
     dot: 'bg-bear',
+    glow: '',
     glow: 'shadow-[0_0_6px_var(--color-bear)]',
   },
   neutral: {
     text: 'text-neutral',
-    badge: 'bg-neutral/10 text-neutral border-neutral/40',
+    badge: 'bg-neutral/10 text-neutral border-neutral/20',
+    bar: 'bg-neutral',
     bar: 'from-neutral/45 via-neutral to-neutral',
     edge: 'bg-neutral',
-    wash: 'group-hover:bg-neutral/6',
+    wash: 'hover:border-neutral/30',
     dot: 'bg-neutral',
+    glow: '',
     glow: 'shadow-[0_0_6px_var(--color-neutral)]',
   },
 };
@@ -83,7 +89,7 @@ export function sentimentTheme(sentiment: PatternSentiment): SentimentTheme {
 }
 
 /** Badge classes for a neutral/among-the-furniture tag. */
-export const MUTED_TAG = 'bg-elevated text-text-secondary border-border-default';
+export const MUTED_TAG = 'bg-surface/80 text-text-secondary border-border-default/60';
 
 /**
  * Volume validation reads as a three-state confirmation, so it gets a colour and
@@ -92,8 +98,8 @@ export const MUTED_TAG = 'bg-elevated text-text-secondary border-border-default'
  */
 export function volumeTag(validation: string): { badge: string; glyph: string } {
   const v = validation.toLowerCase();
-  if (v.includes('confirm')) return { badge: 'bg-bull/10 text-bull border-bull/40', glyph: '✓' };
-  if (v.includes('form')) return { badge: 'bg-neutral/10 text-neutral border-neutral/40', glyph: '◎' };
+  if (v.includes('confirm')) return { badge: 'bg-bull/10 text-bull border-bull/20', glyph: '✓' };
+  if (v.includes('form')) return { badge: 'bg-neutral/10 text-neutral border-neutral/20', glyph: '◎' };
   return { badge: MUTED_TAG, glyph: '○' };
 }
 

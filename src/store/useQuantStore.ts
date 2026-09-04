@@ -233,76 +233,100 @@ export interface ModelProviderGroup { provider: string; models: ModelOption[]; }
 
 // ── OpenRouter (production) — canonical provider/model ids ───────────────────
 const MODEL_PROVIDERS_OPENROUTER: ModelProviderGroup[] = [
-  { provider: 'Default', models: [
-    { id: '', label: 'Auto' },
-  ]},
-  { provider: 'Anthropic (Claude)', models: [
-    { id: 'anthropic/claude-sonnet-4.5', label: 'Claude Sonnet 4.5', recommended: true },
-    { id: 'anthropic/claude-opus-4.5', label: 'Claude Opus 4.5' },
-    { id: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4' },
-    { id: 'anthropic/claude-opus-4.1', label: 'Claude Opus 4.1' },
-    { id: 'anthropic/claude-haiku-4.5', label: 'Claude Haiku 4.5' },
-    { id: 'anthropic/claude-3-haiku', label: 'Claude 3 Haiku' },
-  ]},
-  { provider: 'OpenAI', models: [
-    { id: 'openai/gpt-4o', label: 'GPT-4o', recommended: true },
-    { id: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
-    { id: 'openai/gpt-4.1', label: 'GPT-4.1' },
-    { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 mini' },
-    { id: 'openai/gpt-5', label: 'GPT-5' },
-    { id: 'openai/gpt-5-mini', label: 'GPT-5 mini' },
-    { id: 'openai/o3', label: 'o3' },
-    { id: 'openai/o4-mini', label: 'o4-mini' },
-  ]},
-  { provider: 'Google (Gemini)', models: [
-    { id: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro', recommended: true },
-    { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-    { id: 'google/gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
-  ]},
-  { provider: 'DeepSeek', models: [
-    { id: 'deepseek/deepseek-r1', label: 'DeepSeek R1', recommended: true },
-    { id: 'deepseek/deepseek-chat-v3.1', label: 'DeepSeek V3.1 (Chat)' },
-    { id: 'deepseek/deepseek-v3.2', label: 'DeepSeek V3.2' },
-  ]},
-  { provider: 'xAI (Grok)', models: [
-    { id: 'x-ai/grok-4.5', label: 'Grok 4.5' },
-    { id: 'x-ai/grok-4.3', label: 'Grok 4.3' },
-  ]},
+  {
+    provider: 'Default', models: [
+      { id: '', label: 'Auto' },
+    ]
+  },
+  {
+    provider: 'Anthropic (Claude)', models: [
+      { id: 'anthropic/claude-sonnet-4.5', label: 'Claude Sonnet 4.5', recommended: true },
+      { id: 'anthropic/claude-opus-4.5', label: 'Claude Opus 4.5' },
+      { id: 'anthropic/claude-sonnet-4', label: 'Claude Sonnet 4' },
+      { id: 'anthropic/claude-opus-4.1', label: 'Claude Opus 4.1' },
+      { id: 'anthropic/claude-haiku-4.5', label: 'Claude Haiku 4.5' },
+      { id: 'anthropic/claude-3-haiku', label: 'Claude 3 Haiku' },
+    ]
+  },
+  {
+    provider: 'OpenAI', models: [
+      { id: 'openai/gpt-4o', label: 'GPT-4o', recommended: true },
+      { id: 'openai/gpt-4o-mini', label: 'GPT-4o mini' },
+      { id: 'openai/gpt-4.1', label: 'GPT-4.1' },
+      { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 mini' },
+      { id: 'openai/gpt-5', label: 'GPT-5' },
+      { id: 'openai/gpt-5-mini', label: 'GPT-5 mini' },
+      { id: 'openai/o3', label: 'o3' },
+      { id: 'openai/o4-mini', label: 'o4-mini' },
+    ]
+  },
+  {
+    provider: 'Google (Gemini)', models: [
+      { id: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro', recommended: true },
+      { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+      { id: 'google/gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
+    ]
+  },
+  {
+    provider: 'DeepSeek', models: [
+      { id: 'deepseek/deepseek-r1', label: 'DeepSeek R1', recommended: true },
+      { id: 'deepseek/deepseek-chat-v3.1', label: 'DeepSeek V3.1 (Chat)' },
+      { id: 'deepseek/deepseek-v3.2', label: 'DeepSeek V3.2' },
+    ]
+  },
+  {
+    provider: 'xAI (Grok)', models: [
+      { id: 'x-ai/grok-4.5', label: 'Grok 4.5' },
+      { id: 'x-ai/grok-4.3', label: 'Grok 4.3' },
+    ]
+  },
 ];
 
 // ── omniroute (beta) — omniroute gateway model ids ───────────────────────────
 // `auto/*` are smart-routing combos (safest); `aug/*` are specific tuned models.
 const MODEL_PROVIDERS_OMNIROUTE: ModelProviderGroup[] = [
-  { provider: 'Default', models: [
-    { id: '', label: 'Auto' },
-  ]},
-  { provider: 'Auto (Smart Routing)', models: [
-    { id: 'auto/best-reasoning', label: 'Best Reasoning', recommended: true },
-    { id: 'auto/smart', label: 'Smart' },
-    { id: 'auto/best-fast', label: 'Best Fast' },
-    { id: 'auto/best-chat', label: 'Best Chat' },
-    { id: 'auto/best-coding', label: 'Best Coding' },
-  ]},
-  { provider: 'Anthropic (Claude)', models: [
-    { id: 'auto/claude-sonnet', label: 'Claude Sonnet (auto)', recommended: true },
-    { id: 'auto/claude-opus', label: 'Claude Opus (auto)' },
-    { id: 'aug/claude-sonnet-4.6-thinking', label: 'Claude Sonnet 4.6 (thinking)' },
-    { id: 'aug/claude-opus-4.6', label: 'Claude Opus 4.6' },
-    { id: 'aug/claude-haiku-4.5', label: 'Claude Haiku 4.5' },
-  ]},
-  { provider: 'OpenAI (GPT)', models: [
-    { id: 'aug/gpt-5.5-high', label: 'GPT-5.5 (high)' },
-    { id: 'aug/gpt-5.5-medium', label: 'GPT-5.5 (medium)' },
-    { id: 'aug/gpt-5.4-high', label: 'GPT-5.4 (high)' },
-  ]},
-  { provider: 'Google (Gemini)', models: [
-    { id: 'auto/gemini', label: 'Gemini (auto)' },
-    { id: 'aug/gemini-3.1-pro', label: 'Gemini 3.1 Pro' },
-    { id: 'aug/gemini-3.0-flash', label: 'Gemini 3.0 Flash' },
-  ]},
-  { provider: 'DeepSeek', models: [
-    { id: 'tllm/deepseek_v4', label: 'DeepSeek V4' },
-  ]},
+  {
+    provider: 'Default', models: [
+      { id: '', label: 'Auto' },
+    ]
+  },
+  {
+    provider: 'Auto (Smart Routing)', models: [
+      { id: 'auto/best-reasoning', label: 'Best Reasoning', recommended: true },
+      { id: 'auto/smart', label: 'Smart' },
+      { id: 'auto/best-fast', label: 'Best Fast' },
+      { id: 'auto/best-chat', label: 'Best Chat' },
+      { id: 'auto/best-coding', label: 'Best Coding' },
+    ]
+  },
+  {
+    provider: 'Anthropic (Claude)', models: [
+      { id: 'auto/claude-sonnet', label: 'Claude Sonnet (auto)', recommended: true },
+      { id: 'auto/claude-opus', label: 'Claude Opus (auto)' },
+      { id: 'aug/claude-sonnet-4.6-thinking', label: 'Claude Sonnet 4.6 (thinking)' },
+      { id: 'aug/claude-opus-4.6', label: 'Claude Opus 4.6' },
+      { id: 'aug/claude-haiku-4.5', label: 'Claude Haiku 4.5' },
+    ]
+  },
+  {
+    provider: 'OpenAI (GPT)', models: [
+      { id: 'aug/gpt-5.5-high', label: 'GPT-5.5 (high)' },
+      { id: 'aug/gpt-5.5-medium', label: 'GPT-5.5 (medium)' },
+      { id: 'aug/gpt-5.4-high', label: 'GPT-5.4 (high)' },
+    ]
+  },
+  {
+    provider: 'Google (Gemini)', models: [
+      { id: 'auto/gemini', label: 'Gemini (auto)' },
+      { id: 'aug/gemini-3.1-pro', label: 'Gemini 3.1 Pro' },
+      { id: 'aug/gemini-3.0-flash', label: 'Gemini 3.0 Flash' },
+    ]
+  },
+  {
+    provider: 'DeepSeek', models: [
+      { id: 'tllm/deepseek_v4', label: 'DeepSeek V4' },
+    ]
+  },
 ];
 
 // Which LLM gateway this build targets: 'openrouter' (production, per-user keys)
@@ -322,6 +346,13 @@ export const MODEL_PROVIDERS: ModelProviderGroup[] =
 
 // ── Decoupled Sentiment Payload (independent of Kafka/WS ticks) ─────────
 
+export interface SentimentArticle {
+  title: string;
+  url?: string;
+  source?: string;
+  published_at?: string;
+}
+
 export interface SentimentPayload {
   symbol: string;
   score: number;           // -100 to +100
@@ -329,6 +360,7 @@ export interface SentimentPayload {
   top_headline: string;
   impact: 'positive' | 'negative' | 'neutral';
   headlines: string[];     // All fetched headlines for individual display
+  articles?: SentimentArticle[]; // Detailed articles with link/source if available
 }
 
 // ── Store Shape ─────────────────────────────────────────────────────────
@@ -642,7 +674,7 @@ function extractFinalTrade(text: string): AiExecutionPlan | null {
     // Fallback: search for any valid JSON object at the top level
     const anyValid = candidates.filter(c => c.parsed && typeof c.parsed === 'object');
     if (anyValid.length > 0) {
-      const topLevel = anyValid.filter(c => 
+      const topLevel = anyValid.filter(c =>
         !anyValid.some(other => other !== c && other.startIdx <= c.startIdx && other.endIdx >= c.endIdx)
       );
       if (topLevel.length > 0) {
@@ -660,9 +692,9 @@ function extractFinalTrade(text: string): AiExecutionPlan | null {
 
   // Filter out candidates that are nested inside other valid candidates
   const nonNested = validCandidates.filter(c => {
-    const isNested = validCandidates.some(other => 
-      other !== c && 
-      other.startIdx <= c.startIdx && 
+    const isNested = validCandidates.some(other =>
+      other !== c &&
+      other.startIdx <= c.startIdx &&
       other.endIdx >= c.endIdx
     );
     return !isNested;
@@ -881,7 +913,7 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
 
       if (lastIdx >= 0 && steps[lastIdx].type === 'message') {
         const lastStep = steps[lastIdx];
-        
+
         // Fast O(1) check to avoid catastrophic regex backtracking on long streams
         const isJsonDecision = lastStep.content.trim().startsWith('{');
 
@@ -971,13 +1003,13 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       // default (R1.7). Build a plan whenever we have any decision signal.
       const decisionPlan: AiExecutionPlan | null = (conviction !== undefined || rationale || executionPlan || action)
         ? {
-            conviction_score: conviction,
-            setup_validation: rationale,
-            execution_plan: executionPlan,
-            action: (action as AiExecutionPlan['action']) || undefined,
-            opportunity_tier: tier,
-            execution_levels: levels,
-          }
+          conviction_score: conviction,
+          setup_validation: rationale,
+          execution_plan: executionPlan,
+          action: (action as AiExecutionPlan['action']) || undefined,
+          opportunity_tier: tier,
+          execution_levels: levels,
+        }
         : null;
       return {
         ...session,
@@ -1203,9 +1235,9 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         ...(entry.payload
           ? { activeSentiment: entry.payload, sentimentError: null }
           : {
-              sentimentError:
-                `Sentiment is rate limited for ${symbol}. Retrying automatically in ${secs}s.`,
-            }),
+            sentimentError:
+              `Sentiment is rate limited for ${symbol}. Retrying automatically in ${secs}s.`,
+          }),
       });
       return;
     }
@@ -1583,10 +1615,10 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       const secs = Math.round(window / 1000);
       const message = stillWatching
         ? `The price watch went quiet — no heartbeat for ${secs}s. The watcher that wakes ` +
-          `this analysis when your condition is met is no longer reporting, so it will not ` +
-          `resume on its own. Please re-run the analysis.`
+        `this analysis when your condition is met is no longer reporting, so it will not ` +
+        `resume on its own. Please re-run the analysis.`
         : `The agent stream stalled — no activity for ${secs}s. The agent server may be ` +
-          `unreachable or the LLM request stalled. Please retry.`;
+        `unreachable or the LLM request stalled. Please retry.`;
 
       console.warn(`[QuantStore] Stream watchdog tripped after ${secs}s on ${runKey} (status=${sess.sessionStatus}).`);
       const timedOut: QuantSession = {
@@ -1756,7 +1788,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       type: 'message' as const,
       content: cancelDetail
         ? `Analysis stopped locally, but the server did not confirm the cancellation (${cancelDetail}). ` +
-          `It may still be running — reload if it reappears.`
+        `It may still be running — reload if it reappears.`
         : 'Analysis cancelled by user.',
       timestamp: Date.now(),
     };

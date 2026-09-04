@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { useTradeStore } from '../../store/useTradeStore';
 import { useChartUIStore, type PaneId } from '../../store/useChartUIStore';
 import { useFeature, useFeatureStore } from '../../store/useFeatureStore';
-import { createDatafeed, invalidateScrollBackCache } from '../../charting/datafeed';
+import { createDatafeed, invalidateScrollBackCache, prefetchHistory } from '../../charting/datafeed';
+import { markOnce } from '../../lib/perfMarks';
 import { useGhostLine } from '../../hooks/useGhostLine';
 import type { IChartingLibraryWidget } from '../../charting/datafeedTypes';
 import { TIMEFRAME_TO_RESOLUTION, getThemeOverrides } from '../../utils/tvThemeOverrides';
@@ -223,6 +224,7 @@ export default function TradingViewWidget({
       setWidgetState(tvWidget);
 
       whenChartReady(tvWidget, () => {
+        markOnce('widget-ready');
         // Reconcile the theme now that the chart exists.
         //
         // TradingView restores its own saved chart properties from
@@ -370,6 +372,12 @@ export default function TradingViewWidget({
   }, [scriptReady]);
 
   // Sync symbol changes
+  // Warm the history cache while the TV library is still downloading/booting
+  // (this does not wait on scriptReady), so the first getBars is a memory read.
+  useEffect(() => {
+    if (activeSymbol) prefetchHistory(activeSymbol, resolution);
+  }, [activeSymbol, resolution]);
+
   const prevSymbolRef = useRef(activeSymbol);
   const prevResolutionRef = useRef(resolution);
   useEffect(() => {

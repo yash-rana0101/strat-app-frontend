@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { markOnce } from '../lib/perfMarks';
 
 /**
  * useTradingViewScript — shared hook to dynamically load the TradingView
@@ -15,6 +16,7 @@ export function useTradingViewScript(): { ready: boolean; error: string | null }
 
   const checkReady = useCallback(() => {
     if (typeof window !== 'undefined' && window.TradingView) {
+      markOnce('tv-script-ready');
       setReady(true);
       return true;
     }

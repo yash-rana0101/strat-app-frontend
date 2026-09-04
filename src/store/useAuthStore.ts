@@ -32,6 +32,7 @@
 import { create } from 'zustand';
 import { API_BASE_URL, API_V1_PREFIX } from '../lib/env';
 import { usersApi } from '../lib/api/endpoints';
+import { markOnce } from '../lib/perfMarks';
 import { useFeatureStore } from './useFeatureStore';
 
 export interface AuthUser {
@@ -91,6 +92,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // `credentials: 'include'` and transparently refreshes on a 401.
         const user = (await usersApi.getMe()) as AuthUser;
         set({ status: 'authenticated', isAuthenticated: true, user });
+        markOnce('auth-ok');
         return 'authenticated';
       } catch {
         // Any failure to establish identity is treated as anonymous. That

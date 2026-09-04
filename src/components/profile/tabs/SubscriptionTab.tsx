@@ -66,7 +66,7 @@ export default function SubscriptionTab({ credit, loading, error, refetch }: Sub
         <p className="text-xs text-text-secondary mt-1">{error}</p>
         <button
           onClick={refetch}
-          className="mt-3 rounded-none border border-border-default bg-elevated px-3 py-1.5 text-xs font-semibold text-text-primary hover:bg-elevated"
+          className="mt-3 rounded-md border border-border-default bg-elevated px-3 py-1.5 text-xs font-semibold text-text-primary hover:bg-elevated"
         >
           Retry
         </button>
@@ -89,15 +89,15 @@ export default function SubscriptionTab({ credit, loading, error, refetch }: Sub
         </div>
         <button
           onClick={handleManage}
-          className="flex items-center gap-2 rounded-none border border-border-default bg-elevated hover:bg-elevated hover:text-text-primary px-4 py-2 text-xs font-bold text-text-secondary transition-all active:scale-[0.98]"
+          className="flex items-center gap-2 rounded-lg border border-border-default bg-elevated hover:bg-elevated hover:text-text-primary px-4 py-2 text-xs font-bold text-text-secondary transition-all active:scale-[0.98]"
         >
           <span>MANAGE ON DASHBOARD</span>
           <ArrowRight size={14} />
         </button>
       </div>
 
-      <div className={`flex items-center gap-3 rounded-none border p-4 ${active ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400/90' : 'border-border-default bg-elevated text-text-secondary'}`}>
-        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-none border ${active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-elevated text-text-secondary border-border-default'}`}>
+      <div className={`flex items-center gap-3 rounded-xl border p-4 ${active ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400/90' : 'border-border-default bg-elevated text-text-secondary'}`}>
+        <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border ${active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-elevated text-text-secondary border-border-default'}`}>
           <Shield size={20} />
         </div>
         <div>
@@ -111,7 +111,7 @@ export default function SubscriptionTab({ credit, loading, error, refetch }: Sub
       </div>
 
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-none border border-border-default bg-elevated p-4">
+        <div className="rounded-xl border border-border-default bg-elevated p-4">
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-text-secondary">
             <Coins size={12} />
             <span>Credits</span>
@@ -120,14 +120,14 @@ export default function SubscriptionTab({ credit, loading, error, refetch }: Sub
             {(credit?.credits ?? 0).toLocaleString(undefined, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
           </p>
         </div>
-        <div className="rounded-none border border-border-default bg-elevated p-4">
+        <div className="rounded-xl border border-border-default bg-elevated p-4">
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-text-secondary">
             <Calendar size={12} />
             <span>Expires</span>
           </div>
           <p className="mt-2 text-xs font-bold text-text-primary">{formatDate(credit?.expiresAt ?? null)}</p>
         </div>
-        <div className="rounded-none border border-border-default bg-elevated p-4">
+        <div className="rounded-xl border border-border-default bg-elevated p-4">
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-text-secondary">
             <Gauge size={12} />
             <span>Multiplier</span>
@@ -146,7 +146,7 @@ export default function SubscriptionTab({ credit, loading, error, refetch }: Sub
             return (
               <div
                 key={key}
-                className={`flex items-center justify-between rounded-none border px-3 py-2 ${enabled ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-border-default bg-elevated/60'}`}
+                className={`flex items-center justify-between rounded-lg border px-3 py-2 ${enabled ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-border-default bg-elevated/60'}`}
               >
                 <span className="text-xs font-semibold text-text-primary">{label}</span>
                 <span className={`text-[10px] font-bold uppercase tracking-wider ${enabled ? 'text-emerald-400' : 'text-text-muted'}`}>
@@ -164,13 +164,13 @@ export default function SubscriptionTab({ credit, loading, error, refetch }: Sub
           <span className="text-[10px] text-text-muted">Last 50</span>
         </div>
         {logs.length === 0 ? (
-          <div className="flex flex-col items-center justify-center p-6 text-center rounded-none border border-border-default bg-elevated/60">
+          <div className="flex flex-col items-center justify-center p-6 text-center rounded-xl border border-border-default bg-elevated/60">
             <Sparkles size={28} className="text-text-muted mb-2" />
             <p className="text-xs font-semibold text-text-secondary">No credit activity yet</p>
             <p className="text-[11px] text-text-muted mt-0.5">Credit transactions will appear here.</p>
           </div>
         ) : (
-          <div className="rounded-none border border-border-default overflow-hidden max-h-80 overflow-y-auto scrollbar-none">
+          <div className="rounded-xl border border-border-default overflow-hidden max-h-80 overflow-y-auto scrollbar-none">
             <table className="w-full text-left border-collapse">
               <thead className="sticky top-0 z-10 bg-elevated border-b border-border-default">
                 <tr>

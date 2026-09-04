@@ -1,12 +1,18 @@
-'use client';
+﻿'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BarChart3 } from 'lucide-react';
 import { useTradeStore } from '../store/useTradeStore';
 import { crossfade } from '../lib/motionVariants';
 import { bridgeListen } from '../lib/bridge';
 import { kiteFetch } from '../lib/kiteFetch';
+import { depthPercent, formatSize } from './orderbook/orderBookHelpers';
+import { useOrderBookData } from './orderbook/useOrderBookData';
+import OrderBookMidPill from './orderbook/OrderBookMidPill';
+import OrderBookVolumeRatio from './orderbook/OrderBookVolumeRatio';
+import MarketDepthStats from './orderbook/MarketDepthStats';
 
 import {
   type OrderBookState,
@@ -42,6 +48,7 @@ const cacheKey = (symbol: string) =>
 // ── Component ──────────────────────────────────────────────────────────
 export default function OrderBook() {
   const selectedSymbol = useTradeStore((s) => s.selectedSymbol);
+  const { book, isLive, stats } = useOrderBookData(selectedSymbol);
 
   const [book, setBook] = useState<OrderBookState>(() => createEmptyBook());
   const [isLive, setIsLive] = useState(false);
@@ -59,6 +66,7 @@ export default function OrderBook() {
 
   useEffect(() => {
     asksAnchoredRef.current = false; // a new symbol is a new ladder
+    asksAnchoredRef.current = false;
   }, [selectedSymbol]);
 
   useEffect(() => {
@@ -232,6 +240,10 @@ export default function OrderBook() {
   const { globalMaxSize, askVolPct, bidVolPct } = React.useMemo(() => {
     const maxAskSize = book.asks.length > 0 ? Math.max(...book.asks.map((l) => l.size), 0.01) : 0.01;
     const maxBidSize = book.bids.length > 0 ? Math.max(...book.bids.map((l) => l.size), 0.01) : 0.01;
+    const maxAskSize =
+      book.asks.length > 0 ? Math.max(...book.asks.map((l) => l.size), 0.01) : 0.01;
+    const maxBidSize =
+      book.bids.length > 0 ? Math.max(...book.bids.map((l) => l.size), 0.01) : 0.01;
 
     const totalAskVol = book.asks.reduce((s, l) => s + l.size, 0);
     const totalBidVol = book.bids.reduce((s, l) => s + l.size, 0);
@@ -248,6 +260,7 @@ export default function OrderBook() {
     <div
       id="order-book-dom"
       className="flex h-full flex-col rounded-none border-0 bg-surface font-sans text-[12.5px] select-none overflow-hidden"
+      className="flex min-h-full flex-col rounded-none border-0 bg-surface font-sans text-[12.5px] select-none"
     >
 
       {/* ── Column Headers ──────────────────────────────────── */}
@@ -266,6 +279,7 @@ export default function OrderBook() {
             animate="show"
             exit="exit"
             className="flex flex-1 items-center justify-center font-sans"
+            className="flex flex-1 items-center justify-center font-sans py-8"
           >
             <div className="flex flex-col items-center gap-2 text-center px-4">
               <div className="flex h-8 w-8 items-center justify-center rounded-none bg-elevated">
@@ -325,6 +339,7 @@ export default function OrderBook() {
               <div
                 key={`ask-${i}`}
                   className="group relative grid grid-cols-3 gap-0 px-3.5 py-0.75 hover:bg-red-500/10"
+                className="group relative grid grid-cols-3 gap-0 px-3.5 py-0.75 hover:bg-red-500/10"
               >
                 {/* Depth bar background */}
                 <div
@@ -333,6 +348,10 @@ export default function OrderBook() {
                 />
                 <span className="relative z-10 tabular-nums font-extrabold text-[#ef4444]">
                   {level.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {level.price.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </span>
                 <span className="relative z-10 tabular-nums text-right font-bold text-red-400/90">
                   {formatSize(level.size)}
@@ -365,6 +384,8 @@ export default function OrderBook() {
           </div>
         </div>
       )}
+      {/* ── Mid Price / Spread Floating Pill Row ──────────── */}
+      <OrderBookMidPill book={book} />
 
       {/* ── Bid Levels (Green) — Scrollable without scrollbar ────────── */}
       {book.bids.length > 0 && (
@@ -383,6 +404,10 @@ export default function OrderBook() {
               />
               <span className="relative z-10 tabular-nums font-extrabold text-bull">
                 {level.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {level.price.toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </span>
               <span className="relative z-10 tabular-nums text-right font-bold text-emerald-400/90">
                 {formatSize(level.size)}
@@ -425,7 +450,11 @@ export default function OrderBook() {
             <div className="absolute inset-y-0 left-1/2 w-px bg-white/60 z-10" />
           </div>
         </div>
+        <OrderBookVolumeRatio bidVolPct={bidVolPct} askVolPct={askVolPct} />
       )}
+
+      {/* ── Zerodha-style Market Depth Statistics Card ───────── */}
+      <MarketDepthStats stats={stats} symbol={selectedSymbol} />
     </div>
   );
 }
