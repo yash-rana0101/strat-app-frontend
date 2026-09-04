@@ -135,11 +135,11 @@ export default function SessionHistoryRow({
         ) : (
           <button
             type="button"
-            onClick={() => onOpen(session.session_id)}
+            onClick={() => (archived ? onReopen(session.session_id) : onOpen(session.session_id))}
             // Named explicitly. Derived from content the name would be the label plus every metadata
             // fragment beneath it — "RELIANCE · 10m · 9:15 AM RELIANCE · 10m just now FIND · complete"
             // — which says nothing about what activating it does.
-            aria-label={`Open ${label}`}
+            aria-label={archived ? `Reopen ${label}` : `Open ${label}`}
             className="block w-full truncate text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60"
           >
             <span className={`truncate font-medium ${isActive ? 'text-text-primary' : 'text-text-secondary'}`}>

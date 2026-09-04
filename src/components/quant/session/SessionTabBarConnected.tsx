@@ -110,7 +110,7 @@ export default function SessionTabBarConnected() {
         // transcript the user is comparing against. Height-capped so a long list scrolls internally
         // instead of pushing the workspace off screen.
         <div className="absolute inset-x-0 top-full z-20 max-h-80 overflow-hidden rounded-b-md border border-border-default/60 bg-surface shadow-lg">
-          <SessionHistory onOpen={onOpen} />
+          <SessionHistory onOpen={onOpen} defaultStatus="archived" />
         </div>
       )}
     </div>

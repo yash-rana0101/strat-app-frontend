@@ -22,6 +22,10 @@ export interface SessionHistoryProps {
   onOpen: (sessionId: string) => void;
   /** `active` is the tab bar's set; `archived` is everything closed. */
   status?: 'active' | 'archived';
+  /** Default status when not controlled */
+  defaultStatus?: 'active' | 'archived';
+  /** Whether to show the Closed / Active filter tabs */
+  showStatusFilter?: boolean;
 }
 
 /**
@@ -36,11 +40,20 @@ const SEARCH_MIN_PAGES = 1;
 /** Debounce for `?q=`, so typing eight characters is one request rather than eight. */
 const SEARCH_DEBOUNCE_MS = 250;
 
-export default function SessionHistory({ onOpen, status = 'active' }: SessionHistoryProps) {
+export default function SessionHistory({
+  onOpen,
+  status: controlledStatus,
+  defaultStatus = 'active',
+  showStatusFilter = true,
+}: SessionHistoryProps) {
   const [rawQuery, setRawQuery] = React.useState('');
   const [query, setQuery] = React.useState('');
   const [busyId, setBusyId] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
+  const [internalStatus, setInternalStatus] = React.useState<'active' | 'archived'>(
+    controlledStatus ?? defaultStatus,
+  );
+  const status = controlledStatus ?? internalStatus;
 
   React.useEffect(() => {
     const id = setTimeout(() => setQuery(rawQuery.trim()), SEARCH_DEBOUNCE_MS);
@@ -130,6 +143,37 @@ export default function SessionHistory({ onOpen, status = 'active' }: SessionHis
 
   return (
     <div className="flex h-full min-h-0 flex-col">
+      {showStatusFilter && !controlledStatus && (
+        <div className="flex shrink-0 border-b border-border-default/40 bg-surface/50 text-xs">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={status === 'archived'}
+            onClick={() => setInternalStatus('archived')}
+            className={`flex-1 py-1.5 text-center font-medium transition-colors ${
+              status === 'archived'
+                ? 'border-b-2 border-primary text-text-primary'
+                : 'text-text-muted hover:text-text-secondary'
+            }`}
+          >
+            Closed
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={status === 'active'}
+            onClick={() => setInternalStatus('active')}
+            className={`flex-1 py-1.5 text-center font-medium transition-colors ${
+              status === 'active'
+                ? 'border-b-2 border-primary text-text-primary'
+                : 'text-text-muted hover:text-text-secondary'
+            }`}
+          >
+            Active
+          </button>
+        </div>
+      )}
+
       {everPaged && (
         <div className="shrink-0 border-b border-border-default/40 p-2">
           <div className="flex items-center gap-1.5 rounded border border-border-default/60 bg-surface px-2">

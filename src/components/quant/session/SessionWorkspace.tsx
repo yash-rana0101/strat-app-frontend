@@ -136,7 +136,7 @@ export default function SessionWorkspace({ sessionId }: { sessionId: string }) {
           // history would discard the scroll position and — worse — the mounted subtree a live run is
           // streaming into, so reopening it would look like the run had restarted.
           <div className="absolute inset-x-0 top-full z-20 max-h-[60dvh] overflow-hidden border-b border-border-default/60 bg-surface shadow-lg">
-            <SessionHistory onOpen={(id) => void open(id)} />
+            <SessionHistory onOpen={(id) => void open(id)} defaultStatus="archived" />
           </div>
         )}
       </div>
