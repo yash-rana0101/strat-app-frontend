@@ -8,7 +8,6 @@ import {
   ChevronDown,
   ChevronUp,
   FileText,
-  ListChecks,
 } from 'lucide-react';
 import { highlightNumbers } from '../deep-quant/textHighlighter';
 
@@ -64,10 +63,10 @@ export default function StructuredAnalysisCards({
     <div className={`space-y-3 font-sans ${className}`}>
       {/* 1. Key Catalysts / Setup Validation Card */}
       {catalysts.length > 0 && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-emerald-500/15 pb-2 mb-2.5">
-            <CheckCircle2 size={13} className="text-emerald-400 shrink-0" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
+        <div className="rounded-lg border border-border-default bg-surface p-3.5">
+          <div className="flex items-center gap-2 border-b border-border-default/60 pb-2 mb-2.5">
+            <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-text-primary">
               Validated Setup Catalysts
             </span>
           </div>
@@ -77,7 +76,7 @@ export default function StructuredAnalysisCards({
                 key={`cat-${i}`}
                 className="flex items-start gap-2 text-[10.5px] leading-relaxed text-text-secondary"
               >
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400/70" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span>{highlightNumbers(pt)}</span>
               </li>
             ))}
@@ -87,10 +86,10 @@ export default function StructuredAnalysisCards({
 
       {/* 2. Risks & Invalidation Card */}
       {risks.length > 0 && (
-        <div className="rounded-xl border border-amber-500/25 bg-amber-500/5 p-3.5 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-amber-500/20 pb-2 mb-2.5">
-            <AlertTriangle size={13} className="text-amber-400 shrink-0" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+        <div className="rounded-lg border border-border-default bg-surface p-3.5">
+          <div className="flex items-center gap-2 border-b border-border-default/60 pb-2 mb-2.5">
+            <AlertTriangle size={13} className="text-amber-500 shrink-0" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-text-primary">
               Risk & Invalidation Criteria
             </span>
           </div>
@@ -100,7 +99,7 @@ export default function StructuredAnalysisCards({
                 key={`risk-${i}`}
                 className="flex items-start gap-2 text-[10.5px] leading-relaxed text-text-secondary"
               >
-                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400/80" />
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
                 <span>{highlightNumbers(pt)}</span>
               </li>
             ))}
@@ -110,10 +109,10 @@ export default function StructuredAnalysisCards({
 
       {/* 3. Execution Milestones Card */}
       {planPoints.length > 0 && (
-        <div className="rounded-xl border border-border-default/60 bg-elevated/20 p-3.5 shadow-sm">
-          <div className="flex items-center gap-2 border-b border-border-default/40 pb-2 mb-2.5">
-            <Compass size={13} className="text-cyan-400 shrink-0" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-text-primary">
+        <div className="rounded-lg border border-border-default bg-surface p-3.5">
+          <div className="flex items-center gap-2 border-b border-border-default/60 pb-2 mb-2.5">
+            <Compass size={13} className="text-text-muted shrink-0" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-text-primary">
               Execution Roadmap & Milestones
             </span>
           </div>
@@ -121,7 +120,7 @@ export default function StructuredAnalysisCards({
             {planPoints.map((pt, i) => (
               <div
                 key={`plan-${i}`}
-                className="flex items-start gap-2.5 rounded-lg border border-border-default/40 bg-surface/60 p-2 text-[10.5px] leading-relaxed text-text-secondary"
+                className="flex items-start gap-2.5 rounded-md border border-border-default/60 bg-elevated/30 p-2 text-[10.5px] leading-relaxed text-text-secondary"
               >
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[8.5px] font-bold text-primary">
                   {i + 1}

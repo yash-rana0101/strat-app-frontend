@@ -29,15 +29,15 @@ export default function QuantSidebarResult({
   // ── Stand aside / Risk Guard ──────────────────────────────────────────────
   if (!actionable) {
     return (
-      <div className="mx-2 mb-2 rounded-xl border border-amber-500/25 bg-gradient-to-b from-amber-500/10 via-elevated/40 to-elevated/20 shadow-md font-sans overflow-hidden animate-fade-in">
-        <div className="flex items-center justify-between border-b border-amber-500/20 px-3 py-2 bg-amber-500/5">
+      <div className="mx-2 mb-2 rounded-lg border border-border-default bg-surface font-sans overflow-hidden animate-fade-in">
+        <div className="flex items-center justify-between border-b border-border-default/60 px-3 py-2 bg-elevated/20">
           <div className="flex items-center gap-1.5">
-            <ShieldAlert size={13} className="shrink-0 text-amber-400" aria-hidden="true" />
-            <span className="text-[10px] font-black uppercase tracking-wider text-amber-400">
+            <ShieldAlert size={13} className="shrink-0 text-amber-500" aria-hidden="true" />
+            <span className="text-[10px] font-bold uppercase tracking-wider text-text-primary">
               Risk Guard — Stand Aside
             </span>
           </div>
-          <span className="rounded px-1.5 py-0.5 text-[8px] font-mono font-black uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30">
+          <span className="rounded px-1.5 py-0.5 text-[8px] font-mono font-semibold uppercase tracking-wider bg-elevated text-text-muted border border-border-default">
             NO TRADE
           </span>
         </div>
@@ -52,16 +52,16 @@ export default function QuantSidebarResult({
               showLabel={false}
             />
             <div className="flex flex-col min-w-0">
-              <span className="text-[9px] font-bold uppercase tracking-wider text-text-muted">
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-text-muted">
                 Decision Bias
               </span>
-              <span className="text-[11px] font-extrabold text-amber-400">
+              <span className="text-[11px] font-bold text-text-primary mt-0.5">
                 Capital Preservation
               </span>
             </div>
           </div>
 
-          <p className="line-clamp-3 text-[10px] leading-relaxed text-text-secondary border-l-2 border-amber-500/30 pl-2 italic">
+          <p className="line-clamp-3 text-[10px] leading-relaxed text-text-secondary border-l-2 border-border-default pl-2 italic">
             {finalTrade.setup_validation ||
               'The agent identified unfavorable risk-to-reward or conflicting market signals.'}
           </p>
@@ -78,20 +78,20 @@ export default function QuantSidebarResult({
   const { entry, take_profit: target, stop_loss: stop } = finalTrade.execution_levels;
 
   return (
-    <div className="mx-2 mb-2 rounded-xl border border-emerald-500/25 bg-gradient-to-b from-emerald-500/10 via-elevated/50 to-elevated/20 shadow-lg font-sans overflow-hidden animate-fade-in">
+    <div className="mx-2 mb-2 rounded-lg border border-border-default bg-surface font-sans overflow-hidden animate-fade-in">
       {/* Top Banner */}
-      <div className="flex items-center justify-between border-b border-emerald-500/20 px-3 py-2 bg-emerald-500/5">
+      <div className="flex items-center justify-between border-b border-border-default/60 px-3 py-2 bg-elevated/20">
         <div className="flex items-center gap-1.5">
-          <Sparkles size={12} className="shrink-0 text-emerald-400" aria-hidden="true" />
-          <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
+          <Sparkles size={12} className="shrink-0 text-emerald-500" aria-hidden="true" />
+          <span className="text-[10px] font-bold uppercase tracking-wider text-text-primary">
             Quant Trade Setup Ready
           </span>
         </div>
         <span
-          className={`rounded px-2 py-0.5 text-[9px] font-black uppercase tracking-widest border ${
+          className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest border ${
             isBuy
-              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-              : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+              : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
           }`}
         >
           {side} SETUP
@@ -102,11 +102,11 @@ export default function QuantSidebarResult({
       <div className="p-3 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">
+            <span className="text-[8.5px] font-semibold uppercase tracking-wider text-text-muted">
               Directional Bias
             </span>
             <span
-              className={`text-xl font-black tracking-tight ${
+              className={`text-lg font-bold tracking-tight mt-0.5 ${
                 isBuy ? 'text-emerald-400' : 'text-rose-400'
               }`}
             >

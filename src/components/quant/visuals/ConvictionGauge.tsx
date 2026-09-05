@@ -29,43 +29,37 @@ export default function ConvictionGauge({
     if (safeScore === null)
       return {
         stroke: '#64748b',
-        glow: 'rgba(100, 116, 139, 0.2)',
         text: 'text-text-muted',
-        badge: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+        badge: 'bg-elevated text-text-muted border-border-default',
       };
     if (isStandAside)
       return {
         stroke: '#f59e0b',
-        glow: 'rgba(245, 158, 11, 0.25)',
-        text: 'text-amber-400',
-        badge: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
+        text: 'text-amber-500 dark:text-amber-400',
+        badge: 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30',
       };
     if (isSell)
       return {
         stroke: '#f43f5e',
-        glow: 'rgba(244, 63, 94, 0.3)',
-        text: 'text-rose-400',
-        badge: 'bg-rose-500/10 text-rose-400 border-rose-500/25',
+        text: 'text-rose-500 dark:text-rose-400',
+        badge: 'bg-rose-500/10 text-rose-500 dark:text-rose-400 border-rose-500/30',
       };
     if (safeScore >= 80)
       return {
         stroke: '#10b981',
-        glow: 'rgba(16, 185, 129, 0.35)',
-        text: 'text-emerald-400',
-        badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
+        text: 'text-emerald-500 dark:text-emerald-400',
+        badge: 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/30',
       };
     if (safeScore >= 60)
       return {
         stroke: '#06b6d4',
-        glow: 'rgba(6, 182, 212, 0.3)',
-        text: 'text-cyan-400',
-        badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/25',
+        text: 'text-cyan-500 dark:text-cyan-400',
+        badge: 'bg-cyan-500/10 text-cyan-500 dark:text-cyan-400 border-cyan-500/30',
       };
     return {
       stroke: '#f59e0b',
-      glow: 'rgba(245, 158, 11, 0.25)',
-      text: 'text-amber-400',
-      badge: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
+      text: 'text-amber-500 dark:text-amber-400',
+      badge: 'bg-amber-500/10 text-amber-500 dark:text-amber-400 border-amber-500/30',
     };
   };
 
@@ -101,7 +95,7 @@ export default function ConvictionGauge({
         <svg
           className="w-full h-full -rotate-90"
           viewBox={`0 0 ${config.dim} ${config.dim}`}
-          style={{ filter: `drop-shadow(0 0 6px ${theme.glow})` }}
+          
         >
           {/* Background track */}
           <circle

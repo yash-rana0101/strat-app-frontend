@@ -102,7 +102,7 @@ export default function PriceLadderBar({
   // Full / Expanded Variant (for Agent Detail & Actionable Trade Plan)
   return (
     <div
-      className={`rounded-xl border border-border-default/60 bg-elevated/20 p-3.5 shadow-sm font-sans ${className}`}
+      className={`rounded-lg border border-border-default bg-surface p-3.5 font-sans ${className}`}
     >
       {/* Top Level Bar Header */}
       <div className="flex items-center justify-between border-b border-border-default/40 pb-2.5 mb-3">
@@ -132,7 +132,7 @@ export default function PriceLadderBar({
             <span
               className={`font-mono text-xs font-black px-2 py-0.5 rounded border ${
                 isHealthyRr
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25 shadow-xs shadow-emerald-500/10'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
                   : 'bg-amber-500/10 text-amber-400 border-amber-500/25'
               }`}
             >
@@ -161,7 +161,7 @@ export default function PriceLadderBar({
             className="h-full bg-gradient-to-r from-rose-600/80 to-rose-500 relative group"
           />
           {/* Entry Divider Pin */}
-          <div className="w-1 h-full bg-white z-10 shadow-md shadow-white/50" />
+          <div className="w-1 h-full bg-white z-10" />
           <div
             style={{ width: `${rewardWidthPct}%` }}
             className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 relative group"

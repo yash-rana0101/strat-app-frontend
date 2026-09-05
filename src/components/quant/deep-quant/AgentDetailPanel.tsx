@@ -128,24 +128,24 @@ function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; s
     return (
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border-default/40 pb-2">
-          <h3 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-400">
-            <ShieldAlert size={13} />
+        <div className="flex items-center justify-between border-b border-border-default/60 pb-2">
+          <h3 className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-primary">
+            <ShieldAlert size={13} className="text-amber-500" />
             <span>Stand Aside — Risk Guard</span>
           </h3>
-          <span className="rounded px-1.5 py-0.5 text-[8.5px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-300 border border-amber-500/25">
-            CAPITAL PRESERVATION
+          <span className="rounded px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-wider bg-elevated text-text-muted border border-border-default">
+            Capital Preservation
           </span>
         </div>
 
         {/* Hero Card */}
-        <div className="rounded-xl border border-amber-500/20 bg-gradient-to-b from-amber-500/10 via-elevated/40 to-elevated/10 p-3.5 shadow-sm space-y-3">
+        <div className="rounded-lg border border-border-default bg-surface p-3.5 space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">
+              <span className="text-[8.5px] font-semibold uppercase tracking-wider text-text-muted">
                 Market Condition
               </span>
-              <span className="block text-base font-black text-amber-400">
+              <span className="block text-sm font-bold text-text-primary mt-0.5">
                 No High-Conviction Setup
               </span>
             </div>
@@ -178,16 +178,16 @@ function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; s
   return (
     <div className="space-y-4">
       {/* Title Bar */}
-      <div className="flex items-center justify-between border-b border-border-default/40 pb-2">
-        <h3 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-emerald-400">
-          <Sparkles size={12} />
+      <div className="flex items-center justify-between border-b border-border-default/60 pb-2">
+        <h3 className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-primary">
+          <Sparkles size={12} className="text-emerald-500" />
           <span>Committed Trade Plan</span>
         </h3>
         <span
-          className={`rounded px-2 py-0.5 text-[8.5px] font-black uppercase tracking-widest border ${
+          className={`rounded px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-widest border ${
             isBuy
-              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25'
-              : 'bg-rose-500/15 text-rose-300 border-rose-500/25'
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+              : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
           }`}
         >
           {side} {symbol}
@@ -195,14 +195,14 @@ function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; s
       </div>
 
       {/* Hero Decision Tile */}
-      <div className="rounded-xl border border-emerald-500/25 bg-gradient-to-b from-emerald-500/10 via-elevated/40 to-elevated/10 p-3.5 shadow-sm">
+      <div className="rounded-lg border border-border-default bg-surface p-3.5">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
-            <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">
+            <span className="text-[8.5px] font-semibold uppercase tracking-wider text-text-muted">
               Directional Setup
             </span>
             <span
-              className={`text-2xl font-black tracking-tight ${
+              className={`text-xl font-bold tracking-tight mt-0.5 ${
                 isBuy ? 'text-emerald-400' : 'text-rose-400'
               }`}
             >

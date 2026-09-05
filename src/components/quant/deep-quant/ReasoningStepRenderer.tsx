@@ -36,10 +36,10 @@ export default function ReasoningStepRenderer({ step }: ReasoningStepRendererPro
 
   return (
     <div className="flex justify-start animate-fade-in font-sans w-full select-text my-3">
-      <div className="bg-gradient-to-b from-emerald-500/10 via-elevated/40 to-elevated/15 text-text-primary border border-emerald-500/20 rounded-2xl p-3.5 shadow-lg w-full space-y-3">
-        <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2 select-none">
-          <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
-            <Target size={12} className="text-emerald-400 shrink-0" />
+      <div className="bg-surface text-text-primary border border-border-default rounded-lg p-3.5 w-full space-y-3">
+        <div className="flex items-center justify-between border-b border-border-default/60 pb-2 select-none">
+          <div className="flex items-center gap-1.5 text-[10px] text-text-primary font-bold uppercase tracking-wider">
+            <Target size={12} className="text-primary shrink-0" />
             <span>Final Trade Decision</span>
           </div>
 

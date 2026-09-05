@@ -30,13 +30,8 @@ export default function LoadingState({ agentStatus }: LoadingStateProps) {
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-8 px-4">
-      {/* Pulsing orb */}
-      <div className="relative">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30">
-          <Loader2 size={28} className="text-emerald-400 animate-spin" />
-        </div>
-        <div className="absolute -inset-2 rounded-3xl bg-emerald-500/5 animate-pulse" />
-        <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-500 animate-ping" />
+      <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border-default bg-surface">
+        <Loader2 size={22} className="text-primary animate-spin" />
       </div>
 
       <div className="text-center">
@@ -47,7 +42,7 @@ export default function LoadingState({ agentStatus }: LoadingStateProps) {
             initial="hidden"
             animate="show"
             exit="exit"
-            className="text-[11px] font-semibold text-emerald-300"
+            className="text-[11px] font-semibold text-text-primary"
           >
             {LOADING_PHASES[phaseIdx]}
           </motion.p>

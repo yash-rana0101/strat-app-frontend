@@ -18,15 +18,15 @@ export default function ActionableTradePlan({ finalTrade }: ActionableTradePlanP
 
   return (
     <div className="flex justify-start animate-fade-in font-sans w-full my-3 select-text">
-      <div className="w-full rounded-2xl border border-emerald-500/25 bg-gradient-to-b from-emerald-500/10 via-elevated/40 to-elevated/20 shadow-xl overflow-hidden">
+      <div className="w-full rounded-lg border border-border-default bg-surface overflow-hidden">
         {/* Header Ribbon */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-emerald-500/20 bg-emerald-500/5 select-none">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border-default/60 bg-elevated/20 select-none">
           <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/20 text-emerald-400">
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-elevated text-emerald-500">
               <Sparkles size={13} />
             </div>
             <div>
-              <h3 className="text-xs font-black text-emerald-400 uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-text-primary uppercase tracking-wider">
                 Actionable Trade Setup Confirmed
               </h3>
               <span className="text-[9px] text-text-muted">
@@ -37,10 +37,10 @@ export default function ActionableTradePlan({ finalTrade }: ActionableTradePlanP
 
           <div className="flex items-center gap-2">
             <span
-              className={`rounded-md px-2.5 py-1 text-[10px] font-black tracking-widest uppercase border ${
+              className={`rounded px-2 py-0.5 text-[9px] font-bold tracking-widest uppercase border ${
                 isBuy
-                  ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                  : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                  : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
               }`}
             >
               {side} SIGNAL
@@ -50,13 +50,13 @@ export default function ActionableTradePlan({ finalTrade }: ActionableTradePlanP
 
         {/* Hero Metrics Strip: Direction + Conviction Gauge */}
         <div className="p-4 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-surface/60 rounded-xl p-3 border border-border-default/50">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-elevated/30 rounded-lg p-3 border border-border-default/60">
             <div className="flex flex-col">
-              <span className="text-[9px] font-bold uppercase tracking-wider text-text-muted">
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-text-muted">
                 Order Recommendation
               </span>
               <span
-                className={`text-2xl font-black tracking-tight ${
+                className={`text-xl font-bold tracking-tight mt-0.5 ${
                   isBuy ? 'text-emerald-400' : 'text-rose-400'
                 }`}
               >

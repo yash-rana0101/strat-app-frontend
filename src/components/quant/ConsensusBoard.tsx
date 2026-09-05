@@ -32,11 +32,7 @@ function trendBg(score: number) {
   return 'bg-amber-500/60';
 }
 
-function trendGlow(score: number) {
-  if (score > 50) return 'shadow-emerald-500/20';
-  if (score < -50) return 'shadow-rose-500/20';
-  return '';
-}
+
 
 function stateColor(state: string) {
   switch (state) {
@@ -132,7 +128,7 @@ export default function ConsensusBoard({ consensusData }: Props) {
         <div className="flex items-center gap-3">
           {/* Big number */}
           <div
-            className={`text-3xl font-black tabular-nums tracking-tight ${trendColor(trend_score)} ${trendGlow(trend_score)}`}
+            className={`text-3xl font-black tabular-nums tracking-tight ${trendColor(trend_score)}`}
           >
             {trend_score > 0 ? '+' : ''}
             {trend_score}

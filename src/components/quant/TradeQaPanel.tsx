@@ -76,7 +76,7 @@ export default function TradeQaPanel() {
   return (
     <div className="flex flex-col font-sans bg-surface p-3 shrink-0 border-t border-border-default/40">
       {/* Wrapper container with border and rounded corners */}
-      <div className="flex flex-col rounded-lg border border-border-default/60 bg-elevated/10 p-2 relative shadow-md">
+      <div className="flex flex-col rounded-lg border border-border-default/60 bg-elevated/10 p-2 relative">
         {/* Text Area */}
         <textarea
           rows={2}
@@ -143,7 +143,7 @@ export default function TradeQaPanel() {
               title="Send question"
               className={`h-7 w-7 rounded-full flex items-center justify-center transition-all duration-300 ${
                 canSend
-                  ? 'bg-emerald-500 text-black hover:bg-emerald-400 active:scale-[0.93] shadow-md shadow-emerald-500/20'
+                  ? 'bg-emerald-500 text-black hover:bg-emerald-400 active:scale-[0.93] '
                   : 'bg-elevated/40 text-text-muted/30 cursor-not-allowed opacity-50'
               }`}
             >

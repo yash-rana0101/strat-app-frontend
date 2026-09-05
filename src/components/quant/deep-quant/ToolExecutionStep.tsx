@@ -105,8 +105,8 @@ export default function ToolExecutionStep({
   const formattedToolName = step.toolName ? step.toolName.replace(/_/g, ' ') : '';
 
   const borderClass = isCompleted
-    ? 'border border-emerald-500/15 bg-gradient-to-r from-emerald-500/5 via-elevated/20 to-elevated/5'
-    : 'border border-amber-500/15 bg-gradient-to-r from-amber-500/5 via-elevated/35 to-elevated/10';
+    ? 'border border-border-default/80 bg-surface'
+    : 'border border-border-default/80 bg-elevated/20';
 
   // A button ONLY when a selection handler was given. In the sidebar there is nothing to select,
   // and a button that does nothing is worse than a div — it takes focus and announces itself.
@@ -129,7 +129,7 @@ export default function ToolExecutionStep({
               },
             }
           : {})}
-        className={`rounded px-3 py-2.5 text-[10px] leading-relaxed shadow-md w-full ${borderClass} ${
+        className={`rounded-md px-3 py-2.5 text-[10px] leading-relaxed w-full ${borderClass} ${
           interactive
             ? 'cursor-pointer transition-colors hover:border-primary/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary'
             : ''

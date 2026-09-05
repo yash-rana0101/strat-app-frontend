@@ -17,6 +17,7 @@ import QaMessages from './deep-quant/QaMessages';
 import ReasoningStepRenderer from './deep-quant/ReasoningStepRenderer';
 import ToolExecutionStep from './deep-quant/ToolExecutionStep';
 import ActionableTradePlan from './deep-quant/ActionableTradePlan';
+import TerminalStandAsideCard from './deep-quant/TerminalStandAsideCard';
 import ThinkingGroupRenderer from './deep-quant/ThinkingGroupRenderer';
 import { classifyAgentError } from './deep-quant/agentErrorClassifier';
 import { highlightNumbers } from './deep-quant/textHighlighter';
@@ -122,15 +123,15 @@ export default function AgentTerminal({
         )}
 
         {reasoningSteps.length === 0 && sessionStatus === 'complete' && (
-          <div className="flex items-start gap-3 p-3.5 bg-amber-500/5 border border-amber-500/25 rounded mt-2 select-text font-sans shadow-lg shadow-amber-955/20">
-            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-amber-500/20 text-amber-500 dark:text-amber-400 text-[10px] font-bold select-none mt-0.5">
+          <div className="flex items-start gap-3 p-3.5 bg-surface border border-amber-500/30 rounded-md mt-2 select-text font-sans">
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-amber-500/10 text-amber-500 dark:text-amber-400 text-[10px] font-bold select-none mt-0.5">
               !
             </div>
             <div className="flex flex-col">
               <span className="text-[11px] font-bold text-amber-500 dark:text-amber-400">
                 No reasoning was streamed
               </span>
-              <span className="text-[10px] text-amber-600 dark:text-amber-300/80 mt-1 leading-relaxed">
+              <span className="text-[10px] text-text-secondary mt-1 leading-relaxed">
                 The agent run completed but produced no visible reasoning, tool, or decision steps.
                 This usually means the Python agent (:8086) returned an empty response or the stream
                 ended early. Press{' '}
@@ -151,9 +152,8 @@ export default function AgentTerminal({
 
         {/* Streaming spinner inside console */}
         {sessionStatus === 'running' && (
-          <div className="flex items-center gap-2 pl-3 py-2 text-[10px] text-text-muted/60 animate-pulse">
+          <div className="flex items-center gap-2 pl-3 py-2 text-[10px] text-text-muted/60">
             <Loader2 size={11} className="animate-spin text-text-muted" />
-            <span>Agent evaluating microstructure signals...</span>
             <span>working.....</span>
           </div>
         )}
@@ -172,25 +172,25 @@ export default function AgentTerminal({
             const isFault = err.kind !== 'research-locked' && err.kind !== 'feature-disabled';
             const tone = isFault
               ? {
-                  wrap: 'bg-rose-500/5 border-rose-500/20 shadow-rose-955/20',
-                  badge: 'bg-rose-500/20 text-rose-500 dark:text-rose-400',
-                  title: 'text-rose-500 dark:text-rose-400',
-                  body: 'text-rose-600 dark:text-rose-300/80',
-                  detail: 'text-rose-500 dark:text-rose-400 bg-rose-500/5 border-rose-500/15',
+                  wrap: 'bg-surface border-rose-500/30',
+                badge: 'bg-rose-500/10 text-rose-500 dark:text-rose-400',
+                title: 'text-rose-500 dark:text-rose-400',
+                body: 'text-text-secondary',
+                detail: 'text-rose-500 dark:text-rose-400 bg-elevated/40 border-rose-500/20',
                   glyph: <AlertTriangle size={11} />,
                 }
               : {
-                  wrap: 'bg-amber-500/5 border-amber-500/20 shadow-amber-955/20',
-                  badge: 'bg-amber-500/20 text-amber-600 dark:text-amber-400',
-                  title: 'text-amber-600 dark:text-amber-400',
-                  body: 'text-amber-700 dark:text-amber-300/80',
-                  detail: 'text-amber-600 dark:text-amber-400 bg-amber-500/5 border-amber-500/15',
+                  wrap: 'bg-surface border-amber-500/30',
+                badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+                title: 'text-amber-600 dark:text-amber-400',
+                body: 'text-text-secondary',
+                detail: 'text-amber-600 dark:text-amber-400 bg-elevated/40 border-amber-500/20',
                   glyph: <Lock size={11} />,
                 };
 
             return (
               <div
-                className={`flex items-start gap-3 p-3.5 border rounded mt-2 select-text font-sans shadow-lg ${tone.wrap}`}
+                className={`flex items-start gap-3 p-3.5 border rounded-md mt-2 select-text font-sans ${tone.wrap}`}
               >
                 <div
                   className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-[10px] font-bold select-none mt-0.5 ${tone.badge}`}
@@ -214,62 +214,7 @@ export default function AgentTerminal({
 
         {/* Stand-Aside decision rendered INLINE in the terminal log */}
         {sessionStatus === 'complete' && finalTrade && !isActionableTrade(finalTrade) && (
-          <div className="flex justify-start animate-fade-in font-sans w-full my-3 select-text">
-            <div className="w-full rounded-2xl border border-amber-500/25 bg-gradient-to-b from-amber-500/10 via-elevated/40 to-elevated/20 p-4 shadow-lg space-y-3">
-              <div className="flex items-center justify-between border-b border-amber-500/20 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-500/20 text-amber-400">
-                    <ShieldAlert size={13} />
-                  </div>
-                  <div>
-                    <span className="text-xs font-black uppercase tracking-wider text-amber-400">
-                      Stand Aside — Risk Guard Active
-                    </span>
-                    <span className="block text-[9px] text-text-muted">
-                      No directional edge identified under current risk parameters
-                    </span>
-                  </div>
-                </div>
-
-                <span className="rounded-md px-2 py-0.5 text-[9px] font-mono font-black uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                  {finalTrade.action ? String(finalTrade.action).toUpperCase() : 'NO TRADE'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between gap-3 bg-surface/60 rounded-xl p-3 border border-border-default/50">
-                <div className="flex flex-col">
-                  <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">
-                    Decision Bias
-                  </span>
-                  <span className="text-sm font-extrabold text-amber-400">
-                    Capital Preservation Prioritized
-                  </span>
-                </div>
-
-                <ConvictionGauge
-                  score={finalTrade.conviction_score}
-                  action="HOLD"
-                  tier="stand_aside"
-                  size="sm"
-                  showLabel={true}
-                />
-              </div>
-
-              {finalTrade.setup_validation && (
-                <div className="rounded-lg border border-amber-500/15 bg-amber-500/5 p-2.5 text-[10.5px] leading-relaxed text-text-secondary">
-                  <p className="italic border-l-2 border-amber-500/40 pl-2">
-                    &ldquo;{highlightNumbers(finalTrade.setup_validation)}&rdquo;
-                  </p>
-                </div>
-              )}
-
-              {finalTrade.execution_plan && (
-                <p className="text-[10px] text-text-muted leading-relaxed pt-1">
-                  {highlightNumbers(finalTrade.execution_plan)}
-                </p>
-              )}
-            </div>
-          </div>
+          <TerminalStandAsideCard finalTrade={finalTrade} />
         )}
 
         {/* Actionable trade declaration.
