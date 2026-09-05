@@ -199,6 +199,7 @@ export default function AgentDialogMetaBar({
               : mode === 'VERIFY'
                 ? 'Verify my setup'
                 : 'Find quant trade'}
+                : 'Find Trade'}
         </button>
       </div>
     </div>
