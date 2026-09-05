@@ -14,32 +14,20 @@
 
 /* ── Dark theme ──────────────────────────────────────────────────────── */
 .theme-dark:root {
-  /* Platform chrome (top toolbar, left drawing toolbar, panels) — lifted to the
-     panel elevation --bg-surface (#161b22) so the toolbars read as distinct from
-     the chart canvas instead of merging into it. */
-  --tv-color-platform-background: #161b22;
   /* Platform chrome (top toolbar, left drawing toolbar, panels) — aligned to
      --bg-surface (#191a1b) so the toolbars frame the chart canvas cleanly. */
   --tv-color-platform-background: #191a1b;
 
-  /* Chart pane — kept at the base canvas (#0d1117), one step below the chrome. */
-  --tv-color-pane-background: #0d1117;
-  /* Chart pane — #191a1b neutral charcoal. */
-  --tv-color-pane-background: #191a1b;
+  /* Chart pane — #0d0d0e depth canvas. */
+  --tv-color-pane-background: #0d0d0e;
 
   /* Toolbar buttons — default state (hover=--bg-elevated, active=--bg-card) */
-  --tv-color-toolbar-button-background-hover: #21262d;
-  --tv-color-toolbar-button-background-expanded: #21262d;
-  --tv-color-toolbar-button-background-active: #161b22;
-  --tv-color-toolbar-button-background-active-hover: #21262d;
   --tv-color-toolbar-button-background-hover: #262729;
   --tv-color-toolbar-button-background-expanded: #262729;
   --tv-color-toolbar-button-background-active: #202123;
   --tv-color-toolbar-button-background-active-hover: #262729;
 
   /* Toolbar text — matches --text-secondary / --text-muted */
-  --tv-color-toolbar-button-text: #8b949e;
-  --tv-color-toolbar-button-text-hover: #f0f6fc;
   --tv-color-toolbar-button-text: #8a8f98;
   --tv-color-toolbar-button-text-hover: #f0f1f3;
   --tv-color-toolbar-button-text-active: #10b981;
@@ -52,25 +40,16 @@
   --tv-color-toolbar-toggle-button-background-active: rgba(16, 185, 129, 0.15);
   --tv-color-toolbar-toggle-button-background-active-hover: rgba(16, 185, 129, 0.25);
 
-  /* Toolbar divider — matches --border-default (#30363d) */
-  --tv-color-toolbar-divider-background: #30363d;
   /* Toolbar divider — matches --border-default (#2e3033) */
   --tv-color-toolbar-divider-background: #2e3033;
 
   /* Save layout loader */
-  --tv-color-toolbar-save-layout-loader: #8b949e;
   --tv-color-toolbar-save-layout-loader: #8a8f98;
 
   /* Popup / dialog backgrounds — matches --bg-card / --bg-elevated */
-  --tv-color-popup-background: #161b22;
-  --tv-color-popup-element-text: #f0f6fc;
   --tv-color-popup-background: #191a1b;
   --tv-color-popup-element-text: #f0f1f3;
   --tv-color-popup-element-text-hover: #ffffff;
-  --tv-color-popup-element-background-hover: #21262d;
-  --tv-color-popup-element-divider-background: #30363d;
-  --tv-color-popup-element-secondary-text: #8b949e;
-  --tv-color-popup-element-hint-text: #6e7681;
   --tv-color-popup-element-background-hover: #262729;
   --tv-color-popup-element-divider-background: #2e3033;
   --tv-color-popup-element-secondary-text: #8a8f98;
@@ -81,12 +60,9 @@
   --tv-color-popup-element-background-active: rgba(16, 185, 129, 0.12);
 
   /* Toolbox popup elements */
-  --tv-color-popup-element-toolbox-text: #8b949e;
-  --tv-color-popup-element-toolbox-text-hover: #f0f6fc;
   --tv-color-popup-element-toolbox-text: #8a8f98;
   --tv-color-popup-element-toolbox-text-hover: #f0f1f3;
   --tv-color-popup-element-toolbox-text-active-hover: #10b981;
-  --tv-color-popup-element-toolbox-background-hover: #21262d;
   --tv-color-popup-element-toolbox-background-hover: #262729;
   --tv-color-popup-element-toolbox-background-active-hover: rgba(16, 185, 129, 0.15);
 }
@@ -163,8 +139,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0d1117;
-  background: #191a1b;
+  background: #0d0d0e;
 }
 
 :root:not(.theme-dark) ::-webkit-scrollbar-track {
@@ -172,7 +147,6 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #30363d;
   background: #2e3033;
   border-radius: 3px;
 }
@@ -182,7 +156,6 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #484f58;
   background: #3e4145;
 }
 
@@ -226,7 +199,6 @@
 }
 
 .tv-custom-toolbar-btn:hover {
-  background-color: #21262d !important;
   background-color: #262729 !important;
   color: #ffffff !important;
 }
@@ -241,8 +213,6 @@
   position: absolute !important;
   z-index: 100000 !important;
   width: 170px !important;
-  background-color: #161b22 !important;
-  border: 1px solid #30363d !important;
   background-color: #191a1b !important;
   border: 1px solid #2e3033 !important;
   padding: 4px !important;
@@ -262,7 +232,6 @@
   border: none !important;
   padding: 6px 10px !important;
   font-size: 11px !important;
-  color: #8b949e !important;
   color: #8a8f98 !important;
   text-align: left !important;
   cursor: pointer !important;
@@ -270,7 +239,6 @@
 }
 
 .tv-custom-dropdown-item:hover {
-  background-color: #21262d !important;
   background-color: #262729 !important;
   color: #ffffff !important;
 }

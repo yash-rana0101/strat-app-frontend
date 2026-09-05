@@ -27,7 +27,7 @@ export default function FnoChartPanel() {
 
   if (!showChart) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-surface border-b border-border-default/30">
+      <div className="flex h-full w-full items-center justify-center bg-chart-bg border-b border-border-default/30">
         <div className="text-center">
           <span className="text-[11px] font-bold uppercase tracking-widest text-text-muted block">
             F&amp;O Contract Chart
@@ -41,7 +41,7 @@ export default function FnoChartPanel() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col bg-surface">
+    <div className="flex h-full w-full flex-col bg-chart-bg">
       <div className="h-full min-h-0 flex-1">
         <ChartSurface className="h-full w-full" symbolOverride={selectedSymbol} />
       </div>

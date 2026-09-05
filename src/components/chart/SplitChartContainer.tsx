@@ -52,7 +52,7 @@ export default function SplitChartContainer({ mode }: SplitChartContainerProps) 
   const [paneA, paneB] = panes;
 
   return (
-    <div data-split-mode={mode} className="flex h-full w-full min-h-0 flex-col bg-background">
+    <div data-split-mode={mode} className="flex h-full w-full min-h-0 flex-col bg-chart-bg">
       <Group orientation={isMobile ? 'vertical' : 'horizontal'} className="h-full w-full min-h-0">
         <Panel defaultSize={50} minSize={20}>
           {/* Stable key = pane id so React keeps each chart instance isolated. */}

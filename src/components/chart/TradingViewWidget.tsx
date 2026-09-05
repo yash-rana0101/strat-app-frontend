@@ -442,17 +442,17 @@ export default function TradingViewWidget({
   const displayError = scriptError || widgetError;
 
   return (
-    <div className="relative h-full w-full min-h-0 overflow-hidden flex flex-col bg-surface">
+    <div className="relative h-full w-full min-h-0 overflow-hidden flex flex-col bg-chart-bg">
       {/* Loading state — script is still downloading */}
       {!scriptReady && !displayError && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-surface">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-chart-bg">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <span className="text-xs font-medium text-text-muted">Loading chart engine…</span>
         </div>
       )}
       {/* Error state — script or widget failed */}
       {displayError && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-surface px-6 text-center">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-chart-bg px-6 text-center">
           <span className="flex items-center gap-1.5 text-sm font-bold text-amber-500">
             <AlertTriangle size={14} className="shrink-0" />
             Chart failed to load

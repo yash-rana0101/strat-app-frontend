@@ -49,7 +49,7 @@ export default function TerminalChartPane({ activeProfile }: TerminalChartPanePr
   return (
     <div
       id={`${activeProfile.toLowerCase()}-hud`}
-      className="flex h-full flex-col min-h-0 rounded-none border-none bg-surface overflow-hidden"
+      className="flex h-full flex-col min-h-0 rounded-none border-none bg-chart-bg overflow-hidden"
     >
       <MainTerminalChart />
     </div>

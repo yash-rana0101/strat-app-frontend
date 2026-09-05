@@ -57,8 +57,8 @@ export default function IvSkewChart({ model }: IvSkewChartProps) {
     if (!chartContainerRef.current) return;
 
     const rootStyles = getComputedStyle(document.documentElement);
-    const chartBackground = rootStyles.getPropertyValue('--chart-bg').trim() || '#0b1220';
-    const chartGrid = rootStyles.getPropertyValue('--chart-grid').trim() || '#1e293b';
+    const chartBackground = rootStyles.getPropertyValue('--chart-bg').trim() || '#0d0d0e';
+    const chartGrid = rootStyles.getPropertyValue('--chart-grid').trim() || '#1c1d1e';
     const chartText = rootStyles.getPropertyValue('--text-secondary').trim() || '#9ca3af';
     const borderDefault = rootStyles.getPropertyValue('--border-default').trim() || '#374151';
     const lineColor = rootStyles.getPropertyValue('--accent-primary').trim() || '#38bdf8';

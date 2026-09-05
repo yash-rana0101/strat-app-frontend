@@ -55,8 +55,8 @@ function readThemeTokens() {
     rootStyles.getPropertyValue(name).trim() || fallback;
 
   return {
-    chartBackground: read('--chart-bg', '#191a1b'),
-    chartGrid: read('--chart-grid', '#242527'),
+    chartBackground: read('--chart-bg', '#0d0d0e'),
+    chartGrid: read('--chart-grid', '#1c1d1e'),
     chartText: read('--text-secondary', '#caced3'),
     borderDefault: read('--border-default', '#2e3033'),
     // The theme's bull/bear colors distinguish call OI from put OI (R3.4).

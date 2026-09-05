@@ -75,7 +75,7 @@ class PaneErrorBoundary extends React.Component<PaneErrorBoundaryProps, PaneErro
       return (
         <div
           role="alert"
-          className="flex h-full w-full flex-col items-center justify-center gap-2 bg-surface px-4 text-center"
+          className="flex h-full w-full flex-col items-center justify-center gap-2 bg-chart-bg px-4 text-center"
         >
           <AlertTriangle size={20} className="text-amber-400" />
           <span className="text-xs font-semibold text-text-primary">
@@ -120,7 +120,7 @@ export default function ChartPane({ pane }: ChartPaneProps) {
       data-active={isActive}
       onMouseDownCapture={handleActivate}
       onClick={handleActivate}
-      className={`flex h-full w-full flex-col overflow-hidden bg-surface transition-shadow ${
+      className={`flex h-full w-full flex-col overflow-hidden bg-chart-bg transition-shadow ${
         isActive ? 'ring-2 ring-inset ring-emerald-500/70' : 'ring-1 ring-inset ring-border-default'
       }`}
     >

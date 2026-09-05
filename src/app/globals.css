@@ -5,29 +5,15 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --bg-base: #0d1117;
-  --bg-base: #191a1b;
-  --bg-main: var(--bg-base);
-  /* Panels sit on #161b22 surface above the #0d1117 canvas so the chart pane
-     reads as the focal surface and the side panels / header frame it cleanly. */
-  --bg-surface: #161b22;
-  --bg-card: #161b22;
-  --bg-elevated: #21262d;
-  --bg-muted: #0d1117;
-  /* Panel dividers. #30363d matches GitHub Dark border convention. */
-  --border-default: #30363d;
-  --border-subtle: #21262d;
-  --text-primary: #f0f6fc;
-  --text-secondary: #c9d1d9;
-  --text-muted: #8b949e;
-  --text-muted-soft: #6e7681;
-  /* Sleek neutral charcoal dark theme based on #191a1b.
-     Panels, sidebars, and headers sit on #191a1b surface with subtle
-     elevation for cards and clean neutral borders for contrast. */
+  /* Sleek institutional dark theme:
+     Depth contrast: #0d0d0e chart canvas recessed into #191a1b neutral charcoal chrome.
+     Panels, sidebars, header, and rail sit on #191a1b surface with elevated cards and subtle borders. */
+  --bg-base: #0d0d0e;
   --bg-surface: #191a1b;
+  --bg-main: var(--bg-surface);
   --bg-card: #202123;
   --bg-elevated: #262729;
-  --bg-muted: #141516;
+  --bg-muted: #0d0d0e;
   /* Panel dividers. #2e3033 neutral dark border. */
   --border-default: #2e3033;
   --border-subtle: #242527;
@@ -40,10 +26,9 @@
   --color-bull: #10b981;
   --color-bear: #ef4444;
   --color-neutral: #f59e0b;
-  --chart-bg: var(--bg-base);
-  /* Kept subtle and independent of --border-default. */
-  --chart-grid: #21262d;
-  --chart-grid: #242527;
+  --chart-bg: #0d0d0e;
+  /* Subtle grid line against #0d0d0e canvas */
+  --chart-grid: #1c1d1e;
   --candle-green: #10b981;
   --candle-red: #ef4444;
   --status-live: #10b981;
@@ -100,26 +85,18 @@
 .light {
   --bg-base: #f0eee9;
   --bg-main: var(--bg-base);
-  --bg-surface: #fdfcfa;
-  --bg-card: #f7f5f1;
-  --bg-elevated: #ffffff;
-  --bg-muted: #e8e5de;
-  /* Panel dividers — darkened from #ddd8ce for clearer separation on #f0eee9. */
   --bg-surface: #f0eee9;
   --bg-card: #e8e5de;
   --bg-elevated: #e4dfd5;
   --bg-muted: #ded9cf;
   /* Panel dividers — warm subtle separation on #f0eee9. */
   --border-default: #d0c8b8;
-  --border-subtle: #e2ddd2;
   --border-subtle: #ddd8ce;
   --text-primary: #0f172a;
   --text-secondary: #334155;
   /* Darkened from #64748b: the warmer #f0eee9 base dropped it to 4.1:1, under
      WCAG AA. #5b6675 restores ~5.0:1 while staying in the same slate family. */
   --text-muted: #5b6675;
-  --text-muted-soft: #94a3b8;
-  --chart-bg: var(--bg-card);
   --text-muted-soft: #788596;
   --chart-bg: var(--bg-surface);
   /* Subtle warm gridlines, independent of the panel-divider colour. */
@@ -260,7 +237,7 @@ body {
   --auth-bg-tint: #191a1b;
   --auth-card-bg: rgba(25, 26, 27, 0.94);
   --auth-card-border: rgba(46, 48, 51, 0.6);
-  --auth-input-bg: #141516;
+  --auth-input-bg: #0d0d0e;
   --auth-input-border: var(--border-default);
   --auth-input-focus: rgba(16, 185, 129, 0.4);
   --auth-input-error: rgba(239, 68, 68, 0.35);
@@ -286,7 +263,7 @@ body {
   background:
     radial-gradient(120% 80% at 10% -10%, rgba(16, 185, 129, 0.05) 0%, rgba(20, 21, 22, 0.95) 55%),
     radial-gradient(100% 70% at 90% 10%, rgba(245, 158, 11, 0.02) 0%, rgba(20, 21, 22, 0.95) 60%),
-    linear-gradient(180deg, #191a1b 0%, #141516 70%, #0e0f10 100%);
+    linear-gradient(180deg, #191a1b 0%, #141516 70%, #0d0d0e 100%);
   overflow: hidden;
   padding: 2rem 1rem;
   font-family: var(--font-manrope), var(--font-inter), sans-serif;
