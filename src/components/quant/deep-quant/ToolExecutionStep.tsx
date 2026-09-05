@@ -22,7 +22,6 @@ import {
   PlusCircle,
 } from 'lucide-react';
 import { ReasoningStep } from '../../../store/useQuantStore';
-import { highlightNumbers } from './textHighlighter';
 import { isToolStepCompleted } from './agentTimeline';
 
 interface ToolExecutionStepProps {
@@ -34,60 +33,28 @@ interface ToolExecutionStepProps {
   isSelected?: boolean;
 }
 
-function getToolIcon(toolName: string | undefined) {
+function getToolIcon(toolName: string | undefined, isCompleted: boolean) {
   const name = (toolName || '').toLowerCase().replace(/_/g, ' ');
-  if (name.includes('session') || name.includes('context')) {
-    return <Terminal size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('candles')) {
-    return <Activity size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('consensus')) {
-    return <BarChart3 size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('multi tf') || name.includes('trend')) {
-    return <TrendingUp size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('patterns')) {
-    return <Shapes size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('support') || name.includes('resistance')) {
-    return <ChevronsUpDown size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('news')) {
-    return <Newspaper size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('prediction')) {
-    return <Brain size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('regime')) {
-    return <Compass size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('strength')) {
-    return <Scale size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('flow') || name.includes('order')) {
-    return <Workflow size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('options') || name.includes('analytics')) {
-    return <Layers size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('event') || name.includes('risk')) {
-    return <AlertTriangle size={12} className="text-text-muted shrink-0 text-amber-500/80" />;
-  }
-  if (name.includes('volume') || name.includes('profile')) {
-    return <SlidersHorizontal size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('forecast')) {
-    return <LineChart size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('performance') || name.includes('track record')) {
-    return <Gauge size={12} className="text-text-muted shrink-0" />;
-  }
-  if (name.includes('declare') || name.includes('trade')) {
-    return <PlusCircle size={12} className="text-text-muted shrink-0" />;
-  }
-  return <Wrench size={12} className="text-text-muted shrink-0" />;
+  const colorClass = isCompleted ? 'text-text-muted group-hover:text-text-secondary' : 'text-emerald-400';
+  
+  if (name.includes('session') || name.includes('context')) return <Terminal size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('candles')) return <Activity size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('consensus')) return <BarChart3 size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('multi tf') || name.includes('trend')) return <TrendingUp size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('patterns')) return <Shapes size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('support') || name.includes('resistance')) return <ChevronsUpDown size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('news')) return <Newspaper size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('prediction')) return <Brain size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('regime')) return <Compass size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('strength')) return <Scale size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('flow') || name.includes('order')) return <Workflow size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('options') || name.includes('analytics')) return <Layers size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('event') || name.includes('risk')) return <AlertTriangle size={12} className="text-amber-400 shrink-0" />;
+  if (name.includes('volume') || name.includes('profile')) return <SlidersHorizontal size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('forecast')) return <LineChart size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('performance') || name.includes('track record')) return <Gauge size={12} className={`${colorClass} shrink-0`} />;
+  if (name.includes('declare') || name.includes('trade')) return <PlusCircle size={12} className={`${colorClass} shrink-0`} />;
+  return <Wrench size={12} className={`${colorClass} shrink-0`} />;
 }
 
 export default function ToolExecutionStep({
@@ -99,21 +66,13 @@ export default function ToolExecutionStep({
 }: ToolExecutionStepProps) {
   if (step.type !== 'tool_start') return null;
 
-  // Pairing moved to `agentTimeline.isToolStepCompleted` so the sidebar's condensed progress
-  // cannot disagree with this row about whether the tool finished.
   const isCompleted = isToolStepCompleted(step, reasoningSteps, sessionStatus);
-  const formattedToolName = step.toolName ? step.toolName.replace(/_/g, ' ') : '';
+  const formattedToolName = step.toolName ? step.toolName.replace(/_/g, ' ') : 'tool execution';
 
-  const borderClass = isCompleted
-    ? 'border border-border-default/80 bg-surface'
-    : 'border border-border-default/80 bg-elevated/20';
-
-  // A button ONLY when a selection handler was given. In the sidebar there is nothing to select,
-  // and a button that does nothing is worse than a div — it takes focus and announces itself.
   const interactive = !!onSelect;
 
   return (
-    <div className="flex justify-start animate-fade-in font-sans pl-1 w-full my-2 select-text">
+    <div className="flex justify-start animate-fade-in font-sans w-full my-1 select-text">
       <div
         {...(interactive
           ? {
@@ -129,51 +88,37 @@ export default function ToolExecutionStep({
               },
             }
           : {})}
-        className={`rounded-md px-3 py-2.5 text-[10px] leading-relaxed w-full ${borderClass} ${
+        className={`group flex items-center justify-between gap-2.5 px-3 py-1.5 rounded-md text-[10px] w-full transition-all duration-200 ${
+          isCompleted
+            ? 'bg-elevated/20 border border-border-default/40 opacity-70 hover:opacity-100 hover:bg-elevated/40'
+            : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.1)]'
+        } ${
           interactive
-            ? 'cursor-pointer transition-colors hover:border-primary/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary'
+            ? 'cursor-pointer hover:border-emerald-500/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500'
             : ''
-        } ${isSelected ? 'ring-1 ring-primary/60' : ''}`}
+        } ${isSelected ? 'ring-1 ring-emerald-500 bg-emerald-500/15 opacity-100' : ''}`}
       >
-        <div className="flex items-center justify-between gap-2 font-sans select-none text-text-primary w-full">
-          <div className="flex items-center gap-1.5">
-            {getToolIcon(step.toolName)}
-            <span
-              className={`text-[11px] font-extrabold capitalize ${isCompleted ? 'text-text-primary' : 'text-amber-500'}`}
-            >
-              {formattedToolName}
-            </span>
-          </div>
-          {isCompleted ? (
-            <CheckCircle2 size={13} className="text-emerald-500 shrink-0" />
-          ) : (
-            <Loader2 size={13} className="animate-spin text-amber-500 shrink-0" />
-          )}
+        <div className="flex items-center gap-2 min-w-0">
+          {getToolIcon(step.toolName, isCompleted)}
+          <span
+            className={`font-semibold capitalize truncate ${
+              isCompleted ? 'text-text-secondary group-hover:text-text-primary' : 'text-emerald-300 font-bold'
+            }`}
+          >
+            {formattedToolName}
+          </span>
         </div>
 
-        {step.args && Object.keys(step.args).length > 0 && (
-          <div className="mt-2 ml-[18px] flex flex-wrap gap-1.5 select-none">
-            {Object.entries(step.args).map(([k, v]) => {
-              const valDisplay =
-                typeof v === 'string'
-                  ? v
-                  : typeof v === 'number' || typeof v === 'boolean'
-                    ? String(v)
-                    : JSON.stringify(v);
-              return (
-                <span
-                  key={k}
-                  className="inline-flex items-center gap-1 rounded bg-elevated/60 border border-border-default/40 px-1.5 py-0.5 text-[8.5px] font-mono text-text-secondary"
-                >
-                  <span className="text-text-muted">{k}:</span>
-                  <span className="font-bold text-text-primary truncate max-w-[160px]">
-                    {valDisplay}
-                  </span>
-                </span>
-              );
-            })}
-          </div>
-        )}
+        <div className="shrink-0 flex items-center">
+          {isCompleted ? (
+            <CheckCircle2 size={12} className="text-emerald-500/80" />
+          ) : (
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+              <Loader2 size={12} className="animate-spin text-emerald-400" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -58,6 +58,7 @@ import QuantCompactProgress from './deep-quant/QuantCompactProgress';
 import QuantSidebarResult from './deep-quant/QuantSidebarResult';
 import DeepQuantAgentDialog from './DeepQuantAgentDialog';
 import WatchingIndicator from './deep-quant/WatchingIndicator';
+import LoadingState from './deep-quant/LoadingState';
 import { useVerificationForm } from './deep-quant/useVerificationForm';
 import { useFeature } from '../../store/useFeatureStore';
 import { dashboardUrl, openExternalUrl } from '../../lib/redirect';
@@ -378,12 +379,9 @@ export default function DeepQuantPanel() {
                 onSelect={(stepId) => openDialog(stepId)}
               />
 
-              {/* Empty-state guards. The sidebar must never render visually blank, and the two
-                  cases below are the ones the transcript used to cover. */}
+              {/* Phased radar sweep & loading theatre while awaiting first reasoning step */}
               {reasoningSteps.length === 0 && sessionStatus === 'running' && (
-                <p className="px-3 py-2 text-[10px] text-text-muted/70 animate-pulse">
-                  Connecting to Strat Agent — awaiting first reasoning step…
-                </p>
+                <LoadingState />
               )}
 
               {reasoningSteps.length === 0 && sessionStatus === 'complete' && (

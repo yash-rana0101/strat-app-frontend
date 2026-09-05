@@ -19,6 +19,7 @@ import ToolExecutionStep from './deep-quant/ToolExecutionStep';
 import ActionableTradePlan from './deep-quant/ActionableTradePlan';
 import TerminalStandAsideCard from './deep-quant/TerminalStandAsideCard';
 import ThinkingGroupRenderer from './deep-quant/ThinkingGroupRenderer';
+import LoadingState from './deep-quant/LoadingState';
 import { classifyAgentError } from './deep-quant/agentErrorClassifier';
 import { highlightNumbers } from './deep-quant/textHighlighter';
 import { buildRenderGroups } from './deep-quant/agentTimeline';
@@ -114,16 +115,13 @@ export default function AgentTerminal({
         {/* Watching Indicator inside scroll log */}
         {sessionStatus === 'watching' && <WatchingIndicator />}
 
-        {/* Empty-state guards — the console must NEVER render visually blank. */}
+        {/* Phased radar sweep & loading theatre while awaiting first reasoning step */}
         {reasoningSteps.length === 0 && sessionStatus === 'running' && (
-          <div className="flex items-center gap-2 pl-3 py-2 text-[10px] text-text-muted/60 animate-pulse">
-            <Loader2 size={11} className="animate-spin text-text-muted" />
-            <span>Connecting to Strat Agent — awaiting first reasoning step…</span>
-          </div>
+          <LoadingState />
         )}
 
         {reasoningSteps.length === 0 && sessionStatus === 'complete' && (
-          <div className="flex items-start gap-3 p-3.5 bg-surface border border-amber-500/30 rounded-md mt-2 select-text font-sans">
+          <div className="flex items-start gap-3 p-3 bg-surface border border-amber-500/30 rounded-md mt-2 select-text font-sans">
             <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-sm bg-amber-500/10 text-amber-500 dark:text-amber-400 text-[10px] font-bold select-none mt-0.5">
               !
             </div>
@@ -135,9 +133,6 @@ export default function AgentTerminal({
                 The agent run completed but produced no visible reasoning, tool, or decision steps.
                 This usually means the Python agent (:8086) returned an empty response or the stream
                 ended early. Press{' '}
-                <span className="font-bold text-amber-500 dark:text-amber-200">
-                  Find Quant Trade
-                </span>{' '}
                 <span className="font-bold text-amber-500 dark:text-amber-200">Find Trade</span>{' '}
                 again to retry.
               </span>
@@ -150,64 +145,66 @@ export default function AgentTerminal({
           </div>
         )}
 
-        {/* Streaming spinner inside console */}
+        {/* Streaming indicator inside console */}
         {sessionStatus === 'running' && (
-          <div className="flex items-center gap-2 pl-3 py-2 text-[10px] text-text-muted/60">
-            <Loader2 size={11} className="animate-spin text-text-muted" />
-            <span>working.....</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-500/5 border border-emerald-500/15 text-[10px] text-emerald-400/90 select-none">
+            <Loader2 size={11} className="animate-spin text-emerald-400" />
+            <span className="font-mono tracking-wide">Synthesizing live telemetry…</span>
           </div>
         )}
 
         {/* Error message display.
             The explanation is DERIVED from the error, not hardcoded — see
-            `agentErrorClassifier`. This box used to assert "your LLM API key is
-            expired, rate-limited, or out of quota" for every failure, including a
-            plan restriction that never issued a request, which sent people to
-            audit a healthy key. */}
+            `agentErrorClassifier`. */}
         {sessionStatus === 'error' &&
           (() => {
             const err = classifyAgentError(analysisError);
-            // A plan restriction or a deployment switch is not a fault; render it in
-            // a neutral tone so it does not read as something broken.
             const isFault = err.kind !== 'research-locked' && err.kind !== 'feature-disabled';
             const tone = isFault
               ? {
-                  wrap: 'bg-surface border-rose-500/30',
-                badge: 'bg-rose-500/10 text-rose-500 dark:text-rose-400',
-                title: 'text-rose-500 dark:text-rose-400',
-                body: 'text-text-secondary',
-                detail: 'text-rose-500 dark:text-rose-400 bg-elevated/40 border-rose-500/20',
-                  glyph: <AlertTriangle size={11} />,
+                  wrap: 'bg-rose-500/5 border-rose-500/30',
+                  badge: 'bg-rose-500/15 text-rose-400 border border-rose-500/25',
+                  title: 'text-rose-400',
+                  body: 'text-text-secondary',
+                  detail: 'text-rose-400 bg-black/40 border-rose-500/20',
+                  glyph: <AlertTriangle size={12} />,
                 }
               : {
-                  wrap: 'bg-surface border-amber-500/30',
-                badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
-                title: 'text-amber-600 dark:text-amber-400',
-                body: 'text-text-secondary',
-                detail: 'text-amber-600 dark:text-amber-400 bg-elevated/40 border-amber-500/20',
-                  glyph: <Lock size={11} />,
+                  wrap: 'bg-amber-500/5 border-amber-500/30',
+                  badge: 'bg-amber-500/15 text-amber-400 border border-amber-500/25',
+                  title: 'text-amber-400',
+                  body: 'text-text-secondary',
+                  detail: 'text-amber-400 bg-black/40 border-amber-500/20',
+                  glyph: <Lock size={12} />,
                 };
 
             return (
               <div
-                className={`flex items-start gap-3 p-3.5 border rounded-md mt-2 select-text font-sans ${tone.wrap}`}
+                className={`flex flex-col gap-2 p-3 border rounded-md mt-2 select-text font-sans ${tone.wrap}`}
               >
-                <div
-                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-[10px] font-bold select-none mt-0.5 ${tone.badge}`}
-                >
-                  {tone.glyph}
-                </div>
-                <div className="flex flex-col">
-                  <span className={`text-[11px] font-bold ${tone.title}`}>{err.title}</span>
-                  <span className={`text-[10px] mt-1 leading-relaxed ${tone.body}`}>
-                    {err.explanation}
-                  </span>
-                  <span
-                    className={`text-[9px] font-mono rounded-sm border px-2 py-1 mt-2 leading-normal ${tone.detail}`}
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold select-none ${tone.badge}`}
                   >
-                    {err.detail}
-                  </span>
+                    {tone.glyph}
+                  </div>
+                  <span className={`text-[11px] font-bold tracking-wide ${tone.title}`}>{err.title}</span>
                 </div>
+                <span className={`text-[10px] pl-7 leading-relaxed ${tone.body}`}>
+                  {err.explanation}
+                </span>
+                {err.detail && (
+                  <details className="pl-7 mt-0.5">
+                    <summary className="text-[9px] text-text-muted hover:text-text-secondary cursor-pointer select-none">
+                      Technical diagnostic
+                    </summary>
+                    <span
+                      className={`block text-[9px] font-mono rounded border p-1.5 mt-1 leading-normal break-all ${tone.detail}`}
+                    >
+                      {err.detail}
+                    </span>
+                  </details>
+                )}
               </div>
             );
           })()}

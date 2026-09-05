@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Brain, Check } from 'lucide-react';
 import { ReasoningStep } from '../../../store/useQuantStore';
 import MarkdownRenderer from './MarkdownRenderer';
 
@@ -13,16 +13,8 @@ export default function ThinkingGroupRenderer({
   sessionStatus,
 }: ThinkingGroupRendererProps) {
   const isRunning = sessionStatus === 'running';
-  const [isExpanded, setIsExpanded] = useState(isRunning);
-  // Track the isRunning value the expansion state was last synced to, so we
-  // can re-sync exactly once when it flips — the "adjust state during
-  // render" pattern for deriving state from a prop, instead of a useEffect.
-  const [syncedRunning, setSyncedRunning] = useState(isRunning);
-
-  if (isRunning !== syncedRunning) {
-    setSyncedRunning(isRunning);
-    setIsExpanded(isRunning);
-  }
+  // Keep collapsed by default to keep the interface ultra-clean and easy to scan
+  const [isExpanded, setIsExpanded] = useState(false);
 
   if (steps.length === 0) return null;
 
@@ -31,24 +23,45 @@ export default function ThinkingGroupRenderer({
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        // A disclosure button has to announce its own state. Without `aria-expanded` a screen-reader
-        // user hears "Thinking, button" and has no way to know whether the reasoning below is showing
-        // or hidden — the chevron that conveys it visually is decorative. The e2e also depends on it:
-        // expanding every collapsed group needs a way to tell open from closed, and without this the
-        // only "signal" was the icon.
         aria-expanded={isExpanded}
-        className="flex items-center gap-1 text-[10px] text-text-muted hover:text-text-primary transition-colors duration-200 select-none focus:outline-none mb-1.5"
+        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md border transition-all duration-200 select-none focus:outline-none ${
+          isRunning
+            ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 shadow-sm'
+            : 'bg-elevated/40 border-border-default/50 text-text-muted hover:text-text-primary hover:bg-elevated/70'
+        }`}
       >
-        <span>Thinking</span>
-        {isExpanded ? (
-          <ChevronDown size={11} aria-hidden="true" />
-        ) : (
-          <ChevronRight size={11} aria-hidden="true" />
-        )}
+        <div className="flex items-center gap-2">
+          {isRunning ? (
+            <div className="relative flex items-center justify-center">
+              <Brain size={12} className="text-emerald-400 animate-pulse" />
+              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center text-emerald-500/80">
+              <Check size={12} strokeWidth={2.5} />
+            </div>
+          )}
+
+          <span className="text-[10px] font-semibold tracking-wide">
+            {isRunning ? 'Analyzing market structure…' : 'Analysis Complete'}
+          </span>
+
+          <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-black/20 text-text-muted border border-border-default/40">
+            {steps.length} {steps.length === 1 ? 'step' : 'steps'}
+          </span>
+        </div>
+
+        <div className="text-text-muted">
+          {isExpanded ? (
+            <ChevronDown size={12} aria-hidden="true" />
+          ) : (
+            <ChevronRight size={12} aria-hidden="true" />
+          )}
+        </div>
       </button>
 
       {isExpanded && (
-        <div className="text-text-secondary text-[11px] leading-relaxed w-full pl-1 space-y-2">
+        <div className="mt-2 text-text-secondary text-[10.5px] leading-relaxed w-full p-2.5 rounded-md bg-surface border border-border-default/60 max-h-60 overflow-y-auto scrollbar-thin space-y-2">
           {steps.map((step) => {
             const cleanContent = step.content.replace(/\{[\s\S]*\}/g, '').trim();
             if (!cleanContent) return null;
