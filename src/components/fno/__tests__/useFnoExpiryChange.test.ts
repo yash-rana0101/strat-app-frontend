@@ -42,7 +42,10 @@ afterEach(() => {
 
 describe('useFnoExpiryChange', () => {
   it('records the chosen expiry in the store', () => {
-    useTradeStore.setState({ fnoUnderlying: 'NIFTY', selectedSymbol: 'NIFTY26SEP24100CE' } as never);
+    useTradeStore.setState({
+      fnoUnderlying: 'NIFTY',
+      selectedSymbol: 'NIFTY26SEP24100CE',
+    } as never);
     invokeMock.mockResolvedValue(null);
 
     const { result } = renderHook(() => useFnoExpiryChange());
@@ -54,7 +57,10 @@ describe('useFnoExpiryChange', () => {
   it('re-resolves the SAME strike and side on the new expiry — in a browser', async () => {
     // jsdom has no __TAURI_INTERNALS__, which is precisely the case the old gate
     // bailed out of.
-    useTradeStore.setState({ fnoUnderlying: 'NIFTY', selectedSymbol: 'NIFTY26SEP24100CE' } as never);
+    useTradeStore.setState({
+      fnoUnderlying: 'NIFTY',
+      selectedSymbol: 'NIFTY26SEP24100CE',
+    } as never);
     invokeMock.mockResolvedValue({ tradingsymbol: 'NIFTY26OCT24100CE' });
 
     const { result } = renderHook(() => useFnoExpiryChange());
@@ -68,11 +74,11 @@ describe('useFnoExpiryChange', () => {
         strike: 24100,
         optionType: 'CE',
         expiry: '2026-10-29',
-      }),
+      })
     );
     // The chart follows the expiry — without this the dropdown snapped back.
     await vi.waitFor(() =>
-      expect(useTradeStore.getState().selectedSymbol).toBe('NIFTY26OCT24100CE'),
+      expect(useTradeStore.getState().selectedSymbol).toBe('NIFTY26OCT24100CE')
     );
   });
 
@@ -101,7 +107,10 @@ describe('useFnoExpiryChange', () => {
   });
 
   it('leaves the chart alone when the resolver finds nothing', async () => {
-    useTradeStore.setState({ fnoUnderlying: 'NIFTY', selectedSymbol: 'NIFTY26SEP24100CE' } as never);
+    useTradeStore.setState({
+      fnoUnderlying: 'NIFTY',
+      selectedSymbol: 'NIFTY26SEP24100CE',
+    } as never);
     invokeMock.mockResolvedValue(null);
 
     const { result } = renderHook(() => useFnoExpiryChange());

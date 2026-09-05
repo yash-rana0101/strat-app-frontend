@@ -14,4 +14,3 @@ export interface MarketDepthStatsData {
   last_quantity?: number | null;
   last_trade_time?: string | null;
 }
-

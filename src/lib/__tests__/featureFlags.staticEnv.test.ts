@@ -51,9 +51,7 @@ function read(relative: string): string {
  * comment-aware parse would be more machinery than the property needs.
  */
 function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+  return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
 }
 
 /** Every `process.env` access in `source`, paired with 'static' | 'dynamic'. */
@@ -82,7 +80,7 @@ describe('kill switches are resolved server-side', () => {
     const source = read('app/api/_featureSwitches.ts');
     for (const key of SERVER_SWITCH_ENV) {
       expect(source, `${key} must be read as \`process.env.${key}\``).toContain(
-        `process.env.${key}`,
+        `process.env.${key}`
       );
     }
     // The enforcement master switch, server-side counterpart of NEXT_PUBLIC_PROD.
@@ -135,7 +133,7 @@ describe('computeFeatureAccess', () => {
     // The fail-closed direction: before the backend answers, a fully entitled
     // user still sees locked UI rather than a flash of premium panels.
     const entitled = Object.fromEntries(
-      FEATURE_IDS.map((id) => [id, true]),
+      FEATURE_IDS.map((id) => [id, true])
     ) as unknown as Parameters<typeof computeFeatureAccess>[0];
     const map = computeFeatureAccess(entitled, UNRESOLVED_FEATURE_CONFIG);
     for (const id of FEATURE_IDS) {
@@ -158,7 +156,7 @@ describe('computeFeatureAccess', () => {
     // Plan grants footprint only; the deployment enables footprint + ghostline.
     const map = computeFeatureAccess(
       { canAccessFootprint: true } as Parameters<typeof computeFeatureAccess>[0],
-      config,
+      config
     );
     expect(map.footprint).toBe(true);
     expect(map.ghostline).toBe(false); // switch on, plan flag missing
@@ -176,7 +174,7 @@ describe('parseFeatureConfig fails closed', () => {
   it('keeps enforcement on for a malformed payload', () => {
     for (const payload of [null, undefined, {}, 'nonsense', 42, []]) {
       expect(parseFeatureConfig(payload).enforced, JSON.stringify(payload) ?? 'undefined').toBe(
-        true,
+        true
       );
     }
   });

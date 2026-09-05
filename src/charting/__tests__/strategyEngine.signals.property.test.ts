@@ -39,9 +39,7 @@ const STRATEGY_DEFS: StrategyDef[] = listStrategies().map((id) => getStrategy(id
  * default parameters. A series comfortably longer than this guarantees every
  * strategy has sufficient data and can therefore emit signals.
  */
-const MAX_LOOKBACK = Math.max(
-  ...STRATEGY_DEFS.map((def) => def.requiredLookback(def.defaults)),
-);
+const MAX_LOOKBACK = Math.max(...STRATEGY_DEFS.map((def) => def.requiredLookback(def.defaults)));
 
 /**
  * A random-walk OHLC candle series of at least `minLen` candles with strictly
@@ -55,7 +53,7 @@ const candleSeries = (minLen: number): fc.Arbitrary<ChartCandle[]> =>
         move: fc.double({ min: -5, max: 5, noNaN: true, noDefaultInfinity: true }),
         spread: fc.double({ min: 0.1, max: 5, noNaN: true, noDefaultInfinity: true }),
       }),
-      { minLength: minLen, maxLength: minLen + 60 },
+      { minLength: minLen, maxLength: minLen + 60 }
     )
     .map((moves) => {
       const out: ChartCandle[] = [];
@@ -89,30 +87,27 @@ describe('Property 26: strategy signals are well-formed and anchored to candles'
             // Kind is in the allowed set.
             expect(
               ALLOWED_KINDS.has(sig.kind),
-              `${def.id} emitted disallowed kind "${sig.kind}"`,
+              `${def.id} emitted disallowed kind "${sig.kind}"`
             ).toBe(true);
 
             // Price is a finite number.
-            expect(
-              Number.isFinite(sig.price),
-              `${def.id} signal price not finite`,
-            ).toBe(true);
+            expect(Number.isFinite(sig.price), `${def.id} signal price not finite`).toBe(true);
 
             // Time is anchored to an actual candle.
             expect(
               closeByTime.has(sig.time),
-              `${def.id} signal time ${sig.time} not anchored to a candle`,
+              `${def.id} signal time ${sig.time} not anchored to a candle`
             ).toBe(true);
 
             // Price equals that candle's close.
             expect(
               sig.price,
-              `${def.id} signal price should equal the anchoring candle close`,
+              `${def.id} signal price should equal the anchoring candle close`
             ).toBe(closeByTime.get(sig.time));
           }
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

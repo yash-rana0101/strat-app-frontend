@@ -14,7 +14,9 @@ export default function FnoMetricsHud({ viewState }: FnoMetricsHudProps) {
       {/* Agent Bias */}
       <div className="flex items-center justify-between px-3 py-2 bg-surface">
         <div className="flex flex-col gap-0.5">
-          <span className="text-[8px] font-bold uppercase tracking-widest text-text-muted">Options Bias</span>
+          <span className="text-[8px] font-bold uppercase tracking-widest text-text-muted">
+            Options Bias
+          </span>
           <span className="text-[9px] text-text-secondary">
             {hud.context.underlying} · {hud.context.expiry || 'Nearest'}
           </span>

@@ -43,7 +43,12 @@ function useApi<T>(fetcher: Fetcher<T>, deps: ReadonlyArray<unknown> = []): Asyn
       } catch (err) {
         if (controller.signal.aborted) return;
         if (mountedRef.current) {
-          const message = err instanceof ApiError ? err.message : err instanceof Error ? err.message : 'Request failed';
+          const message =
+            err instanceof ApiError
+              ? err.message
+              : err instanceof Error
+                ? err.message
+                : 'Request failed';
           setError(message);
         }
       } finally {

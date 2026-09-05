@@ -82,7 +82,7 @@ export class BridgeUnsupportedError extends Error {
   private static describe(
     command: string,
     reason: BridgeUnsupportedReason,
-    detail?: string,
+    detail?: string
   ): string {
     const suffix = detail ? ` (${detail})` : '';
     switch (reason) {
@@ -128,7 +128,7 @@ function classify(command: string): { reason: BridgeUnsupportedReason; detail?: 
  */
 export async function bridgeInvoke<T = unknown>(
   command: string,
-  args?: Record<string, unknown>,
+  args?: Record<string, unknown>
 ): Promise<T> {
   const adapter = WEB_ADAPTERS[command];
   if (!adapter) {

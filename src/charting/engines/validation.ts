@@ -37,7 +37,7 @@ import type { NumericRange, ValidationResult } from '../types';
 export function validateNumeric(
   value: unknown,
   range: NumericRange,
-  paramName: string,
+  paramName: string
 ): ValidationResult<number> {
   // Reject wrong types up front. `typeof NaN === 'number'`, so the finiteness
   // check below handles NaN/Infinity separately.
@@ -94,7 +94,7 @@ export function validateNumeric(
  */
 export function validateParams(
   params: Record<string, unknown>,
-  spec: Record<string, NumericRange>,
+  spec: Record<string, NumericRange>
 ): ValidationResult<Record<string, number>> {
   const validated: Record<string, number> = {};
 

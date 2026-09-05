@@ -7,18 +7,13 @@ import { useAuthStore } from '../../../store/useAuthStore';
 import { dashboardUrl, openExternalUrl } from '../../../lib/redirect';
 import type { AuthUser } from '../../../store/useAuthStore';
 
-
 interface ProfileTabProps {
   user: AuthUser | null;
   planName: string | null;
   formatDate: (date: string | number) => string;
 }
 
-export default function ProfileTab({
-  user,
-  planName,
-  formatDate,
-}: ProfileTabProps) {
+export default function ProfileTab({ user, planName, formatDate }: ProfileTabProps) {
   const updateName = useAuthStore((s) => s.updateName);
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(user?.name ?? '');
@@ -64,7 +59,9 @@ export default function ProfileTab({
 
         {/* Inline name edit + Manage Account redirect */}
         <div className="mt-4 flex flex-col gap-2">
-          <span className="text-[10px] uppercase tracking-widest text-text-secondary">Display Name</span>
+          <span className="text-[10px] uppercase tracking-widest text-text-secondary">
+            Display Name
+          </span>
           {editingName ? (
             <div className="flex items-center gap-2">
               <input
@@ -126,13 +123,17 @@ export default function ProfileTab({
       {/* Membership Info Footer */}
       <div className="border-t border-border-default pt-4 flex flex-col space-y-2 shrink-0">
         <div className="flex justify-between items-center py-1.5">
-          <span className="text-[10px] uppercase tracking-widest text-text-secondary">Strat AI Plan</span>
+          <span className="text-[10px] uppercase tracking-widest text-text-secondary">
+            Strat AI Plan
+          </span>
           <span className="text-xs font-black text-text-primary uppercase">
             {planName && planName !== 'none' ? `${planName} EDITION` : 'STARTER EDITION'}
           </span>
         </div>
         <div className="flex justify-between items-center py-1.5 border-t border-border-default">
-          <span className="text-[10px] uppercase tracking-widest text-text-secondary">Account Email</span>
+          <span className="text-[10px] uppercase tracking-widest text-text-secondary">
+            Account Email
+          </span>
           <span className="text-xs font-semibold text-text-primary">{user?.email || '—'}</span>
         </div>
       </div>

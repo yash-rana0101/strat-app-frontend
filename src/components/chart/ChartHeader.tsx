@@ -60,15 +60,25 @@ export default function ChartModeToggle({ noText = false }: ChartModeToggleProps
               }`
         }
       >
-        <CurrentIcon size={noText ? 18 : 11} className={isOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-muted'} />
+        <CurrentIcon
+          size={noText ? 18 : 11}
+          className={isOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-muted'}
+        />
         {!noText && <span>{currentMode.label}</span>}
-        {!noText && <ChevronDown size={11} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />}
+        {!noText && (
+          <ChevronDown
+            size={11}
+            className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          />
+        )}
       </button>
 
       {isOpen && (
-        <div className={`absolute right-0 z-50 mt-px w-40 rounded-none border border-border-default bg-surface shadow-2xl p-1.5 animate-in fade-in slide-in-from-top-2 duration-200 ${
-          noText ? 'top-[32px]' : 'top-full'
-        }`}>
+        <div
+          className={`absolute right-0 z-50 mt-px w-40 rounded-none border border-border-default bg-surface shadow-2xl p-1.5 animate-in fade-in slide-in-from-top-2 duration-200 ${
+            noText ? 'top-[32px]' : 'top-full'
+          }`}
+        >
           {modes.map(({ mode, label, icon: Icon }) => {
             const isActive = chartMode === mode;
             return (
@@ -86,9 +96,14 @@ export default function ChartModeToggle({ noText = false }: ChartModeToggleProps
                     : 'text-text-secondary hover:bg-elevated hover:text-text-primary'
                 }`}
               >
-                <Icon size={16} className={isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'} />
+                <Icon
+                  size={16}
+                  className={isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400'}
+                />
                 <span>{label}</span>
-                {isActive && <span className="ml-auto h-1.5 w-1.5 rounded-none bg-emerald-600 dark:bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />}
+                {isActive && (
+                  <span className="ml-auto h-1.5 w-1.5 rounded-none bg-emerald-600 dark:bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+                )}
               </button>
             );
           })}

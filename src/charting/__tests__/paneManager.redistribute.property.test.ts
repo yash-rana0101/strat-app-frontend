@@ -34,22 +34,22 @@ const layoutArb = (): fc.Arbitrary<PaneLayout[]> =>
     .chain((n) =>
       fc.record({
         // Arbitrary, possibly-unnormalized, possibly-zero height fractions.
-        heights: fc.array(
-          fc.double({ min: 0, max: 1000, noNaN: true, noDefaultInfinity: true }),
-          { minLength: n, maxLength: n },
-        ),
+        heights: fc.array(fc.double({ min: 0, max: 1000, noNaN: true, noDefaultInfinity: true }), {
+          minLength: n,
+          maxLength: n,
+        }),
         // A permutation of 0..n-1 for the `order` field.
         order: fc
           .constant(Array.from({ length: n }, (_, i) => i))
           .chain((base) => fc.shuffledSubarray(base, { minLength: n, maxLength: n })),
-      }),
+      })
     )
     .map(({ heights, order }) =>
       heights.map((h, i) => ({
         paneId: `pane-${i}`,
         heightFraction: h,
         order: order[i],
-      })),
+      }))
     );
 
 describe('Property 8: pane removal redistributes height with no gap', () => {
@@ -78,9 +78,9 @@ describe('Property 8: pane removal redistributes height with no gap', () => {
             const orders = result.map((l) => l.order);
             expect(orders).toEqual(orders.map((_, i) => i));
           }
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -102,9 +102,9 @@ describe('Property 8: pane removal redistributes height with no gap', () => {
             .map((l) => l.paneId);
 
           expect(result.map((l) => l.paneId)).toEqual(expectedIds);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -123,9 +123,9 @@ describe('Property 8: pane removal redistributes height with no gap', () => {
 
           const orders = result.map((l) => l.order);
           expect(orders).toEqual(orders.map((_, i) => i));
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -136,9 +136,9 @@ describe('Property 8: pane removal redistributes height with no gap', () => {
         (height) => {
           const sole: PaneLayout[] = [{ paneId: 'only', heightFraction: height, order: 0 }];
           expect(redistribute(sole, 'only')).toEqual([]);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -154,9 +154,9 @@ describe('Property 8: pane removal redistributes height with no gap', () => {
           redistribute(layouts, removed);
 
           expect(layouts).toEqual(snapshot);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

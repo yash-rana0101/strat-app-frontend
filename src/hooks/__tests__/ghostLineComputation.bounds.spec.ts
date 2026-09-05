@@ -21,7 +21,7 @@ function quadraticCandles(
   count: number,
   base: number,
   linearSlope: number,
-  curve: number,
+  curve: number
 ): { time: number; close: number; volume: number; high: number; low: number }[] {
   const out = [];
   for (let i = 0; i < count; i++) {
@@ -57,7 +57,7 @@ describe('applyGhostBounds — no floor-crash', () => {
   it('keeps a mild VWEPR curve inside the band after bounds', () => {
     // Gentle acceleration so first step stays in-band; clamp must not flatten
     // all curvature, but every price stays within ±20% of anchor.
-    const candles = quadraticCandles(50, /*base=*/100, /*linearSlope=*/0.2, /*curve=*/0.002);
+    const candles = quadraticCandles(50, /*base=*/ 100, /*linearSlope=*/ 0.2, /*curve=*/ 0.002);
     const lastTime = candles[candles.length - 1].time;
     const pts = vweprProjection(candles, lastTime, 60, 6);
     expect(pts.length).toBe(7);
@@ -67,7 +67,7 @@ describe('applyGhostBounds — no floor-crash', () => {
       pts,
       'curved',
       candles.map((c) => c.close),
-      anchor,
+      anchor
     );
     expect(bounded.length).toBe(pts.length);
     const { lo, hi } = priceBand(anchor);
@@ -77,7 +77,7 @@ describe('applyGhostBounds — no floor-crash', () => {
       expect(p.price).toBeGreaterThan(anchor * 0.5); // never "crash to half"
     }
     expect(Math.abs(bounded[bounded.length - 1].price - anchor)).toBeLessThanOrEqual(
-      anchor * GHOST_MAX_TOTAL_FRAC + 1e-6,
+      anchor * GHOST_MAX_TOTAL_FRAC + 1e-6
     );
   });
 
@@ -120,7 +120,7 @@ describe('path1SignalApplies — confidence + uniform times', () => {
         activeSymbol: 'RELIANCE',
         last: { time: 100_000, close: 100 },
         intervalSec: 60,
-      }),
+      })
     ).toBe(false);
 
     expect(
@@ -130,7 +130,7 @@ describe('path1SignalApplies — confidence + uniform times', () => {
         activeSymbol: 'RELIANCE',
         last: { time: 100_000, close: 100 },
         intervalSec: 60,
-      }),
+      })
     ).toBe(true);
   });
 
@@ -144,7 +144,7 @@ describe('path1SignalApplies — confidence + uniform times', () => {
         activeSymbol: 'RELIANCE',
         last: { time: 100_000, close: 100 },
         intervalSec: 60,
-      }),
+      })
     ).toBe(false);
   });
 });

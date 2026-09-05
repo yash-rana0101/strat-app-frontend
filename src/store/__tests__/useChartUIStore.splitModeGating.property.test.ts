@@ -50,7 +50,7 @@ describe('Property 7: split is mode-gated', () => {
         // Split turns on only for the gated modes; otherwise it stays single.
         expect(chartStore().splitView).toBe(isSplitAllowed(profile));
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -67,7 +67,7 @@ describe('Property 7: split is mode-gated', () => {
         // Disabling split is always honored.
         expect(chartStore().splitView).toBe(false);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -85,9 +85,9 @@ describe('Property 7: split is mode-gated', () => {
             // No number of attempts can flip the gate in an unsupported mode.
             expect(chartStore().splitView).toBe(false);
           }
-        },
+        }
       ),
-      { numRuns: 100 },
+      { numRuns: 100 }
     );
   });
 });

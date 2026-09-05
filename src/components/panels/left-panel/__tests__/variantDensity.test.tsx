@@ -56,7 +56,7 @@ const CONSENSUS: ConsensusReport = {
 describe('SentimentBlock variants', () => {
   it('keeps the sidebar layout on the default variant', () => {
     render(
-      <SentimentBlock symbol="RELIANCE" sentiment={SENTIMENT} isLoading={false} error={null} />,
+      <SentimentBlock symbol="RELIANCE" sentiment={SENTIMENT} isLoading={false} error={null} />
     );
 
     // Its own section title, because nothing else names it in the column.
@@ -75,7 +75,7 @@ describe('SentimentBlock variants', () => {
         isLoading={false}
         error={null}
         variant="sheet"
-      />,
+      />
     );
 
     expect(screen.queryByRole('heading', { name: 'AI News Sentiment' })).not.toBeInTheDocument();
@@ -88,7 +88,7 @@ describe('SentimentBlock variants', () => {
     const longError = 'Sentiment service returned 503 after 3 retries against the gateway';
 
     const { unmount } = render(
-      <SentimentBlock symbol="RELIANCE" sentiment={null} isLoading={false} error={longError} />,
+      <SentimentBlock symbol="RELIANCE" sentiment={null} isLoading={false} error={longError} />
     );
     expect(screen.getByText(longError)).toHaveClass('truncate');
     unmount();
@@ -100,7 +100,7 @@ describe('SentimentBlock variants', () => {
         isLoading={false}
         error={longError}
         variant="sheet"
-      />,
+      />
     );
     // The sheet is where the failure is explained in full, so it must not clip.
     expect(screen.getByText(longError)).toHaveClass('break-words');
@@ -152,7 +152,7 @@ describe('MultiTfPatternsView variants', () => {
     const { container } = render(<MultiTfPatternsView variant="sheet" />);
 
     expect(
-      screen.queryByRole('heading', { name: 'Dynamic Pattern Scanner' }),
+      screen.queryByRole('heading', { name: 'Dynamic Pattern Scanner' })
     ).not.toBeInTheDocument();
     // The dialog owns the scrolling; a nested cap would mean two scrollbars.
     expect(container.querySelector('.max-h-47\\.5')).toBeNull();

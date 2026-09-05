@@ -167,7 +167,7 @@ function identitySecret(): string | null {
  */
 export function mintIdentityHeader(
   userId: string,
-  opts: { now?: number; ttl?: number; secret?: string | null } = {},
+  opts: { now?: number; ttl?: number; secret?: string | null } = {}
 ): string | null {
   const uid = (userId ?? '').trim();
   if (!uid) return null;
@@ -233,9 +233,10 @@ export async function resolveUserId(req: Request): Promise<string | null> {
     if (res.ok) {
       // The API wraps payloads as { success, data }. A body that does not say
       // success is not an identity, whatever else it contains.
-      const body = (await res.json().catch(() => null)) as
-        | { success?: boolean; data?: { id?: unknown } }
-        | null;
+      const body = (await res.json().catch(() => null)) as {
+        success?: boolean;
+        data?: { id?: unknown };
+      } | null;
       const id = body?.success === true ? body?.data?.id : undefined;
       if (typeof id === 'string' && id.trim().length > 0) userId = id.trim();
     }
@@ -277,9 +278,7 @@ export function unauthenticated(): Response {
  *
  * `{}` means "proceed unminted" — only reachable while `requireIdentity()` is off.
  */
-export async function identityHeaders(
-  req: Request,
-): Promise<Record<string, string> | null> {
+export async function identityHeaders(req: Request): Promise<Record<string, string> | null> {
   const userId = await resolveUserId(req);
 
   if (!userId) {
@@ -297,7 +296,7 @@ export async function identityHeaders(
         '[identity] INTERNAL_IDENTITY_SECRET is missing or shorter than 32 chars, so a ' +
           'resolved identity cannot be asserted. FQ_REQUIRE_IDENTITY is on, so the request ' +
           'is refused. Generate one with `openssl rand -hex 32` and set the SAME value on ' +
-          'the frontend and deep-quant services.',
+          'the frontend and deep-quant services.'
       );
       return null;
     }
@@ -312,8 +311,7 @@ export async function identityHeaders(
 // output, so a divergence in the wire format is a failing unit test rather than a
 // 401 in production.
 
-export const VECTOR_SECRET =
-  '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+export const VECTOR_SECRET = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
 export const VECTOR_SUB = 'user_abc123';
 export const VECTOR_IAT = 1_700_000_000;
 export const VECTOR_TTL = 60;

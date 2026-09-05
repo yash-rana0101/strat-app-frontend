@@ -97,7 +97,7 @@ export function buildRenderGroups(reasoningSteps: ReasoningStep[]): RenderGroup[
 export function isToolStepCompleted(
   step: ReasoningStep,
   reasoningSteps: ReasoningStep[],
-  sessionStatus: string,
+  sessionStatus: string
 ): boolean {
   const stepIdx = reasoningSteps.indexOf(step);
   const startsUpToHere = reasoningSteps
@@ -135,7 +135,16 @@ export interface ProgressItem {
  * timeframe. The FULL argument list is still shown in the dialog's detail panel, which is where
  * someone asking "what exactly was this called with" is looking.
  */
-const META_KEYS = ['symbol', 'underlying', 'timeframe', 'interval', 'expiry', 'direction', 'side', 'action'];
+const META_KEYS = [
+  'symbol',
+  'underlying',
+  'timeframe',
+  'interval',
+  'expiry',
+  'direction',
+  'side',
+  'action',
+];
 
 /** The short context line for a tool row. Returns '' when the args carry none of the keys. */
 export function progressMeta(args: Record<string, unknown> | undefined): string {
@@ -173,7 +182,7 @@ export function formatToolName(toolName: string | undefined): string {
 export function deriveProgress(
   reasoningSteps: ReasoningStep[],
   sessionStatus: string,
-  finalTrade: AiExecutionPlan | null,
+  finalTrade: AiExecutionPlan | null
 ): ProgressItem[] {
   const items: ProgressItem[] = reasoningSteps
     .filter((step) => step.type === 'tool_start')
@@ -182,7 +191,9 @@ export function deriveProgress(
       kind: 'tool' as const,
       label: formatToolName(step.toolName),
       meta: progressMeta(step.args),
-      status: isToolStepCompleted(step, reasoningSteps, sessionStatus) ? ('done' as const) : ('active' as const),
+      status: isToolStepCompleted(step, reasoningSteps, sessionStatus)
+        ? ('done' as const)
+        : ('active' as const),
     }));
 
   if (finalTrade) {
@@ -205,7 +216,7 @@ export function deriveProgress(
 /** The step a progress row points at, or null for the synthetic decision row. */
 export function stepForProgressItem(
   item: ProgressItem,
-  reasoningSteps: ReasoningStep[],
+  reasoningSteps: ReasoningStep[]
 ): ReasoningStep | null {
   if (item.kind !== 'tool') return null;
   return reasoningSteps.find((s) => s.id === item.id) ?? null;

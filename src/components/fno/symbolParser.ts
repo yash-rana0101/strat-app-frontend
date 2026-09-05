@@ -26,7 +26,20 @@ export function getUnderlyingFromSymbol(symbol: string): string {
   return upper;
 }
 
-const MONTH_CODES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const MONTH_CODES = [
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
+];
 /** NFO weekly month code: 1-9 for Jan-Sep, then O / N / D. */
 const WEEKLY_MONTH_CODES = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'O', 'N', 'D'];
 
@@ -115,7 +128,10 @@ export function getStrikeFromSymbol(symbol: string): number | null {
   // which an older ladder wrote and which persisted preferences still restore.
   // `useFnoAutoContract` needs the intended strike to repair those. Reading the
   // tail unconditionally is what made a weekly report strike 2690124000.
-  const short = symbol.trim().toUpperCase().match(/^[A-Z&]+(\d+)(CE|PE)$/);
+  const short = symbol
+    .trim()
+    .toUpperCase()
+    .match(/^[A-Z&]+(\d+)(CE|PE)$/);
   return short ? Number(short[1]) : null;
 }
 

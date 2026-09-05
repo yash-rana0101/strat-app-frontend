@@ -164,12 +164,14 @@ export default function LiveAssetHUD({ data, computedAt, variant = 'panel' }: Li
               isStale ? 'text-amber-600 dark:text-amber-400' : 'text-text-muted/70'
             }`}
             title={
-              computedAt
-                ? `Computed at ${new Date(computedAt).toLocaleTimeString()}`
-                : undefined
+              computedAt ? `Computed at ${new Date(computedAt).toLocaleTimeString()}` : undefined
             }
           >
-            {isStale ? <AlertTriangle size={8} className="shrink-0" /> : <Clock size={8} className="shrink-0" />}
+            {isStale ? (
+              <AlertTriangle size={8} className="shrink-0" />
+            ) : (
+              <Clock size={8} className="shrink-0" />
+            )}
             <span>
               {isStale ? 'Previous reading · ' : 'Measured '}
               {formatAge(ageMs)}
@@ -184,13 +186,17 @@ export default function LiveAssetHUD({ data, computedAt, variant = 'panel' }: Li
 
         {/* Trend Score */}
         <div className={`flex items-center gap-2.5 ${inSheet ? 'mb-3' : 'mb-2'}`}>
-          <div className={`${t.score} font-black tabular-nums tracking-tight ${trendColor(trend_score)}`}>
+          <div
+            className={`${t.score} font-black tabular-nums tracking-tight ${trendColor(trend_score)}`}
+          >
             {trend_score > 0 ? '+' : ''}
             {trend_score}
           </div>
           <div className="flex-1 flex flex-col gap-0.5">
             <div className="flex items-center justify-between">
-              <span className={`${t.verdict} font-bold uppercase tracking-wider ${trendColor(trend_score)}`}>
+              <span
+                className={`${t.verdict} font-bold uppercase tracking-wider ${trendColor(trend_score)}`}
+              >
                 {trendVerdict(trend_score)}
               </span>
               <span className={`${t.pct} text-text-muted tabular-nums`}>{gaugePercent}%</span>

@@ -30,11 +30,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import fc from 'fast-check';
 
-import {
-  useTradeStore,
-  type TradeProfile,
-  type ChartTimeframe,
-} from '@/store/useTradeStore';
+import { useTradeStore, type TradeProfile, type ChartTimeframe } from '@/store/useTradeStore';
 
 const PROFILES: TradeProfile[] = ['INTRADAY', 'SWING', 'INVESTOR', 'FNO'];
 const NON_FNO_PROFILES: TradeProfile[] = ['INTRADAY', 'SWING', 'INVESTOR'];
@@ -112,7 +108,7 @@ describe('Property 2: selecting a mode preserves unrelated state', () => {
         // ...and the chart shows what THIS mode was last left on.
         expect(store().selectedSymbol).toBe(seeded[target] ?? symbolBefore);
       }),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 
@@ -138,7 +134,7 @@ describe('Property 2: selecting a mode preserves unrelated state', () => {
         expect(store().selectedSymbol).toBe(symbolBefore);
         expect(store().symbolByProfile[target]).toBe(symbolBefore);
       }),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 
@@ -160,9 +156,9 @@ describe('Property 2: selecting a mode preserves unrelated state', () => {
           // ...and the view settings survived the whole sequence.
           expect(store().activeTimeframe).toBe(timeframeBefore);
           expect(store().chartMode).toBe(chartModeBefore);
-        },
+        }
       ),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 });
@@ -191,7 +187,7 @@ describe('Property 4 (store-level): switching to FNO and back preserves the prio
         expect(store().activeTimeframe).toBe(timeframeBefore);
         expect(store().chartMode).toBe(chartModeBefore);
       }),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 
@@ -210,7 +206,7 @@ describe('Property 4 (store-level): switching to FNO and back preserves the prio
         expect(store().fnoUnderlying).toBe(underlyingBefore);
         expect(store().fnoExpiry).toBe(expiryBefore);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

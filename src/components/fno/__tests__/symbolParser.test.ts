@@ -17,11 +17,7 @@
 // NIFTY2690824000CE (2026-09-08).
 import { describe, expect, it } from 'vitest';
 
-import {
-  getStrikeFromSymbol,
-  matchExpiryFromSymbol,
-  parseContractSymbol,
-} from '../symbolParser';
+import { getStrikeFromSymbol, matchExpiryFromSymbol, parseContractSymbol } from '../symbolParser';
 
 describe('parseContractSymbol', () => {
   it('splits a monthly contract', () => {

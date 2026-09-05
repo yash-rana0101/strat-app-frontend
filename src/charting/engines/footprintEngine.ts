@@ -128,7 +128,7 @@ function tickIndex(price: number, tickSize: number): number {
  */
 function assignTicksToCandles(
   candles: ChartCandle[],
-  ticks: OrderFlowTick[],
+  ticks: OrderFlowTick[]
 ): Map<number, OrderFlowTick[]> {
   const result = new Map<number, OrderFlowTick[]>();
   if (candles.length === 0 || ticks.length === 0) return result;
@@ -305,7 +305,7 @@ export function detectImbalances(cells: FootprintCell[], ratio: number): number[
 export function buildFootprint(
   candles: ChartCandle[],
   ticks: OrderFlowTick[],
-  opts: BuildFootprintOptions,
+  opts: BuildFootprintOptions
 ): FootprintCandle[] {
   const tickSize = normalizeTickSize(opts.tickSize);
   const ratio = normalizeRatio(opts.imbalanceRatio);

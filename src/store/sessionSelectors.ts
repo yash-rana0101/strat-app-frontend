@@ -16,7 +16,14 @@
 // when ITS session changes, not when any session changes, which matters once several tabs
 // are streaming at once.
 
-import { blankSession, isActionableTrade, type AiExecutionPlan, type QaChatMessage, type QuantSession, type ReasoningStep } from './useQuantStore';
+import {
+  blankSession,
+  isActionableTrade,
+  type AiExecutionPlan,
+  type QaChatMessage,
+  type QuantSession,
+  type ReasoningStep,
+} from './useQuantStore';
 import {
   blankUi,
   useSessionStore,
@@ -112,8 +119,7 @@ export function selectUiFor(key: string | null) {
 export const selectSessionStatus = (state: State): QuantSession['sessionStatus'] =>
   selectCurrentSession(state).sessionStatus;
 
-export const selectIsAnalyzing = (state: State): boolean =>
-  selectCurrentSession(state).isAnalyzing;
+export const selectIsAnalyzing = (state: State): boolean => selectCurrentSession(state).isAnalyzing;
 
 export const selectReasoningSteps = (state: State): ReasoningStep[] =>
   selectCurrentSession(state).reasoningSteps;
@@ -137,8 +143,7 @@ export const selectAnalysisError = (state: State): string | null =>
 export const selectCurrentThreadId = (state: State): string | null =>
   selectCurrentStream(state).threadId;
 
-export const selectCurrentRunId = (state: State): string | null =>
-  selectCurrentStream(state).runId;
+export const selectCurrentRunId = (state: State): string | null => selectCurrentStream(state).runId;
 
 export const selectMode = (state: State): SessionUiState['mode'] => selectCurrentUi(state).mode;
 

@@ -15,10 +15,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 
-import {
-  useChartUIStore,
-  MAX_INDICATORS_PER_SYMBOL,
-} from '@/store/useChartUIStore';
+import { useChartUIStore, MAX_INDICATORS_PER_SYMBOL } from '@/store/useChartUIStore';
 
 const SYMBOL = 'AAPL';
 

@@ -53,7 +53,9 @@ export default function LeftPanel() {
   const historicalCache = useTradeStore((s) => s.historicalCache);
   const symUpper = selectedSymbol?.toUpperCase() ?? '';
   const hasCacheForSymbol = symUpper
-    ? Object.keys(historicalCache).some((k) => k.startsWith(`${symUpper}::`) && historicalCache[k].length >= 30)
+    ? Object.keys(historicalCache).some(
+        (k) => k.startsWith(`${symUpper}::`) && historicalCache[k].length >= 30
+      )
     : false;
 
   useEffect(() => {

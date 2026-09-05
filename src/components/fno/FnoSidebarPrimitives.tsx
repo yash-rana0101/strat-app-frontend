@@ -31,7 +31,9 @@ export function fmtStr(v: NaOr<string>): React.ReactNode {
 export function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between border-b border-border-default/20 pb-1.5 last:border-0 last:pb-0">
-      <span className="text-[9px] font-medium uppercase tracking-wider text-text-muted">{label}</span>
+      <span className="text-[9px] font-medium uppercase tracking-wider text-text-muted">
+        {label}
+      </span>
       {children}
     </div>
   );
@@ -47,15 +49,36 @@ export function Card({ title, children }: { title: string; children: React.React
 }
 
 export function BiasBadge({ state }: { state: NaOr<OptionsBiasState> }) {
-  const cfg = (state ? {
-    bullish: { cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30', icon: <TrendingUp size={10} />, label: 'Bullish' },
-    bearish: { cls: 'bg-rose-500/15 text-rose-400 border-rose-500/30', icon: <TrendingDown size={10} />, label: 'Bearish' },
-    neutral: { cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30', icon: <Minus size={10} />, label: 'Neutral' },
-  }[state] : null) ?? { cls: 'bg-elevated text-text-muted border-border-default', icon: <Minus size={10} />, label: 'N/A' };
+  const cfg = (state
+    ? {
+        bullish: {
+          cls: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+          icon: <TrendingUp size={10} />,
+          label: 'Bullish',
+        },
+        bearish: {
+          cls: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+          icon: <TrendingDown size={10} />,
+          label: 'Bearish',
+        },
+        neutral: {
+          cls: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+          icon: <Minus size={10} />,
+          label: 'Neutral',
+        },
+      }[state]
+    : null) ?? {
+    cls: 'bg-elevated text-text-muted border-border-default',
+    icon: <Minus size={10} />,
+    label: 'N/A',
+  };
 
   return (
-    <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${cfg.cls}`}>
-      {cfg.icon}{cfg.label}
+    <span
+      className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${cfg.cls}`}
+    >
+      {cfg.icon}
+      {cfg.label}
     </span>
   );
 }

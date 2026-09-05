@@ -42,7 +42,10 @@ export default function ChartTypeSelector({ value, onSelect }: ChartTypeSelector
       >
         <CandlestickChart size={13} className="text-text-muted" />
         <span>{CHART_TYPE_LABELS[value]}</span>
-        <ChevronDown size={11} className={open ? 'rotate-180 transition-transform' : 'transition-transform'} />
+        <ChevronDown
+          size={11}
+          className={open ? 'rotate-180 transition-transform' : 'transition-transform'}
+        />
       </button>
       {open && (
         <div className="absolute left-0 top-full z-50 mt-px w-44 rounded-none border border-border-default bg-surface/95 p-1 shadow-2xl backdrop-blur-xl">
@@ -54,10 +57,11 @@ export default function ChartTypeSelector({ value, onSelect }: ChartTypeSelector
                 onSelect(t);
                 setOpen(false);
               }}
-              className={`flex w-full items-center justify-between rounded-none px-2.5 py-1.5 text-left text-[11px] transition-colors ${t === value
+              className={`flex w-full items-center justify-between rounded-none px-2.5 py-1.5 text-left text-[11px] transition-colors ${
+                t === value
                   ? 'bg-primary/10 font-semibold text-primary'
                   : 'text-text-secondary hover:bg-elevated hover:text-text-primary'
-                }`}
+              }`}
             >
               <span>{CHART_TYPE_LABELS[t]}</span>
               {t === value && <span className="h-1.5 w-1.5 rounded-none bg-primary" />}

@@ -10,18 +10,13 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 
-import {
-  STRATEGY_REGISTRY,
-  listStrategies,
-  getStrategy,
-} from '@/charting/engines';
+import { STRATEGY_REGISTRY, listStrategies, getStrategy } from '@/charting/engines';
 import type { ChartCandle } from '@/charting/types';
 
 const RUNS = 100;
 
 /** A finite, strictly-positive price value generator. */
-const price = () =>
-  fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Generate a well-formed candle series with strictly ascending unique
@@ -35,16 +30,14 @@ const candleSeries = (): fc.Arbitrary<ChartCandle[]> =>
       if (sorted.length === 0) return fc.constant([] as ChartCandle[]);
       return fc.tuple(
         ...sorted.map((t) =>
-          fc
-            .record({ a: price(), b: price(), c: price(), d: price() })
-            .map(({ a, b, c, d }) => ({
-              time: t,
-              open: a,
-              close: b,
-              high: Math.max(a, b, c, d),
-              low: Math.min(a, b, c, d),
-            })),
-        ),
+          fc.record({ a: price(), b: price(), c: price(), d: price() }).map(({ a, b, c, d }) => ({
+            time: t,
+            open: a,
+            close: b,
+            high: Math.max(a, b, c, d),
+            low: Math.min(a, b, c, d),
+          }))
+        )
       );
     })
     .map((arr) => arr as ChartCandle[]);
@@ -69,7 +62,7 @@ describe('Property 27: Strategy summary reports a consistent count and numeric n
         expect(typeof summary.netResult).toBe('number');
         expect(Number.isFinite(summary.netResult)).toBe(true);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -84,7 +77,7 @@ describe('Property 27: Strategy summary reports a consistent count and numeric n
           expect(Number.isFinite(summary.netResult)).toBe(true);
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

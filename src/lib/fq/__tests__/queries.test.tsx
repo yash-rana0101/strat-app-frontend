@@ -103,7 +103,7 @@ describe('query keys', () => {
 
   it('separate lists by status and search, so one does not overwrite another', () => {
     expect(fqKeys.sessionList({ status: 'active' })).not.toEqual(
-      fqKeys.sessionList({ status: 'archived' }),
+      fqKeys.sessionList({ status: 'archived' })
     );
     expect(fqKeys.sessionList({ q: 'reliance' })).not.toEqual(fqKeys.sessionList({ q: 'tcs' }));
   });
@@ -134,10 +134,9 @@ describe('useSession', () => {
     // The reason for a shared cache: the tab bar, the header and the workspace all read the
     // same session.
     fetchMock.mockResolvedValue(json(summary()));
-    const { result } = renderHook(
-      () => ({ a: useSession('sess_1'), b: useSession('sess_1') }),
-      { wrapper },
-    );
+    const { result } = renderHook(() => ({ a: useSession('sess_1'), b: useSession('sess_1') }), {
+      wrapper,
+    });
     await waitFor(() => expect(result.current.a.isSuccess).toBe(true));
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -253,7 +252,7 @@ describe('useCreateSession', () => {
     fetchMock.mockResolvedValue(json({ detail: 'boom' }, 500));
     const { result } = renderHook(() => useCreateSession(), { wrapper });
     await expect(
-      result.current.mutateAsync({ symbol: 'X', profile: 'INTRADAY', timeframe: '10m' }),
+      result.current.mutateAsync({ symbol: 'X', profile: 'INTRADAY', timeframe: '10m' })
     ).rejects.toThrow();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -263,7 +262,12 @@ describe('useRenameSession', () => {
   it('applies the new title optimistically', async () => {
     client.setQueryData(fqKeys.session('sess_1'), summary({ title: 'Old' }));
     let release: (v: Response) => void = () => {};
-    fetchMock.mockImplementation(() => new Promise<Response>((r) => { release = r; }));
+    fetchMock.mockImplementation(
+      () =>
+        new Promise<Response>((r) => {
+          release = r;
+        })
+    );
 
     const { result } = renderHook(() => useRenameSession(), { wrapper });
     void result.current.mutate({ sessionId: 'sess_1', title: 'New' });
@@ -271,7 +275,7 @@ describe('useRenameSession', () => {
     // A rename is direct manipulation of a label the user is looking at, so a round trip
     // reads as lag.
     await waitFor(() =>
-      expect(client.getQueryData<SessionSummary>(fqKeys.session('sess_1'))?.title).toBe('New'),
+      expect(client.getQueryData<SessionSummary>(fqKeys.session('sess_1'))?.title).toBe('New')
     );
     release(json(summary({ title: 'New' })));
   });
@@ -285,11 +289,11 @@ describe('useRenameSession', () => {
 
     const { result } = renderHook(() => useRenameSession(), { wrapper });
     await expect(
-      result.current.mutateAsync({ sessionId: 'sess_1', title: 'New' }),
+      result.current.mutateAsync({ sessionId: 'sess_1', title: 'New' })
     ).rejects.toThrow();
 
     await waitFor(() =>
-      expect(client.getQueryData<SessionSummary>(fqKeys.session('sess_1'))?.title).toBe('Old'),
+      expect(client.getQueryData<SessionSummary>(fqKeys.session('sess_1'))?.title).toBe('Old')
     );
   });
 
@@ -309,7 +313,12 @@ describe('useArchiveSession', () => {
     // track of the user's work, which is worse than a brief wait.
     client.setQueryData(fqKeys.session('sess_1'), summary({ status: 'active' }));
     let release: (v: Response) => void = () => {};
-    fetchMock.mockImplementation(() => new Promise<Response>((r) => { release = r; }));
+    fetchMock.mockImplementation(
+      () =>
+        new Promise<Response>((r) => {
+          release = r;
+        })
+    );
 
     const { result } = renderHook(() => useArchiveSession(), { wrapper });
     void result.current.mutate('sess_1');
@@ -318,7 +327,7 @@ describe('useArchiveSession', () => {
     expect(client.getQueryData<SessionSummary>(fqKeys.session('sess_1'))?.status).toBe('active');
     release(json(summary({ status: 'archived', archived_at: 9 })));
     await waitFor(() =>
-      expect(client.getQueryData<SessionSummary>(fqKeys.session('sess_1'))?.status).toBe('archived'),
+      expect(client.getQueryData<SessionSummary>(fqKeys.session('sess_1'))?.status).toBe('archived')
     );
   });
 });
@@ -360,7 +369,11 @@ describe('invalidateSessionState', () => {
 
     invalidateSessionState(client, 'sess_1');
 
-    for (const key of [fqKeys.session('sess_1'), fqKeys.messages('sess_1'), fqKeys.runs('sess_1')]) {
+    for (const key of [
+      fqKeys.session('sess_1'),
+      fqKeys.messages('sess_1'),
+      fqKeys.runs('sess_1'),
+    ]) {
       expect(client.getQueryState(key)?.isInvalidated).toBe(true);
     }
   });

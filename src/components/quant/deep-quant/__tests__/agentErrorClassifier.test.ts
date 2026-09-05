@@ -15,7 +15,7 @@ describe('classifyAgentError', () => {
     // that was being reported as "your LLM API key is expired".
     const err = classifyAgentError(
       'This is part of the RESEARCH plan. Trade analysis and recommendations are ' +
-        'available to subscribers of our SEBI-registered research service.',
+        'available to subscribers of our SEBI-registered research service.'
     );
     expect(err.kind).toBe('research-locked');
     expect(err.retryable).toBe(false);
@@ -25,7 +25,7 @@ describe('classifyAgentError', () => {
   it('recognises the server-side feature switch', () => {
     const err = classifyAgentError(
       'Deep Quant AI analysis is disabled in this deployment. If you believe you ' +
-        'have access to it, contact support — the operator controls this switch, not your plan.',
+        'have access to it, contact support — the operator controls this switch, not your plan.'
     );
     expect(err.kind).toBe('feature-disabled');
     expect(err.retryable).toBe(false);
@@ -64,7 +64,7 @@ describe('classifyAgentError', () => {
   it('recognises the idle-stream timeout the store produces', () => {
     const err = classifyAgentError(
       'The agent stream stalled — no activity for 120s. The Python agent server may ' +
-        'be unreachable or the LLM request stalled. Please retry.',
+        'be unreachable or the LLM request stalled. Please retry.'
     );
     expect(err.kind).toBe('timeout');
     expect(err.retryable).toBe(true);
@@ -73,7 +73,10 @@ describe('classifyAgentError', () => {
   it('recognises a data shortfall rather than blaming the model', () => {
     // Common and previously very misleading: an illiquid symbol with no candles
     // rendered as an expired-key diagnosis.
-    for (const msg of ['no candles available for NIFTY26AUG24000CE', 'insufficient history for this timeframe']) {
+    for (const msg of [
+      'no candles available for NIFTY26AUG24000CE',
+      'insufficient history for this timeframe',
+    ]) {
       expect(classifyAgentError(msg).kind, msg).toBe('no-data');
     }
   });
@@ -121,7 +124,7 @@ describe('classifyAgentError', () => {
     // reported as a rate limit. Ordering is load-bearing, so it is pinned.
     const err = classifyAgentError(
       'This is part of the RESEARCH plan — subscription limit applies. See our ' +
-        'SEBI-registered research service.',
+        'SEBI-registered research service.'
     );
     expect(err.kind).toBe('research-locked');
   });

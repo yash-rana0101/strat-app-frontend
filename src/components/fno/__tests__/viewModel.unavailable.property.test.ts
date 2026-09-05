@@ -48,7 +48,7 @@ function analyticLeafArb(): fc.Arbitrary<unknown> {
       weight: 5,
       arbitrary: fc.double({ min: -1e9, max: 1e9, noNaN: true, noDefaultInfinity: true }),
     },
-    { weight: 1, arbitrary: fc.constantFrom(NaN, Infinity, -Infinity) },
+    { weight: 1, arbitrary: fc.constantFrom(NaN, Infinity, -Infinity) }
   );
 }
 
@@ -104,13 +104,13 @@ function markerArb(): fc.Arbitrary<FnoUnavailableMarker> {
         fc.constant('no chain snapshot available for NIFTY 50 / 2024-12-26'),
         fc.constant(''),
         fc.constant('   '),
-        fc.string(),
+        fc.string()
       ),
       last_snapshot_ts: fc.option(fc.integer({ min: 0, max: 2_000_000_000_000 }), {
         nil: undefined,
       }),
     },
-    { requiredKeys: ['underlying', 'expiry', 'unavailable'] },
+    { requiredKeys: ['underlying', 'expiry', 'unavailable'] }
   ) as fc.Arbitrary<FnoUnavailableMarker>;
 }
 
@@ -127,18 +127,18 @@ function emptyChainPayloadArb(): fc.Arbitrary<FnoPayload> {
       // Mix finite and non-finite timestamps; an empty chain is unavailable regardless.
       snapshot_ts: fc.oneof(
         fc.integer({ min: 0, max: 2_000_000_000_000 }),
-        fc.constantFrom(NaN, Infinity, -Infinity),
+        fc.constantFrom(NaN, Infinity, -Infinity)
       ) as fc.Arbitrary<number>,
       market_status: fc.constantFrom('open', 'closed') as fc.Arbitrary<'open' | 'closed'>,
       // The empty/missing chain is the defining trait of this family.
       chain: fc.oneof(
         fc.constant([] as FnoChainRow[]),
-        fc.constant(undefined as unknown as FnoChainRow[]),
+        fc.constant(undefined as unknown as FnoChainRow[])
       ),
       analytics: analyticsArb(),
       bias: fc.constant({}),
     },
-    { requiredKeys: ['underlying', 'expiry', 'snapshot_ts', 'market_status', 'analytics', 'bias'] },
+    { requiredKeys: ['underlying', 'expiry', 'snapshot_ts', 'market_status', 'analytics', 'bias'] }
   ) as fc.Arbitrary<FnoPayload>;
 }
 
@@ -173,11 +173,9 @@ describe('Property 6: unavailable and empty results map to an explained Unavaila
         expect(state).not.toHaveProperty('marketStatus');
 
         // lastSnapshotTs is finite-or-null (never NaN/±Infinity, never undefined).
-        expect(
-          state.lastSnapshotTs === null || Number.isFinite(state.lastSnapshotTs),
-        ).toBe(true);
+        expect(state.lastSnapshotTs === null || Number.isFinite(state.lastSnapshotTs)).toBe(true);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -198,11 +196,9 @@ describe('Property 6: unavailable and empty results map to an explained Unavaila
         expect(state).not.toHaveProperty('snapshotTs');
         expect(state).not.toHaveProperty('marketStatus');
 
-        expect(
-          state.lastSnapshotTs === null || Number.isFinite(state.lastSnapshotTs),
-        ).toBe(true);
+        expect(state.lastSnapshotTs === null || Number.isFinite(state.lastSnapshotTs)).toBe(true);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -214,7 +210,7 @@ describe('Property 6: unavailable and empty results map to an explained Unavaila
         expect(state.kind).not.toBe('partial');
         expect(state.kind).toBe('unavailable');
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

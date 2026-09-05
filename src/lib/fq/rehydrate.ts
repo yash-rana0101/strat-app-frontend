@@ -110,7 +110,9 @@ export function toQaMessages(messages: StoredMessage[]): QaChatMessage[] {
   for (const message of messages) {
     if (message.kind !== 'qa_question' && message.kind !== 'qa_answer') continue;
     const failed =
-      message.status === 'truncated' || message.status === 'error' || message.status === 'cancelled';
+      message.status === 'truncated' ||
+      message.status === 'error' ||
+      message.status === 'cancelled';
     out.push({
       // A STILL-STREAMING assistant answer gets the same id the live path derives from the
       // frame (`qa-<run_id>`), so when the stream reattaches its chunks land on this turn
@@ -182,8 +184,7 @@ export function reconcileWithRun(session: QuantSession, run: StoredRun | null): 
         ...session,
         sessionStatus: 'error',
         isAnalyzing: false,
-        analysisError:
-          session.analysisError ?? 'This analysis failed before it produced a result.',
+        analysisError: session.analysisError ?? 'This analysis failed before it produced a result.',
       };
     case 'truncated':
       return {

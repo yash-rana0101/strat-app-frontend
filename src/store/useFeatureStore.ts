@@ -90,7 +90,7 @@ export const useFeatureStore = create<FeatureState>((set, get) => ({
       console.error(
         '[useFeatureStore] Could not load the deployment feature configuration; ' +
           'premium features stay locked until it succeeds.',
-        err,
+        err
       );
       set({ configLoaded: false });
     }

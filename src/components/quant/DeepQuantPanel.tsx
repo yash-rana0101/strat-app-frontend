@@ -121,7 +121,8 @@ export default function DeepQuantPanel() {
     setDialogOpen(true);
   };
 
-  const livePrice = useTradeStore((s) => s.ohlcCandles.find((c) => c.symbol === symbol)?.close) || 0;
+  const livePrice =
+    useTradeStore((s) => s.ohlcCandles.find((c) => c.symbol === symbol)?.close) || 0;
 
   // Use modular verification form hook
   const {
@@ -223,7 +224,11 @@ export default function DeepQuantPanel() {
         <div className="mt-2 pt-1.5 border-t border-border-default/20 flex flex-wrap items-center gap-1.5 text-[10px]">
           {/* 1. Model Selector Box */}
           <div className="flex-1 min-w-[110px]">
-            <ModelSelector value={selectedModel} onChange={setSelectedModel} disabled={isAnalyzing} />
+            <ModelSelector
+              value={selectedModel}
+              onChange={setSelectedModel}
+              disabled={isAnalyzing}
+            />
           </div>
 
           {/* 2. Candle Status Box */}
@@ -232,7 +237,8 @@ export default function DeepQuantPanel() {
             title={`${symbol} • ${activeTimeframe}`}
           >
             <span className="truncate">
-              {symbol} • {activeTimeframe} • {!dataReady
+              {symbol} • {activeTimeframe} •{' '}
+              {!dataReady
                 ? 'Loading…'
                 : insufficientData
                   ? `${symbolCandleCount} candles (low)`
@@ -283,9 +289,16 @@ export default function DeepQuantPanel() {
                     stroke="currentColor"
                     strokeWidth="1.6"
                     strokeDasharray={31.4}
-                    strokeDashoffset={31.4 - (31.4 * Math.min(100, Math.max(10, (credit.credits / 100) * 100))) / 100}
+                    strokeDashoffset={
+                      31.4 -
+                      (31.4 * Math.min(100, Math.max(10, (credit.credits / 100) * 100))) / 100
+                    }
                     strokeLinecap="round"
-                    className={credit.credits > 0 ? "text-emerald-400 transition-all duration-300" : "text-amber-500"}
+                    className={
+                      credit.credits > 0
+                        ? 'text-emerald-400 transition-all duration-300'
+                        : 'text-amber-500'
+                    }
                   />
                 </svg>
               </div>
@@ -333,9 +346,7 @@ export default function DeepQuantPanel() {
 
         {/* Mode Switcher: Chat Mode <-> Agent Mode */}
         <div className="flex items-center rounded-md bg-elevated/40 p-0.5 border border-border-default/60 text-[9px] font-bold uppercase tracking-wider">
-          <span className="rounded px-2 py-0.5 bg-elevated text-text-primary shadow-xs">
-            Chat
-          </span>
+          <span className="rounded px-2 py-0.5 bg-elevated text-text-primary shadow-xs">Chat</span>
           <button
             type="button"
             onClick={() => openDialog(finalTrade ? 'decision' : null)}

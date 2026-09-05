@@ -35,7 +35,14 @@ function candlesResponse(times: number[]) {
   return {
     ok: true,
     json: async () => ({
-      candles: times.map((t) => ({ time: t, open: 100, high: 101, low: 99, close: 100, volume: 5 })),
+      candles: times.map((t) => ({
+        time: t,
+        open: 100,
+        high: 101,
+        low: 99,
+        close: 100,
+        volume: 5,
+      })),
     }),
   } as unknown as Response;
 }
@@ -53,7 +60,9 @@ function respondAsIfListedRecently() {
     const to = /to=(\d{4}-\d{2}-\d{2})/.exec(url)?.[1];
     if (!from || !to) return candlesResponse([]);
     const toSec = Date.parse(`${to}T00:00:00Z`) / 1000;
-    return toSec >= LISTED_ON ? candlesResponse([LISTED_ON + 600, LISTED_ON + 1200]) : candlesResponse([]);
+    return toSec >= LISTED_ON
+      ? candlesResponse([LISTED_ON + 600, LISTED_ON + 1200])
+      : candlesResponse([]);
   });
 }
 
@@ -73,7 +82,7 @@ describe('fetchKiteBatch — a recently listed contract over a wide window', () 
       new Date('2026-03-01T00:00:00Z'),
       new Date('2026-08-30T00:00:00Z'),
       'NFO',
-      '10m',
+      '10m'
     );
 
     expect(bars.length).toBeGreaterThan(0);
@@ -88,7 +97,7 @@ describe('fetchKiteBatch — a recently listed contract over a wide window', () 
       new Date('2026-03-01T00:00:00Z'),
       new Date('2026-08-30T00:00:00Z'),
       'NFO',
-      '10m',
+      '10m'
     );
 
     // Page order is what makes the early exit safe: it must mean "stop going
@@ -105,7 +114,7 @@ describe('fetchKiteBatch — a recently listed contract over a wide window', () 
       new Date('2026-03-01T00:00:00Z'),
       new Date('2026-08-30T00:00:00Z'),
       'NFO',
-      '10m',
+      '10m'
     );
 
     // 2026-03-01 → 2026-08-30 in 30-day slices is 7 pages, walked newest-first in
@@ -117,7 +126,7 @@ describe('fetchKiteBatch — a recently listed contract over a wide window', () 
       kiteFetchSpy.mock.calls
         .map(([url]) => String(url))
         .filter((url) => url.includes('/historical?symbol='))
-        .map((url) => /from=(\d{4}-\d{2}-\d{2})/.exec(url)?.[1]),
+        .map((url) => /from=(\d{4}-\d{2}-\d{2})/.exec(url)?.[1])
     );
     expect(windows.size).toBe(6);
     expect(windows.has('2026-03-01')).toBe(false);
@@ -131,7 +140,7 @@ describe('fetchKiteBatch — a recently listed contract over a wide window', () 
       new Date('2026-08-01T00:00:00Z'),
       new Date('2026-08-30T00:00:00Z'),
       'NFO',
-      '10m',
+      '10m'
     );
     // A genuinely untraded strike stays empty — the fix must not invent bars.
     expect(bars).toEqual([]);

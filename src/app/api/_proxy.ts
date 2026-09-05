@@ -62,7 +62,7 @@ export interface ProxyOptions {
 export async function proxyRequest(
   req: Request,
   target: Upstream,
-  { path, stream = false, extraHeaders }: ProxyOptions,
+  { path, stream = false, extraHeaders }: ProxyOptions
 ): Promise<Response> {
   if (!path.startsWith('/')) {
     return proxyError(500, `internal: proxy path must start with "/" (got ${path})`);
@@ -72,9 +72,7 @@ export async function proxyRequest(
   const method = req.method.toUpperCase();
 
   const controller = new AbortController();
-  const timer = stream
-    ? undefined
-    : setTimeout(() => controller.abort(), PROXY_TIMEOUT_MS);
+  const timer = stream ? undefined : setTimeout(() => controller.abort(), PROXY_TIMEOUT_MS);
 
   let upstream: Response;
   try {
@@ -87,9 +85,7 @@ export async function proxyRequest(
       // `duplex: 'half'` is required by the Fetch spec when sending a stream
       // body; Node's undici enforces it. Reading the body to an ArrayBuffer
       // first would be simpler but would break large historical POSTs.
-      ...(BODY_METHODS.has(method) && req.body
-        ? { body: req.body, duplex: 'half' as const }
-        : {}),
+      ...(BODY_METHODS.has(method) && req.body ? { body: req.body, duplex: 'half' as const } : {}),
       signal: controller.signal,
       // These proxies are the live data path — never serve a cached answer.
       cache: 'no-store',
@@ -118,7 +114,6 @@ export async function proxyRequest(
   if (isCredentialFault(upstream.status) && isGatewayChallenge(upstream)) {
     return proxyError(upstream.status, credentialFaultMessage(target));
   }
-
 
   const headers = passthroughHeaders(upstream);
   if (stream) {
@@ -177,10 +172,7 @@ export function canonicalizeSearch(search: string): string {
  * string appended. Returns `null` when the segment is empty, which callers turn
  * into a 400 rather than silently proxying the upstream root.
  */
-export function resolveCatchAll(
-  segments: string[] | undefined,
-  req: Request,
-): string | null {
+export function resolveCatchAll(segments: string[] | undefined, req: Request): string | null {
   const joined = (segments ?? []).filter((s) => s.length > 0).join('/');
   if (!joined) return null;
   return `/${joined}${canonicalizeSearch(new URL(req.url).search)}`;

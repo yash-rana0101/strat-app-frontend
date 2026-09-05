@@ -25,13 +25,13 @@ function required(name: string, value: string | undefined): string {
 /** The Strat AI API (auth, credit, billing, profile). */
 export const API_BASE_URL = required(
   'NEXT_PUBLIC_API_BASE_URL',
-  process.env.NEXT_PUBLIC_API_BASE_URL,
+  process.env.NEXT_PUBLIC_API_BASE_URL
 );
 
 /** The account/billing surface linked from upsell and manage-account CTAs. */
 export const DASHBOARD_URL = required(
   'NEXT_PUBLIC_DASHBOARD_URL',
-  process.env.NEXT_PUBLIC_DASHBOARD_URL,
+  process.env.NEXT_PUBLIC_DASHBOARD_URL
 );
 
 /**

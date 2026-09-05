@@ -55,14 +55,14 @@ function renderButton(onCreated?: (id: string) => void) {
   return render(
     <QueryClientProvider client={client}>
       <NewSessionButton onCreated={onCreated} />
-    </QueryClientProvider>,
+    </QueryClientProvider>
   );
 }
 
 /** The body of the `POST /sessions` call, or `null` if none was made. */
 function postedBody(): Record<string, unknown> | null {
   const call = fetchMock.mock.calls.find(
-    ([, init]) => (init as RequestInit | undefined)?.method === 'POST',
+    ([, init]) => (init as RequestInit | undefined)?.method === 'POST'
   );
   if (!call) return null;
   return JSON.parse(String((call[1] as RequestInit).body));
@@ -141,7 +141,7 @@ describe('success', () => {
     await clickNew();
 
     await waitFor(() =>
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['fq', 'sessions'] })),
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ queryKey: ['fq', 'sessions'] }))
     );
   });
 });

@@ -26,9 +26,7 @@ const RUNS = 100;
  * The largest default lookback across all registered indicators. A candle pool
  * this long lets us carve a short prefix for every indicator from one series.
  */
-const MAX_LOOKBACK = Math.max(
-  ...listIndicators().map((def) => def.minLookback(def.defaults)),
-);
+const MAX_LOOKBACK = Math.max(...listIndicators().map((def) => def.minLookback(def.defaults)));
 
 /**
  * A random-walk OHLC candle series of exactly `len` candles with strictly
@@ -42,7 +40,7 @@ const candlePool = (len: number): fc.Arbitrary<ChartCandle[]> =>
         spread: fc.double({ min: 0.1, max: 5, noNaN: true, noDefaultInfinity: true }),
         vol: fc.double({ min: 1, max: 10_000, noNaN: true, noDefaultInfinity: true }),
       }),
-      { minLength: len, maxLength: len },
+      { minLength: len, maxLength: len }
     )
     .map((moves) => {
       const out: ChartCandle[] = [];
@@ -94,28 +92,27 @@ describe('Property 4: insufficient data omits computation and signals insufficie
             // Insufficiency is signalled.
             expect(
               plot.insufficientData,
-              `${def.id} (len=${len}, lookback=${lookback}) should flag insufficientData`,
+              `${def.id} (len=${len}, lookback=${lookback}) should flag insufficientData`
             ).toBe(true);
 
             // No plotted output: no lines and no bands.
             expect(
               plot.lines.length,
-              `${def.id} (len=${len}, lookback=${lookback}) should plot no lines`,
+              `${def.id} (len=${len}, lookback=${lookback}) should plot no lines`
             ).toBe(0);
             expect(
               plot.bands === undefined || plot.bands.length === 0,
-              `${def.id} (len=${len}, lookback=${lookback}) should plot no bands`,
+              `${def.id} (len=${len}, lookback=${lookback}) should plot no bands`
             ).toBe(true);
 
             // The input series is left unchanged.
-            expect(
-              JSON.stringify(candles),
-              `${def.id} should not mutate the input series`,
-            ).toBe(before);
+            expect(JSON.stringify(candles), `${def.id} should not mutate the input series`).toBe(
+              before
+            );
           }
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

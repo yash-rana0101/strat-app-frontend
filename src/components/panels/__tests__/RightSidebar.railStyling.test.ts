@@ -57,14 +57,16 @@ describe('the confluence rail matches NavRail', () => {
     expect(
       fills,
       'the rail buttons must carry no background — NavRail marks its active item ' +
-        'with an accent bar and colour alone',
+        'with an accent bar and colour alone'
     ).toEqual([]);
   });
 
   it('marks the showing destination with the same accent bar NavRail uses', () => {
     expect(rail()).toMatch(ACCENT_BAR);
-    expect(NAV_RAIL, 'NavRail is the reference — if it stopped using the bar, this test is stale')
-      .toMatch(ACCENT_BAR);
+    expect(
+      NAV_RAIL,
+      'NavRail is the reference — if it stopped using the bar, this test is stale'
+    ).toMatch(ACCENT_BAR);
   });
 
   it('mirrors the bar to the rail’s outer edge', () => {
@@ -109,11 +111,15 @@ describe('the rail is the only switcher, and the panel gets the full height', ()
 
   it('closes the column when the showing destination is pressed again', () => {
     // The rail is the only control, so it has to be able to give the width back.
-    expect(RIGHT_SIDEBAR).toMatch(/if \(sidebarOpen && sidebarTab === tab\) \{\s*setSidebarOpen\(false\);/);
+    expect(RIGHT_SIDEBAR).toMatch(
+      /if \(sidebarOpen && sidebarTab === tab\) \{\s*setSidebarOpen\(false\);/
+    );
   });
 
   it('uses the requested glyphs', () => {
-    expect(RIGHT_SIDEBAR).toContain("import { BrainAiIcon, LibraryBooksIcon } from './sidebarIcons';");
+    expect(RIGHT_SIDEBAR).toContain(
+      "import { BrainAiIcon, LibraryBooksIcon } from './sidebarIcons';"
+    );
     expect(RIGHT_SIDEBAR).toContain('Icon: LibraryBooksIcon');
     expect(RIGHT_SIDEBAR).toContain('Icon: BrainAiIcon');
   });

@@ -89,7 +89,9 @@ describe('wire format', () => {
   });
 
   it('carries sub/iat/exp and nothing else', () => {
-    const [payload] = mintIdentityHeader('user_x', { now: 1000, ttl: 60, secret: SECRET })!.split('.');
+    const [payload] = mintIdentityHeader('user_x', { now: 1000, ttl: 60, secret: SECRET })!.split(
+      '.'
+    );
     const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
     expect(claims).toEqual({ exp: 1060, iat: 1000, sub: 'user_x' });
   });
@@ -187,7 +189,15 @@ describe('resolveUserId', () => {
     ['a missing id', { ok: true, json: async () => ({ success: true, data: {} }) }],
     ['a non-string id', { ok: true, json: async () => ({ success: true, data: { id: 42 } }) }],
     ['a blank id', { ok: true, json: async () => ({ success: true, data: { id: '  ' } }) }],
-    ['an unparseable body', { ok: true, json: async () => { throw new Error('nope'); } }],
+    [
+      'an unparseable body',
+      {
+        ok: true,
+        json: async () => {
+          throw new Error('nope');
+        },
+      },
+    ],
   ])('returns null for %s', async (_label, response) => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(response as unknown as Response));
     await expect(resolveUserId(reqWith({ cookie: 'access_token=tok' }))).resolves.toBeNull();
@@ -210,7 +220,9 @@ describe('resolveUserId', () => {
   });
 
   it('caches a MISS too, so an expired cookie does not hammer the auth API', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: false, json: async () => ({}) } as unknown as Response);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: false, json: async () => ({}) } as unknown as Response);
     vi.stubGlobal('fetch', fetchMock);
     const req = reqWith({ cookie: 'access_token=stale' });
     await resolveUserId(req);
@@ -233,8 +245,15 @@ describe('resolveUserId', () => {
 
 describe('requireIdentity switch', () => {
   it.each([
-    ['1', true], ['true', true], ['TRUE', true], ['yes', true], ['on', true],
-    ['0', false], ['false', false], ['', false], ['nonsense', false],
+    ['1', true],
+    ['true', true],
+    ['TRUE', true],
+    ['yes', true],
+    ['on', true],
+    ['0', false],
+    ['false', false],
+    ['', false],
+    ['nonsense', false],
   ])('%p -> %p', (value, expected) => {
     process.env.FQ_REQUIRE_IDENTITY = value;
     expect(requireIdentity()).toBe(expected);

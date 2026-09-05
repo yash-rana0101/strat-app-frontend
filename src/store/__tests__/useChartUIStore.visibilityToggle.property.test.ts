@@ -20,10 +20,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import fc from 'fast-check';
 
-import {
-  useChartUIStore,
-  type ActiveIndicator,
-} from '@/store/useChartUIStore';
+import { useChartUIStore, type ActiveIndicator } from '@/store/useChartUIStore';
 import { listIndicators } from '@/charting/engines';
 import type { IndicatorId } from '@/charting/engines';
 
@@ -47,7 +44,7 @@ function paramsArb() {
   return fc.dictionary(
     fc.string({ minLength: 1, maxLength: 6 }),
     fc.double({ min: -1e6, max: 1e6, noNaN: true }),
-    { maxKeys: 5 },
+    { maxKeys: 5 }
   );
 }
 
@@ -62,26 +59,26 @@ function styleArb() {
 
 /** Arbitrary active indicator instance with a caller-supplied instanceId. */
 function indicatorArb(instanceId: string) {
-  return fc.record({
-    indicatorId: fc.constantFrom(...ENGINE_IDS),
-    params: paramsArb(),
-    style: styleArb(),
-    visible: fc.boolean(),
-    paneId: fc.option(fc.string({ minLength: 1, maxLength: 8 }), { nil: null }),
-  }).map((rec): ActiveIndicator => ({ instanceId, ...rec }));
+  return fc
+    .record({
+      indicatorId: fc.constantFrom(...ENGINE_IDS),
+      params: paramsArb(),
+      style: styleArb(),
+      visible: fc.boolean(),
+      paneId: fc.option(fc.string({ minLength: 1, maxLength: 8 }), { nil: null }),
+    })
+    .map((rec): ActiveIndicator => ({ instanceId, ...rec }));
 }
 
 /** A non-empty list of instances with unique instanceIds, plus a target index. */
 function listAndTargetArb() {
-  return fc
-    .integer({ min: 1, max: 8 })
-    .chain((n) =>
-      fc.record({
-        list: fc.tuple(...Array.from({ length: n }, (_, i) => indicatorArb(`inst-${i}`))),
-        targetIndex: fc.integer({ min: 0, max: n - 1 }),
-        symbol: fc.constantFrom(...SYMBOLS),
-      }),
-    );
+  return fc.integer({ min: 1, max: 8 }).chain((n) =>
+    fc.record({
+      list: fc.tuple(...Array.from({ length: n }, (_, i) => indicatorArb(`inst-${i}`))),
+      targetIndex: fc.integer({ min: 0, max: n - 1 }),
+      symbol: fc.constantFrom(...SYMBOLS),
+    })
+  );
 }
 
 /** Deep clone for capturing an immutable "before" snapshot. */
@@ -118,7 +115,7 @@ describe('Property 11: toggling visibility preserves configuration', () => {
           if (i !== targetIndex) expect(ind).toEqual(before[i]);
         });
       }),
-      { numRuns: 100 },
+      { numRuns: 100 }
     );
   });
 
@@ -142,7 +139,7 @@ describe('Property 11: toggling visibility preserves configuration', () => {
         // ...and the entire list is unchanged.
         expect(after).toEqual(before);
       }),
-      { numRuns: 100 },
+      { numRuns: 100 }
     );
   });
 });

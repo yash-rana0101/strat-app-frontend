@@ -52,14 +52,14 @@ describe('PatternsStrip', () => {
         isLoading={false}
         error={null}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('6')).toBeInTheDocument();
     expect(screen.getByText('patterns')).toBeInTheDocument();
     expect(screen.getByText('1h')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /6 patterns, strongest on the 1h timeframe/ }),
+      screen.getByRole('button', { name: /6 patterns, strongest on the 1h timeframe/ })
     ).toBeInTheDocument();
   });
 
@@ -70,7 +70,7 @@ describe('PatternsStrip', () => {
         isLoading={false}
         error={null}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByRole('button', { name: /3 patterns, 2 still forming/ })).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe('PatternsStrip', () => {
         isLoading={false}
         error={null}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('pattern')).toBeInTheDocument();
@@ -97,7 +97,7 @@ describe('PatternsStrip', () => {
         isLoading={false}
         error="Tool server unreachable"
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('Tool server unreachable')).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('PatternsStrip', () => {
         isLoading={false}
         error="Scan timed out after 30s"
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('Scan timed out after 30s')).toBeInTheDocument();
@@ -128,21 +128,19 @@ describe('PatternsStrip', () => {
         isLoading={false}
         error={null}
         onClick={() => {}}
-      />,
+      />
     );
     expect(screen.getByText('None forming')).toBeInTheDocument();
     unmount();
 
     render(
-      <PatternsStrip multiTfPatterns={null} isLoading={false} error={null} onClick={() => {}} />,
+      <PatternsStrip multiTfPatterns={null} isLoading={false} error={null} onClick={() => {}} />
     );
     expect(screen.getByText('Not scanned')).toBeInTheDocument();
   });
 
   it('reports an in-flight scan as a status', () => {
-    render(
-      <PatternsStrip multiTfPatterns={null} isLoading error={null} onClick={() => {}} />,
-    );
+    render(<PatternsStrip multiTfPatterns={null} isLoading error={null} onClick={() => {}} />);
 
     expect(screen.getByRole('status')).toHaveTextContent('Scanning');
   });

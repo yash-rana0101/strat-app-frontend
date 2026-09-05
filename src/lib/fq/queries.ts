@@ -92,7 +92,12 @@ export function useSessions(params: { status?: 'active' | 'archived'; q?: string
   return useInfiniteQuery({
     queryKey: fqKeys.sessionList(params),
     queryFn: ({ pageParam }) =>
-      listSessions({ status: params.status ?? 'active', q: params.q, cursor: pageParam, limit: 25 }),
+      listSessions({
+        status: params.status ?? 'active',
+        q: params.q,
+        cursor: pageParam,
+        limit: 25,
+      }),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.next_cursor,
     staleTime: LIST_STALE_MS,

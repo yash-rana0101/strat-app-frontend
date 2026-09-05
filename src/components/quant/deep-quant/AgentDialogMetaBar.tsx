@@ -102,10 +102,11 @@ export default function AgentDialogMetaBar({
             type="button"
             disabled={isAnalyzing}
             onClick={() => onModeChange('FIND')}
-            className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${mode === 'FIND'
-              ? 'bg-elevated text-text-primary shadow-xs'
-              : 'text-text-muted hover:text-text-primary'
-              }`}
+            className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              mode === 'FIND'
+                ? 'bg-elevated text-text-primary shadow-xs'
+                : 'text-text-muted hover:text-text-primary'
+            }`}
           >
             Find Trade
           </button>
@@ -113,10 +114,11 @@ export default function AgentDialogMetaBar({
             type="button"
             disabled={isAnalyzing}
             onClick={() => onModeChange('VERIFY')}
-            className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${mode === 'VERIFY'
-              ? 'bg-elevated text-text-primary shadow-xs'
-              : 'text-text-muted hover:text-text-primary'
-              }`}
+            className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              mode === 'VERIFY'
+                ? 'bg-elevated text-text-primary shadow-xs'
+                : 'text-text-muted hover:text-text-primary'
+            }`}
           >
             Verify Setup
           </button>
@@ -126,10 +128,11 @@ export default function AgentDialogMetaBar({
           <button
             type="button"
             onClick={onToggleConfigureSetup}
-            className={`h-7 flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${isConfiguringSetup
-              ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-400'
-              : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
-              }`}
+            className={`h-7 flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
+              isConfiguringSetup
+                ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-400'
+                : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
+            }`}
           >
             {isConfiguringSetup ? 'View Analysis' : 'Edit Setup'}
           </button>
@@ -142,14 +145,15 @@ export default function AgentDialogMetaBar({
             if (isAnalyzing) onStop();
             else onRun();
           }}
-          className={`flex h-7 items-center justify-center gap-1.5 rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${isSessionLoading
+          className={`flex h-7 items-center justify-center gap-1.5 rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            isSessionLoading
               ? 'bg-elevated/40 text-text-muted border border-border-default opacity-70 cursor-not-allowed'
               : !dataReady && !isAnalyzing
                 ? 'bg-elevated/40 text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
                 : isAnalyzing
                   ? 'bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white'
                   : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white'
-            }`}
+          }`}
         >
           {isSessionLoading ? (
             <Loader2 size={11} className="animate-spin text-primary" />

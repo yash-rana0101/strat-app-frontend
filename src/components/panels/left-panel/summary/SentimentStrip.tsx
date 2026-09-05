@@ -72,13 +72,7 @@ export default function SentimentStrip({
   const subjectDiffers =
     !!subject && !!symbol?.trim() && subject.toUpperCase() !== symbol.trim().toUpperCase();
 
-  const state = isLoading
-    ? 'loading'
-    : error
-      ? 'error'
-      : sentiment
-        ? 'ready'
-        : 'empty';
+  const state = isLoading ? 'loading' : error ? 'error' : sentiment ? 'ready' : 'empty';
 
   const tone = sentiment ? toneFor(sentiment.score) : null;
 

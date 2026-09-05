@@ -32,7 +32,7 @@ import { vweprProjection, forecastProjection } from '../ghostLineComputation';
 function shallowCandles(
   count: number,
   base: number,
-  slopePerBar: number,
+  slopePerBar: number
 ): { time: number; close: number; volume: number; high: number; low: number }[] {
   const out = [];
   for (let i = 0; i < count; i++) {
@@ -74,7 +74,7 @@ describe('projection engines — no paisa-quantized staircase', () => {
     const points = vweprProjection(candles, 1_700_000_000, 60, 20);
 
     const allOnPaisaGrid = points.every(
-      (p) => Math.abs(p.price * 100 - Math.round(p.price * 100)) < 1e-9,
+      (p) => Math.abs(p.price * 100 - Math.round(p.price * 100)) < 1e-9
     );
     expect(allOnPaisaGrid).toBe(false);
   });

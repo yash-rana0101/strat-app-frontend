@@ -113,7 +113,11 @@ const scanInFlight = new Set<string>();
 /** Run async tasks with a bounded number in flight at once (preserves
  *  rate-limit friendliness vs an unbounded fan-out, while removing the fully
  *  serial latency of the old 250ms-gap loop). */
-async function runBounded<T>(items: T[], limit: number, fn: (item: T) => Promise<void>): Promise<void> {
+async function runBounded<T>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<void>
+): Promise<void> {
   let cursor = 0;
   const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
     while (cursor < items.length) {
@@ -216,8 +220,11 @@ export const useRadarStore = create<RadarStore>((set, get) => ({
           scans: {
             ...state.scans,
             [sym]: {
-              symbol: sym, scan: null, loading: false,
-              error: 'Scanner returned no result', lastScanned: Date.now(),
+              symbol: sym,
+              scan: null,
+              loading: false,
+              error: 'Scanner returned no result',
+              lastScanned: Date.now(),
             },
           },
         }));
@@ -261,7 +268,7 @@ export const useRadarStore = create<RadarStore>((set, get) => ({
     } catch (e: any) {
       // Backend error (e.g. pool not ready, no data for this timeframe).
       // Surface the real reason instead of a generic message.
-      const raw = typeof e === 'string' ? e : e?.message ?? String(e);
+      const raw = typeof e === 'string' ? e : (e?.message ?? String(e));
       set((state) => ({
         scans: {
           ...state.scans,
@@ -303,10 +310,13 @@ export const useRadarStore = create<RadarStore>((set, get) => ({
         set((state) => ({
           symbols,
           timeframe,
-          scans: symbols.reduce((acc, sym) => {
-            acc[sym] = { symbol: sym, scan: null, loading: false, error: null, lastScanned: 0 };
-            return acc;
-          }, { ...state.scans } as Record<string, RadarSymbolState>),
+          scans: symbols.reduce(
+            (acc, sym) => {
+              acc[sym] = { symbol: sym, scan: null, loading: false, error: null, lastScanned: 0 };
+              return acc;
+            },
+            { ...state.scans } as Record<string, RadarSymbolState>
+          ),
         }));
         await syncRegistry(symbols);
         void get().scanAll();

@@ -31,7 +31,7 @@ FATAL ERROR: Committing semi space failed. Allocation failed -
 JavaScript heap out of memory
 ```
 
-The exhaustion is in *external* memory, not the JS heap, so
+The exhaustion is in _external_ memory, not the JS heap, so
 `--max-old-space-size` does not help (tried at 8 GB). `build:web` passes
 `--turbopack`, which compiles the same tree without the spike. See the comment
 block in `next.config.ts`. If you ever change this, validate a **cold** build —
@@ -49,33 +49,33 @@ changing one needs a redeploy, not a restart. The rest are read per request.
 
 ### Build time (all three of the first group throw at import if missing)
 
-| Var | Value |
-|---|---|
-| `NEXT_PUBLIC_API_BASE_URL` | `https://api-web.stratai.live` |
-| `NEXT_PUBLIC_DASHBOARD_URL` | `https://dashboard.stratai.live` |
-| `NEXT_PUBLIC_AUTH_URL` | `https://auth.stratai.live` |
-| `NEXT_PUBLIC_AUTH_SERVICE_URL` | `https://api-web.stratai.live` |
-| `NEXT_PUBLIC_AGGREGATOR_WS_URL` | `wss://app-api.stratai.live/ws/aggregator` |
-| `NEXT_PUBLIC_ALPHA_WS_URL` | `wss://app-api.stratai.live/ws/alpha` |
-| `NEXT_PUBLIC_PREDICTIVE_WS_URL` | `wss://app-api.stratai.live/ws/predictive` |
-| `NEXT_PUBLIC_INSIGHT_WS_URL` | `wss://app-api.stratai.live/ws/insight` |
-| `NEXT_PUBLIC_WS_URL` | `wss://app-api.stratai.live/ws/aggregator` |
-| `NEXT_PUBLIC_PROD` | `true` |
-| `NEXT_PUBLIC_LLM_GATEWAY` | `omniroute` |
+| Var                              | Value                                       |
+| -------------------------------- | ------------------------------------------- |
+| `NEXT_PUBLIC_API_BASE_URL`       | `https://api-web.stratai.live`              |
+| `NEXT_PUBLIC_DASHBOARD_URL`      | `https://dashboard.stratai.live`            |
+| `NEXT_PUBLIC_AUTH_URL`           | `https://auth.stratai.live`                 |
+| `NEXT_PUBLIC_AUTH_SERVICE_URL`   | `https://api-web.stratai.live`              |
+| `NEXT_PUBLIC_AGGREGATOR_WS_URL`  | `wss://app-api.stratai.live/ws/aggregator`  |
+| `NEXT_PUBLIC_ALPHA_WS_URL`       | `wss://app-api.stratai.live/ws/alpha`       |
+| `NEXT_PUBLIC_PREDICTIVE_WS_URL`  | `wss://app-api.stratai.live/ws/predictive`  |
+| `NEXT_PUBLIC_INSIGHT_WS_URL`     | `wss://app-api.stratai.live/ws/insight`     |
+| `NEXT_PUBLIC_WS_URL`             | `wss://app-api.stratai.live/ws/aggregator`  |
+| `NEXT_PUBLIC_PROD`               | `true`                                      |
+| `NEXT_PUBLIC_LLM_GATEWAY`        | `omniroute`                                 |
 | `NEXT_PUBLIC_RESEARCH_BETA_OPEN` | `true` only for the closed beta — see below |
 
 All WS URLs must be `wss://`; an https page cannot open `ws://`.
 
 ### Runtime (server-side, never inlined)
 
-| Var | Value |
-|---|---|
-| `STRATAI_HTTP_BASE_URL` | `https://app-api.stratai.live` |
-| `QUESTDB_USER` / `QUESTDB_PASSWORD` | the gateway basic-auth credential |
-| `INTERNAL_IDENTITY_SECRET` | ≥32 chars, **identical** to deep-quant's |
-| `FQ_REQUIRE_IDENTITY` | `0` during rollout |
-| `FEATURE_ENFORCEMENT` | `true` normally; `false` opens all premium features |
-| `ENABLE_DEEPSEEK_GLM` … `ENABLE_ADVANCE_CHART` | `true` |
+| Var                                            | Value                                               |
+| ---------------------------------------------- | --------------------------------------------------- |
+| `STRATAI_HTTP_BASE_URL`                        | `https://app-api.stratai.live`                      |
+| `QUESTDB_USER` / `QUESTDB_PASSWORD`            | the gateway basic-auth credential                   |
+| `INTERNAL_IDENTITY_SECRET`                     | ≥32 chars, **identical** to deep-quant's            |
+| `FQ_REQUIRE_IDENTITY`                          | `0` during rollout                                  |
+| `FEATURE_ENFORCEMENT`                          | `true` normally; `false` opens all premium features |
+| `ENABLE_DEEPSEEK_GLM` … `ENABLE_ADVANCE_CHART` | `true`                                              |
 
 **Leave `KITE_API_URL`, `QUESTDB_HTTP_URL`, `DEEP_QUANT_URL`,
 `QUANT_TOOL_SERVER_URL` and `SENTIMENT_HTTP_URL` UNSET.** `src/app/api/_gateway.ts`

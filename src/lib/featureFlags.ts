@@ -62,9 +62,7 @@ const ACCESS_FLAG_BY_FEATURE: Record<FeatureId, keyof AccessFlags> = {
   advanceChart: 'canGetAdvanceChartAccess',
 };
 
-export const FEATURE_IDS: readonly FeatureId[] = Object.keys(
-  ACCESS_FLAG_BY_FEATURE,
-) as FeatureId[];
+export const FEATURE_IDS: readonly FeatureId[] = Object.keys(ACCESS_FLAG_BY_FEATURE) as FeatureId[];
 
 /** The accessFlag key that gates `id`. Exported for the server-side enforcement. */
 export function accessFlagFor(id: FeatureId): keyof AccessFlags {
@@ -132,7 +130,7 @@ export function parseFeatureConfig(payload: unknown): FeatureRuntimeConfig {
  */
 export function computeFeatureAccess(
   accessFlags: AccessFlags | null | undefined,
-  config: FeatureRuntimeConfig = UNRESOLVED_FEATURE_CONFIG,
+  config: FeatureRuntimeConfig = UNRESOLVED_FEATURE_CONFIG
 ): FeatureAccessMap {
   const result = {} as FeatureAccessMap;
 

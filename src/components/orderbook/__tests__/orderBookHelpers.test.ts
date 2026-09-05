@@ -99,7 +99,10 @@ describe('buildBookFromKiteDepth', () => {
     expect(buildBookFromKiteDepth({})).toBeNull();
     expect(buildBookFromKiteDepth({ buy: [], sell: [] })).toBeNull();
     expect(
-      buildBookFromKiteDepth({ buy: [{ price: 0, quantity: 0 }], sell: [{ price: 0, quantity: 0 }] }),
+      buildBookFromKiteDepth({
+        buy: [{ price: 0, quantity: 0 }],
+        sell: [{ price: 0, quantity: 0 }],
+      })
     ).toBeNull();
   });
 
@@ -109,7 +112,12 @@ describe('buildBookFromKiteDepth', () => {
     const junk = [
       { buy: 'nope', sell: null },
       { buy: [null, undefined, 42, 'x'] },
-      { buy: [{ price: NaN, quantity: 10 }, { price: 1304.9, quantity: Infinity }] },
+      {
+        buy: [
+          { price: NaN, quantity: 10 },
+          { price: 1304.9, quantity: Infinity },
+        ],
+      },
       { sell: [{ price: 1305.1 }] },
     ] as unknown as KiteDepth[];
 
@@ -170,8 +178,8 @@ describe('parseCachedBook', () => {
     expect(parseCachedBook('null')).toBeNull();
     expect(parseCachedBook('[]')).toBeNull();
     expect(parseCachedBook('"a string"')).toBeNull();
-    expect(parseCachedBook('{"bids":[]}')).toBeNull();          // asks missing
-    expect(parseCachedBook('{"asks":[]}')).toBeNull();          // bids missing
+    expect(parseCachedBook('{"bids":[]}')).toBeNull(); // asks missing
+    expect(parseCachedBook('{"asks":[]}')).toBeNull(); // bids missing
     expect(parseCachedBook('{"asks":"x","bids":"y"}')).toBeNull(); // wrong types
   });
 
@@ -224,7 +232,10 @@ describe('parseCachedBook', () => {
 
   it('drops only the junk levels when a side is partially valid', () => {
     const raw = JSON.stringify({
-      asks: [{ price: 1305.1, size: 180 }, { price: null, size: 5 }],
+      asks: [
+        { price: 1305.1, size: 180 },
+        { price: null, size: 5 },
+      ],
       bids: [{ price: 1304.8, size: 400 }],
     });
     const book = parseCachedBook(raw)!;

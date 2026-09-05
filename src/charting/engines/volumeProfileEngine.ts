@@ -30,8 +30,7 @@ export type ProfileRange = 'visible' | 'session' | 'fixed';
  *    `end <= start` (Requirement 7.10).
  */
 export type ProfileRangeSpec =
-  | { kind: 'visible' | 'session' }
-  | { kind: 'fixed'; start: number; end: number };
+  { kind: 'visible' | 'session' } | { kind: 'fixed'; start: number; end: number };
 
 /** A single horizontal price-level row of the profile. */
 export interface ProfileRow {
@@ -166,7 +165,7 @@ function emptyProfile(rows: number, price = 0): VolumeProfile {
 export function valueArea(
   rowVolumes: number[],
   pocIndex: number,
-  valuePercent: number,
+  valuePercent: number
 ): { loIndex: number; hiIndex: number } {
   const n = rowVolumes.length;
   if (n === 0) return { loIndex: 0, hiIndex: 0 };
@@ -228,7 +227,7 @@ export function valueArea(
 export function buildProfile(
   candles: ChartCandle[],
   volumes: VolumeBar[],
-  opts: BuildProfileOptions = {},
+  opts: BuildProfileOptions = {}
 ): VolumeProfile {
   const rows = normalizeRows(opts.rows);
   const valuePercent = normalizeValuePercent(opts.valuePercent);

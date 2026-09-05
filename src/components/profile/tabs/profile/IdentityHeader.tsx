@@ -29,7 +29,9 @@ export default function IdentityHeader({ user, planName, formatDate }: IdentityH
             {user?.name || 'Strat AI Client'}
           </h2>
           <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <p className="text-xs text-text-secondary font-medium">{user?.email || 'No email registered'}</p>
+            <p className="text-xs text-text-secondary font-medium">
+              {user?.email || 'No email registered'}
+            </p>
           </div>
         </div>
       </div>
@@ -50,14 +52,22 @@ export default function IdentityHeader({ user, planName, formatDate }: IdentityH
             label: 'ACCOUNT ROLE',
             value: (
               <span className="flex items-center gap-1.5 font-bold">
-                <BadgeCheck size={14} className={user?.role === 'admin' ? 'text-amber-400' : 'text-text-muted'} />
+                <BadgeCheck
+                  size={14}
+                  className={user?.role === 'admin' ? 'text-amber-400' : 'text-text-muted'}
+                />
                 <span className="uppercase">{user?.role || 'user'}</span>
               </span>
             ),
           },
         ].map((row, i) => (
-          <div key={i} className="flex items-center justify-between py-3 border-b border-border-default px-1">
-            <span className="text-[9px] uppercase font-black tracking-widest text-text-secondary">{row.label}</span>
+          <div
+            key={i}
+            className="flex items-center justify-between py-3 border-b border-border-default px-1"
+          >
+            <span className="text-[9px] uppercase font-black tracking-widest text-text-secondary">
+              {row.label}
+            </span>
             <div className="text-xs text-text-primary font-semibold">{row.value}</div>
           </div>
         ))}

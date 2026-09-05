@@ -84,7 +84,14 @@ describe('fetchKiteBatch — instrument identity', () => {
       if (url.includes('instrument_token=265')) {
         return json({
           candles: [
-            { time: 1788170100, open: 76924.93, high: 76957.27, low: 76924.93, close: 76957.27, volume: 0 },
+            {
+              time: 1788170100,
+              open: 76924.93,
+              high: 76957.27,
+              low: 76924.93,
+              close: 76957.27,
+              volume: 0,
+            },
           ],
         });
       }

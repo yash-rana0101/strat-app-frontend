@@ -37,14 +37,15 @@ const { notFoundMock, bridgeInvokeMock } = vi.hoisted(() => ({
   }),
   // Typed as the bridge's real call shape so the argument assertions below are checked, not `any`.
   bridgeInvokeMock: vi.fn(
-    async (_command: string, _args?: Record<string, unknown>): Promise<undefined> => undefined,
+    async (_command: string, _args?: Record<string, unknown>): Promise<undefined> => undefined
   ),
 }));
 
 vi.mock('next/navigation', () => ({ notFound: notFoundMock }));
 
 vi.mock('../../../../lib/bridge', () => ({
-  bridgeInvoke: (command: string, args?: Record<string, unknown>) => bridgeInvokeMock(command, args),
+  bridgeInvoke: (command: string, args?: Record<string, unknown>) =>
+    bridgeInvokeMock(command, args),
   // Resolves to a disposer so the listener effects complete instead of hanging.
   bridgeListen: async () => () => {},
 }));
@@ -110,7 +111,8 @@ function serve(over: { events?: unknown[]; summaryStatus?: number } = {}) {
     if (u.includes('/runs')) return Promise.resolve(json({ items: [storedRun] }));
     if (u.includes('/messages')) return Promise.resolve(json({ items: [], last_seq: 0 }));
     // The list the tab bar reads.
-    if (u.includes('/sessions?')) return Promise.resolve(json({ items: [summary], next_cursor: null }));
+    if (u.includes('/sessions?'))
+      return Promise.resolve(json({ items: [summary], next_cursor: null }));
     if (over.summaryStatus) return Promise.resolve(json({ detail: 'nope' }, over.summaryStatus));
     return Promise.resolve(json(summary));
   });
@@ -132,10 +134,7 @@ let fetchMock: ReturnType<typeof vi.fn>;
  * piece of the framework the unit environment does not have. Tests still assert on `notFoundMock`, so
  * the behaviour under test is unchanged.
  */
-class NotFoundBoundary extends React.Component<
-  { children: React.ReactNode },
-  { caught: boolean }
-> {
+class NotFoundBoundary extends React.Component<{ children: React.ReactNode }, { caught: boolean }> {
   state = { caught: false };
 
   static getDerivedStateFromError() {
@@ -155,7 +154,7 @@ function renderWorkspace(sessionId = SESSION) {
       <NotFoundBoundary>
         <SessionWorkspace sessionId={sessionId} />
       </NotFoundBoundary>
-    </QueryClientProvider>,
+    </QueryClientProvider>
   );
 }
 
@@ -216,7 +215,7 @@ describe('a deep link with nothing in memory', () => {
       (useSessionStore.getState().sessions[SESSION]?.reasoningSteps ?? [])
         .filter((s) => s.type === 'message')
         .map((s) => s.content)
-        .join(''),
+        .join('')
     ).toMatch(/Momentum is intact/);
 
     // Rendered through the SAME collapsible renderer the live panel uses, not dumped as raw text: a
@@ -238,7 +237,9 @@ describe('a deep link with nothing in memory', () => {
       .getState()
       .sessions[SESSION].reasoningSteps.filter((s) => s.type !== 'message');
     expect(toolSteps.length).toBeGreaterThan(0);
-    expect(toolSteps.some((s) => s.toolName === 'get_ohlc' || s.content.includes('get_ohlc'))).toBe(true);
+    expect(toolSteps.some((s) => s.toolName === 'get_ohlc' || s.content.includes('get_ohlc'))).toBe(
+      true
+    );
 
     // And the message text is unpolluted — flattening would have appended the tool name to it.
     const messageText = useSessionStore

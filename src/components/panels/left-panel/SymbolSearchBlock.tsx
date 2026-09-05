@@ -44,8 +44,7 @@ type SearchResult =
       optionType: 'CE' | 'PE' | 'FUT';
     };
 
-const resultSymbol = (r: SearchResult): string =>
-  r.kind === 'EQ' ? r.symbol : r.tradingsymbol;
+const resultSymbol = (r: SearchResult): string => (r.kind === 'EQ' ? r.symbol : r.tradingsymbol);
 
 const resultKey = (r: SearchResult): string =>
   r.kind === 'EQ' ? `EQ:${r.symbol}` : `FNO:${r.tradingsymbol}`;
@@ -55,13 +54,13 @@ const DEFAULT_FNO_UNDERLYINGS = ['NIFTY 50', 'BANKNIFTY'];
 const INDEX_NFO_ALIASES: Record<string, string> = {
   'NIFTY 50': 'NIFTY',
   'NIFTY BANK': 'BANKNIFTY',
-  'BANKNIFTY': 'BANKNIFTY',
+  BANKNIFTY: 'BANKNIFTY',
   'NIFTY FIN SERVICE': 'FINNIFTY',
-  'FINNIFTY': 'FINNIFTY',
+  FINNIFTY: 'FINNIFTY',
   'NIFTY MIDCAP SELECT': 'MIDCPNIFTY',
-  'MIDCPNIFTY': 'MIDCPNIFTY',
+  MIDCPNIFTY: 'MIDCPNIFTY',
   'NIFTY NEXT 50': 'NIFTYNXT50',
-  'NIFTYNXT50': 'NIFTYNXT50',
+  NIFTYNXT50: 'NIFTYNXT50',
 };
 
 const nfoNameOf = (configured: string): string =>
@@ -78,9 +77,8 @@ export default function SymbolSearchBlock() {
   const [fnoExpiryFilter, setFnoExpiryFilter] = useState<string | null>(null);
   const [fnoTypeFilter, setFnoTypeFilter] = useState<'CE' | 'PE' | 'FUT' | null>(null);
 
-  const [configuredUnderlyings, setConfiguredUnderlyings] = useState<string[]>(
-    DEFAULT_FNO_UNDERLYINGS,
-  );
+  const [configuredUnderlyings, setConfiguredUnderlyings] =
+    useState<string[]>(DEFAULT_FNO_UNDERLYINGS);
 
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -114,12 +112,19 @@ export default function SymbolSearchBlock() {
   const handleSearch = useCallback(async (searchQuery: string) => {
     const normalized = searchQuery.trim();
     if (normalized.length < 2) {
-      setSearchResults([]); setShowDropdown(false); setIsSearching(false); setSearchError(null);
+      setSearchResults([]);
+      setShowDropdown(false);
+      setIsSearching(false);
+      setSearchError(null);
       return;
     }
-    setIsSearching(true); setShowDropdown(true); setSearchError(null);
+    setIsSearching(true);
+    setShowDropdown(true);
+    setSearchError(null);
     try {
-      const results = await bridgeInvoke<SearchResult[]>('search_instruments', { query: normalized });
+      const results = await bridgeInvoke<SearchResult[]>('search_instruments', {
+        query: normalized,
+      });
       setSearchResults(results || []);
     } catch (err) {
       console.error('[SymbolSearchBlock] search_instruments failed:', err);
@@ -137,15 +142,22 @@ export default function SymbolSearchBlock() {
     setFnoTypeFilter(null);
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     if (!value.trim() || value.trim().length < 2) {
-      setSearchResults([]); setShowDropdown(false); setSearchError(null);
+      setSearchResults([]);
+      setShowDropdown(false);
+      setSearchError(null);
       return;
     }
     searchTimeoutRef.current = setTimeout(() => handleSearch(value), 400);
   };
 
   const clearSearch = () => {
-    setQuery(''); setSearchResults([]); setShowDropdown(false); setSearchError(null);
-    setFnoUnderlyingFilter(null); setFnoExpiryFilter(null); setFnoTypeFilter(null);
+    setQuery('');
+    setSearchResults([]);
+    setShowDropdown(false);
+    setSearchError(null);
+    setFnoUnderlyingFilter(null);
+    setFnoExpiryFilter(null);
+    setFnoTypeFilter(null);
   };
 
   const routeSymbolToChart = useCallback(
@@ -161,7 +173,7 @@ export default function SymbolSearchBlock() {
         try {
           const resolved = await bridgeInvoke<ResolvedContract | null>(
             'fno_resolve_nearest_contract',
-            { underlying: symbol },
+            { underlying: symbol }
           );
           if (resolved?.tradingsymbol) {
             if (splitView) {
@@ -181,122 +193,133 @@ export default function SymbolSearchBlock() {
         setSelectedSymbol(symbol);
       }
     },
-    [splitView, setPaneSymbol, setSelectedSymbol],
+    [splitView, setPaneSymbol, setSelectedSymbol]
   );
 
-  const handleSelectResult = useCallback(async (r: SearchResult) => {
-    const symbol = resultSymbol(r);
-    const sector = r.kind === 'EQ' ? 'EQ' : r.optionType;
+  const handleSelectResult = useCallback(
+    async (r: SearchResult) => {
+      const symbol = resultSymbol(r);
+      const sector = r.kind === 'EQ' ? 'EQ' : r.optionType;
 
-    let displayName = symbol;
-    if (r.kind === 'EQ') {
-      displayName = (r.name || r.symbol).replace(/"/g, '');
-    } else {
-      let expiryFormatted = r.expiry;
-      if (r.expiry) {
-        try {
-          const date = new Date(r.expiry);
-          if (!isNaN(date.getTime())) {
-            const day = date.getDate();
-            const month = date.toLocaleString('en-US', { month: 'short' });
-            expiryFormatted = `${day} ${month}`;
-          }
-        } catch (e) {}
-      }
-      if (r.optionType === 'FUT') {
-        displayName = `${r.underlying} FUT (${expiryFormatted})`;
+      let displayName = symbol;
+      if (r.kind === 'EQ') {
+        displayName = (r.name || r.symbol).replace(/"/g, '');
       } else {
-        displayName = `${r.underlying} ${r.strike} ${r.optionType} (${expiryFormatted})`;
+        let expiryFormatted = r.expiry;
+        if (r.expiry) {
+          try {
+            const date = new Date(r.expiry);
+            if (!isNaN(date.getTime())) {
+              const day = date.getDate();
+              const month = date.toLocaleString('en-US', { month: 'short' });
+              expiryFormatted = `${day} ${month}`;
+            }
+          } catch (e) {}
+        }
+        if (r.optionType === 'FUT') {
+          displayName = `${r.underlying} FUT (${expiryFormatted})`;
+        } else {
+          displayName = `${r.underlying} ${r.strike} ${r.optionType} (${expiryFormatted})`;
+        }
       }
-    }
 
-    addToWatchlist({
-      symbol,
-      token: 0,
-      name: displayName,
-      sector,
-      lastPrice: 0,
-      // No quote yet — not a flat instrument. Renders '—' until one arrives.
-      change: null,
-    });
-
-    const closeDropdown = () => {
-      setShowDropdown(false);
-      setQuery('');
-      setSearchResults([]);
-      setSearchError(null);
-      setFnoUnderlyingFilter(null); setFnoExpiryFilter(null); setFnoTypeFilter(null);
-    };
-
-    if (r.kind === 'FNO' && typeof r.underlying === 'string') {
-      const underlying = r.underlying;
-      const matchedConfig = configuredUnderlyings.find((u) => {
-        const ru = underlying.toUpperCase();
-        return u.toUpperCase() === ru || nfoNameOf(u).toUpperCase() === ru;
+      addToWatchlist({
+        symbol,
+        token: 0,
+        name: displayName,
+        sector,
+        lastPrice: 0,
+        // No quote yet — not a flat instrument. Renders '—' until one arrives.
+        change: null,
       });
 
-      if (matchedConfig) {
-        // Configured index underlying (e.g. NIFTY 50 / BANKNIFTY) → open the
-        // F&O workspace directly; setFnoUnderlying resets fnoExpiry to ''.
-        // Also resolve the nearest CE/PE contract and route it to the chart
-        // so the F&O chart loads a tradable contract instead of a blank panel.
-        setActiveProfile('FNO');
-        setFnoUnderlying(matchedConfig);
+      const closeDropdown = () => {
+        setShowDropdown(false);
+        setQuery('');
+        setSearchResults([]);
+        setSearchError(null);
+        setFnoUnderlyingFilter(null);
+        setFnoExpiryFilter(null);
+        setFnoTypeFilter(null);
+      };
+
+      if (r.kind === 'FNO' && typeof r.underlying === 'string') {
+        const underlying = r.underlying;
+        const matchedConfig = configuredUnderlyings.find((u) => {
+          const ru = underlying.toUpperCase();
+          return u.toUpperCase() === ru || nfoNameOf(u).toUpperCase() === ru;
+        });
+
+        if (matchedConfig) {
+          // Configured index underlying (e.g. NIFTY 50 / BANKNIFTY) → open the
+          // F&O workspace directly; setFnoUnderlying resets fnoExpiry to ''.
+          // Also resolve the nearest CE/PE contract and route it to the chart
+          // so the F&O chart loads a tradable contract instead of a blank panel.
+          setActiveProfile('FNO');
+          setFnoUnderlying(matchedConfig);
+          closeDropdown();
+          await routeSymbolToChart(matchedConfig);
+          return;
+        }
+
+        // Non-configured (stock) underlying → ask the backend to start ingesting
+        // its chain. Activate F&O ONLY when the backend confirms it is a real F&O
+        // underlying; on rejection (or error) fall back to charting the contract
+        // symbol exactly like an equity selection — do NOT activate F&O.
         closeDropdown();
-        await routeSymbolToChart(matchedConfig);
+        try {
+          const accepted = await bridgeInvoke<boolean>('fno_request_underlying', { underlying });
+          if (accepted) {
+            setActiveProfile('FNO');
+            setFnoUnderlying(underlying);
+            await routeSymbolToChart(underlying);
+            return;
+          }
+        } catch (err) {
+          console.warn('[SymbolSearchBlock] fno_request_underlying failed:', err);
+        }
+        routeSymbolToChart(symbol);
         return;
       }
 
-      // Non-configured (stock) underlying → ask the backend to start ingesting
-      // its chain. Activate F&O ONLY when the backend confirms it is a real F&O
-      // underlying; on rejection (or error) fall back to charting the contract
-      // symbol exactly like an equity selection — do NOT activate F&O.
-      closeDropdown();
-      try {
-        const accepted = await bridgeInvoke<boolean>('fno_request_underlying', { underlying });
-        if (accepted) {
-          setActiveProfile('FNO');
-          setFnoUnderlying(underlying);
-          await routeSymbolToChart(underlying);
-          return;
-        }
-      } catch (err) {
-        console.warn('[SymbolSearchBlock] fno_request_underlying failed:', err);
-      }
       routeSymbolToChart(symbol);
-      return;
-    }
-
-    routeSymbolToChart(symbol);
-    closeDropdown();
-  }, [addToWatchlist, routeSymbolToChart, configuredUnderlyings, setActiveProfile, setFnoUnderlying]);
+      closeDropdown();
+    },
+    [addToWatchlist, routeSymbolToChart, configuredUnderlyings, setActiveProfile, setFnoUnderlying]
+  );
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setShowDropdown(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
+        setShowDropdown(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  useEffect(() => { return () => { if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current); }; }, []);
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+  }, []);
 
   const fnoResults = useMemo(
-    () => searchResults.filter((r): r is Extract<SearchResult, { kind: 'FNO' }> => r.kind === 'FNO'),
-    [searchResults],
+    () =>
+      searchResults.filter((r): r is Extract<SearchResult, { kind: 'FNO' }> => r.kind === 'FNO'),
+    [searchResults]
   );
   const hasFno = fnoResults.length > 0;
   const underlyingOptions = useMemo(
     () => Array.from(new Set(fnoResults.map((r) => r.underlying))).sort(),
-    [fnoResults],
+    [fnoResults]
   );
   const expiryOptions = useMemo(
     () => Array.from(new Set(fnoResults.map((r) => r.expiry))).sort(),
-    [fnoResults],
+    [fnoResults]
   );
   const typeOptions = useMemo(
     () => Array.from(new Set(fnoResults.map((r) => r.optionType))) as ('CE' | 'PE' | 'FUT')[],
-    [fnoResults],
+    [fnoResults]
   );
 
   // ── Global merged results ─────────────────────────────────────────────
@@ -325,12 +348,16 @@ export default function SymbolSearchBlock() {
           className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left transition-colors hover:bg-elevated/70"
         >
           <div className="flex flex-col min-w-0">
-            <span className="text-[11px] font-semibold text-text-primary truncate">{inst.symbol}</span>
+            <span className="text-[11px] font-semibold text-text-primary truncate">
+              {inst.symbol}
+            </span>
             <span className="text-[9px] text-text-muted truncate">{inst.name}</span>
           </div>
           <div className="flex items-center gap-1">
             <Plus size={10} className="text-text-secondary" />
-            <span className={`rounded-none px-1 py-px text-[7px] font-semibold uppercase tracking-wider ${eqColor}`}>
+            <span
+              className={`rounded-none px-1 py-px text-[7px] font-semibold uppercase tracking-wider ${eqColor}`}
+            >
               {inst.exchange || 'EQ'}
             </span>
           </div>
@@ -338,11 +365,9 @@ export default function SymbolSearchBlock() {
       );
     }
     const typeColor = SECTOR_COLORS[inst.optionType] ?? 'bg-indigo-500/10 text-indigo-400';
-    const meta = [
-      inst.underlying,
-      inst.expiry,
-      inst.strike != null ? inst.strike.toString() : null,
-    ].filter(Boolean).join(' · ');
+    const meta = [inst.underlying, inst.expiry, inst.strike != null ? inst.strike.toString() : null]
+      .filter(Boolean)
+      .join(' · ');
     return (
       <button
         key={resultKey(inst)}
@@ -351,12 +376,16 @@ export default function SymbolSearchBlock() {
         className="flex w-full items-center justify-between gap-2 border-l-2 border-l-primary/30 px-3 py-1.5 text-left transition-colors hover:bg-elevated/70"
       >
         <div className="flex flex-col min-w-0">
-          <span className="text-[11px] font-semibold text-text-primary truncate">{inst.tradingsymbol}</span>
+          <span className="text-[11px] font-semibold text-text-primary truncate">
+            {inst.tradingsymbol}
+          </span>
           <span className="text-[9px] text-text-muted truncate">{meta}</span>
         </div>
         <div className="flex items-center gap-1">
           <Plus size={10} className="text-text-secondary" />
-          <span className={`rounded-none px-1 py-px text-[7px] font-semibold uppercase tracking-wider ${typeColor}`}>
+          <span
+            className={`rounded-none px-1 py-px text-[7px] font-semibold uppercase tracking-wider ${typeColor}`}
+          >
             {inst.optionType}
           </span>
         </div>
@@ -370,17 +399,26 @@ export default function SymbolSearchBlock() {
   return (
     <div className="hidden px-3 pt-2 pb-1.5">
       <div className="relative" ref={dropdownRef}>
-        <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+        <Search
+          size={13}
+          className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+        />
         <input
           value={query}
           onChange={(e) => handleInputChange(e.target.value)}
-          onFocus={() => { if (searchResults.length > 0) setShowDropdown(true); }}
+          onFocus={() => {
+            if (searchResults.length > 0) setShowDropdown(true);
+          }}
           placeholder="Search any symbol (NSE / BSE / F&O)..."
           aria-label="Search symbols"
           className="h-8 w-full rounded-none border border-border-default bg-surface pl-8 pr-8 text-[11px] text-text-primary placeholder:text-text-muted transition-colors focus:border-text-primary focus:outline-none focus:ring-1 focus:ring-text-primary"
         />
         {query && (
-          <button onClick={clearSearch} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors" aria-label="Clear search">
+          <button
+            onClick={clearSearch}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary transition-colors"
+            aria-label="Clear search"
+          >
             <X size={13} />
           </button>
         )}
@@ -448,16 +486,16 @@ export default function SymbolSearchBlock() {
             ) : searchError ? (
               <div className="px-3 py-4 text-center text-[11px] text-bear">{searchError}</div>
             ) : filteredResults.length === 0 ? (
-              <div className="px-3 py-4 text-center text-[11px] text-text-muted">No instruments found</div>
+              <div className="px-3 py-4 text-center text-[11px] text-text-muted">
+                No instruments found
+              </div>
             ) : (
               // ── Merged global list ────────────────────────────────────
               // Equities, indexes, and F&O contracts all flow into ONE flat
               // list (no "Stocks" / "F&O" section headers). The result row's
               // exchange chip (NSE / BSE / NFO) and the type chip (EQ / CE /
               // PE / FUT) carry the distinction visually — no separate tabs.
-              <>
-                {filteredResults.map(renderResultRow)}
-              </>
+              <>{filteredResults.map(renderResultRow)}</>
             )}
           </div>
         )}
@@ -465,4 +503,3 @@ export default function SymbolSearchBlock() {
     </div>
   );
 }
-

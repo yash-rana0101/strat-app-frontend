@@ -52,11 +52,16 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   const renderSidebarContent = () => {
     if (sidebarTab === 'deepquant') return <DeepQuantPanel />;
     switch (activeProfile) {
-      case 'INTRADAY': return <OrderBook />;
-      case 'SWING': return <SwingConfluencePanel />;
-      case 'INVESTOR': return <MacroSentimentPanel />;
-      case 'FNO': return <FnoSidebarPanel />;
-      default: return null;
+      case 'INTRADAY':
+        return <OrderBook />;
+      case 'SWING':
+        return <SwingConfluencePanel />;
+      case 'INVESTOR':
+        return <MacroSentimentPanel />;
+      case 'FNO':
+        return <FnoSidebarPanel />;
+      default:
+        return null;
     }
   };
 
@@ -107,10 +112,12 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
             `}
             title="Drag to resize panel"
           >
-            <div className={`
+            <div
+              className={`
               h-6 w-0.5 rounded-[1px] bg-border-default transition-colors group-hover:bg-emerald-400
               ${isResizingSidebar ? 'bg-emerald-400' : ''}
-            `} />
+            `}
+            />
           </div>
 
           {/* Full height — no header above it. */}
@@ -145,9 +152,11 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                 relative flex h-11 w-full shrink-0 cursor-pointer items-center justify-center
                 rounded-none transition-colors duration-150
                 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500/50
-                ${isShowing
-                  ? 'text-emerald-500 dark:text-emerald-400'
-                  : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'}
+                ${
+                  isShowing
+                    ? 'text-emerald-500 dark:text-emerald-400'
+                    : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'
+                }
               `}
             >
               {/* Active accent bar (thin, non-boxy) — mirrors NavRail's */}

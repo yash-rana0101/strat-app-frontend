@@ -70,7 +70,7 @@ export function trendGaugePercent(score: number): number {
  */
 export function consensusMatchesSymbol(
   reportSymbol: string | undefined,
-  selectedSymbol: string | null | undefined,
+  selectedSymbol: string | null | undefined
 ): boolean {
   if (!reportSymbol || !selectedSymbol) return false;
   return reportSymbol.trim().toUpperCase() === selectedSymbol.trim().toUpperCase();

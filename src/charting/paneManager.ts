@@ -145,9 +145,7 @@ export function createPaneManager(chart: IChartApi): PaneManager {
     const n = records.length;
     if (n === 0) return;
     const equal = 1 / n;
-    applyLayout(
-      records.map((r, i) => ({ paneId: r.paneId, heightFraction: equal, order: i })),
-    );
+    applyLayout(records.map((r, i) => ({ paneId: r.paneId, heightFraction: equal, order: i })));
   }
 
   function layout(): PaneLayout[] {
@@ -263,9 +261,7 @@ export function createPaneManager(chart: IChartApi): PaneManager {
  * @param removed the paneId being removed.
  */
 export function redistribute(layouts: PaneLayout[], removed: string): PaneLayout[] {
-  const remaining = layouts
-    .filter((l) => l.paneId !== removed)
-    .sort((a, b) => a.order - b.order);
+  const remaining = layouts.filter((l) => l.paneId !== removed).sort((a, b) => a.order - b.order);
 
   const n = remaining.length;
   if (n === 0) return [];

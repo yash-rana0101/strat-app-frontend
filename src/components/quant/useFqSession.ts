@@ -52,8 +52,12 @@ export function useFqActiveSessionId(): string | null {
 export function useFqIsSessionHydrating(sessionId?: string): boolean {
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const targetId = sessionId ?? activeSessionId;
-  const isActivating = useSessionStore((s) => (targetId ? Boolean(s.activatingSessionIds?.[targetId]) : false));
-  const hasHydrated = useSessionStore((s) => (targetId ? Boolean(s.streams?.[targetId]?.hydratedAt) : false));
+  const isActivating = useSessionStore((s) =>
+    targetId ? Boolean(s.activatingSessionIds?.[targetId]) : false
+  );
+  const hasHydrated = useSessionStore((s) =>
+    targetId ? Boolean(s.streams?.[targetId]?.hydratedAt) : false
+  );
 
   if (!FQ_MULTI_SESSION || !targetId) return false;
   return isActivating || !hasHydrated;

@@ -10,7 +10,13 @@ export default function WaitIcon({ className }: { className?: string }) {
       aria-label="Waiting Data Illustration"
     >
       <g transform="translate(-435 -307)">
-        <circle cx="34.5" cy="34.5" r="34.5" transform="translate(1047 605.01)" className="fill-gray-200 dark:fill-gray-800" />
+        <circle
+          cx="34.5"
+          cy="34.5"
+          r="34.5"
+          transform="translate(1047 605.01)"
+          className="fill-gray-200 dark:fill-gray-800"
+        />
         <path
           d="M34.286,1.959A32.336,32.336,0,0,0,21.7,64.073,32.335,32.335,0,0,0,46.868,4.5a32.122,32.122,0,0,0-12.582-2.54m0-1.959A34.286,34.286,0,1,1,0,34.286,34.286,34.286,0,0,1,34.286,0Z"
           transform="translate(1047.245 605.775)"
@@ -32,37 +38,222 @@ export default function WaitIcon({ className }: { className?: string }) {
           className="fill-emerald-500 dark:fill-emerald-400"
         />
         <g transform="translate(1165.217 350.102)">
-          <circle cx="6.259" cy="6.259" r="6.259" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(26.081)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(52.162)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(78.244)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(104.325)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(130.406)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(156.487)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(0 19.822)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(26.081 19.822)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(52.162 19.822)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(78.244 19.822)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(104.325 19.822)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(130.406 19.822)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(156.487 19.822)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(0 39.643)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(26.081 39.643)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(52.162 39.643)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(78.244 39.643)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(104.325 39.643)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(130.406 39.643)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(156.487 39.643)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(0 59.465)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(26.081 59.465)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(0 79.287)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(26.081 79.287)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(52.162 79.287)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(52.162 59.465)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(78.244 59.465)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(104.325 59.465)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(130.406 59.465)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
-          <circle cx="6.259" cy="6.259" r="6.259" transform="translate(156.487 59.465)" className="fill-emerald-500/80 dark:fill-emerald-400/80" />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(26.081)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(52.162)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(78.244)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(104.325)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(130.406)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(156.487)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(0 19.822)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(26.081 19.822)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(52.162 19.822)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(78.244 19.822)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(104.325 19.822)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(130.406 19.822)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(156.487 19.822)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(0 39.643)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(26.081 39.643)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(52.162 39.643)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(78.244 39.643)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(104.325 39.643)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(130.406 39.643)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(156.487 39.643)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(0 59.465)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(26.081 59.465)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(0 79.287)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(26.081 79.287)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(52.162 79.287)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(52.162 59.465)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(78.244 59.465)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(104.325 59.465)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(130.406 59.465)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
+          <circle
+            cx="6.259"
+            cy="6.259"
+            r="6.259"
+            transform="translate(156.487 59.465)"
+            className="fill-emerald-500/80 dark:fill-emerald-400/80"
+          />
         </g>
         <path
           d="M783.06,541.789h-9.935v-9.935a3.312,3.312,0,1,0-6.624,0v9.935h-9.935a3.312,3.312,0,0,0,0,6.624H766.5v9.935a3.312,3.312,0,0,0,6.624,0v-9.935h9.935a3.312,3.312,0,1,0,0-6.623Z"
@@ -70,45 +261,243 @@ export default function WaitIcon({ className }: { className?: string }) {
           className="fill-emerald-500 dark:fill-emerald-400"
         />
         <g transform="translate(483 546.161)">
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(0 123.034)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(0 102.529)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(0 82.023)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(0 61.517)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(0 41.011)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(0 20.506)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(0 0)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(15.584 123.034)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(15.584 102.529)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(15.584 82.023)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(15.584 61.517)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(15.584 41.011)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(15.584 20.506)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(15.584 0)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(31.169 123.034)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(31.169 102.529)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(31.169 82.023)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(31.169 61.517)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(31.169 41.011)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(31.169 20.506)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(31.169 0)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(46.753 123.034)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(46.753 102.529)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(62.337 123.034)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(62.337 102.529)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(62.337 82.023)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(46.753 82.023)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(46.753 61.517)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(46.753 41.011)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(46.753 20.506)" className="fill-gray-400 dark:fill-gray-600" />
-          <circle cx="4.921" cy="4.921" r="4.921" transform="translate(46.753 0)" className="fill-gray-400 dark:fill-gray-600" />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(0 123.034)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(0 102.529)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(0 82.023)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(0 61.517)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(0 41.011)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(0 20.506)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(0 0)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(15.584 123.034)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(15.584 102.529)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(15.584 82.023)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(15.584 61.517)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(15.584 41.011)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(15.584 20.506)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(15.584 0)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(31.169 123.034)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(31.169 102.529)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(31.169 82.023)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(31.169 61.517)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(31.169 41.011)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(31.169 20.506)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(31.169 0)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(46.753 123.034)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(46.753 102.529)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(62.337 123.034)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(62.337 102.529)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(62.337 82.023)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(46.753 82.023)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(46.753 61.517)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(46.753 41.011)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(46.753 20.506)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
+          <circle
+            cx="4.921"
+            cy="4.921"
+            r="4.921"
+            transform="translate(46.753 0)"
+            className="fill-gray-400 dark:fill-gray-600"
+          />
         </g>
         <path
           d="M600.471,238.262H273.54a6.062,6.062,0,0,0-6.056,6.056V523.877a6.062,6.062,0,0,0,6.056,6.056H600.471a6.062,6.062,0,0,0,6.056-6.056V244.318a6.062,6.062,0,0,0-6.056-6.056ZM604.1,523.877a3.642,3.642,0,0,1-3.629,3.641H273.54a3.635,3.635,0,0,1-3.629-3.641V244.318a3.635,3.635,0,0,1,3.629-3.641H600.471a3.642,3.642,0,0,1,3.629,3.641Z"
           transform="translate(321.786 101.067)"
           className="fill-gray-700 dark:fill-gray-300"
         />
-        <rect width="344" height="160" rx="8" transform="translate(664 375.011)" className="fill-gray-200 dark:fill-gray-800" />
-        <rect width="242" height="67" rx="6" transform="translate(638 665.01)" className="fill-gray-200 dark:fill-gray-800" />
+        <rect
+          width="344"
+          height="160"
+          rx="8"
+          transform="translate(664 375.011)"
+          className="fill-gray-200 dark:fill-gray-800"
+        />
+        <rect
+          width="242"
+          height="67"
+          rx="6"
+          transform="translate(638 665.01)"
+          className="fill-gray-200 dark:fill-gray-800"
+        />
         <path
           d="M5.878,1.959A3.923,3.923,0,0,0,1.959,5.878V60.735a3.923,3.923,0,0,0,3.918,3.918h230.2A3.923,3.923,0,0,0,240,60.735V5.878a3.923,3.923,0,0,0-3.918-3.918H5.878M5.878,0h230.2a5.878,5.878,0,0,1,5.878,5.878V60.735a5.878,5.878,0,0,1-5.878,5.878H5.878A5.878,5.878,0,0,1,0,60.735V5.878A5.878,5.878,0,0,1,5.878,0Z"
           transform="translate(637.775 664.551)"
@@ -154,8 +543,20 @@ export default function WaitIcon({ className }: { className?: string }) {
           transform="translate(312.933 96.755)"
           className="fill-gray-400 dark:fill-gray-600"
         />
-        <circle cx="17.606" cy="17.606" r="17.606" transform="translate(660.753 678.38)" className="fill-emerald-500 dark:fill-emerald-400" />
-        <rect width="112" height="117" rx="4" transform="translate(1194 525.01)" className="fill-gray-200 dark:fill-gray-800" />
+        <circle
+          cx="17.606"
+          cy="17.606"
+          r="17.606"
+          transform="translate(660.753 678.38)"
+          className="fill-emerald-500 dark:fill-emerald-400"
+        />
+        <rect
+          width="112"
+          height="117"
+          rx="4"
+          transform="translate(1194 525.01)"
+          className="fill-gray-200 dark:fill-gray-800"
+        />
         <path
           d="M3.918,1.959A1.961,1.961,0,0,0,1.959,3.918V112.653a1.961,1.961,0,0,0,1.959,1.959H107.755a1.961,1.961,0,0,0,1.959-1.959V3.918a1.961,1.961,0,0,0-1.959-1.959H3.918M3.918,0H107.755a3.918,3.918,0,0,1,3.918,3.918V112.653a3.918,3.918,0,0,1-3.918,3.918H3.918A3.918,3.918,0,0,1,0,112.653V3.918A3.918,3.918,0,0,1,3.918,0Z"
           transform="translate(1194.183 525.449)"

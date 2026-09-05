@@ -83,7 +83,9 @@ describe('turn routing', () => {
   it('treats an unmarked frame as analysis, so pre-migration streams still work', () => {
     // Older backends emit no `turn`. Defaulting to the reasoning path preserves exactly the
     // behaviour those clients had, rather than silently rerouting their frames.
-    useSessionStore.getState().applyFrame({ event: 'REASONING', data: { thread_id: THREAD, content: 'legacy' } });
+    useSessionStore
+      .getState()
+      .applyFrame({ event: 'REASONING', data: { thread_id: THREAD, content: 'legacy' } });
 
     expect(reasoningSteps().length).toBeGreaterThan(0);
     expect(qaMessages()).toEqual([]);
@@ -184,9 +186,10 @@ describe('isolation', () => {
     const OTHER = 'sess_ZZZZZZZZZZZZZZZZZZZZZZZZZZ';
     useSessionStore.getState().upsertSession(OTHER);
 
-    const routed = useSessionStore
-      .getState()
-      .applyFrame({ event: 'REASONING', data: { thread_id: 'thread_unknown', turn: 'qa', content: 'x' } });
+    const routed = useSessionStore.getState().applyFrame({
+      event: 'REASONING',
+      data: { thread_id: 'thread_unknown', turn: 'qa', content: 'x' },
+    });
 
     expect(routed).toBeNull();
     expect(useSessionStore.getState().unroutableFrames).toBe(1);

@@ -47,7 +47,7 @@ describe('SentimentStrip', () => {
         isLoading={false}
         error={null}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('+42')).toBeInTheDocument();
@@ -63,7 +63,7 @@ describe('SentimentStrip', () => {
         isLoading={false}
         error={null}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('No reading')).toBeInTheDocument();
@@ -80,7 +80,7 @@ describe('SentimentStrip', () => {
         isLoading={false}
         error="Sentiment service unreachable"
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('Sentiment service unreachable')).toBeInTheDocument();
@@ -97,12 +97,12 @@ describe('SentimentStrip', () => {
         isLoading={false}
         error={null}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('on RELIANCE')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /based on news about RELIANCE/ }),
+      screen.getByRole('button', { name: /based on news about RELIANCE/ })
     ).toBeInTheDocument();
   });
 
@@ -114,7 +114,7 @@ describe('SentimentStrip', () => {
         isLoading={false}
         error={null}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.queryByText(/^on /)).not.toBeInTheDocument();
@@ -128,7 +128,7 @@ describe('SentimentStrip', () => {
         isLoading
         error={null}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByRole('status')).toHaveTextContent('Reading news');
@@ -142,7 +142,7 @@ describe('SentimentStrip', () => {
         isLoading={false}
         error={null}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('-63')).toBeInTheDocument();

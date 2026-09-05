@@ -329,10 +329,6 @@ export function listStrategies(): string[] {
   return Object.keys(STRATEGY_REGISTRY);
 }
 
-const STRATEGY_DEFS: StrategyDef[] = [
-  MA_CROSS_DEF,
-  RSI_MEAN_REVERSION_DEF,
-  BREAKOUT_DEF,
-];
+const STRATEGY_DEFS: StrategyDef[] = [MA_CROSS_DEF, RSI_MEAN_REVERSION_DEF, BREAKOUT_DEF];
 
 for (const def of STRATEGY_DEFS) registerStrategy(def);

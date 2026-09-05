@@ -12,10 +12,14 @@ export default function FootprintChart({
   onToggleExpand?: () => void;
 }) {
   const {
-    zoomX, setZoomX,
-    zoomY, setZoomY,
-    scrollX, setScrollX,
-    scrollY, setScrollY,
+    zoomX,
+    setZoomX,
+    zoomY,
+    setZoomY,
+    scrollX,
+    setScrollX,
+    scrollY,
+    setScrollY,
     dimensions,
     chartData,
     tickSize,
@@ -26,22 +30,36 @@ export default function FootprintChart({
     handleMouseMove,
     handleMouseUp,
     containerRef,
-    canvasRef
+    canvasRef,
   } = useFootprintState(timeframe);
 
   const rafIdRef = useRef<number | null>(null);
 
   // ── requestAnimationFrame Drawing Loop ────────────────────────────────
   const stateRef = useRef({
-    scrollX, scrollY, zoomX, zoomY,
-    chartData, fpByTime,
-    histLoading, activeSymbol, dimensions, tickSize,
+    scrollX,
+    scrollY,
+    zoomX,
+    zoomY,
+    chartData,
+    fpByTime,
+    histLoading,
+    activeSymbol,
+    dimensions,
+    tickSize,
   });
 
   stateRef.current = {
-    scrollX, scrollY, zoomX, zoomY,
-    chartData, fpByTime,
-    histLoading, activeSymbol, dimensions, tickSize,
+    scrollX,
+    scrollY,
+    zoomX,
+    zoomY,
+    chartData,
+    fpByTime,
+    histLoading,
+    activeSymbol,
+    dimensions,
+    tickSize,
   };
 
   useEffect(() => {
@@ -53,10 +71,16 @@ export default function FootprintChart({
       if (!ctx) return;
 
       const {
-        scrollX: sX, scrollY: sY, zoomX: zX, zoomY: zY,
-        chartData: cData, fpByTime: fpData,
-        histLoading: isLoading, activeSymbol: symbol,
-        dimensions: dims, tickSize: ts,
+        scrollX: sX,
+        scrollY: sY,
+        zoomX: zX,
+        zoomY: zY,
+        chartData: cData,
+        fpByTime: fpData,
+        histLoading: isLoading,
+        activeSymbol: symbol,
+        dimensions: dims,
+        tickSize: ts,
       } = stateRef.current;
 
       const dpr = Math.max(window.devicePixelRatio || 1, 2);
@@ -86,7 +110,8 @@ export default function FootprintChart({
         ctx.textBaseline = 'middle';
         ctx.fillText(
           isLoading ? `Loading ${symbol} candles…` : 'Waiting for candle data…',
-          width / 2, height / 2
+          width / 2,
+          height / 2
         );
         return;
       }
@@ -99,11 +124,9 @@ export default function FootprintChart({
       const chartHeight = height - bottomMargin;
 
       // ── Coordinate Mapping ────────────────────────────────────────────
-      const priceToY = (price: number) =>
-        Math.round(chartHeight / 2 + ((sY - price) / ts) * zY);
+      const priceToY = (price: number) => Math.round(chartHeight / 2 + ((sY - price) / ts) * zY);
 
-      const yToPrice = (y: number) =>
-        sY + ((chartHeight / 2 - y) / zY) * ts;
+      const yToPrice = (y: number) => sY + ((chartHeight / 2 - y) / zY) * ts;
 
       // ── Price Grid ────────────────────────────────────────────────────
       const minPriceVisible = yToPrice(chartHeight);
@@ -140,7 +163,10 @@ export default function FootprintChart({
         const nextX = Math.round(currentX - zX);
 
         if (currentX < 0) break;
-        if (nextX > chartWidth) { currentX = nextX; continue; }
+        if (nextX > chartWidth) {
+          currentX = nextX;
+          continue;
+        }
 
         const colLeft = Math.max(0, nextX);
         const colRight = Math.min(chartWidth, currentX);
@@ -163,7 +189,7 @@ export default function FootprintChart({
         // ── Candle Color Scheme ──────────────────────────────────────────
         // Bullish emerald-green, Bearish rose-red
         const candleColor = isBullish ? '#10b981' : '#ef4444';
-        
+
         // ── Narrow Candlestick Body & Wicks on the Left (approx 10px wide) ─
         const candleW = 4;
         const candleLeft = colLeft + 4;
@@ -303,7 +329,8 @@ export default function FootprintChart({
           ctx.fillText(`Δ ${fmtDelta(fp.delta)}`, fpMid, footerTop);
 
           ctx.font = '8px "JetBrains Mono", monospace';
-          ctx.fillStyle = candleCumDelta >= 0 ? 'rgba(16, 185, 129, 0.75)' : 'rgba(239, 68, 68, 0.75)';
+          ctx.fillStyle =
+            candleCumDelta >= 0 ? 'rgba(16, 185, 129, 0.75)' : 'rgba(239, 68, 68, 0.75)';
           ctx.fillText(`Σ ${fmtDelta(candleCumDelta)}`, fpMid, footerTop + 11);
 
           ctx.fillStyle = 'rgba(156, 163, 175, 0.7)';
@@ -390,31 +417,33 @@ export default function FootprintChart({
       />
 
       {/* Floating Control Panel */}
-      <div style={{
-        position: 'absolute',
-        right: '84px',
-        top: '12px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '6px',
-        backgroundColor: 'rgba(10, 10, 10, 0.85)',
-        border: '1px solid #1a1a1a',
-        borderRadius: '0px',
-        padding: '6px',
-        backdropFilter: 'blur(8px)',
-        zIndex: 10,
-        boxShadow: 'none',
-      }}>
+      <div
+        style={{
+          position: 'absolute',
+          right: '84px',
+          top: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '6px',
+          backgroundColor: 'rgba(10, 10, 10, 0.85)',
+          border: '1px solid #1a1a1a',
+          borderRadius: '0px',
+          padding: '6px',
+          backdropFilter: 'blur(8px)',
+          zIndex: 10,
+          boxShadow: 'none',
+        }}
+      >
         <div style={{ display: 'flex', gap: '4px' }}>
           <button
-            onClick={() => setZoomX(prev => Math.min(300, prev + 15))}
+            onClick={() => setZoomX((prev) => Math.min(300, prev + 15))}
             className="fp-control-btn"
             title="Zoom In Width (Col width)"
           >
             ↔ +
           </button>
           <button
-            onClick={() => setZoomX(prev => Math.max(60, prev - 15))}
+            onClick={() => setZoomX((prev) => Math.max(60, prev - 15))}
             className="fp-control-btn"
             title="Zoom Out Width (Col width)"
           >
@@ -423,14 +452,14 @@ export default function FootprintChart({
         </div>
         <div style={{ display: 'flex', gap: '4px' }}>
           <button
-            onClick={() => setZoomY(prev => Math.min(80, prev + 2))}
+            onClick={() => setZoomY((prev) => Math.min(80, prev + 2))}
             className="fp-control-btn"
             title="Zoom In Height (Row height)"
           >
             ↕ +
           </button>
           <button
-            onClick={() => setZoomY(prev => Math.max(12, prev - 2))}
+            onClick={() => setZoomY((prev) => Math.max(12, prev - 2))}
             className="fp-control-btn"
             title="Zoom Out Height (Row height)"
           >

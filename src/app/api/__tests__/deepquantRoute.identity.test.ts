@@ -29,7 +29,10 @@ function req(url: string, headers: Record<string, string> = {}, method = 'POST')
 
 /** The upstream response the proxy hands back on success. */
 function upstreamOk() {
-  return new Response('{"ok":true}', { status: 200, headers: { 'content-type': 'application/json' } });
+  return new Response('{"ok":true}', {
+    status: 200,
+    headers: { 'content-type': 'application/json' },
+  });
 }
 
 /** An api-web `/users/me` success envelope. */
@@ -75,7 +78,7 @@ function routeFetch(opts: { userId?: string | null; authFails?: boolean } = {}) 
 /** The upstream call, if one was made. */
 function upstreamCall() {
   return fetchMock.mock.calls.find(([input]) => {
-    const url = typeof input === 'string' ? input : (input as Request).url ?? String(input);
+    const url = typeof input === 'string' ? input : ((input as Request).url ?? String(input));
     return !url.includes('/users/me');
   });
 }
@@ -91,7 +94,7 @@ describe('deepquant route — identity minting', () => {
     routeFetch({ userId: 'user_42' });
     const res = await POST(
       req('https://app.stratai.live/api/deepquant/run', { cookie: 'access_token=tok' }),
-      ctx(['run']),
+      ctx(['run'])
     );
     expect(res.status).toBe(200);
     expect(upstreamHeaders()!.get(IDENTITY_HEADER)).toMatch(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]{43}$/);
@@ -107,7 +110,7 @@ describe('deepquant route — identity minting', () => {
         cookie: 'access_token=tok',
         [IDENTITY_HEADER]: 'forged.payload',
       }),
-      ctx(['run']),
+      ctx(['run'])
     );
     expect(upstreamHeaders()!.get(IDENTITY_HEADER)).not.toBe('forged.payload');
   });
@@ -124,7 +127,7 @@ describe('deepquant route — identity minting', () => {
         [IDENTITY_HEADER]: 'forged.payload',
         'x-stratai-service': 'forged.service',
       }),
-      ctx(['run']),
+      ctx(['run'])
     );
     const sent = upstreamHeaders()!;
     expect(sent.get(IDENTITY_HEADER)).toBeNull();
@@ -137,7 +140,7 @@ describe('deepquant route — identity minting', () => {
     routeFetch({ userId: 'user_42' });
     await POST(
       req('https://app.stratai.live/api/deepquant/run', { cookie: 'access_token=tok' }),
-      ctx(['run']),
+      ctx(['run'])
     );
     expect(upstreamHeaders()!.get('cookie')).toBeNull();
   });
@@ -148,7 +151,7 @@ describe('deepquant route — staged enforcement', () => {
     routeFetch({ authFails: true });
     const res = await POST(
       req('https://app.stratai.live/api/deepquant/run', { cookie: 'access_token=tok' }),
-      ctx(['run']),
+      ctx(['run'])
     );
     // A transient auth-API outage must not take the agent surface down.
     expect(res.status).toBe(200);
@@ -170,7 +173,7 @@ describe('deepquant route — staged enforcement', () => {
     routeFetch({ userId: null });
     const res = await POST(
       req('https://app.stratai.live/api/deepquant/run', { cookie: 'access_token=stale' }),
-      ctx(['run']),
+      ctx(['run'])
     );
     expect(res.status).toBe(401);
     expect(upstreamCall()).toBeUndefined();
@@ -191,7 +194,7 @@ describe('deepquant route — scope of the boundary', () => {
     routeFetch({ userId: null });
     const res = await GET(
       req(`https://app.stratai.live/api/deepquant/${segments.join('/')}`, {}, 'GET'),
-      ctx(segments),
+      ctx(segments)
     );
     expect(res.status).toBe(401);
     expect(upstreamCall()).toBeUndefined();
@@ -204,7 +207,7 @@ describe('deepquant route — scope of the boundary', () => {
     routeFetch({ userId: null });
     const res = await GET(
       req('https://app.stratai.live/api/deepquant/options/snapshot?underlying=NIFTY', {}, 'GET'),
-      ctx(['options', 'snapshot']),
+      ctx(['options', 'snapshot'])
     );
     expect(res.status).toBe(200);
     expect(upstreamCall()).toBeDefined();
@@ -214,13 +217,17 @@ describe('deepquant route — scope of the boundary', () => {
     // No wasted /users/me round trip on the F&O polling path.
     routeFetch({ userId: 'user_42' });
     await GET(
-      req('https://app.stratai.live/api/deepquant/options/snapshot?underlying=NIFTY', {
-        cookie: 'access_token=tok',
-      }, 'GET'),
-      ctx(['options', 'snapshot']),
+      req(
+        'https://app.stratai.live/api/deepquant/options/snapshot?underlying=NIFTY',
+        {
+          cookie: 'access_token=tok',
+        },
+        'GET'
+      ),
+      ctx(['options', 'snapshot'])
     );
     const authCalls = fetchMock.mock.calls.filter(([input]) =>
-      String(typeof input === 'string' ? input : (input as Request).url).includes('/users/me'),
+      String(typeof input === 'string' ? input : (input as Request).url).includes('/users/me')
     );
     expect(authCalls).toHaveLength(0);
   });

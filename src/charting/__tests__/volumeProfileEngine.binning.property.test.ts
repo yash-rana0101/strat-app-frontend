@@ -28,12 +28,10 @@ const MIN_ROWS = 1;
 const MAX_ROWS = 1000;
 
 /** Finite, positive price generator (bounded to avoid heap blowups). */
-const price = () =>
-  fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
 
 /** Finite, non-negative volume generator. */
-const volume = () =>
-  fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
+const volume = () => fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Generate a well-formed candle series (strictly ascending unique times) paired
@@ -61,8 +59,8 @@ const candlesWithVolumes = (): fc.Arbitrary<{
                 low: Math.min(a, b, c, d),
               } as ChartCandle,
               vol: { time: t, value: v } as VolumeBar,
-            })),
-        ),
+            }))
+        )
       );
     })
     .map((pairs) => ({
@@ -75,10 +73,7 @@ const candlesWithVolumes = (): fc.Arbitrary<{
  * integer spanning well below MIN and above MAX so clamping is exercised.
  */
 const rowsArb = (): fc.Arbitrary<number | undefined> =>
-  fc.oneof(
-    fc.constant<number | undefined>(undefined),
-    fc.integer({ min: -50, max: 1500 }),
-  );
+  fc.oneof(fc.constant<number | undefined>(undefined), fc.integer({ min: -50, max: 1500 }));
 
 /** Independent oracle for the clamped row count. */
 function expectedRows(rows: number | undefined): number {
@@ -114,7 +109,7 @@ describe('Property 23: Volume profile binning conserves volume and row count', (
         // totalVolume must agree with the summed row volumes.
         expect(Math.abs(profile.totalVolume - rowSum)).toBeLessThanOrEqual(tol);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

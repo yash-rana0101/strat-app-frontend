@@ -8,7 +8,10 @@ export default function Loading() {
   return (
     <main className="flex h-dvh flex-col bg-surface" role="status" aria-live="polite">
       <span className="sr-only">Loading session…</span>
-      <div className="flex shrink-0 gap-1 border-b border-border-default/40 px-2 py-2" aria-hidden="true">
+      <div
+        className="flex shrink-0 gap-1 border-b border-border-default/40 px-2 py-2"
+        aria-hidden="true"
+      >
         <div className="h-6 w-32 animate-pulse rounded bg-elevated" />
         <div className="h-6 w-32 animate-pulse rounded bg-elevated" />
       </div>

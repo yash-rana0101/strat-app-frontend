@@ -8,7 +8,9 @@ interface ReasoningStepRendererProps {
   step: ReasoningStep;
 }
 
-function parseDecision(content: string): { conviction?: unknown; validation?: unknown; plan?: unknown } | null {
+function parseDecision(
+  content: string
+): { conviction?: unknown; validation?: unknown; plan?: unknown } | null {
   try {
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return null;
@@ -41,11 +43,7 @@ export default function ReasoningStepRenderer({ step }: ReasoningStepRendererPro
             <span>Final Trade Decision</span>
           </div>
 
-          <ConvictionGauge
-            score={numConviction}
-            size="sm"
-            showLabel={true}
-          />
+          <ConvictionGauge score={numConviction} size="sm" showLabel={true} />
         </div>
 
         <StructuredAnalysisCards

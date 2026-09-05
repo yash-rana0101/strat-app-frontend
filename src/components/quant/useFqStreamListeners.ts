@@ -29,7 +29,7 @@ import { useSessionStore } from '../../store/useSessionStore';
 function useBridgeChannel(
   channel: string,
   handler: (payload: StreamEventPayload) => void,
-  enabled = true,
+  enabled = true
 ) {
   useEffect(() => {
     if (!enabled) return;
@@ -76,6 +76,6 @@ export function useFqStreamListeners() {
     (payload) => {
       useSessionStore.getState().applyFrame(payload);
     },
-    FQ_MULTI_SESSION,
+    FQ_MULTI_SESSION
   );
 }

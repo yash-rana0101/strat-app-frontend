@@ -6,11 +6,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import {
-  applyGhostBounds,
-  GHOST_MAX_TOTAL_FRAC,
-  vweprProjection,
-} from '../ghostLineComputation';
+import { applyGhostBounds, GHOST_MAX_TOTAL_FRAC, vweprProjection } from '../ghostLineComputation';
 
 /** Build a window of candles whose closes follow a quadratic that
  *  accelerates upward: close[i] = base + linearSlope * i + curve * i^2.
@@ -20,7 +16,7 @@ function quadraticCandles(
   count: number,
   base: number,
   linearSlope: number,
-  curve: number,
+  curve: number
 ): { time: number; close: number; volume: number; high: number; low: number }[] {
   const out = [];
   for (let i = 0; i < count; i++) {
@@ -33,7 +29,7 @@ function quadraticCandles(
 describe('vweprProjection — clamp does not flatten accelerating curves', () => {
   it('projects a last price that differs from the anchor by more than avgStep', () => {
     // Mild acceleration so the first forward step stays inside the ±20% band.
-    const candles = quadraticCandles(50, /*base=*/100, /*linearSlope=*/0.2, /*curve=*/0.002);
+    const candles = quadraticCandles(50, /*base=*/ 100, /*linearSlope=*/ 0.2, /*curve=*/ 0.002);
     const lastTime = candles[candles.length - 1].time;
     const intervalSec = 60;
     const projLen = 6;
@@ -46,7 +42,7 @@ describe('vweprProjection — clamp does not flatten accelerating curves', () =>
       pts,
       'curved',
       candles.map((c) => c.close),
-      anchor,
+      anchor
     );
     expect(bounded.length).toBe(pts.length);
 
@@ -83,7 +79,7 @@ describe('vweprProjection — clamp does not flatten accelerating curves', () =>
       pts,
       'curved',
       candles.map((c) => c.close),
-      anchor,
+      anchor
     );
     if (bounded.length > 0) {
       for (const p of bounded) {

@@ -17,7 +17,9 @@ export default function LiveFeedPanel() {
   return (
     <div className="flex h-full flex-col">
       <div className="shrink-0 border-b border-border-default px-3 py-2">
-        <h2 className="text-xs font-bold uppercase tracking-widest text-text-secondary">Stock List</h2>
+        <h2 className="text-xs font-bold uppercase tracking-widest text-text-secondary">
+          Stock List
+        </h2>
         <div className="mt-1.5">
           <input
             value={query}
@@ -31,11 +33,15 @@ export default function LiveFeedPanel() {
       <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-1.5">
         {filteredDecisions.length === 0 ? (
           <div className="p-4 text-center text-xs text-text-secondary">
-            {recentDecisions.length === 0 ? 'Waiting for backend decisions...' : 'No matching symbols found.'}
+            {recentDecisions.length === 0
+              ? 'Waiting for backend decisions...'
+              : 'No matching symbols found.'}
           </div>
         ) : (
           filteredDecisions.map((decision, i) => {
-            const isSelected = activeDecision?.symbol === decision.symbol && activeDecision?.timestamp_ms === decision.timestamp_ms;
+            const isSelected =
+              activeDecision?.symbol === decision.symbol &&
+              activeDecision?.timestamp_ms === decision.timestamp_ms;
             return (
               <div
                 key={`${decision.timestamp_ms}-${i}`}
@@ -43,20 +49,25 @@ export default function LiveFeedPanel() {
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-text-primary">{decision.symbol}</span>
+                    <span className="truncate text-sm font-semibold text-text-primary">
+                      {decision.symbol}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`text-xs font-bold ${decision.action_type === 'BUY'
+                      className={`text-xs font-bold ${
+                        decision.action_type === 'BUY'
                           ? 'text-bull'
                           : decision.action_type === 'SELL'
                             ? 'text-bear'
                             : 'text-neutral'
-                        }`}
+                      }`}
                     >
                       {decision.action_type}
                     </span>
-                    <span className="text-[11px] text-text-muted">{decision.final_conviction_score}%</span>
+                    <span className="text-[11px] text-text-muted">
+                      {decision.final_conviction_score}%
+                    </span>
                   </div>
                 </div>
               </div>

@@ -41,14 +41,14 @@ describe('signInUrl', () => {
   it('asks the auth surface to return the user to this origin and path', () => {
     atLocation('https://app.stratai.live/');
     expect(signInUrl()).toBe(
-      `${AUTH}/?redirect=${encodeURIComponent('https://app.stratai.live/')}`,
+      `${AUTH}/?redirect=${encodeURIComponent('https://app.stratai.live/')}`
     );
   });
 
   it('preserves a deep link so the user comes back where they were', () => {
     atLocation('https://app.stratai.live/dashboard');
     expect(signInUrl()).toBe(
-      `${AUTH}/?redirect=${encodeURIComponent('https://app.stratai.live/dashboard')}`,
+      `${AUTH}/?redirect=${encodeURIComponent('https://app.stratai.live/dashboard')}`
     );
   });
 
@@ -58,7 +58,7 @@ describe('signInUrl', () => {
     // how surprises get in.
     atLocation('https://app.stratai.live/?symbol=TCS&secret=abc');
     expect(signInUrl()).toBe(
-      `${AUTH}/?redirect=${encodeURIComponent('https://app.stratai.live/')}`,
+      `${AUTH}/?redirect=${encodeURIComponent('https://app.stratai.live/')}`
     );
   });
 
@@ -68,9 +68,7 @@ describe('signInUrl', () => {
     // The `&` must be percent-encoded, or everything after it reads as a
     // sibling param of the auth page rather than part of the destination.
     expect(url).not.toContain('&b=2');
-    expect(new URL(url).searchParams.get('redirect')).toBe(
-      'https://app.stratai.live/?a=1&b=2',
-    );
+    expect(new URL(url).searchParams.get('redirect')).toBe('https://app.stratai.live/?a=1&b=2');
   });
 
   it('does not double the slash when the configured auth URL has a trailing one', () => {
@@ -89,7 +87,7 @@ describe('redirectToSignIn', () => {
     // a loop with no way out.
     expect(location.replace).toHaveBeenCalledTimes(1);
     expect(location.replace).toHaveBeenCalledWith(
-      `${AUTH}/?redirect=${encodeURIComponent('https://app.stratai.live/')}`,
+      `${AUTH}/?redirect=${encodeURIComponent('https://app.stratai.live/')}`
     );
   });
 });

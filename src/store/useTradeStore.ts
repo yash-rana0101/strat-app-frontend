@@ -23,10 +23,24 @@ export type ChartMode = 'STANDARD' | 'VOLUME_PROFILE' | 'FOOTPRINT';
  * primary timeframe for all AI overlays (Ghost Line, confidence scores).
  */
 export type ChartTimeframe =
-  | '1m' | '2m' | '3m' | '4m' | '5m'
-  | '10m' | '15m' | '30m' | '75m' | '125m'
-  | '1h' | '1H' | '2h' | '3h' | '4h'
-  | '1D' | '1W' | '1M';
+  | '1m'
+  | '2m'
+  | '3m'
+  | '4m'
+  | '5m'
+  | '10m'
+  | '15m'
+  | '30m'
+  | '75m'
+  | '125m'
+  | '1h'
+  | '1H'
+  | '2h'
+  | '3h'
+  | '4h'
+  | '1D'
+  | '1W'
+  | '1M';
 
 type BackendAction = 'BUY' | 'SELL' | 'HOLD';
 
@@ -298,12 +312,15 @@ const wsFlags = { alpha: false, predictive: false, insight: false, orderFlow: fa
  * Every socket waited a flat 3s after ANY close. A blip on the gateway or a
  * server restart therefore cost 3s of no data even when the server was back
  * in 50ms. Retry at once, then back off so a genuinely dead server is not
- * hammered. eset() on open so the next drop starts fast again.
+ * hammered. 
+eset() on open so the next drop starts fast again.
  */
 function reconnectBackoff() {
   let attempt = 0;
   return {
-    reset: () => { attempt = 0; },
+    reset: () => {
+      attempt = 0;
+    },
     next: () => {
       const delay = attempt === 0 ? 0 : Math.min(3000, 250 * 2 ** (attempt - 1));
       attempt++;
@@ -336,7 +353,7 @@ function wsUrlIsUsable(url: string, label: string): boolean {
   console.warn(
     `[useTradeStore] ${label} WS not connected: ${url} is insecure (ws://) but this ` +
       `page is HTTPS, so the browser would block it. Point the matching ` +
-      `NEXT_PUBLIC_*_WS_URL at a wss:// gateway route.`,
+      `NEXT_PUBLIC_*_WS_URL at a wss:// gateway route.`
   );
   return false;
 }
@@ -403,7 +420,7 @@ function flushPendingCandles(set: (fn: (s: TradeStore) => Partial<TradeStore>) =
 /** Queue a candle for the next flush, scheduling one if needed. */
 function enqueueCandle(
   candle: OhlcCandle,
-  set: (fn: (s: TradeStore) => Partial<TradeStore>) => void,
+  set: (fn: (s: TradeStore) => Partial<TradeStore>) => void
 ): void {
   pendingCandles.push(candle);
   if (candleFlushHandle !== null) return;
@@ -428,7 +445,10 @@ function persistWatchlist(items: WatchlistItem[]) {
     try {
       // Strip volatile price data before persisting — only save structure
       const toSave = items.map(({ symbol, token, name, sector }) => ({
-        symbol, token, name, sector,
+        symbol,
+        token,
+        name,
+        sector,
       }));
       await bridgeInvoke('save_workspace', {
         symbol: '__WATCHLIST__',
@@ -442,16 +462,79 @@ function persistWatchlist(items: WatchlistItem[]) {
 
 /** Default watchlist seeded on first boot (NIFTY 50 blue chips). */
 const DEFAULT_WATCHLIST: WatchlistItem[] = [
-  { symbol: 'RELIANCE', token: 738561, name: 'Reliance Industries', sector: 'Energy', lastPrice: 0, change: null },
-  { symbol: 'TCS', token: 2953217, name: 'Tata Consultancy', sector: 'IT', lastPrice: 0, change: null },
-  { symbol: 'HDFCBANK', token: 341249, name: 'HDFC Bank', sector: 'Banking', lastPrice: 0, change: null },
+  {
+    symbol: 'RELIANCE',
+    token: 738561,
+    name: 'Reliance Industries',
+    sector: 'Energy',
+    lastPrice: 0,
+    change: null,
+  },
+  {
+    symbol: 'TCS',
+    token: 2953217,
+    name: 'Tata Consultancy',
+    sector: 'IT',
+    lastPrice: 0,
+    change: null,
+  },
+  {
+    symbol: 'HDFCBANK',
+    token: 341249,
+    name: 'HDFC Bank',
+    sector: 'Banking',
+    lastPrice: 0,
+    change: null,
+  },
   { symbol: 'INFY', token: 408065, name: 'Infosys', sector: 'IT', lastPrice: 0, change: null },
-  { symbol: 'ICICIBANK', token: 1270529, name: 'ICICI Bank', sector: 'Banking', lastPrice: 0, change: null },
-  { symbol: 'HINDUNILVR', token: 356865, name: 'Hindustan Unilever', sector: 'FMCG', lastPrice: 0, change: null },
-  { symbol: 'SBIN', token: 779521, name: 'State Bank of India', sector: 'Banking', lastPrice: 0, change: null },
-  { symbol: 'BHARTIARTL', token: 2714625, name: 'Bharti Airtel', sector: 'Telecom', lastPrice: 0, change: null },
-  { symbol: 'KOTAKBANK', token: 492033, name: 'Kotak Mahindra Bank', sector: 'Banking', lastPrice: 0, change: null },
-  { symbol: 'LT', token: 2939649, name: 'Larsen & Toubro', sector: 'Infra', lastPrice: 0, change: null },
+  {
+    symbol: 'ICICIBANK',
+    token: 1270529,
+    name: 'ICICI Bank',
+    sector: 'Banking',
+    lastPrice: 0,
+    change: null,
+  },
+  {
+    symbol: 'HINDUNILVR',
+    token: 356865,
+    name: 'Hindustan Unilever',
+    sector: 'FMCG',
+    lastPrice: 0,
+    change: null,
+  },
+  {
+    symbol: 'SBIN',
+    token: 779521,
+    name: 'State Bank of India',
+    sector: 'Banking',
+    lastPrice: 0,
+    change: null,
+  },
+  {
+    symbol: 'BHARTIARTL',
+    token: 2714625,
+    name: 'Bharti Airtel',
+    sector: 'Telecom',
+    lastPrice: 0,
+    change: null,
+  },
+  {
+    symbol: 'KOTAKBANK',
+    token: 492033,
+    name: 'Kotak Mahindra Bank',
+    sector: 'Banking',
+    lastPrice: 0,
+    change: null,
+  },
+  {
+    symbol: 'LT',
+    token: 2939649,
+    name: 'Larsen & Toubro',
+    sector: 'Infra',
+    lastPrice: 0,
+    change: null,
+  },
 ];
 
 /** Hydrate the watchlist from persisted storage on app boot.
@@ -460,7 +543,8 @@ export async function hydrateWatchlist() {
   try {
     const json = await bridgeInvoke<string>('load_workspace', { symbol: '__WATCHLIST__' });
     if (json && json !== '{}') {
-      const items: Array<{ symbol: string; token: number; name: string; sector: string }> = JSON.parse(json);
+      const items: Array<{ symbol: string; token: number; name: string; sector: string }> =
+        JSON.parse(json);
       if (Array.isArray(items) && items.length > 0) {
         const hydrated: WatchlistItem[] = items.map((i) => ({
           symbol: i.symbol,
@@ -508,7 +592,7 @@ export async function hydrateLegacyAgentBridge() {
       console.log('[TradeStore] agent_message event received:', event.payload);
       const currentLog = useTradeStore.getState().agentChatLog;
       useTradeStore.setState({
-        agentChatLog: [...currentLog, event.payload]
+        agentChatLog: [...currentLog, event.payload],
       });
     });
 
@@ -547,7 +631,9 @@ export const useTradeStore = create<TradeStore>((set) => {
     }));
   };
 
-  const resolveActionType = (value: BackendDecisionPayload['action_type'] | BackendDecisionPayload['action']): BackendAction => {
+  const resolveActionType = (
+    value: BackendDecisionPayload['action_type'] | BackendDecisionPayload['action']
+  ): BackendAction => {
     if (typeof value === 'string') {
       const normalized = value.toUpperCase();
       if (normalized === 'BUY' || normalized === 'SELL' || normalized === 'HOLD') {
@@ -1052,8 +1138,6 @@ export const useTradeStore = create<TradeStore>((set) => {
       wsFlags.orderFlow = true;
     },
 
-
-
     resetSession: () => {
       set({
         portfolioBalance: 100000,
@@ -1086,8 +1170,7 @@ export const useTradeStore = create<TradeStore>((set) => {
             // one of these, so the two never double-count the same event.
             setupsRejected:
               mode === 'VERIFY' && !actionable ? s.setupsRejected + 1 : s.setupsRejected,
-            forcedHolds:
-              mode === 'FIND' && !actionable ? s.forcedHolds + 1 : s.forcedHolds,
+            forcedHolds: mode === 'FIND' && !actionable ? s.forcedHolds + 1 : s.forcedHolds,
           },
         };
       });

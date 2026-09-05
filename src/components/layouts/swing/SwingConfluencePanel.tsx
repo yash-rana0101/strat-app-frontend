@@ -1,7 +1,17 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { Loader2, TrendingUp, TrendingDown, Minus, Sparkles, Activity, Newspaper, AlertTriangle, RefreshCw } from 'lucide-react';
+import {
+  Loader2,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Sparkles,
+  Activity,
+  Newspaper,
+  AlertTriangle,
+  RefreshCw,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MarketInsight, useTradeStore } from '../../../store/useTradeStore';
 import { useMultiTimeframeTrend, TrendBias } from '../../../hooks/useMultiTimeframeTrend';
@@ -16,25 +26,29 @@ function getBiasTheme(bias: TrendBias) {
       return {
         text: 'text-emerald-600 dark:text-emerald-400',
         bg: 'bg-emerald-500/10 dark:bg-emerald-500/10 border-emerald-500/30 dark:border-emerald-500/20',
-        bar: 'bg-emerald-500 dark:bg-emerald-400'
+        bar: 'bg-emerald-500 dark:bg-emerald-400',
       };
     case 'BEARISH':
       return {
         text: 'text-rose-600 dark:text-rose-400',
         bg: 'bg-rose-500/10 dark:bg-rose-500/10 border-rose-500/30 dark:border-rose-500/20',
-        bar: 'bg-rose-500 dark:bg-rose-400'
+        bar: 'bg-rose-500 dark:bg-rose-400',
       };
     default:
       return {
         text: 'text-amber-600 dark:text-amber-400',
         bg: 'bg-amber-500/10 dark:bg-amber-500/10 border-amber-500/30 dark:border-amber-500/20',
-        bar: 'bg-amber-500 dark:bg-amber-400'
+        bar: 'bg-amber-500 dark:bg-amber-400',
       };
   }
 }
 
 function sentimentColor(s: number) {
-  return s >= 65 ? 'text-emerald-600 dark:text-emerald-400' : s >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
+  return s >= 65
+    ? 'text-emerald-600 dark:text-emerald-400'
+    : s >= 40
+      ? 'text-amber-600 dark:text-amber-400'
+      : 'text-rose-600 dark:text-rose-400';
 }
 
 function sentimentBarColor(s: number) {
@@ -91,7 +105,10 @@ export default function SwingConfluencePanel() {
       // Skip duplicates (same timestamp + symbol)
       if (prev.length > 0) {
         const last = prev[0];
-        if (last.timestamp_ms === latestInsight.timestamp_ms && last.symbol === latestInsight.symbol) {
+        if (
+          last.timestamp_ms === latestInsight.timestamp_ms &&
+          last.symbol === latestInsight.symbol
+        ) {
           return prev;
         }
       }
@@ -125,8 +142,10 @@ export default function SwingConfluencePanel() {
   const score = sentimentPayload ? Math.round((sentimentPayload.score + 100) / 2) : null;
 
   return (
-    <div id="swing-confluence-panel" className="flex h-full flex-col rounded-none border-0 bg-surface text-sm select-none overflow-hidden">
-
+    <div
+      id="swing-confluence-panel"
+      className="flex h-full flex-col rounded-none border-0 bg-surface text-sm select-none overflow-hidden"
+    >
       {/* ── Multi-Timeframe Trend ────────────────────────────── */}
       <div className="shrink-0 flex flex-col border-b border-border-default/80 pb-2">
         <div className="px-3 pt-2.5 pb-1.5 flex items-center justify-between">
@@ -136,7 +155,12 @@ export default function SwingConfluencePanel() {
           </h3>
         </div>
 
-        <motion.div variants={staggerContainer} initial="hidden" animate="show" className="flex flex-col gap-1.5 px-3">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          className="flex flex-col gap-1.5 px-3"
+        >
           {timeframeTrends.map((t) => {
             const theme = getBiasTheme(t.bias);
             return (
@@ -146,7 +170,9 @@ export default function SwingConfluencePanel() {
                 className="flex items-center justify-between py-1 px-2 rounded-lg border border-border-default/60 bg-card/70 shadow-xs"
               >
                 <div className="flex items-center gap-2.5 min-w-8">
-                  <span className="text-[11px] font-extrabold text-text-secondary leading-none">{t.timeframe}</span>
+                  <span className="text-[11px] font-extrabold text-text-secondary leading-none">
+                    {t.timeframe}
+                  </span>
                 </div>
 
                 {/* Compact progress bar */}
@@ -160,8 +186,16 @@ export default function SwingConfluencePanel() {
                 </div>
 
                 {/* Bias Pill Badge */}
-                <span className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8.5px] font-extrabold border leading-none tracking-wide ${theme.bg} ${theme.text}`}>
-                  {t.bias === 'BULLISH' ? <TrendingUp size={8} /> : t.bias === 'BEARISH' ? <TrendingDown size={8} /> : <Minus size={8} />}
+                <span
+                  className={`inline-flex items-center gap-0.5 rounded px-1.5 py-0.5 text-[8.5px] font-extrabold border leading-none tracking-wide ${theme.bg} ${theme.text}`}
+                >
+                  {t.bias === 'BULLISH' ? (
+                    <TrendingUp size={8} />
+                  ) : t.bias === 'BEARISH' ? (
+                    <TrendingDown size={8} />
+                  ) : (
+                    <Minus size={8} />
+                  )}
                   {t.bias}
                 </span>
               </motion.div>
@@ -180,7 +214,9 @@ export default function SwingConfluencePanel() {
           <div className="flex items-center gap-1">
             {score !== null ? (
               <>
-                <span className={`text-[12px] font-black tabular-nums ${sentimentColor(score)}`}>{score}</span>
+                <span className={`text-[12px] font-black tabular-nums ${sentimentColor(score)}`}>
+                  {score}
+                </span>
                 <span className="text-[8.5px] text-text-muted/60 font-medium">/100</span>
               </>
             ) : (
@@ -204,7 +240,9 @@ export default function SwingConfluencePanel() {
           <div className="flex justify-between mt-1 text-[8px] font-bold tracking-wider leading-none">
             <span className="text-rose-600/80 dark:text-rose-500/70 uppercase">Fear</span>
             {score !== null && (
-              <span className={`uppercase font-extrabold ${sentimentColor(score)}`}>{sentimentLabel(score)}</span>
+              <span className={`uppercase font-extrabold ${sentimentColor(score)}`}>
+                {sentimentLabel(score)}
+              </span>
             )}
             <span className="text-emerald-600/80 dark:text-emerald-500/70 uppercase">Greed</span>
           </div>
@@ -219,7 +257,9 @@ export default function SwingConfluencePanel() {
                   <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-cyan-500/60"></span>
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-500"></span>
                 </span>
-                <span className="text-[8px] font-extrabold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest leading-none">Latest Catalyst</span>
+                <span className="text-[8px] font-extrabold text-cyan-600 dark:text-cyan-400 uppercase tracking-widest leading-none">
+                  Latest Catalyst
+                </span>
                 {/* An option contract's catalyst is its underlying's news — say
                     so rather than letting the headline read as the contract's own. */}
                 {sentimentPayload.symbol.toUpperCase() !== selectedSymbol.trim().toUpperCase() && (
@@ -277,7 +317,9 @@ export default function SwingConfluencePanel() {
               </p>
               <button
                 type="button"
-                onClick={() => { if (selectedSymbol) void loadSentimentForSymbol(selectedSymbol); }}
+                onClick={() => {
+                  if (selectedSymbol) void loadSentimentForSymbol(selectedSymbol);
+                }}
                 className="mt-1.5 inline-flex items-center gap-1 rounded border border-amber-500/30 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 transition-colors hover:bg-amber-500/10"
               >
                 <RefreshCw size={8} />
@@ -305,7 +347,10 @@ export default function SwingConfluencePanel() {
           </h3>
         </div>
 
-        <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-thin px-3 pb-3 space-y-0">
+        <div
+          ref={scrollRef}
+          className="flex-1 min-h-0 overflow-y-auto scrollbar-thin px-3 pb-3 space-y-0"
+        >
           {insightHistory.length > 0 ? (
             insightHistory.map((insight, i) => (
               <InsightCard
@@ -317,9 +362,15 @@ export default function SwingConfluencePanel() {
             ))
           ) : (
             <div className="flex flex-col items-center gap-1.5 py-4 px-3 border border-dashed border-border-default/70 rounded-xl bg-card/50 text-center animate-in fade-in duration-200">
-              <p className="text-[11px] font-black text-text-secondary tracking-tight">Awaiting Anomalies...</p>
+              <p className="text-[11px] font-black text-text-secondary tracking-tight">
+                Awaiting Anomalies...
+              </p>
               <p className="text-[9px] text-text-muted/80 leading-relaxed max-w-52.5">
-                Quantitative insights trigger when a <span className="text-emerald-600 dark:text-emerald-400 font-bold">≥2% price swing</span> is detected.
+                Quantitative insights trigger when a{' '}
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                  ≥2% price swing
+                </span>{' '}
+                is detected.
               </p>
             </div>
           )}

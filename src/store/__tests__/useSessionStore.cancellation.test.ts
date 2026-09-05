@@ -69,9 +69,9 @@ describe('Instant Stop Analysis Pipeline', () => {
     const stepCountBefore = useSessionStore.getState().sessions[SESS_1].reasoningSteps.length;
 
     // Late arriving frame from network buffer
-    const result = useSessionStore.getState().applyFrame(
-      frame('REASONING', THREAD_1, { content: 'Late chunk that must be dropped' })
-    );
+    const result = useSessionStore
+      .getState()
+      .applyFrame(frame('REASONING', THREAD_1, { content: 'Late chunk that must be dropped' }));
 
     expect(result).toBeNull();
     const after = useSessionStore.getState();
@@ -99,7 +99,10 @@ describe('Instant Stop Analysis Pipeline', () => {
     expect(selectSessionStatus(useSessionStore.getState())).toBe('running');
 
     // Frames for new run stream through
-    store.applyFrame({ event: 'REASONING', data: { thread_id: NEW_THREAD, content: 'Fresh analysis...' } });
+    store.applyFrame({
+      event: 'REASONING',
+      data: { thread_id: NEW_THREAD, content: 'Fresh analysis...' },
+    });
     const steps = useSessionStore.getState().sessions[SESS_1].reasoningSteps;
     expect(steps.some((s) => s.content.includes('Fresh analysis...'))).toBe(true);
   });
@@ -127,4 +130,3 @@ describe('Instant Stop Analysis Pipeline', () => {
     });
   });
 });
-

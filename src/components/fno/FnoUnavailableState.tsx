@@ -90,10 +90,9 @@ export function FnoUnavailableState({ reason, lastSnapshotTs }: FnoUnavailableSt
           </span>
 
           <span className="text-[10px] text-amber-600 dark:text-amber-300/80 mt-1 leading-relaxed">
-            No live option data is being shown. This usually means the market is
-            closed, no chain snapshot exists for the selected underlying and
-            expiry, or the backend returned an empty/error result. No values are
-            fabricated in this state.
+            No live option data is being shown. This usually means the market is closed, no chain
+            snapshot exists for the selected underlying and expiry, or the backend returned an
+            empty/error result. No values are fabricated in this state.
           </span>
 
           <span className="text-[9px] font-mono text-amber-500 dark:text-amber-400 bg-amber-500/5 rounded-none border border-amber-500/20 px-2 py-1 mt-2 leading-normal">

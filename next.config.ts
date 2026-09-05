@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
-import path from "node:path";
+import type { NextConfig } from 'next';
+import path from 'node:path';
 
 const nextConfig: NextConfig = {
   // A self-contained Node server: the `/api/*` proxy handlers need a server, and

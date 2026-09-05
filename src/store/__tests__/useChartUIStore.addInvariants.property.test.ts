@@ -50,7 +50,7 @@ function addSequence() {
       symbol: fc.constantFrom(...SYMBOLS),
       id: fc.constantFrom(...ENGINE_IDS),
     }),
-    { minLength: 1, maxLength: 60 },
+    { minLength: 1, maxLength: 60 }
   );
 }
 
@@ -103,71 +103,63 @@ describe('Property 10: active-indicator add invariants hold', () => {
           }
         }
       }),
-      { numRuns: 100 },
+      { numRuns: 100 }
     );
   });
 
   it('re-adding any already-active id is rejected as a duplicate and leaves the list unchanged (Req 4.4)', () => {
     fc.assert(
-      fc.property(
-        fc.constantFrom(...SYMBOLS),
-        fc.constantFrom(...ENGINE_IDS),
-        (symbol, id) => {
-          resetState();
+      fc.property(fc.constantFrom(...SYMBOLS), fc.constantFrom(...ENGINE_IDS), (symbol, id) => {
+        resetState();
 
-          const first = store().addIndicator(symbol, id);
-          expect(first.ok).toBe(true);
-          const before = store().getActiveIndicators(symbol);
+        const first = store().addIndicator(symbol, id);
+        expect(first.ok).toBe(true);
+        const before = store().getActiveIndicators(symbol);
 
-          const second = store().addIndicator(symbol, id);
-          expect(second.ok).toBe(false);
-          if (!second.ok) expect(second.error).toBe('duplicate');
+        const second = store().addIndicator(symbol, id);
+        expect(second.ok).toBe(false);
+        if (!second.ok) expect(second.error).toBe('duplicate');
 
-          // Unchanged: still exactly the one instance from the first add.
-          expect(store().getActiveIndicators(symbol)).toEqual(before);
-        },
-      ),
-      { numRuns: 100 },
+        // Unchanged: still exactly the one instance from the first add.
+        expect(store().getActiveIndicators(symbol)).toEqual(before);
+      }),
+      { numRuns: 100 }
     );
   });
 
   it('at capacity, any further add is rejected and the 50-entry list is unchanged (Req 4.5)', () => {
     fc.assert(
-      fc.property(
-        fc.constantFrom(...SYMBOLS),
-        fc.constantFrom(...ENGINE_IDS),
-        (symbol, id) => {
-          resetState();
+      fc.property(fc.constantFrom(...SYMBOLS), fc.constantFrom(...ENGINE_IDS), (symbol, id) => {
+        resetState();
 
-          // Seed the symbol to exactly capacity with distinct-param instances.
-          // Periods are pushed far outside any registry default range so the
-          // duplicate guard (which runs before the capacity guard) cannot match
-          // the add-under-test and we reliably exercise the at-capacity path.
-          const seeded: ActiveIndicator[] = Array.from(
-            { length: MAX_INDICATORS_PER_SYMBOL },
-            (_, i) => ({
-              instanceId: `seed-${i}`,
-              indicatorId: 'sma',
-              params: { period: 10000 + i },
-              style: { color: '#fff', lineWidth: 1, lineStyle: 'solid' as const },
-              visible: true,
-              paneId: null,
-            }),
-          );
-          useChartUIStore.setState({ activeIndicators: { [symbol]: seeded } });
-          const before = store().getActiveIndicators(symbol);
-          expect(before.length).toBe(MAX_INDICATORS_PER_SYMBOL);
+        // Seed the symbol to exactly capacity with distinct-param instances.
+        // Periods are pushed far outside any registry default range so the
+        // duplicate guard (which runs before the capacity guard) cannot match
+        // the add-under-test and we reliably exercise the at-capacity path.
+        const seeded: ActiveIndicator[] = Array.from(
+          { length: MAX_INDICATORS_PER_SYMBOL },
+          (_, i) => ({
+            instanceId: `seed-${i}`,
+            indicatorId: 'sma',
+            params: { period: 10000 + i },
+            style: { color: '#fff', lineWidth: 1, lineStyle: 'solid' as const },
+            visible: true,
+            paneId: null,
+          })
+        );
+        useChartUIStore.setState({ activeIndicators: { [symbol]: seeded } });
+        const before = store().getActiveIndicators(symbol);
+        expect(before.length).toBe(MAX_INDICATORS_PER_SYMBOL);
 
-          const result = store().addIndicator(symbol, id);
-          expect(result.ok).toBe(false);
-          if (!result.ok) expect(result.error).toBe('at-capacity');
+        const result = store().addIndicator(symbol, id);
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.error).toBe('at-capacity');
 
-          const after = store().getActiveIndicators(symbol);
-          expect(after.length).toBe(MAX_INDICATORS_PER_SYMBOL);
-          expect(after).toEqual(before);
-        },
-      ),
-      { numRuns: 100 },
+        const after = store().getActiveIndicators(symbol);
+        expect(after.length).toBe(MAX_INDICATORS_PER_SYMBOL);
+        expect(after).toEqual(before);
+      }),
+      { numRuns: 100 }
     );
   });
 });

@@ -152,4 +152,3 @@ function NewsArticleCard({
 
   return content;
 }
-

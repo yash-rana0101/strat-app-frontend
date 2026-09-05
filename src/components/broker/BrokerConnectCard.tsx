@@ -65,7 +65,8 @@ export default function BrokerConnectCard() {
           </div>
           <h2 className="text-xl font-black text-white">Connect Broker Account</h2>
           <p className="text-xs text-text-muted mt-1.5 leading-relaxed max-w-xs mx-auto">
-            Authorize your Zerodha Kite broker connection to enable live institutional market feed ingestion and portfolio execution.
+            Authorize your Zerodha Kite broker connection to enable live institutional market feed
+            ingestion and portfolio execution.
           </p>
         </div>
 
@@ -75,7 +76,9 @@ export default function BrokerConnectCard() {
             <div className="flex items-start gap-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3.5 text-[10px] text-amber-400 leading-relaxed">
               <Info size={14} className="shrink-0 text-amber-400 mt-0.5" />
               <span>
-                <strong>Daily Reconnection Required:</strong> Zerodha access tokens expire daily. Please connect your Zerodha account every day after <strong>6:00 AM IST</strong> to start a new active session.
+                <strong>Daily Reconnection Required:</strong> Zerodha access tokens expire daily.
+                Please connect your Zerodha account every day after <strong>6:00 AM IST</strong> to
+                start a new active session.
               </span>
             </div>
 
@@ -90,18 +93,21 @@ export default function BrokerConnectCard() {
             <div className="flex items-start gap-2.5 rounded-lg bg-elevated/40 border border-border-default p-3.5 text-[10px] text-text-muted leading-relaxed">
               <Info size={14} className="shrink-0 text-blue-400 mt-0.5" />
               <span>
-                <strong>Note:</strong> Zerodha access tokens are encrypted and cached in Tauri Stronghold vault storage, never reaching cloud servers or browser storage.
+                <strong>Note:</strong> Zerodha access tokens are encrypted and cached in Tauri
+                Stronghold vault storage, never reaching cloud servers or browser storage.
               </span>
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-6 text-center">
             <Loader2 size={36} className="animate-spin text-emerald-400 mb-4" />
-            <p className="text-sm font-semibold text-white tracking-wide">Waiting for Zerodha authentication...</p>
+            <p className="text-sm font-semibold text-white tracking-wide">
+              Waiting for Zerodha authentication...
+            </p>
             <p className="text-[10px] text-text-muted mt-1 leading-normal max-w-[240px]">
               Complete authorization inside the newly opened browser window to link your portfolio.
             </p>
-            
+
             <button
               onClick={() => setLoading(false)}
               className="mt-6 text-[10px] font-bold text-text-muted hover:text-text-primary uppercase tracking-wider transition-colors border border-border-default rounded-md px-3 py-1 bg-elevated/20 hover:bg-elevated/40"

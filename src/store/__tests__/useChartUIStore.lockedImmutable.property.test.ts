@@ -61,24 +61,24 @@ function pointsArb(): fc.Arbitrary<Point[]> {
 
 /** Arbitrary drawing with a caller-supplied unique id. */
 function drawingArb(id: string): fc.Arbitrary<Drawing> {
-  return fc.record({
-    tool: fc.constantFrom('trendline', 'ray', 'rect', 'fib', 'text'),
-    points: pointsArb(),
-    color: fc.constantFrom('#FF5722', '#2962FF', '#00C853'),
-    locked: fc.boolean(),
-  }).map((rec): Drawing => ({ id, ...rec }));
+  return fc
+    .record({
+      tool: fc.constantFrom('trendline', 'ray', 'rect', 'fib', 'text'),
+      points: pointsArb(),
+      color: fc.constantFrom('#FF5722', '#2962FF', '#00C853'),
+      locked: fc.boolean(),
+    })
+    .map((rec): Drawing => ({ id, ...rec }));
 }
 
 /** A non-empty set of drawings with unique ids, plus a target index. */
 function drawingsAndTargetArb() {
   return fc.integer({ min: 1, max: 8 }).chain((n) =>
     fc.record({
-      drawings: fc.tuple(
-        ...Array.from({ length: n }, (_, i) => drawingArb(`draw-${i}`)),
-      ),
+      drawings: fc.tuple(...Array.from({ length: n }, (_, i) => drawingArb(`draw-${i}`))),
       targetIndex: fc.integer({ min: 0, max: n - 1 }),
       newPoints: pointsArb(),
-    }),
+    })
   );
 }
 
@@ -116,7 +116,7 @@ describe('Property 15: locked drawings are immutable', () => {
           }
         });
       }),
-      { numRuns: 100 },
+      { numRuns: 100 }
     );
   });
 
@@ -153,7 +153,7 @@ describe('Property 15: locked drawings are immutable', () => {
           }
         });
       }),
-      { numRuns: 100 },
+      { numRuns: 100 }
     );
   });
 });

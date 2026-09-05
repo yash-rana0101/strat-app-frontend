@@ -30,9 +30,7 @@ export function useTradingViewScript(): { ready: boolean; error: string | null }
     if (checkReady()) return;
 
     const scriptSrc = '/static/charting_library/charting_library/charting_library.standalone.js';
-    const existingScript = document.querySelector<HTMLScriptElement>(
-      `script[src="${scriptSrc}"]`,
-    );
+    const existingScript = document.querySelector<HTMLScriptElement>(`script[src="${scriptSrc}"]`);
 
     if (existingScript) {
       // Script element exists — it may have already loaded or still be loading.
@@ -47,8 +45,7 @@ export function useTradingViewScript(): { ready: boolean; error: string | null }
           }
         }, 100);
       };
-      const handleError = () =>
-        setError('TradingView script failed to load (existing element)');
+      const handleError = () => setError('TradingView script failed to load (existing element)');
 
       existingScript.addEventListener('load', handleLoad);
       existingScript.addEventListener('error', handleError);
@@ -76,7 +73,7 @@ export function useTradingViewScript(): { ready: boolean; error: string | null }
       console.error('[TV Script] Failed to load charting_library.standalone.js:', e);
       setError(
         `Failed to load charting library script. ` +
-        `Check that /static/charting_library/ exists and CSP allows script loading.`,
+          `Check that /static/charting_library/ exists and CSP allows script loading.`
       );
     };
 

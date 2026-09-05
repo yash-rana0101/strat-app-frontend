@@ -56,9 +56,15 @@ function numField(): fc.Arbitrary<{ raw: unknown; expected: number | null }> {
     { weight: 3, arbitrary: fc.constant({ raw: null as unknown, expected: null }) },
     { weight: 2, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) },
     { weight: 1, arbitrary: fc.constant({ raw: Number.NaN as unknown, expected: null }) },
-    { weight: 1, arbitrary: fc.constant({ raw: Number.POSITIVE_INFINITY as unknown, expected: null }) },
-    { weight: 1, arbitrary: fc.constant({ raw: Number.NEGATIVE_INFINITY as unknown, expected: null }) },
-    { weight: 1, arbitrary: fc.string().map((s) => ({ raw: s as unknown, expected: null })) },
+    {
+      weight: 1,
+      arbitrary: fc.constant({ raw: Number.POSITIVE_INFINITY as unknown, expected: null }),
+    },
+    {
+      weight: 1,
+      arbitrary: fc.constant({ raw: Number.NEGATIVE_INFINITY as unknown, expected: null }),
+    },
+    { weight: 1, arbitrary: fc.string().map((s) => ({ raw: s as unknown, expected: null })) }
   );
 }
 
@@ -68,7 +74,7 @@ function strField(): fc.Arbitrary<{ raw: unknown; expected: string | null }> {
     { weight: 4, arbitrary: fc.string().map((s) => ({ raw: s as unknown, expected: s })) },
     { weight: 2, arbitrary: fc.constant({ raw: null as unknown, expected: null }) },
     { weight: 2, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) },
-    { weight: 1, arbitrary: finiteNumber.map((n) => ({ raw: n as unknown, expected: null })) },
+    { weight: 1, arbitrary: finiteNumber.map((n) => ({ raw: n as unknown, expected: null })) }
   );
 }
 
@@ -80,7 +86,7 @@ function biasStateField(): fc.Arbitrary<{ raw: unknown; expected: OptionsBiasSta
       arbitrary: fc.constantFrom(...BIAS_STATES).map((s) => ({ raw: s as unknown, expected: s })),
     },
     { weight: 2, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) },
-    { weight: 2, arbitrary: fc.constant({ raw: null as unknown, expected: null }) },
+    { weight: 2, arbitrary: fc.constant({ raw: null as unknown, expected: null }) }
   );
 }
 
@@ -89,10 +95,12 @@ function chainContextField(): fc.Arbitrary<{ raw: unknown; expected: ChainContex
   return fc.oneof(
     {
       weight: 4,
-      arbitrary: fc.constantFrom(...CHAIN_CONTEXTS).map((c) => ({ raw: c as unknown, expected: c })),
+      arbitrary: fc
+        .constantFrom(...CHAIN_CONTEXTS)
+        .map((c) => ({ raw: c as unknown, expected: c })),
     },
     { weight: 2, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) },
-    { weight: 2, arbitrary: fc.constant({ raw: null as unknown, expected: null }) },
+    { weight: 2, arbitrary: fc.constant({ raw: null as unknown, expected: null }) }
   );
 }
 
@@ -102,11 +110,14 @@ function signalsField(): fc.Arbitrary<{ raw: unknown; expected: Record<string, u
     {
       weight: 3,
       arbitrary: fc
-        .dictionary(fc.string(), fc.oneof(finiteNumber, fc.string(), fc.boolean(), fc.constant(null)))
+        .dictionary(
+          fc.string(),
+          fc.oneof(finiteNumber, fc.string(), fc.boolean(), fc.constant(null))
+        )
         .map((o) => ({ raw: o as unknown, expected: o as Record<string, unknown> })),
     },
     { weight: 2, arbitrary: fc.constant({ raw: null as unknown, expected: null }) },
-    { weight: 2, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) },
+    { weight: 2, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) }
   );
 }
 
@@ -126,7 +137,7 @@ function ivSkewField(): fc.Arbitrary<{
           raw: { put_minus_call: pmc.raw, slope: slope.raw, atm_iv: atm.raw } as unknown,
           expected: { putMinusCall: pmc.expected, slope: slope.expected, atmIv: atm.expected },
         })),
-    },
+    }
   );
 }
 
@@ -141,7 +152,7 @@ function nonEmptyChainArb() {
       pe_price: numField().map((f) => f.raw),
       iv: numField().map((f) => f.raw),
     }),
-    { minLength: 1, maxLength: 8 },
+    { minLength: 1, maxLength: 8 }
   );
 }
 
@@ -285,7 +296,7 @@ describe('Property 5: partial analytics pass through finite fields and flag null
           }
         }
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -306,7 +317,7 @@ describe('Property 5: partial analytics pass through finite fields and flag null
           expect(view.snapshotTs).toBe(payload.snapshot_ts);
         }
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

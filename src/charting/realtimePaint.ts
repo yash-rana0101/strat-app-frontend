@@ -42,10 +42,7 @@ export function sameCandle(a: ChartCandle, b: ChartCandle): boolean {
  * the canonical series. The tail decision (update vs append vs repaint) is
  * delegated to the canonical `applyLatestCandleUpdate` helper.
  */
-export function classifyRealtimePaint(
-  prev: ChartCandle[],
-  next: ChartCandle[],
-): RealtimePaintKind {
+export function classifyRealtimePaint(prev: ChartCandle[], next: ChartCandle[]): RealtimePaintKind {
   if (prev.length === 0 || next.length === 0) return 'repaint';
 
   const delta = next.length - prev.length;
@@ -88,9 +85,6 @@ export function isViewAtRightEdge(rangeTo: number, lastIndex: number): boolean {
  * pinned to the latest bar before the append (Requirement 9.5). In-place
  * updates and repaints never move the viewport.
  */
-export function shouldFollowRightEdge(
-  kind: RealtimePaintKind,
-  wasAtRightEdge: boolean,
-): boolean {
+export function shouldFollowRightEdge(kind: RealtimePaintKind, wasAtRightEdge: boolean): boolean {
   return kind === 'append' && wasAtRightEdge;
 }

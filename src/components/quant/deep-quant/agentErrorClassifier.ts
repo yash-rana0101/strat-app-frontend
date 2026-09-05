@@ -96,7 +96,8 @@ const RULES: Array<{
   },
   {
     kind: 'llm-auth',
-    match: /invalid api key|incorrect api key|unauthori[sz]ed|401|403|authentication|expired key|TokenException/i,
+    match:
+      /invalid api key|incorrect api key|unauthori[sz]ed|401|403|authentication|expired key|TokenException/i,
     title: 'LLM provider rejected the credential',
     explanation:
       'The provider answered but refused the credential. The key is likely wrong, ' +
@@ -120,7 +121,8 @@ const RULES: Array<{
   },
   {
     kind: 'upstream-unreachable',
-    match: /unreachable|ECONNREFUSED|Connection refused|fetch failed|Failed to fetch|502|503|504|network error|socket hang up/i,
+    match:
+      /unreachable|ECONNREFUSED|Connection refused|fetch failed|Failed to fetch|502|503|504|network error|socket hang up/i,
     title: 'Analysis service unreachable',
     explanation:
       'The request never reached the analysis service. It may be restarting or ' +

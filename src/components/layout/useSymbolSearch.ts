@@ -17,13 +17,13 @@ const DEFAULT_FNO_UNDERLYINGS = ['NIFTY 50', 'BANKNIFTY'];
 const INDEX_NFO_ALIASES: Record<string, string> = {
   'NIFTY 50': 'NIFTY',
   'NIFTY BANK': 'BANKNIFTY',
-  'BANKNIFTY': 'BANKNIFTY',
+  BANKNIFTY: 'BANKNIFTY',
   'NIFTY FIN SERVICE': 'FINNIFTY',
-  'FINNIFTY': 'FINNIFTY',
+  FINNIFTY: 'FINNIFTY',
   'NIFTY MIDCAP SELECT': 'MIDCPNIFTY',
-  'MIDCPNIFTY': 'MIDCPNIFTY',
+  MIDCPNIFTY: 'MIDCPNIFTY',
   'NIFTY NEXT 50': 'NIFTYNXT50',
-  'NIFTYNXT50': 'NIFTYNXT50',
+  NIFTYNXT50: 'NIFTYNXT50',
 };
 
 /**
@@ -34,8 +34,16 @@ const INDEX_NFO_ALIASES: Record<string, string> = {
  * segment of its own.
  */
 const INDEX_NAME_FALLBACK = [
-  'NIFTY', 'BANKNIFTY', 'FINNIFTY', 'SENSEX', 'MIDCPNIFTY', 'BANKEX',
-  'NIFTY_50', 'NIFTY 50', 'NIFTY BANK', 'NIFTY FINANCIAL SERVICES',
+  'NIFTY',
+  'BANKNIFTY',
+  'FINNIFTY',
+  'SENSEX',
+  'MIDCPNIFTY',
+  'BANKEX',
+  'NIFTY_50',
+  'NIFTY 50',
+  'NIFTY BANK',
+  'NIFTY FINANCIAL SERVICES',
 ];
 
 /**
@@ -92,7 +100,9 @@ export function useSymbolSearch({ onClose }: UseSymbolSearchOptions) {
     setIsSearching(true);
     setSearchError(null);
     try {
-      const results = await bridgeInvoke<SearchResult[]>('search_instruments', { query: normalized });
+      const results = await bridgeInvoke<SearchResult[]>('search_instruments', {
+        query: normalized,
+      });
       setSearchResults(results || []);
       setSelectedIndex(results && results.length > 0 ? 0 : -1);
     } catch (err) {
@@ -104,97 +114,106 @@ export function useSymbolSearch({ onClose }: UseSymbolSearchOptions) {
     }
   }, []);
 
-  const handleInputChange = useCallback((value: string) => {
-    setQuery(value);
-    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-    if (!value.trim() || value.trim().length < 2) {
-      setSearchResults([]);
-      setSearchError(null);
-      setSelectedIndex(-1);
-      return;
-    }
-    searchTimeoutRef.current = setTimeout(() => handleSearch(value), 300);
-  }, [handleSearch]);
-
-  const routeSymbolToChart = useCallback((symbol: string) => {
-    // Read the LIVE active pane id at call time. The hook closure can capture
-    // a stale `activePaneId` (e.g. the user clicks the other pane after this
-    // callback was created); routing with the stale id would update the wrong
-    // chart. Always read the current value from the store before dispatching.
-    const currentActivePaneId = useChartUIStore.getState().activePaneId;
-    if (splitView) {
-      setPaneSymbol(currentActivePaneId, symbol);
-    } else {
-      setSelectedSymbol(symbol);
-    }
-  }, [splitView, setPaneSymbol, setSelectedSymbol]);
-
-  const handleSelectResult = useCallback(async (r: SearchResult) => {
-    const symbol = resultSymbol(r);
-    const sector = r.kind === 'EQ' ? 'EQ' : r.optionType;
-
-    let displayName = symbol;
-    if (r.kind === 'EQ') {
-      displayName = (r.name || r.symbol).replace(/"/g, '');
-    } else {
-      let expiryFormatted = r.expiry;
-      if (r.expiry) {
-        try {
-          const date = new Date(r.expiry);
-          if (!isNaN(date.getTime())) {
-            const day = date.getDate();
-            const month = date.toLocaleString('en-US', { month: 'short' });
-            expiryFormatted = `${day} ${month}`;
-          }
-        } catch (e) {}
+  const handleInputChange = useCallback(
+    (value: string) => {
+      setQuery(value);
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      if (!value.trim() || value.trim().length < 2) {
+        setSearchResults([]);
+        setSearchError(null);
+        setSelectedIndex(-1);
+        return;
       }
-      if (r.optionType === 'FUT') {
-        displayName = `${r.underlying} FUT (${expiryFormatted})`;
+      searchTimeoutRef.current = setTimeout(() => handleSearch(value), 300);
+    },
+    [handleSearch]
+  );
+
+  const routeSymbolToChart = useCallback(
+    (symbol: string) => {
+      // Read the LIVE active pane id at call time. The hook closure can capture
+      // a stale `activePaneId` (e.g. the user clicks the other pane after this
+      // callback was created); routing with the stale id would update the wrong
+      // chart. Always read the current value from the store before dispatching.
+      const currentActivePaneId = useChartUIStore.getState().activePaneId;
+      if (splitView) {
+        setPaneSymbol(currentActivePaneId, symbol);
       } else {
-        displayName = `${r.underlying} ${r.strike} ${r.optionType} (${expiryFormatted})`;
+        setSelectedSymbol(symbol);
       }
-    }
+    },
+    [splitView, setPaneSymbol, setSelectedSymbol]
+  );
 
-    addToWatchlist({
-      symbol,
-      token: 0,
-      name: displayName,
-      sector,
-      lastPrice: 0,
-      // No quote yet — not a flat instrument. Renders '—' until one arrives.
-      change: null,
-    });
+  const handleSelectResult = useCallback(
+    async (r: SearchResult) => {
+      const symbol = resultSymbol(r);
+      const sector = r.kind === 'EQ' ? 'EQ' : r.optionType;
 
-    // ── F&O contract selection ──────────────────────────────────────────
-    // Switch to FNO profile, set the underlying, and route the specific
-    // tradingsymbol to the chart pane so the contract's price chart loads.
-    if (r.kind === 'FNO' && typeof r.underlying === 'string') {
-      setActiveProfile('FNO');
+      let displayName = symbol;
+      if (r.kind === 'EQ') {
+        displayName = (r.name || r.symbol).replace(/"/g, '');
+      } else {
+        let expiryFormatted = r.expiry;
+        if (r.expiry) {
+          try {
+            const date = new Date(r.expiry);
+            if (!isNaN(date.getTime())) {
+              const day = date.getDate();
+              const month = date.toLocaleString('en-US', { month: 'short' });
+              expiryFormatted = `${day} ${month}`;
+            }
+          } catch (e) {}
+        }
+        if (r.optionType === 'FUT') {
+          displayName = `${r.underlying} FUT (${expiryFormatted})`;
+        } else {
+          displayName = `${r.underlying} ${r.strike} ${r.optionType} (${expiryFormatted})`;
+        }
+      }
 
-      // Resolve configured name (e.g. 'NIFTY 50') or use raw underlying.
-      const matchedConfig = DEFAULT_FNO_UNDERLYINGS.find((u) => {
-        const ru = r.underlying.toUpperCase();
-        return u.toUpperCase() === ru || INDEX_NFO_ALIASES[u.toUpperCase()] === ru;
+      addToWatchlist({
+        symbol,
+        token: 0,
+        name: displayName,
+        sector,
+        lastPrice: 0,
+        // No quote yet — not a flat instrument. Renders '—' until one arrives.
+        change: null,
       });
-      setFnoUnderlying(matchedConfig ?? r.underlying);
 
-      // Route the contract tradingsymbol to the chart for price data.
+      // ── F&O contract selection ──────────────────────────────────────────
+      // Switch to FNO profile, set the underlying, and route the specific
+      // tradingsymbol to the chart pane so the contract's price chart loads.
+      if (r.kind === 'FNO' && typeof r.underlying === 'string') {
+        setActiveProfile('FNO');
+
+        // Resolve configured name (e.g. 'NIFTY 50') or use raw underlying.
+        const matchedConfig = DEFAULT_FNO_UNDERLYINGS.find((u) => {
+          const ru = r.underlying.toUpperCase();
+          return u.toUpperCase() === ru || INDEX_NFO_ALIASES[u.toUpperCase()] === ru;
+        });
+        setFnoUnderlying(matchedConfig ?? r.underlying);
+
+        // Route the contract tradingsymbol to the chart for price data.
+        routeSymbolToChart(symbol);
+        onClose();
+
+        // Register the underlying with the option-chain subscriber (best-effort).
+        if (!matchedConfig) {
+          bridgeInvoke<boolean>('fno_request_underlying', { underlying: r.underlying }).catch(
+            (err) => console.warn('[SymbolSearch] fno_request_underlying failed:', err)
+          );
+        }
+        return;
+      }
+
+      // ── Equity selection ────────────────────────────────────────────────
       routeSymbolToChart(symbol);
       onClose();
-
-      // Register the underlying with the option-chain subscriber (best-effort).
-      if (!matchedConfig) {
-        bridgeInvoke<boolean>('fno_request_underlying', { underlying: r.underlying }).catch(
-          (err) => console.warn('[SymbolSearch] fno_request_underlying failed:', err),
-        );
-      }
-      return;
-    }
-
-    // ── Equity selection ────────────────────────────────────────────────
-    routeSymbolToChart(symbol);
-    onClose();
-  }, [addToWatchlist, routeSymbolToChart, setActiveProfile, setFnoUnderlying, onClose]);
+    },
+    [addToWatchlist, routeSymbolToChart, setActiveProfile, setFnoUnderlying, onClose]
+  );
 
   // Filter results by active tab and selected exchange
   const filteredResults = searchResults.filter((r) => {

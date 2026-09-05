@@ -25,12 +25,10 @@ import type { OrderFlowTick } from '@/store/useTradeStore';
 const RUNS = 100;
 
 /** Finite, positive price value generator (bounded to avoid heap blowups). */
-const price = () =>
-  fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
 
 /** Finite, non-negative volume value generator. */
-const volume = () =>
-  fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
+const volume = () => fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Generate a well-formed candle series with strictly ascending unique
@@ -43,16 +41,14 @@ const candleSeries = (): fc.Arbitrary<ChartCandle[]> =>
       const sorted = [...times].sort((x, y) => x - y);
       return fc.tuple(
         ...sorted.map((t) =>
-          fc
-            .record({ a: price(), b: price(), c: price(), d: price() })
-            .map(({ a, b, c, d }) => ({
-              time: t,
-              open: a,
-              close: b,
-              high: Math.max(a, b, c, d),
-              low: Math.min(a, b, c, d),
-            })),
-        ),
+          fc.record({ a: price(), b: price(), c: price(), d: price() }).map(({ a, b, c, d }) => ({
+            time: t,
+            open: a,
+            close: b,
+            high: Math.max(a, b, c, d),
+            low: Math.min(a, b, c, d),
+          }))
+        )
       );
     })
     .map((arr) => arr as ChartCandle[]);
@@ -71,12 +67,11 @@ const tickArray = (): fc.Arbitrary<OrderFlowTick[]> =>
       ask_volume: volume(),
       delta: fc.double({ min: -10_000, max: 10_000, noNaN: true, noDefaultInfinity: true }),
     }),
-    { maxLength: 80 },
+    { maxLength: 80 }
   );
 
 /** Bounded tick size generator (5–100) to keep synthetic cell counts small. */
-const tickSizeArb = () =>
-  fc.double({ min: 5, max: 100, noNaN: true, noDefaultInfinity: true });
+const tickSizeArb = () => fc.double({ min: 5, max: 100, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Independent oracle: the expected POC price for a set of cells given the
@@ -134,7 +129,7 @@ describe('Property 22: Footprint POC is the greatest-volume level with close tie
           expect(fp.poc).toBe(expectedPoc(fp.cells, candle.close));
         });
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

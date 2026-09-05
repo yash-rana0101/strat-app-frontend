@@ -69,14 +69,14 @@ const arbNonGrantingValue = fc.oneof(
   fc.constant([]),
   fc.constant({}),
   fc.string(),
-  fc.integer(),
+  fc.integer()
 );
 
 /** Arbitrary other flags, to prove no unrelated flag can leak entitlement. */
 const arbOtherFlags = fc.dictionary(
   fc.string({ minLength: 1, maxLength: 12 }).filter((k) => k !== 'canAccessResearch'),
   fc.oneof(fc.boolean(), fc.string(), fc.integer()),
-  { maxKeys: 6 },
+  { maxKeys: 6 }
 );
 
 // ── 1. Mode gating ───────────────────────────────────────────────────────
@@ -87,7 +87,7 @@ describe('P1 — RESEARCH modes are unreachable on TERMINAL', () => {
       fc.property(arbResearchMode, (mode) => {
         expect(isModeAllowed('TERMINAL', mode)).toBe(false);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -102,7 +102,7 @@ describe('P1 — RESEARCH modes are unreachable on TERMINAL', () => {
       fc.property(arbSku, (sku) => {
         expect(isModeAllowed(sku, 'VERIFY')).toBe(true);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -111,22 +111,24 @@ describe('P1 — RESEARCH modes are unreachable on TERMINAL', () => {
       fc.property(arbMode, (mode) => {
         expect(isModeAllowed('RESEARCH', mode)).toBe(true);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
   it('refuses an unknown mode rather than defaulting to a permitted one', () => {
     fc.assert(
       fc.property(
-        fc.string().filter((s) => !(AGENT_MODES as readonly string[]).includes(s.trim().toUpperCase())),
+        fc
+          .string()
+          .filter((s) => !(AGENT_MODES as readonly string[]).includes(s.trim().toUpperCase())),
         (junk) => {
           expect(normaliseMode(junk)).toBeNull();
           // Cast: deliberately probing the unknown-mode branch of a typed API.
           expect(isModeAllowed('TERMINAL', junk as AgentMode)).toBe(false);
           expect(isModeAllowed('RESEARCH', junk as AgentMode)).toBe(false);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -150,7 +152,7 @@ describe('P1 — SKU resolution fails closed', () => {
         const flags = { ...others, canAccessResearch: value } as unknown as AccessFlags;
         expect(resolveSku(flags)).toBe('TERMINAL');
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -167,7 +169,7 @@ describe('P1 — SKU resolution fails closed', () => {
       fc.property(arbOtherFlags, (others) => {
         expect(resolveSku(others as unknown as AccessFlags)).toBe('TERMINAL');
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -177,7 +179,7 @@ describe('P1 — SKU resolution fails closed', () => {
         const flags = { ...others, canAccessResearch: true } as unknown as AccessFlags;
         expect(resolveSku(flags)).toBe('RESEARCH');
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });
@@ -191,7 +193,7 @@ describe('P1 — RESEARCH capabilities are unreachable on TERMINAL', () => {
         expect(isCapabilityAllowed('TERMINAL', cap)).toBe(false);
         expect(isCapabilityAllowed('RESEARCH', cap)).toBe(true);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -202,9 +204,9 @@ describe('P1 — RESEARCH capabilities are unreachable on TERMINAL', () => {
         fc.string().filter((s) => !(RESEARCH_CAPABILITIES as readonly string[]).includes(s)),
         (sku, junk) => {
           expect(isCapabilityAllowed(sku, junk as ResearchCapability)).toBe(false);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -229,7 +231,7 @@ describe('P1 — checkModeGate', () => {
         expect(result.allowed).toBe(false);
         if (!result.allowed) expect(result.reason).toBe('requires-research');
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -238,7 +240,7 @@ describe('P1 — checkModeGate', () => {
       fc.property(arbResearchMode, fc.constantFrom(null, undefined), (mode, flags) => {
         expect(checkModeGate(flags, mode, true).allowed).toBe(false);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -247,7 +249,7 @@ describe('P1 — checkModeGate', () => {
       fc.property(arbResearchMode, (mode) => {
         expect(checkModeGate(RESEARCH_FLAGS, mode, true).allowed).toBe(true);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -258,9 +260,9 @@ describe('P1 — checkModeGate', () => {
         fc.boolean(),
         (flags, enforced) => {
           expect(checkModeGate(flags, 'VERIFY', enforced).allowed).toBe(true);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -270,15 +272,17 @@ describe('P1 — checkModeGate', () => {
     // becomes a bypass the moment enforcement is turned on.
     fc.assert(
       fc.property(
-        fc.string().filter((s) => !(AGENT_MODES as readonly string[]).includes(s.trim().toUpperCase())),
+        fc
+          .string()
+          .filter((s) => !(AGENT_MODES as readonly string[]).includes(s.trim().toUpperCase())),
         fc.boolean(),
         (junk, enforced) => {
           const result = checkModeGate(RESEARCH_FLAGS, junk, enforced);
           expect(result.allowed).toBe(false);
           if (!result.allowed) expect(result.reason).toBe('unknown-mode');
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -287,7 +291,7 @@ describe('P1 — checkModeGate', () => {
       fc.property(arbResearchMode, (mode) => {
         expect(checkModeGate(null, mode, false).allowed).toBe(true);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -311,7 +315,11 @@ describe('P1 — checkModeGate', () => {
 // exposure (published to the public without RA registration).
 
 describe('skuEnforcementEnabled', () => {
-  const KEYS = ['NEXT_PUBLIC_PROD', 'NEXT_PUBLIC_SKU_ENFORCE', 'NEXT_PUBLIC_RESEARCH_BETA_OPEN'] as const;
+  const KEYS = [
+    'NEXT_PUBLIC_PROD',
+    'NEXT_PUBLIC_SKU_ENFORCE',
+    'NEXT_PUBLIC_RESEARCH_BETA_OPEN',
+  ] as const;
   let saved: Record<string, string | undefined>;
 
   beforeEach(() => {
@@ -359,7 +367,9 @@ describe('skuEnforcementEnabled', () => {
     process.env.NEXT_PUBLIC_PROD = 'true';
     for (const v of ['1', 'yes', 'on', 'TRUE', 'True', '', ' true ']) {
       process.env.NEXT_PUBLIC_RESEARCH_BETA_OPEN = v;
-      expect(skuEnforcementEnabled(), `value ${JSON.stringify(v)} must not open the gate`).toBe(true);
+      expect(skuEnforcementEnabled(), `value ${JSON.stringify(v)} must not open the gate`).toBe(
+        true
+      );
     }
   });
 });

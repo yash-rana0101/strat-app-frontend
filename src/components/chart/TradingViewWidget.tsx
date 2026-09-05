@@ -4,7 +4,11 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { useTradeStore } from '../../store/useTradeStore';
 import { useChartUIStore, type PaneId } from '../../store/useChartUIStore';
 import { useFeature, useFeatureStore } from '../../store/useFeatureStore';
-import { createDatafeed, invalidateScrollBackCache, prefetchHistory } from '../../charting/datafeed';
+import {
+  createDatafeed,
+  invalidateScrollBackCache,
+  prefetchHistory,
+} from '../../charting/datafeed';
 import { markOnce } from '../../lib/perfMarks';
 import { useGhostLine } from '../../hooks/useGhostLine';
 import type { IChartingLibraryWidget } from '../../charting/datafeedTypes';
@@ -30,7 +34,7 @@ import { openExternalUrl, dashboardUrl } from '../../lib/redirect';
 function applyChartTheme(
   widget: unknown,
   theme: 'light' | 'dark',
-  onThemeApplied?: () => void,
+  onThemeApplied?: () => void
 ): void {
   const w = widget as {
     changeTheme?: (t: string) => unknown;
@@ -295,15 +299,37 @@ export default function TradingViewWidget({
               return;
             }
             const currentMode = useChartUIStore.getState().ghostLineMode;
-            showIframeDropdown(ghostLineBtn, [
-              { value: 'linear' as const, label: 'OLS', description: 'Linear regression baseline' },
-              { value: 'volume' as const, label: 'VWLR', description: 'Volume-weighted linear regression' },
-              { value: 'curved' as const, label: 'VWEPR', description: 'Volume-weighted polynomial' },
-              { value: 'forecast' as const, label: 'FCST', description: 'Volatility-aware forecaster' }
-            ], currentMode, (v) => {
-              useChartUIStore.getState().setGhostLineMode(v);
-              syncButtonStates(doc);
-            }, doc);
+            showIframeDropdown(
+              ghostLineBtn,
+              [
+                {
+                  value: 'linear' as const,
+                  label: 'OLS',
+                  description: 'Linear regression baseline',
+                },
+                {
+                  value: 'volume' as const,
+                  label: 'VWLR',
+                  description: 'Volume-weighted linear regression',
+                },
+                {
+                  value: 'curved' as const,
+                  label: 'VWEPR',
+                  description: 'Volume-weighted polynomial',
+                },
+                {
+                  value: 'forecast' as const,
+                  label: 'FCST',
+                  description: 'Volatility-aware forecaster',
+                },
+              ],
+              currentMode,
+              (v) => {
+                useChartUIStore.getState().setGhostLineMode(v);
+                syncButtonStates(doc);
+              },
+              doc
+            );
           });
 
           let splitViewBtn: HTMLElement | undefined;
@@ -315,18 +341,22 @@ export default function TradingViewWidget({
             btn.title = 'Chart Layout';
             btn.addEventListener('click', () => {
               const currentVal = useChartUIStore.getState().splitView;
-              showIframeDropdown(btn, [
-                { value: false, label: 'Single Pane' },
-                { value: true, label: 'Split Pane' }
-              ], currentVal, (v) => {
-                useChartUIStore.getState().setSplitView(v);
-                syncButtonStates(doc);
-              }, doc);
+              showIframeDropdown(
+                btn,
+                [
+                  { value: false, label: 'Single Pane' },
+                  { value: true, label: 'Split Pane' },
+                ],
+                currentVal,
+                (v) => {
+                  useChartUIStore.getState().setSplitView(v);
+                  syncButtonStates(doc);
+                },
+                doc
+              );
             });
             splitViewBtn = btn;
           }
-
-
 
           setButtonsCreated(true);
           syncButtonStates(doc);
@@ -392,7 +422,8 @@ export default function TradingViewWidget({
     if (!widget) return;
 
     const sym = activeSymbol.toUpperCase();
-    const isFno = sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
+    const isFno =
+      sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
     const exchange = isFno ? 'NFO' : 'NSE';
     const ticker = `${exchange}:${sym}`;
 
@@ -415,7 +446,7 @@ export default function TradingViewWidget({
         }
       },
       () => widgetRef.current !== widget,
-      'TradingViewWidget',
+      'TradingViewWidget'
     );
   }, [activeSymbol, resolution]);
 
@@ -429,7 +460,7 @@ export default function TradingViewWidget({
       widget,
       () => widget.activeChart().setResolution(resolution),
       () => widgetRef.current !== widget,
-      'TradingViewWidget',
+      'TradingViewWidget'
     );
   }, [resolution]);
 
@@ -453,7 +484,7 @@ export default function TradingViewWidget({
           }
         }),
       () => widgetRef.current !== widget,
-      'TradingViewWidget',
+      'TradingViewWidget'
     );
   }, [theme]);
 

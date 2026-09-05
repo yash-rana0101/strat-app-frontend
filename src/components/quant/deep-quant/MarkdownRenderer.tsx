@@ -69,7 +69,7 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
           <pre className="overflow-x-auto p-2.5 leading-normal text-text-secondary select-text">
             <code>{codeText}</code>
           </pre>
-        </div>,
+        </div>
       );
       continue;
     }
@@ -84,7 +84,10 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
         j++;
       }
       out.push(
-        <div key={`tbl-${idx}`} className="my-2 overflow-x-auto rounded border border-border-default/50">
+        <div
+          key={`tbl-${idx}`}
+          className="my-2 overflow-x-auto rounded border border-border-default/50"
+        >
           <table className="w-full border-collapse text-[10px]">
             <thead>
               <tr className="bg-elevated/60">
@@ -113,7 +116,7 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
               ))}
             </tbody>
           </table>
-        </div>,
+        </div>
       );
       idx = j - 1;
       continue;
@@ -144,27 +147,36 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
         if (simple) {
           if (h1) {
             out.push(
-              <h1 key={idx} className="border-b border-border-default/40 pb-1 mt-3 mb-1.5 text-xs font-bold text-text-primary">
+              <h1
+                key={idx}
+                className="border-b border-border-default/40 pb-1 mt-3 mb-1.5 text-xs font-bold text-text-primary"
+              >
                 {parseInlineMarkdown(title, simple)}
-              </h1>,
+              </h1>
             );
           } else if (h2) {
             out.push(
-              <h2 key={idx} className="border-b border-border-default/30 pb-0.5 mt-2.5 mb-1 text-xs font-bold text-text-primary">
+              <h2
+                key={idx}
+                className="border-b border-border-default/30 pb-0.5 mt-2.5 mb-1 text-xs font-bold text-text-primary"
+              >
                 {parseInlineMarkdown(title, simple)}
-              </h2>,
+              </h2>
             );
           } else if (h3) {
             out.push(
               <h3 key={idx} className="mt-2 mb-1 text-[11px] font-semibold text-text-primary">
                 {parseInlineMarkdown(title, simple)}
-              </h3>,
+              </h3>
             );
           } else {
             out.push(
-              <h4 key={idx} className="mt-1.5 mb-0.5 text-[10.5px] font-semibold text-text-secondary">
+              <h4
+                key={idx}
+                className="mt-1.5 mb-0.5 text-[10.5px] font-semibold text-text-secondary"
+              >
                 {parseInlineMarkdown(title, simple)}
-              </h4>,
+              </h4>
             );
           }
         } else {
@@ -174,9 +186,13 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
               key={idx}
               className="border-b border-green-500/10 pb-1 mt-3 mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-reasoning-green-300 select-none"
             >
-              {h3 ? <Target size={11} className="text-reasoning-green-400" /> : <Cpu size={12} className="text-reasoning-green-400" />}
+              {h3 ? (
+                <Target size={11} className="text-reasoning-green-400" />
+              ) : (
+                <Cpu size={12} className="text-reasoning-green-400" />
+              )}
               <span>{title}</span>
-            </h3>,
+            </h3>
           );
         }
         continue;
@@ -189,11 +205,13 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
         <blockquote
           key={idx}
           className={`my-1 border-l-2 pl-2.5 italic ${
-            simple ? 'border-border-default text-text-secondary' : 'border-reasoning-green-500/50 text-text-secondary'
+            simple
+              ? 'border-border-default text-text-secondary'
+              : 'border-reasoning-green-500/50 text-text-secondary'
           }`}
         >
           {parseInlineMarkdown(trimmed.substring(2), simple)}
-        </blockquote>,
+        </blockquote>
       );
       continue;
     }
@@ -215,7 +233,7 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
           <span className="flex-1 leading-relaxed text-text-secondary">
             {parseInlineMarkdown(listContent, simple)}
           </span>
-        </div>,
+        </div>
       );
       continue;
     }
@@ -240,7 +258,7 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
           <span className="flex-1 leading-relaxed text-text-secondary">
             {parseInlineMarkdown(listContent, simple)}
           </span>
-        </div>,
+        </div>
       );
       continue;
     }
@@ -249,7 +267,7 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
     out.push(
       <p key={idx} className="leading-relaxed text-text-secondary select-text">
         {parseInlineMarkdown(line, simple)}
-      </p>,
+      </p>
     );
   }
 

@@ -107,9 +107,7 @@ describe('buildProfile - POC and value area', () => {
     const candles = [candle(1, 100, 101), candle(2, 110, 111)];
     const volumes = [vol(1, 60), vol(2, 40)];
     const profile = buildProfile(candles, volumes, { rows: 20, valuePercent: 100 });
-    const vaVolume = profile.rows
-      .filter((r) => r.inValueArea)
-      .reduce((s, r) => s + r.volume, 0);
+    const vaVolume = profile.rows.filter((r) => r.inValueArea).reduce((s, r) => s + r.volume, 0);
     expect(vaVolume).toBeCloseTo(profile.totalVolume, 9);
   });
 });

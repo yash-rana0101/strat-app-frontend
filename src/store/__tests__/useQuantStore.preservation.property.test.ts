@@ -58,12 +58,7 @@ const arbConviction: fc.Arbitrary<number> = fc.double({
 });
 
 /** A non-`stand_aside` opportunity tier carried by a real directional plan. */
-const arbDirectionalTier = fc.constantFrom<string | undefined>(
-  undefined,
-  'a_plus',
-  'a',
-  'b',
-);
+const arbDirectionalTier = fc.constantFrom<string | undefined>(undefined, 'a_plus', 'a', 'b');
 
 /** Brace-free prose so a subsequent RUN_FINISHED JSON text-extraction cannot
  *  interfere with the committed decision. */
@@ -159,15 +154,18 @@ describe('Property 17: the ¬C directional render path is byte-for-byte preserve
           });
 
           // Driving on to RUN_FINISHED must not disturb the committed decision.
-          store.handleStreamEvent({ event: 'RUN_FINISHED', data: { thread_id: thread, status: 'completed' } });
+          store.handleStreamEvent({
+            event: 'RUN_FINISHED',
+            data: { thread_id: thread, status: 'completed' },
+          });
           const finished = useQuantStore.getState().finalTrade;
           expect(isActionableTrade(finished)).toBe(true);
           expect(finished!.action).toBe(action);
           expect(finished!.conviction_score).toBe(conviction);
           expect(finished!.execution_levels).toEqual(levels);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

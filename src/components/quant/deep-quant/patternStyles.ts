@@ -93,7 +93,8 @@ export const MUTED_TAG = 'bg-surface/80 text-text-secondary border-border-defaul
 export function volumeTag(validation: string): { badge: string; glyph: string } {
   const v = validation.toLowerCase();
   if (v.includes('confirm')) return { badge: 'bg-bull/10 text-bull border-bull/20', glyph: '✓' };
-  if (v.includes('form')) return { badge: 'bg-neutral/10 text-neutral border-neutral/20', glyph: '◎' };
+  if (v.includes('form'))
+    return { badge: 'bg-neutral/10 text-neutral border-neutral/20', glyph: '◎' };
   return { badge: MUTED_TAG, glyph: '○' };
 }
 

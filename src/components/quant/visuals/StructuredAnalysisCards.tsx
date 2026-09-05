@@ -73,7 +73,10 @@ export default function StructuredAnalysisCards({
           </div>
           <ul className="space-y-2">
             {catalysts.map((pt, i) => (
-              <li key={`cat-${i}`} className="flex items-start gap-2 text-[10.5px] leading-relaxed text-text-secondary">
+              <li
+                key={`cat-${i}`}
+                className="flex items-start gap-2 text-[10.5px] leading-relaxed text-text-secondary"
+              >
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400/70" />
                 <span>{highlightNumbers(pt)}</span>
               </li>
@@ -93,7 +96,10 @@ export default function StructuredAnalysisCards({
           </div>
           <ul className="space-y-2">
             {risks.map((pt, i) => (
-              <li key={`risk-${i}`} className="flex items-start gap-2 text-[10.5px] leading-relaxed text-text-secondary">
+              <li
+                key={`risk-${i}`}
+                className="flex items-start gap-2 text-[10.5px] leading-relaxed text-text-secondary"
+              >
                 <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400/80" />
                 <span>{highlightNumbers(pt)}</span>
               </li>
@@ -146,13 +152,17 @@ export default function StructuredAnalysisCards({
             <div className="mt-2 space-y-2 rounded-lg border border-border-default/50 bg-surface/90 p-3 text-[10.5px] leading-relaxed text-text-secondary animate-fade-in select-text">
               {setupValidation && (
                 <div>
-                  <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">Setup Validation</span>
+                  <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">
+                    Setup Validation
+                  </span>
                   <p className="mt-1 whitespace-pre-line">{highlightNumbers(setupValidation)}</p>
                 </div>
               )}
               {executionPlan && (
                 <div className="mt-2 pt-2 border-t border-border-default/40">
-                  <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">Execution Plan</span>
+                  <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">
+                    Execution Plan
+                  </span>
                   <p className="mt-1 whitespace-pre-line">{highlightNumbers(executionPlan)}</p>
                 </div>
               )}

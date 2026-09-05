@@ -28,19 +28,22 @@ const oiValueArb = fc.integer({ min: 0, max: 50_000_000 });
 /** OI leaf in the documented input space: `finite | null` (never fabricated). */
 const oiOrNullArb: fc.Arbitrary<number | null> = fc.oneof(
   { weight: 3, arbitrary: oiValueArb },
-  { weight: 1, arbitrary: fc.constant<null>(null) },
+  { weight: 1, arbitrary: fc.constant<null>(null) }
 );
 
 /** A finite, optional price leaf (not read by buildOiProfile but kept realistic). */
 const priceOrNullArb: fc.Arbitrary<number | null> = fc.oneof(
-  { weight: 3, arbitrary: fc.double({ min: 0, max: 100_000, noNaN: true, noDefaultInfinity: true }) },
-  { weight: 1, arbitrary: fc.constant<null>(null) },
+  {
+    weight: 3,
+    arbitrary: fc.double({ min: 0, max: 100_000, noNaN: true, noDefaultInfinity: true }),
+  },
+  { weight: 1, arbitrary: fc.constant<null>(null) }
 );
 
 /** An optional IV leaf (not read by buildOiProfile). */
 const ivOrNullArb: fc.Arbitrary<number | null> = fc.oneof(
   { weight: 3, arbitrary: fc.double({ min: 0, max: 5, noNaN: true, noDefaultInfinity: true }) },
-  { weight: 1, arbitrary: fc.constant<null>(null) },
+  { weight: 1, arbitrary: fc.constant<null>(null) }
 );
 
 /**
@@ -48,18 +51,17 @@ const ivOrNullArb: fc.Arbitrary<number | null> = fc.oneof(
  * row per strike), each with `ce_oi`/`pe_oi` drawn from `finite | null`. We key
  * uniqueness on `strike` so we can assert the exact per-strike OI mapping.
  */
-const chainArb: fc.Arbitrary<FnoChainRow[]> = fc
-  .uniqueArray(
-    fc.record({
-      strike: fc.integer({ min: 1, max: 200_000 }),
-      ce_oi: oiOrNullArb,
-      pe_oi: oiOrNullArb,
-      ce_price: priceOrNullArb,
-      pe_price: priceOrNullArb,
-      iv: ivOrNullArb,
-    }),
-    { selector: (row) => row.strike, maxLength: 60 },
-  );
+const chainArb: fc.Arbitrary<FnoChainRow[]> = fc.uniqueArray(
+  fc.record({
+    strike: fc.integer({ min: 1, max: 200_000 }),
+    ce_oi: oiOrNullArb,
+    pe_oi: oiOrNullArb,
+    ce_price: priceOrNullArb,
+    pe_price: priceOrNullArb,
+    iv: ivOrNullArb,
+  }),
+  { selector: (row) => row.strike, maxLength: 60 }
+);
 
 /** A minimal-but-complete payload wrapping the generated chain. */
 function payloadArb(): fc.Arbitrary<FnoPayload> {
@@ -108,7 +110,7 @@ describe('Property 1: OI profile renders exactly the snapshot strikes', () => {
           expect(inputStrikeSet.has(p.strike)).toBe(true);
         }
       }),
-      { numRuns: NUM_RUNS },
+      { numRuns: NUM_RUNS }
     );
   });
 
@@ -120,7 +122,7 @@ describe('Property 1: OI profile renders exactly the snapshot strikes', () => {
           expect(points[i].strike).toBeGreaterThan(points[i - 1].strike);
         }
       }),
-      { numRuns: NUM_RUNS },
+      { numRuns: NUM_RUNS }
     );
   });
 
@@ -148,7 +150,7 @@ describe('Property 1: OI profile renders exactly the snapshot strikes', () => {
           }
         }
       }),
-      { numRuns: NUM_RUNS },
+      { numRuns: NUM_RUNS }
     );
   });
 });

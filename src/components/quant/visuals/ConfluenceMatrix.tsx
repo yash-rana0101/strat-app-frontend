@@ -72,19 +72,31 @@ export default function ConfluenceMatrix({
     return (
       <div className={`flex flex-wrap items-center gap-1.5 font-sans ${className}`}>
         {/* Trend Pill */}
-        <div className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] font-bold ${trendTone}`}>
-          {isTrendBullish ? <TrendingUp size={10} /> : isTrendBearish ? <TrendingDown size={10} /> : <Minus size={10} />}
+        <div
+          className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] font-bold ${trendTone}`}
+        >
+          {isTrendBullish ? (
+            <TrendingUp size={10} />
+          ) : isTrendBearish ? (
+            <TrendingDown size={10} />
+          ) : (
+            <Minus size={10} />
+          )}
           <span>{trendLabel}</span>
         </div>
 
         {/* Momentum Pill */}
-        <div className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] font-bold ${getPillTone(momentum_state)}`}>
+        <div
+          className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] font-bold ${getPillTone(momentum_state)}`}
+        >
           <Gauge size={10} />
           <span>{momentum_state}</span>
         </div>
 
         {/* Volatility Pill */}
-        <div className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] font-bold ${getPillTone(volatility_state)}`}>
+        <div
+          className={`flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] font-bold ${getPillTone(volatility_state)}`}
+        >
           <Waves size={10} />
           <span>{volatility_state}</span>
         </div>
@@ -93,7 +105,9 @@ export default function ConfluenceMatrix({
   }
 
   return (
-    <div className={`rounded-xl border border-border-default/60 bg-elevated/20 p-3 shadow-sm font-sans ${className}`}>
+    <div
+      className={`rounded-xl border border-border-default/60 bg-elevated/20 p-3 shadow-sm font-sans ${className}`}
+    >
       <div className="flex items-center justify-between border-b border-border-default/40 pb-2 mb-2.5">
         <span className="text-[10px] font-black uppercase tracking-wider text-text-primary flex items-center gap-1.5">
           <Layers size={11} className="text-text-muted" />
@@ -110,9 +124,17 @@ export default function ConfluenceMatrix({
         <div className="flex flex-col gap-1 rounded-lg border border-border-default/50 bg-surface/60 p-2">
           <span className="text-[8px] font-bold uppercase tracking-wider text-text-muted flex items-center justify-between">
             Trend Score
-            {isTrendBullish ? <TrendingUp size={10} className="text-emerald-400" /> : isTrendBearish ? <TrendingDown size={10} className="text-rose-400" /> : <Minus size={10} className="text-amber-400" />}
+            {isTrendBullish ? (
+              <TrendingUp size={10} className="text-emerald-400" />
+            ) : isTrendBearish ? (
+              <TrendingDown size={10} className="text-rose-400" />
+            ) : (
+              <Minus size={10} className="text-amber-400" />
+            )}
           </span>
-          <span className={`text-[10.5px] font-bold truncate ${isTrendBullish ? 'text-emerald-400' : isTrendBearish ? 'text-rose-400' : 'text-amber-400'}`}>
+          <span
+            className={`text-[10.5px] font-bold truncate ${isTrendBullish ? 'text-emerald-400' : isTrendBearish ? 'text-rose-400' : 'text-amber-400'}`}
+          >
             {trendLabel}
           </span>
         </div>
@@ -163,7 +185,10 @@ export default function ConfluenceMatrix({
               className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[8.5px] font-semibold bg-elevated border border-border-default/60 text-text-secondary"
             >
               <CheckCircle2 size={9} className="text-emerald-400 shrink-0" />
-              {(typeof p === 'string' ? p : (p as { pattern_type?: string }).pattern_type || '').replace(/_/g, ' ')}
+              {(typeof p === 'string'
+                ? p
+                : (p as { pattern_type?: string }).pattern_type || ''
+              ).replace(/_/g, ' ')}
             </span>
           ))}
           {active_strategies.map((s, idx) => (

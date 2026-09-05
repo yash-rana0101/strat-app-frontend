@@ -34,13 +34,17 @@ interface QuantCompactProgressProps {
 function getProgressIcon(label: string) {
   const l = label.toLowerCase();
   if (l.includes('consensus')) return <BarChart3 size={11} className="text-cyan-400 shrink-0" />;
-  if (l.includes('trend') || l.includes('candle')) return <TrendingUp size={11} className="text-emerald-400 shrink-0" />;
+  if (l.includes('trend') || l.includes('candle'))
+    return <TrendingUp size={11} className="text-emerald-400 shrink-0" />;
   if (l.includes('pattern')) return <Shapes size={11} className="text-violet-400 shrink-0" />;
   if (l.includes('support') || l.includes('resistance') || l.includes('level'))
     return <ChevronsUpDown size={11} className="text-amber-400 shrink-0" />;
-  if (l.includes('predict') || l.includes('regime')) return <Brain size={11} className="text-indigo-400 shrink-0" />;
-  if (l.includes('option') || l.includes('fno')) return <Layers size={11} className="text-blue-400 shrink-0" />;
-  if (l.includes('decision') || l.includes('trade')) return <Target size={11} className="text-emerald-400 shrink-0" />;
+  if (l.includes('predict') || l.includes('regime'))
+    return <Brain size={11} className="text-indigo-400 shrink-0" />;
+  if (l.includes('option') || l.includes('fno'))
+    return <Layers size={11} className="text-blue-400 shrink-0" />;
+  if (l.includes('decision') || l.includes('trade'))
+    return <Target size={11} className="text-emerald-400 shrink-0" />;
   return <Wrench size={11} className="text-text-muted shrink-0" />;
 }
 
@@ -76,9 +80,7 @@ export default function QuantCompactProgress({
               <div className="min-w-0 flex-1">
                 <span
                   className={`block truncate text-[10.5px] font-bold ${
-                    item.status === 'done'
-                      ? 'text-text-primary'
-                      : 'text-amber-400'
+                    item.status === 'done' ? 'text-text-primary' : 'text-amber-400'
                   }`}
                 >
                   {item.label}

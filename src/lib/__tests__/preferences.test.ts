@@ -160,7 +160,7 @@ describe('parsePreferences — a rejected field is indistinguishable from an abs
 
   it('drops wrong-typed booleans and colours', () => {
     const prefs = parsePreferences(
-      validBlob({ sidebarOpen: 'yes', drawingsLocked: 1, drawingColor: 'javascript:alert(1)' }),
+      validBlob({ sidebarOpen: 'yes', drawingsLocked: 1, drawingColor: 'javascript:alert(1)' })
     );
     expect(prefs).not.toHaveProperty('sidebarOpen');
     expect(prefs).not.toHaveProperty('drawingsLocked');
@@ -169,11 +169,11 @@ describe('parsePreferences — a rejected field is indistinguishable from an abs
 
   it('bounds the symbol so a pathological blob cannot restore a huge string', () => {
     expect(parsePreferences(validBlob({ selectedSymbol: 'X'.repeat(500) }))).not.toHaveProperty(
-      'selectedSymbol',
+      'selectedSymbol'
     );
     // Empty is not a symbol either — the store's default must win.
     expect(parsePreferences(validBlob({ selectedSymbol: '   ' }))).not.toHaveProperty(
-      'selectedSymbol',
+      'selectedSymbol'
     );
   });
 
@@ -187,7 +187,7 @@ describe('parsePreferences — a rejected field is indistinguishable from an abs
           INTRADAY: 'X'.repeat(500), // unbounded
           NOTAMODE: 'INFY', // not a workspace mode
         },
-      }),
+      })
     );
     // One junk entry must not cost the user the modes that ARE valid.
     expect(prefs.symbolByProfile).toEqual({ INVESTOR: 'TCS' });
@@ -196,14 +196,14 @@ describe('parsePreferences — a rejected field is indistinguishable from an abs
   it('drops a symbol map that is not an object at all', () => {
     for (const bad of ['TCS', 42, ['TCS'], null] as unknown[]) {
       expect(parsePreferences(validBlob({ symbolByProfile: bad }))).not.toHaveProperty(
-        'symbolByProfile',
+        'symbolByProfile'
       );
     }
   });
 
   it('keeps only finite numeric chart-type params', () => {
     const prefs = parsePreferences(
-      validBlob({ chartTypeParams: { brickSize: 5, bad: 'x', worse: null, nope: Infinity } }),
+      validBlob({ chartTypeParams: { brickSize: 5, bad: 'x', worse: null, nope: Infinity } })
     );
     expect(prefs.chartTypeParams).toEqual({ brickSize: 5 });
   });
@@ -217,7 +217,7 @@ describe('parsePreferences — a rejected field is indistinguishable from an abs
           { id: 'A', symbol: 'RELIANCE', timeframe: '10m', chartType: 'candlestick' },
           { id: 'B', symbol: 'TCS', timeframe: 'not-a-timeframe', chartType: 'line' },
         ],
-      }),
+      })
     );
     expect(prefs).not.toHaveProperty('panes');
   });
@@ -230,7 +230,7 @@ describe('parsePreferences — a rejected field is indistinguishable from an abs
           { id: 'B', symbol: 'RELIANCE', timeframe: '10m', chartType: 'candlestick' },
           { id: 'B', symbol: 'TCS', timeframe: '1h', chartType: 'line' },
         ],
-      }),
+      })
     );
     expect(prefs.panes?.map((p) => p.id)).toEqual(['A', 'B']);
   });
@@ -258,7 +258,7 @@ describe('parsePreferences — split view cannot be restored into a mode that fo
   it('leaves splitView on for the two modes that allow it', () => {
     for (const profile of ['INTRADAY', 'FNO'] as const) {
       expect(
-        parsePreferences(validBlob({ activeProfile: profile, splitView: true })).splitView,
+        parsePreferences(validBlob({ activeProfile: profile, splitView: true })).splitView
       ).toBe(true);
     }
   });

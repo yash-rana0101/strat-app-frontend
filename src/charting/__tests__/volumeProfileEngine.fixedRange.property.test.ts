@@ -20,12 +20,10 @@ import type { ChartCandle, VolumeBar } from '@/charting/types';
 const RUNS = 100;
 
 /** Bounded finite price generator. */
-const price = () =>
-  fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
 
 /** Bounded finite, non-negative volume generator. */
-const volumeValue = () =>
-  fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
+const volumeValue = () => fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Well-formed candle series with strictly ascending unique timestamps; high/low
@@ -52,8 +50,8 @@ const candlesWithVolumes = (): fc.Arbitrary<{
                 low: Math.min(a, b, c, d),
               } as ChartCandle,
               volume: { time: t, value: v, color: '#000' } as VolumeBar,
-            })),
-        ),
+            }))
+        )
       );
     })
     .map((pairs) => ({
@@ -67,18 +65,20 @@ const candlesWithVolumes = (): fc.Arbitrary<{
  * returned — so we use a recognizable sentinel object.
  */
 const previousProfile = (): fc.Arbitrary<VolumeProfile> =>
-  fc.record({
-    poc: fc.option(price(), { nil: null }),
-    vah: fc.option(price(), { nil: null }),
-    val: fc.option(price(), { nil: null }),
-    totalVolume: volumeValue(),
-  }).map(({ poc, vah, val, totalVolume }) => ({
-    rows: [],
-    poc,
-    vah,
-    val,
-    totalVolume,
-  }));
+  fc
+    .record({
+      poc: fc.option(price(), { nil: null }),
+      vah: fc.option(price(), { nil: null }),
+      val: fc.option(price(), { nil: null }),
+      totalVolume: volumeValue(),
+    })
+    .map(({ poc, vah, val, totalVolume }) => ({
+      rows: [],
+      poc,
+      vah,
+      val,
+      totalVolume,
+    }));
 
 describe('Property 25: Invalid fixed range is rejected and the prior profile is retained', () => {
   it('returns the exact previousProfile reference unchanged for an invalid fixed range (end <= start)', () => {
@@ -99,9 +99,9 @@ describe('Property 25: Invalid fixed range is rejected and the prior profile is 
 
           // The very same object is handed back, untouched (Req 7.10).
           expect(result).toBe(prev);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -126,9 +126,9 @@ describe('Property 25: Invalid fixed range is rejected and the prior profile is 
           expect(result.vah).toBeNull();
           expect(result.val).toBeNull();
           expect(result.totalVolume).toBe(0);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -146,9 +146,9 @@ describe('Property 25: Invalid fixed range is rejected and the prior profile is 
           });
 
           expect(result).toBe(prev);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -182,9 +182,9 @@ describe('Property 25: Invalid fixed range is rejected and the prior profile is 
           const expectedTotal = volumes.reduce((s, v) => s + v.value, 0);
           // Allow tiny floating-point drift from per-row distribution.
           expect(result.totalVolume).toBeCloseTo(expectedTotal, 6);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

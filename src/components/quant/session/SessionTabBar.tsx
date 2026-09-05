@@ -41,7 +41,9 @@ export interface SessionTabBarProps {
 }
 
 export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
-  const { data, isLoading, isError, error, refetch, isFetching } = useSessions({ status: 'active' });
+  const { data, isLoading, isError, error, refetch, isFetching } = useSessions({
+    status: 'active',
+  });
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const activatingSessionIds = useSessionStore((s) => s.activatingSessionIds);
   const setActiveSession = useSessionStore((s) => s.setActiveSession);
@@ -62,7 +64,7 @@ export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
   // boundary, so the page shape is not ours to assume.
   const sessions = React.useMemo(
     () => (data?.pages ?? []).flatMap((page) => page?.items ?? []),
-    [data],
+    [data]
   );
 
   const activate = React.useCallback(
@@ -71,7 +73,7 @@ export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
       if (onActivate) onActivate(sessionId);
       else setActiveSession(sessionId);
     },
-    [onActivate, setActiveSession],
+    [onActivate, setActiveSession]
   );
 
   const registerRef = React.useCallback((sessionId: string, el: HTMLButtonElement | null) => {
@@ -97,7 +99,7 @@ export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
       void doArchive(session);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sessions, streamingIds],
+    [sessions, streamingIds]
   );
 
   const doArchive = React.useCallback(
@@ -123,13 +125,13 @@ export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
         setCloseError(
           err instanceof Error && err.message
             ? `Could not close ${sessionTabLabel(session)}: ${err.message}`
-            : `Could not close ${sessionTabLabel(session)}.`,
+            : `Could not close ${sessionTabLabel(session)}.`
         );
       } finally {
         setClosingId(null);
       }
     },
-    [archive, sessions, activate, setActiveSession],
+    [archive, sessions, activate, setActiveSession]
   );
 
   /**
@@ -205,7 +207,8 @@ export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
         {/* The reason, not just "something went wrong" — a 401 needs a different action from a
             service being down, and the user can only tell if we say which happened. */}
         <span className="truncate">
-          Could not load your sessions{error instanceof Error && error.message ? `: ${error.message}` : ''}
+          Could not load your sessions
+          {error instanceof Error && error.message ? `: ${error.message}` : ''}
         </span>
         <button
           type="button"
@@ -284,7 +287,11 @@ export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
                     className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-text-secondary hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:bg-surface"
                   >
                     {activatingSessionIds?.[session.session_id] ? (
-                      <Loader2 size={11} className="shrink-0 animate-spin text-primary" aria-hidden="true" />
+                      <Loader2
+                        size={11}
+                        className="shrink-0 animate-spin text-primary"
+                        aria-hidden="true"
+                      />
                     ) : streamingIds.includes(session.session_id) ? (
                       <span
                         className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-primary"
@@ -309,7 +316,11 @@ export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
           role="alert"
           className="absolute left-2 right-2 top-full z-30 mt-1 flex items-start gap-1.5 rounded-md border border-border-default/60 bg-elevated p-2 text-xs text-text-secondary shadow-lg"
         >
-          <AlertTriangle size={12} className="mt-0.5 shrink-0 text-status-error" aria-hidden="true" />
+          <AlertTriangle
+            size={12}
+            className="mt-0.5 shrink-0 text-status-error"
+            aria-hidden="true"
+          />
           <span className="min-w-0 flex-1">{closeError}</span>
           <button
             type="button"

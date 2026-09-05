@@ -173,7 +173,7 @@ describe('Defect B (F&O selection): search selection must activate F&O mode — 
         cleanup();
         vi.clearAllMocks();
       }),
-      { numRuns: 4 },
+      { numRuns: 4 }
     );
   });
 

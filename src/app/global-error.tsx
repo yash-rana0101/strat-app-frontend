@@ -38,7 +38,15 @@ export default function GlobalError({
         <h2 style={{ fontSize: '16px', fontWeight: 800, margin: 0 }}>
           The terminal failed to start
         </h2>
-        <p style={{ fontSize: '12px', color: '#a3a3a3', maxWidth: '28rem', margin: 0, lineHeight: 1.6 }}>
+        <p
+          style={{
+            fontSize: '12px',
+            color: '#a3a3a3',
+            maxWidth: '28rem',
+            margin: 0,
+            lineHeight: 1.6,
+          }}
+        >
           An error occurred while loading the application shell.
         </p>
         {error.message && (

@@ -97,7 +97,7 @@ describe('bridge command coverage', () => {
     expect(
       missing,
       'each of these is invoked by a component but has no web adapter — either ' +
-        'add one to WEB_ADAPTERS or stop calling it',
+        'add one to WEB_ADAPTERS or stop calling it'
     ).toEqual([]);
   });
 

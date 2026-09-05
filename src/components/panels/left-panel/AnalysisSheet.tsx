@@ -65,7 +65,8 @@ export default function AnalysisSheet({
   const open = tab !== null;
   const currentTab = tab ?? 'sentiment';
 
-  const technical = consensus && consensusMatchesSymbol(consensus.symbol, symbol) ? consensus : null;
+  const technical =
+    consensus && consensusMatchesSymbol(consensus.symbol, symbol) ? consensus : null;
   const patternTotal = totalPatternCount(multiTfPatterns);
 
   const renderBadge = (section: AnalysisTab, isActive: boolean) => {

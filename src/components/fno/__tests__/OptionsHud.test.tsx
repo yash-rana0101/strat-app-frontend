@@ -24,9 +24,7 @@ import { OptionsHud } from '../OptionsHud';
 import type { HudModel, OptionsBiasState, ChainContext } from '../viewModel';
 
 /** A HUD model whose every analytic leaf is null (fully unavailable). */
-function allNullHud(
-  overrides: Partial<HudModel> = {},
-): HudModel {
+function allNullHud(overrides: Partial<HudModel> = {}): HudModel {
   return {
     pcrOi: null,
     pcrVolume: null,
@@ -105,7 +103,7 @@ describe('OptionsHud (component)', () => {
     render(
       <OptionsHud
         hud={fullHud({ context: { underlying: 'NIFTY 50', expiry: '2024-12-26', chainContext } })}
-      />,
+      />
     );
     expect(screen.getByText(label)).toBeInTheDocument();
   });

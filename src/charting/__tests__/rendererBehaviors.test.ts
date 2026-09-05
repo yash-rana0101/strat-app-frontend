@@ -78,9 +78,9 @@ describe('classifyRealtimePaint — symbol-switch clear & repaint (Req 9.4, 9.6)
   it('repaints when the series shrinks or reorders (non +0/+1 delta)', () => {
     const prev = series([1, 10], [2, 11], [3, 12]);
     expect(classifyRealtimePaint(prev, series([1, 10]))).toBe('repaint'); // shrink
-    expect(
-      classifyRealtimePaint(prev, series([1, 10], [2, 11], [3, 12], [4, 13], [5, 14])),
-    ).toBe('repaint'); // grew by >1
+    expect(classifyRealtimePaint(prev, series([1, 10], [2, 11], [3, 12], [4, 13], [5, 14]))).toBe(
+      'repaint'
+    ); // grew by >1
   });
 });
 

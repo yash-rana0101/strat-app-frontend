@@ -134,7 +134,7 @@ export default function VolumeProfileOverlay({
       }
       return cData.filter((c) => c.time >= (start as number));
     },
-    [],
+    []
   );
 
   // ── Recompute the cached profile(s) via the engine ───────────────────────
@@ -159,10 +159,7 @@ export default function VolumeProfileOverlay({
       if (p.range === 'fixed') {
         const fr = p.fixedRange;
         const invalid =
-          !fr ||
-          !Number.isFinite(fr.start) ||
-          !Number.isFinite(fr.end) ||
-          fr.end <= fr.start;
+          !fr || !Number.isFinite(fr.start) || !Number.isFinite(fr.end) || fr.end <= fr.start;
         // Notify the host of the validity transition (Req 7.10).
         p.onInvalidFixedRange?.(invalid);
         if (invalid) {
@@ -329,9 +326,7 @@ export default function VolumeProfileOverlay({
         const roundedBarH = Math.round(barH);
 
         // VA rows: warm amber. Non-VA: cool slate. (Req 7.7)
-        ctx.fillStyle = row.inValueArea
-          ? 'rgba(245, 158, 11, 0.35)'
-          : 'rgba(148, 163, 184, 0.12)';
+        ctx.fillStyle = row.inValueArea ? 'rgba(245, 158, 11, 0.35)' : 'rgba(148, 163, 184, 0.12)';
         ctx.fillRect(xStart, yTop, roundedBarW, roundedBarH);
 
         ctx.strokeStyle = row.inValueArea
@@ -451,9 +446,7 @@ export default function VolumeProfileOverlay({
         chart.timeScale().subscribeVisibleLogicalRangeChange(onVisibleRangeChange);
         unsubFn = () => {
           try {
-            chart
-              .timeScale()
-              .unsubscribeVisibleLogicalRangeChange(onVisibleRangeChange);
+            chart.timeScale().unsubscribeVisibleLogicalRangeChange(onVisibleRangeChange);
           } catch {}
         };
       } catch {}

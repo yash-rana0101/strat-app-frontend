@@ -68,9 +68,7 @@ export default function SentimentBlock({
             on {subject}
           </span>
         )}
-        {isLoading && (
-          <Loader2 size={10} className="ml-auto animate-spin text-text-muted" />
-        )}
+        {isLoading && <Loader2 size={10} className="ml-auto animate-spin text-text-muted" />}
         {sentiment && !isLoading && (
           <span
             className={`ml-auto ${

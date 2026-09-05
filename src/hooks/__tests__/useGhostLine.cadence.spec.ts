@@ -103,12 +103,9 @@ describe('useGhostLine redraw cadence', () => {
   it('does NOT redraw when only predictiveSignals change', async () => {
     const { widget, drawCalls } = makeCountingWidget();
 
-    const { rerender } = renderHook(
-      ({ w, sym, tf }) => useGhostLine(w, sym, tf),
-      {
-        initialProps: { w: widget, sym: 'NIFTY', tf: '10m' },
-      },
-    );
+    const { rerender } = renderHook(({ w, sym, tf }) => useGhostLine(w, sym, tf), {
+      initialProps: { w: widget, sym: 'NIFTY', tf: '10m' },
+    });
 
     // Let the initial draw settle.
     await act(async () => {

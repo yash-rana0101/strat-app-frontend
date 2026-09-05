@@ -40,12 +40,7 @@
 // versioned, per-symbol mechanism in `charting/workspace.ts`.
 
 import type { ChartMode, ChartTimeframe, TradeProfile } from '../store/useTradeStore';
-import type {
-  ChartPaneState,
-  GhostLineMode,
-  MagnetMode,
-  PaneId,
-} from '../store/useChartUIStore';
+import type { ChartPaneState, GhostLineMode, MagnetMode, PaneId } from '../store/useChartUIStore';
 import type { ChartType, ChartTypeParams } from '../charting/engines';
 import { CHART_TYPES } from '../charting/engines';
 import { RANGE_DAYS, type DataRange } from '../utils/chartTypes';
@@ -54,8 +49,6 @@ export const PREFERENCES_STORAGE_KEY = 'stratai.preferences';
 
 /** Bump when a field's MEANING changes; a mismatch is treated as no preferences. */
 export const PREFERENCES_VERSION = 1;
-
-
 
 /** Every user selection that survives a reload. */
 export interface TerminalPreferences {
@@ -106,10 +99,24 @@ const PROFILES = ['INTRADAY', 'SWING', 'INVESTOR', 'FNO'] as const;
 const _profilesCoverUnion: CoversUnion<TradeProfile, (typeof PROFILES)[number]> = true;
 
 const TIMEFRAMES = [
-  '1m', '2m', '3m', '4m', '5m',
-  '10m', '15m', '30m', '75m', '125m',
-  '1h', '1H', '2h', '3h', '4h',
-  '1D', '1W', '1M',
+  '1m',
+  '2m',
+  '3m',
+  '4m',
+  '5m',
+  '10m',
+  '15m',
+  '30m',
+  '75m',
+  '125m',
+  '1h',
+  '1H',
+  '2h',
+  '3h',
+  '4h',
+  '1D',
+  '1W',
+  '1M',
 ] as const;
 const _timeframesCoverUnion: CoversUnion<ChartTimeframe, (typeof TIMEFRAMES)[number]> = true;
 
@@ -240,7 +247,7 @@ function take<K extends keyof TerminalPreferences>(
   out: Partial<TerminalPreferences>,
   raw: Record<string, unknown>,
   key: K,
-  validate: (value: unknown) => TerminalPreferences[K] | undefined,
+  validate: (value: unknown) => TerminalPreferences[K] | undefined
 ): void {
   const accepted = validate(raw[key]);
   if (accepted !== undefined) out[key] = accepted;
@@ -329,7 +336,7 @@ function flush(): void {
   try {
     localStorage.setItem(
       PREFERENCES_STORAGE_KEY,
-      JSON.stringify({ ...current, version: PREFERENCES_VERSION }),
+      JSON.stringify({ ...current, version: PREFERENCES_VERSION })
     );
   } catch {
     /* quota / private mode — the in-memory selections still apply this session */

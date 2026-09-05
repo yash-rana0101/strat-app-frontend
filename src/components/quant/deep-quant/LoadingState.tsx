@@ -52,9 +52,7 @@ export default function LoadingState({ agentStatus }: LoadingStateProps) {
             {LOADING_PHASES[phaseIdx]}
           </motion.p>
         </AnimatePresence>
-        <p className="text-[9px] text-text-muted/50 mt-1.5">
-          This may take 10–30 seconds
-        </p>
+        <p className="text-[9px] text-text-muted/50 mt-1.5">This may take 10–30 seconds</p>
       </div>
 
       {/* Real-time status display */}

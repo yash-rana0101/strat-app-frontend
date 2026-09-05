@@ -76,7 +76,7 @@ export interface TimedCandle {
 export async function scanRadarSymbol(
   symbol: string,
   timeframe: Timeframe,
-  lookback = 60,
+  lookback = 60
 ): Promise<RadarScan | null> {
   const raw = await bridgeInvoke<RadarScan>('scan_radar_symbol', {
     symbol: symbol.toUpperCase(),
@@ -115,7 +115,8 @@ export function normalizeScan(raw: unknown): RadarScan | null {
     return null;
   }
 
-  const num = (v: unknown, fallback = 0) => (typeof v === 'number' && Number.isFinite(v) ? v : fallback);
+  const num = (v: unknown, fallback = 0) =>
+    typeof v === 'number' && Number.isFinite(v) ? v : fallback;
   const str = (v: unknown, fallback = '') => (typeof v === 'string' ? v : fallback);
 
   return {
@@ -142,7 +143,7 @@ export async function scanInMemory(
   symbol: string,
   timeframe: Timeframe,
   candles: TimedCandle[],
-  lookback = 60,
+  lookback = 60
 ): Promise<RadarScan | null> {
   if (candles.length === 0) return null;
   try {

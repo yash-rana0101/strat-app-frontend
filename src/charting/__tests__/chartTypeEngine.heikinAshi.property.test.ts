@@ -23,8 +23,7 @@ const approxEqual = (a: number, b: number): boolean =>
   Math.abs(a - b) <= EPS * Math.max(1, Math.abs(a), Math.abs(b));
 
 /** A single finite price value generator. */
-const price = () =>
-  fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Generate an arbitrary OHLC candle at a fixed time. high/low are derived to
@@ -65,7 +64,7 @@ describe('Property 1: Heikin Ashi close is the source candle average', () => {
           expect(ha[i].time).toBe(src.time);
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -84,7 +83,7 @@ describe('Property 1: Heikin Ashi close is the source candle average', () => {
           expect(approxEqual(ha[i].open, expectedOpen)).toBe(true);
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

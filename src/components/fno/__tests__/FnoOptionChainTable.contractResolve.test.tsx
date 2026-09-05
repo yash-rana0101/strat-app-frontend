@@ -78,7 +78,7 @@ describe('FnoOptionChainTable — the ladder resolves a real contract', () => {
   it('asks the resolver for the real tradingsymbol, with no Tauri gate', async () => {
     invokeMock.mockResolvedValue({ tradingsymbol: 'NIFTY26SEP24100CE' });
     const { container } = render(
-      <FnoOptionChainTable viewState={view()} fnoExpiry="" expiries={[]} />,
+      <FnoOptionChainTable viewState={view()} fnoExpiry="" expiries={[]} />
     );
 
     clickACall(container);
@@ -88,19 +88,19 @@ describe('FnoOptionChainTable — the ladder resolves a real contract', () => {
     // case that used to skip this call entirely.
     expect(invokeMock).toHaveBeenCalledWith(
       'fno_resolve_option_contract',
-      expect.objectContaining({ underlying: 'NIFTY', optionType: 'CE' }),
+      expect.objectContaining({ underlying: 'NIFTY', optionType: 'CE' })
     );
   });
 
   it('charts the resolved tradingsymbol, not a fabricated short symbol', async () => {
     invokeMock.mockResolvedValue({ tradingsymbol: 'NIFTY26SEP24100CE' });
     const { container } = render(
-      <FnoOptionChainTable viewState={view()} fnoExpiry="" expiries={[]} />,
+      <FnoOptionChainTable viewState={view()} fnoExpiry="" expiries={[]} />
     );
 
     clickACall(container);
     await vi.waitFor(() =>
-      expect(useTradeStore.getState().selectedSymbol).toBe('NIFTY26SEP24100CE'),
+      expect(useTradeStore.getState().selectedSymbol).toBe('NIFTY26SEP24100CE')
     );
     // The old fabricated form carried no expiry and could never resolve.
     expect(useTradeStore.getState().selectedSymbol).not.toMatch(/^NIFTY\d+CE$/);
@@ -111,7 +111,7 @@ describe('FnoOptionChainTable — the ladder resolves a real contract', () => {
     // the chart at a guess would be fabricated data.
     invokeMock.mockResolvedValue(null);
     const { container } = render(
-      <FnoOptionChainTable viewState={view()} fnoExpiry="" expiries={[]} />,
+      <FnoOptionChainTable viewState={view()} fnoExpiry="" expiries={[]} />
     );
 
     clickACall(container);
@@ -122,7 +122,7 @@ describe('FnoOptionChainTable — the ladder resolves a real contract', () => {
   it('leaves the chart alone when the resolver rejects', async () => {
     invokeMock.mockRejectedValue(new Error('questdb down'));
     const { container } = render(
-      <FnoOptionChainTable viewState={view()} fnoExpiry="" expiries={[]} />,
+      <FnoOptionChainTable viewState={view()} fnoExpiry="" expiries={[]} />
     );
 
     clickACall(container);

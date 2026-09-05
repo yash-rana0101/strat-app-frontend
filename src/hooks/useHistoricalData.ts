@@ -43,7 +43,6 @@ interface UseHistoricalDataReturn {
   refetch: () => void;
 }
 
-
 // URL for QuestDB REST API (browser-only path via Next.js proxy).
 const QUESTDB_BROWSER_URL = '/questdb/exec';
 
@@ -115,7 +114,8 @@ async function fetchFromQuestDB(symbol: string): Promise<HistoricalCandle[]> {
 async function resolveInstrumentToken(symbol: string): Promise<number | null> {
   try {
     const sym = symbol.toUpperCase();
-    const isFno = sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
+    const isFno =
+      sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
     const exchange = isFno ? 'NFO' : 'NSE';
     const res = await kiteFetch(`/quote?i=${exchange}:${encodeURIComponent(symbol)}`);
     if (!res.ok) return null;
@@ -156,14 +156,23 @@ async function fetchKiteBatch(
 ): Promise<HistoricalCandle[]> {
   const parseCandles = (data: any): HistoricalCandle[] =>
     (data.candles || [])
-      .map((c: { time: number; open: number; high: number; low: number; close: number; volume: number }) => ({
-        time: c.time,
-        open: c.open,
-        high: c.high,
-        low: c.low,
-        close: c.close,
-        volume: c.volume,
-      }))
+      .map(
+        (c: {
+          time: number;
+          open: number;
+          high: number;
+          low: number;
+          close: number;
+          volume: number;
+        }) => ({
+          time: c.time,
+          open: c.open,
+          high: c.high,
+          low: c.low,
+          close: c.close,
+          volume: c.volume,
+        })
+      )
       .filter((c: HistoricalCandle) => c.time > 0 && c.open > 0);
 
   const to = new Date();
@@ -222,7 +231,7 @@ async function fetchKiteBatch(
 async function fetchFromKiteHistorical(
   symbol: string,
   rangeDays: number = 365,
-  kiteInterval: string = '10minute',
+  kiteInterval: string = '10minute'
 ): Promise<HistoricalCandle[]> {
   try {
     const isDailyOrAbove = kiteInterval === 'day';
@@ -269,7 +278,7 @@ export function useHistoricalData(
   symbol: string,
   rangeDays: number = 365,
   kiteInterval: string = '10minute',
-  effectiveTimeframe: string = '10m',
+  effectiveTimeframe: string = '10m'
 ): UseHistoricalDataReturn {
   const [candles, setCandles] = useState<HistoricalCandle[]>([]);
   const [loading, setLoading] = useState(false);
@@ -284,11 +293,16 @@ export function useHistoricalData(
     // UI timeframe verbatim so the backend returns bars at the requested
     // resolution (no client-side resampling needed for the primary path).
     debugLog(
-      "[UI DISPATCH] Fetching History - Symbol:", symbol,
-      "Timeframe:", effectiveTimeframe,
-      "(kiteInterval:", kiteInterval, ", rangeDays:", rangeDays, ")"
+      '[UI DISPATCH] Fetching History - Symbol:',
+      symbol,
+      'Timeframe:',
+      effectiveTimeframe,
+      '(kiteInterval:',
+      kiteInterval,
+      ', rangeDays:',
+      rangeDays,
+      ')'
     );
-
 
     // ── Two-tier cache ──────────────────────────────────────────────────
     // L1 (QuestDB, persistent): Backend stores Kite data at the BASE interval
@@ -309,7 +323,9 @@ export function useHistoricalData(
         close: c.close,
         volume: c.volume,
       }));
-      debugLog(`[Historical] ${symbol}: ${asHistorical.length} candles from cache (tf=${effectiveTimeframe}, interval=${kiteInterval})`);
+      debugLog(
+        `[Historical] ${symbol}: ${asHistorical.length} candles from cache (tf=${effectiveTimeframe}, interval=${kiteInterval})`
+      );
       setCandles(asHistorical);
       setLoading(false);
       return;
@@ -343,7 +359,11 @@ export function useHistoricalData(
         const asOhlc: OhlcCandle[] = parsed.map((c) => ({
           symbol: symbol.toUpperCase(),
           start_timestamp_ms: c.time * 1000, // seconds → ms
-          open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume,
+          open: c.open,
+          high: c.high,
+          low: c.low,
+          close: c.close,
+          volume: c.volume,
         }));
         useTradeStore.getState().setHistoricalCache(cacheKey, asOhlc);
       }
@@ -359,8 +379,14 @@ export function useHistoricalData(
       // Cache keys are now `${SYMBOL}::${TF}::${INTERVAL}` — split on '::'
       // and read [2] for the Kite interval portion.
       const INTERVAL_MINUTES: Record<string, number> = {
-        'minute': 1, '3minute': 3, '5minute': 5, '10minute': 10,
-        '15minute': 15, '30minute': 30, '60minute': 60, 'day': 1440,
+        minute: 1,
+        '3minute': 3,
+        '5minute': 5,
+        '10minute': 10,
+        '15minute': 15,
+        '30minute': 30,
+        '60minute': 60,
+        day: 1440,
       };
       const requestedMinutes = INTERVAL_MINUTES[kiteInterval] ?? 10;
       const allCache = useTradeStore.getState().historicalCache;
@@ -377,19 +403,23 @@ export function useHistoricalData(
         const [fallbackKey, fallbackData] = fallbackEntry;
         console.warn(
           `[Historical] ${symbol}: cross-interval fallback — '${fallbackKey}' ` +
-          `(${fallbackData.length} candles) for tf=${effectiveTimeframe}`
+            `(${fallbackData.length} candles) for tf=${effectiveTimeframe}`
         );
         const asHistorical: HistoricalCandle[] = fallbackData.map((c) => ({
           time: Math.floor(c.start_timestamp_ms / 1000),
-          open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume,
+          open: c.open,
+          high: c.high,
+          low: c.low,
+          close: c.close,
+          volume: c.volume,
         }));
         setCandles(asHistorical);
       }
     } finally {
       setLoading(false);
     }
-  // effectiveTimeframe in deps drives a fresh fetchData on tf switch — the
-  // backend's SAMPLE BY pipeline now returns the correct aggregation directly.
+    // effectiveTimeframe in deps drives a fresh fetchData on tf switch — the
+    // backend's SAMPLE BY pipeline now returns the correct aggregation directly.
   }, [symbol, rangeDays, kiteInterval, effectiveTimeframe]);
 
   useEffect(() => {

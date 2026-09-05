@@ -64,11 +64,10 @@ export function FnoServiceState({ detail }: FnoServiceStateProps) {
           </span>
 
           <span className="text-[10px] text-rose-600 dark:text-rose-300/80 mt-1 leading-relaxed">
-            This is a service/configuration problem, not an empty market. The
-            F&amp;O analytics service could not be reached. Verify the{' '}
-            <code className="font-mono">deep-quant</code> service is running and that{' '}
-            <code className="font-mono">DEEP_QUANT_URL</code> points at the correct
-            host and port, then retry.
+            This is a service/configuration problem, not an empty market. The F&amp;O analytics
+            service could not be reached. Verify the <code className="font-mono">deep-quant</code>{' '}
+            service is running and that <code className="font-mono">DEEP_QUANT_URL</code> points at
+            the correct host and port, then retry.
           </span>
 
           <span className="flex items-center gap-1.5 text-[9px] font-mono text-rose-500 dark:text-rose-400 bg-rose-500/5 rounded-none border border-rose-500/20 px-2 py-1 mt-2 leading-normal">

@@ -133,7 +133,7 @@ describe('GhostLine Path 1 gate (Unit 2)', () => {
         activeSymbol: 'RELIANCE',
         last: { time: 100_000, close: 100 },
         intervalSec: 60,
-      }),
+      })
     ).toBe(false);
   });
 

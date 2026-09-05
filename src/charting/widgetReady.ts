@@ -44,7 +44,7 @@ export function whenChartReady(
   widget: unknown,
   fn: () => void | Promise<void>,
   isCancelled: () => boolean = () => false,
-  label = 'Chart',
+  label = 'Chart'
 ): void {
   if (!widget) return;
   const w = widget as ReadyableWidget;
@@ -68,9 +68,11 @@ export function whenChartReady(
   try {
     if (typeof w.chartReady === 'function') {
       // Non-deprecated promise form.
-      w.chartReady().then(run).catch(() => {
-        // Widget removed before the chart settled — nothing to do.
-      });
+      w.chartReady()
+        .then(run)
+        .catch(() => {
+          // Widget removed before the chart settled — nothing to do.
+        });
       return;
     }
     if (typeof w.onChartReady === 'function') {

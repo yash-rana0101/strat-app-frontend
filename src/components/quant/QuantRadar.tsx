@@ -13,14 +13,14 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTradeStore } from '../../store/useTradeStore';
-import { useRadarStore, type RadarVizTarget, type RadarSymbolState } from '../../store/useRadarStore';
+import {
+  useRadarStore,
+  type RadarVizTarget,
+  type RadarSymbolState,
+} from '../../store/useRadarStore';
 import type { Timeframe } from '../../utils/chartTypes';
 import { TIMEFRAME_GROUPS } from '../../utils/chartTypes';
-import {
-  BIAS_COLORS,
-  type LocatedPattern,
-  type LocatedStrategy,
-} from '../../utils/radarData';
+import { BIAS_COLORS, type LocatedPattern, type LocatedStrategy } from '../../utils/radarData';
 import { bridgeListen, bridgeInvoke } from '../../lib/bridge';
 import type { SearchResult } from '../../lib/bridge/webAdapters';
 import {
@@ -38,7 +38,6 @@ import {
   Clock,
   ChevronDown,
 } from 'lucide-react';
-
 
 // ── Live alert payload (mirrors the enriched Rust RadarAlert) ─────────────
 interface RadarAlert {
@@ -177,7 +176,7 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
       setSuggestOpen(false);
       setSuggestIndex(-1);
     },
-    [input, addSymbol],
+    [input, addSymbol]
   );
 
   // Fetch suggestions for the current query (debounced by the caller).
@@ -226,7 +225,7 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
       }
       suggestTimeoutRef.current = setTimeout(() => void runSuggest(value), 300);
     },
-    [runSuggest],
+    [runSuggest]
   );
 
   // Drop a pending debounce on unmount so it can't fire into a dead component.
@@ -234,7 +233,7 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
     () => () => {
       if (suggestTimeoutRef.current) clearTimeout(suggestTimeoutRef.current);
     },
-    [],
+    []
   );
 
   const handleInputKeyDown = useCallback(
@@ -266,7 +265,7 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
         handleAdd(picked);
       }
     },
-    [suggestOpen, suggestions, suggestIndex, handleAdd],
+    [suggestOpen, suggestions, suggestIndex, handleAdd]
   );
 
   // ── Visualize a detection on the chart ───────────────────────────
@@ -298,10 +297,7 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
     }, 0);
   }, [scans]);
 
-  const anyLoading = useMemo(
-    () => Object.values(scans).some((s) => s.loading),
-    [scans]
-  );
+  const anyLoading = useMemo(() => Object.values(scans).some((s) => s.loading), [scans]);
 
   const radarIconClass = anyLoading
     ? 'animate-spin text-emerald-600 dark:text-emerald-400'
@@ -365,9 +361,11 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
 
       {/* ── Dropdown Panel ── */}
       {isOpen && (
-        <div className={`absolute z-[999] flex flex-col w-[400px] max-h-[560px] rounded-xl overflow-hidden border border-border-default bg-surface/95 backdrop-blur-xl shadow-2xl ${
-          isRail ? 'left-14 bottom-0 ml-1' : 'right-0 top-full mt-2'
-        }`}>
+        <div
+          className={`absolute z-[999] flex flex-col w-[400px] max-h-[560px] rounded-xl overflow-hidden border border-border-default bg-surface/95 backdrop-blur-xl shadow-2xl ${
+            isRail ? 'left-14 bottom-0 ml-1' : 'right-0 top-full mt-2'
+          }`}
+        >
           {/* ── Header ── */}
           <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border-default bg-surface/80">
             <div className="flex items-center gap-2">
@@ -415,7 +413,9 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
                 value={input}
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyDown={handleInputKeyDown}
-                onFocus={() => { if (suggestions.length > 0) setSuggestOpen(true); }}
+                onFocus={() => {
+                  if (suggestions.length > 0) setSuggestOpen(true);
+                }}
                 role="combobox"
                 aria-expanded={suggestOpen}
                 aria-controls="radar-symbol-suggestions"
@@ -423,7 +423,9 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
                 placeholder="Add symbol (e.g. RELIANCE)"
                 className="w-full bg-transparent text-xs text-text-primary placeholder:text-text-muted/60 outline-none uppercase"
               />
-              {suggestLoading && <Loader2 size={10} className="shrink-0 animate-spin text-text-muted" />}
+              {suggestLoading && (
+                <Loader2 size={10} className="shrink-0 animate-spin text-text-muted" />
+              )}
               <button
                 type="button"
                 onClick={() => handleAdd()}
@@ -445,7 +447,10 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
                         type="button"
                         // `mouseDown` rather than `click`: the input's blur would
                         // otherwise close the list before the click landed.
-                        onMouseDown={(e) => { e.preventDefault(); handleAdd(sym); }}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          handleAdd(sym);
+                        }}
                         onMouseEnter={() => setSuggestIndex(i)}
                         className={`flex w-full items-center gap-2 px-2 py-1 text-left text-[11px] transition-colors ${
                           i === suggestIndex
@@ -473,9 +478,17 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
                 }`}
                 title="Radar timeframe"
               >
-                <Clock size={11} className={radarTfDropdownOpen ? 'text-emerald-400 animate-pulse' : 'text-text-muted'} />
+                <Clock
+                  size={11}
+                  className={
+                    radarTfDropdownOpen ? 'text-emerald-400 animate-pulse' : 'text-text-muted'
+                  }
+                />
                 <span>{timeframe}</span>
-                <ChevronDown size={11} className={`transition-transform duration-200 ${radarTfDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown
+                  size={11}
+                  className={`transition-transform duration-200 ${radarTfDropdownOpen ? 'rotate-180' : ''}`}
+                />
               </button>
 
               {radarTfDropdownOpen && (
@@ -505,7 +518,9 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
                                 }`}
                               >
                                 <span>{item.display}</span>
-                                {isActive && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(52,211,153,0.8)]" />}
+                                {isActive && (
+                                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+                                )}
                               </button>
                             );
                           })}
@@ -524,7 +539,9 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
               <div className="flex flex-col items-center justify-center gap-2 py-10 text-text-muted">
                 <Radar size={28} className="opacity-30" />
                 <p className="text-xs">No symbols on your radar yet</p>
-                <p className="text-[10px] opacity-60">Add a symbol above to track patterns & strategies</p>
+                <p className="text-[10px] opacity-60">
+                  Add a symbol above to track patterns & strategies
+                </p>
               </div>
             ) : (
               symbols.map((sym) => (
@@ -631,13 +648,18 @@ function SymbolCard({
             {symbol}
           </span>
           {scan && (
-            <span className={`flex items-center gap-0.5 text-[9px] font-semibold ${bullish ? 'text-emerald-400' : 'text-red-400'}`}>
+            <span
+              className={`flex items-center gap-0.5 text-[9px] font-semibold ${bullish ? 'text-emerald-400' : 'text-red-400'}`}
+            >
               {bullish ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
-              {trend > 0 ? '+' : ''}{trend}
+              {trend > 0 ? '+' : ''}
+              {trend}
             </span>
           )}
           {scan && (
-            <span className="text-[9px] text-text-muted">{scan.momentum_state} · {scan.volatility_state}</span>
+            <span className="text-[9px] text-text-muted">
+              {scan.momentum_state} · {scan.volatility_state}
+            </span>
           )}
         </button>
         <div className="flex items-center gap-1">
@@ -722,7 +744,9 @@ function SymbolCard({
           )}
         </div>
       ) : scan && !loading ? (
-        <p className="mt-1 text-[10px] text-text-muted/60">No patterns or strategies on {timeframe}</p>
+        <p className="mt-1 text-[10px] text-text-muted/60">
+          No patterns or strategies on {timeframe}
+        </p>
       ) : null}
     </div>
   );

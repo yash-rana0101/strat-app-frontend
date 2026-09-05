@@ -414,7 +414,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     const threadId = typeof data?.thread_id === 'string' ? data.thread_id : '';
 
     const state = get();
-    let sessionId: SessionId | null = threadId ? state.threadToSession[threadId] ?? null : null;
+    let sessionId: SessionId | null = threadId ? (state.threadToSession[threadId] ?? null) : null;
 
     // A frame that NAMES its session is trusted.
     //
@@ -433,7 +433,11 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         // Only bind the thread when there IS one. A synthetic frame legitimately has no
         // thread id, and writing an empty key would poison the routing table.
         if (threadId) {
-          get().bindThread(threadId, carried, typeof data?.run_id === 'string' ? data.run_id : null);
+          get().bindThread(
+            threadId,
+            carried,
+            typeof data?.run_id === 'string' ? data.run_id : null
+          );
         }
         sessionId = carried;
       }
@@ -478,15 +482,16 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
 
     set((s) => ({
       sessions: { ...s.sessions, [sessionId as SessionId]: next },
-      streams: seq === null
-        ? s.streams
-        : {
-          ...s.streams,
-          [sessionId as SessionId]: {
-            ...(s.streams[sessionId as SessionId] ?? blankStream()),
-            lastSeq: Math.max(s.streams[sessionId as SessionId]?.lastSeq ?? 0, seq),
-          },
-        },
+      streams:
+        seq === null
+          ? s.streams
+          : {
+              ...s.streams,
+              [sessionId as SessionId]: {
+                ...(s.streams[sessionId as SessionId] ?? blankStream()),
+                lastSeq: Math.max(s.streams[sessionId as SessionId]?.lastSeq ?? 0, seq),
+              },
+            },
     }));
 
     return sessionId;
@@ -531,7 +536,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       const activatingSessionIds = { ...state.activatingSessionIds };
       delete activatingSessionIds[sessionId];
       const threadToSession = Object.fromEntries(
-        Object.entries(state.threadToSession).filter(([, sid]) => sid !== sessionId),
+        Object.entries(state.threadToSession).filter(([, sid]) => sid !== sessionId)
       );
       return {
         sessions,

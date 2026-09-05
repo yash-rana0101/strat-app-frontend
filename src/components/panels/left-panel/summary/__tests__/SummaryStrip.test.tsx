@@ -36,14 +36,16 @@ describe('SummaryStrip', () => {
         value={<span>+42</span>}
         detail={<span>Order book at record high</span>}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('+42')).toBeInTheDocument();
     expect(screen.getByText('Order book at record high')).toBeInTheDocument();
     // The reading reaches assistive tech as words, not just as a coloured pill.
     expect(
-      screen.getByRole('button', { name: /AI News Sentiment, Bullish, score \+42\. Open details\./ }),
+      screen.getByRole('button', {
+        name: /AI News Sentiment, Bullish, score \+42\. Open details\./,
+      })
     ).toBeInTheDocument();
   });
 
@@ -55,7 +57,7 @@ describe('SummaryStrip', () => {
         valueText="4 patterns"
         value={<span>4</span>}
         onClick={() => {}}
-      />,
+      />
     );
 
     const strip = screen.getByRole('button');
@@ -76,7 +78,7 @@ describe('SummaryStrip', () => {
         valueText="Bullish"
         value={<span>+61</span>}
         onClick={onClick}
-      />,
+      />
     );
 
     fireEvent.click(screen.getByRole('button'));
@@ -95,14 +97,14 @@ describe('SummaryStrip', () => {
         value={<span>+42</span>}
         valueText="Bullish, score +42"
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('Sentiment service returned 503')).toBeInTheDocument();
     expect(screen.getByText(/unavailable/i)).toBeInTheDocument();
     expect(screen.queryByText('+42')).not.toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /Sentiment service returned 503/ }),
+      screen.getByRole('button', { name: /Sentiment service returned 503/ })
     ).toBeInTheDocument();
   });
 
@@ -115,7 +117,7 @@ describe('SummaryStrip', () => {
         loadingMessage="Scanning"
         value={<span>4</span>}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByRole('status')).toHaveTextContent('Scanning');
@@ -130,7 +132,7 @@ describe('SummaryStrip', () => {
         state="empty"
         emptyMessage="Run Deep Quant"
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('Run Deep Quant')).toBeInTheDocument();

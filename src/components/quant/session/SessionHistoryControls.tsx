@@ -82,7 +82,11 @@ export default function SessionHistoryControls({
               className="w-full bg-transparent py-1 text-xs text-text-primary placeholder:text-text-muted focus:outline-none"
             />
             {isFetching && !isFetchingNextPage && (
-              <Loader2 size={11} className="shrink-0 animate-spin text-text-muted" aria-hidden="true" />
+              <Loader2
+                size={11}
+                className="shrink-0 animate-spin text-text-muted"
+                aria-hidden="true"
+              />
             )}
           </div>
         </div>
@@ -93,7 +97,11 @@ export default function SessionHistoryControls({
           role="alert"
           className="flex shrink-0 items-start gap-1.5 border-b border-border-default/40 bg-elevated p-2 text-xs text-text-secondary"
         >
-          <AlertTriangle size={12} className="mt-0.5 shrink-0 text-status-error" aria-hidden="true" />
+          <AlertTriangle
+            size={12}
+            className="mt-0.5 shrink-0 text-status-error"
+            aria-hidden="true"
+          />
           <span className="min-w-0 flex-1">{actionError}</span>
           <button
             type="button"
@@ -108,4 +116,3 @@ export default function SessionHistoryControls({
     </>
   );
 }
-

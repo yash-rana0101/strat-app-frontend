@@ -68,7 +68,9 @@ describe('reads resolve the ACTIVE session', () => {
     const thread = harness(useFqThreadId);
 
     act(() => {
-      useSessionStore.getState().applyFrame({ event: 'RUN_STARTED', data: { thread_id: THREAD_A } });
+      useSessionStore
+        .getState()
+        .applyFrame({ event: 'RUN_STARTED', data: { thread_id: THREAD_A } });
     });
 
     expect(status.current).toBe('running');

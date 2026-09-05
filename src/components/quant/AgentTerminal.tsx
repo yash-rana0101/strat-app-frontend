@@ -127,13 +127,17 @@ export default function AgentTerminal({
               !
             </div>
             <div className="flex flex-col">
-              <span className="text-[11px] font-bold text-amber-500 dark:text-amber-400">No reasoning was streamed</span>
+              <span className="text-[11px] font-bold text-amber-500 dark:text-amber-400">
+                No reasoning was streamed
+              </span>
               <span className="text-[10px] text-amber-600 dark:text-amber-300/80 mt-1 leading-relaxed">
-                The agent run completed but produced no visible reasoning, tool, or
-                decision steps. This usually means the Python agent (:8086) returned
-                an empty response or the stream ended early. Press
-                {' '}<span className="font-bold text-amber-500 dark:text-amber-200">Find Quant Trade</span>{' '}
-                {' '}<span className="font-bold text-amber-500 dark:text-amber-200">Find Trade</span>{' '}
+                The agent run completed but produced no visible reasoning, tool, or decision steps.
+                This usually means the Python agent (:8086) returned an empty response or the stream
+                ended early. Press{' '}
+                <span className="font-bold text-amber-500 dark:text-amber-200">
+                  Find Quant Trade
+                </span>{' '}
+                <span className="font-bold text-amber-500 dark:text-amber-200">Find Trade</span>{' '}
                 again to retry.
               </span>
               {analysisError && (
@@ -160,46 +164,53 @@ export default function AgentTerminal({
             expired, rate-limited, or out of quota" for every failure, including a
             plan restriction that never issued a request, which sent people to
             audit a healthy key. */}
-        {sessionStatus === 'error' && (() => {
-          const err = classifyAgentError(analysisError);
-          // A plan restriction or a deployment switch is not a fault; render it in
-          // a neutral tone so it does not read as something broken.
-          const isFault = err.kind !== 'research-locked' && err.kind !== 'feature-disabled';
-          const tone = isFault
-            ? {
-                wrap: 'bg-rose-500/5 border-rose-500/20 shadow-rose-955/20',
-                badge: 'bg-rose-500/20 text-rose-500 dark:text-rose-400',
-                title: 'text-rose-500 dark:text-rose-400',
-                body: 'text-rose-600 dark:text-rose-300/80',
-                detail: 'text-rose-500 dark:text-rose-400 bg-rose-500/5 border-rose-500/15',
-                glyph: <AlertTriangle size={11} />,
-              }
-            : {
-                wrap: 'bg-amber-500/5 border-amber-500/20 shadow-amber-955/20',
-                badge: 'bg-amber-500/20 text-amber-600 dark:text-amber-400',
-                title: 'text-amber-600 dark:text-amber-400',
-                body: 'text-amber-700 dark:text-amber-300/80',
-                detail: 'text-amber-600 dark:text-amber-400 bg-amber-500/5 border-amber-500/15',
-                glyph: <Lock size={11} />,
-              };
+        {sessionStatus === 'error' &&
+          (() => {
+            const err = classifyAgentError(analysisError);
+            // A plan restriction or a deployment switch is not a fault; render it in
+            // a neutral tone so it does not read as something broken.
+            const isFault = err.kind !== 'research-locked' && err.kind !== 'feature-disabled';
+            const tone = isFault
+              ? {
+                  wrap: 'bg-rose-500/5 border-rose-500/20 shadow-rose-955/20',
+                  badge: 'bg-rose-500/20 text-rose-500 dark:text-rose-400',
+                  title: 'text-rose-500 dark:text-rose-400',
+                  body: 'text-rose-600 dark:text-rose-300/80',
+                  detail: 'text-rose-500 dark:text-rose-400 bg-rose-500/5 border-rose-500/15',
+                  glyph: <AlertTriangle size={11} />,
+                }
+              : {
+                  wrap: 'bg-amber-500/5 border-amber-500/20 shadow-amber-955/20',
+                  badge: 'bg-amber-500/20 text-amber-600 dark:text-amber-400',
+                  title: 'text-amber-600 dark:text-amber-400',
+                  body: 'text-amber-700 dark:text-amber-300/80',
+                  detail: 'text-amber-600 dark:text-amber-400 bg-amber-500/5 border-amber-500/15',
+                  glyph: <Lock size={11} />,
+                };
 
-          return (
-            <div className={`flex items-start gap-3 p-3.5 border rounded mt-2 select-text font-sans shadow-lg ${tone.wrap}`}>
-              <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-[10px] font-bold select-none mt-0.5 ${tone.badge}`}>
-                {tone.glyph}
+            return (
+              <div
+                className={`flex items-start gap-3 p-3.5 border rounded mt-2 select-text font-sans shadow-lg ${tone.wrap}`}
+              >
+                <div
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-[10px] font-bold select-none mt-0.5 ${tone.badge}`}
+                >
+                  {tone.glyph}
+                </div>
+                <div className="flex flex-col">
+                  <span className={`text-[11px] font-bold ${tone.title}`}>{err.title}</span>
+                  <span className={`text-[10px] mt-1 leading-relaxed ${tone.body}`}>
+                    {err.explanation}
+                  </span>
+                  <span
+                    className={`text-[9px] font-mono rounded-sm border px-2 py-1 mt-2 leading-normal ${tone.detail}`}
+                  >
+                    {err.detail}
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col">
-                <span className={`text-[11px] font-bold ${tone.title}`}>{err.title}</span>
-                <span className={`text-[10px] mt-1 leading-relaxed ${tone.body}`}>
-                  {err.explanation}
-                </span>
-                <span className={`text-[9px] font-mono rounded-sm border px-2 py-1 mt-2 leading-normal ${tone.detail}`}>
-                  {err.detail}
-                </span>
-              </div>
-            </div>
-          );
-        })()}
+            );
+          })()}
 
         {/* Stand-Aside decision rendered INLINE in the terminal log */}
         {sessionStatus === 'complete' && finalTrade && !isActionableTrade(finalTrade) && (

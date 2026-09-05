@@ -73,7 +73,7 @@ describe('the id', () => {
     // Ownership is enforced server-side, but a malformed id must not be interpolated into a request
     // URL — and it should not cost a fetch to be told what the shape already says.
     await expect(SessionPage({ params: Promise.resolve({ sessionId }) })).rejects.toThrow(
-      'NEXT_NOT_FOUND',
+      'NEXT_NOT_FOUND'
     );
     expect(workspaceMock).not.toHaveBeenCalled();
   });
@@ -95,7 +95,7 @@ describe('the rollout flag', () => {
     flag.multiSession = false;
 
     await expect(SessionPage({ params: Promise.resolve({ sessionId: VALID }) })).rejects.toThrow(
-      'NEXT_NOT_FOUND',
+      'NEXT_NOT_FOUND'
     );
     expect(workspaceMock).not.toHaveBeenCalled();
   });

@@ -19,15 +19,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import fc from 'fast-check';
 
-import {
-  computeDisciplineMetrics,
-  type PortfolioMetric,
-} from '@/hooks/useMacroIndicators';
-import {
-  blankDisciplineStats,
-  useTradeStore,
-  type DisciplineStats,
-} from '@/store/useTradeStore';
+import { computeDisciplineMetrics, type PortfolioMetric } from '@/hooks/useMacroIndicators';
+import { blankDisciplineStats, useTradeStore, type DisciplineStats } from '@/store/useTradeStore';
 
 const RUNS = 300;
 
@@ -78,7 +71,7 @@ describe('P6 — no performance figure reaches the UI', () => {
           expect(text).not.toContain(term);
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -90,7 +83,7 @@ describe('P6 — no performance figure reaches the UI', () => {
         expect(text).not.toContain('Rs');
         expect(text).not.toMatch(/\$/);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -105,18 +98,13 @@ describe('P6 — no performance figure reaches the UI', () => {
           expect(metric.value.startsWith('-')).toBe(false);
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
   it('exposes exactly the four discipline metrics GO_TO_MARKET §4 specifies', () => {
     const labels = computeDisciplineMetrics(blankDisciplineStats()).map((m) => m.label);
-    expect(labels).toEqual([
-      'Setups Audited',
-      'Setups Rejected',
-      'Forced HOLDs',
-      'Plan Adherence',
-    ]);
+    expect(labels).toEqual(['Setups Audited', 'Setups Rejected', 'Forced HOLDs', 'Plan Adherence']);
   });
 
   it('emits no conviction figure — confidence must not read as expected return', () => {
@@ -144,7 +132,7 @@ describe('P6 — no performance figure reaches the UI', () => {
           expect(metric.value.toLowerCase()).not.toContain('score');
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });
@@ -174,7 +162,7 @@ describe('P6 — unmeasured metrics render an em dash', () => {
           }
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -191,7 +179,7 @@ describe('P6 — unmeasured metrics render an em dash', () => {
         const adherence = metrics.find((m) => m.label === 'Plan Adherence');
         expect(adherence?.value).toBe('—');
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -224,9 +212,9 @@ describe('P6 — unmeasured metrics render an em dash', () => {
           // A ratio of counts can never leave 0..100.
           expect(expected).toBeGreaterThanOrEqual(0);
           expect(expected).toBeLessThanOrEqual(100);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -235,7 +223,7 @@ describe('P6 — unmeasured metrics render an em dash', () => {
       fc.property(arbStats, (stats) => {
         expect(computeDisciplineMetrics(stats)).toEqual(computeDisciplineMetrics(stats));
       }),
-      { numRuns: 100 },
+      { numRuns: 100 }
     );
   });
 });
@@ -288,7 +276,7 @@ describe('P6 — discipline counters record real events only', () => {
             mode: fc.constantFrom<'FIND' | 'VERIFY'>('FIND', 'VERIFY'),
             actionable: fc.boolean(),
           }),
-          { maxLength: 40 },
+          { maxLength: 40 }
         ),
         (events) => {
           useTradeStore.setState({ disciplineStats: blankDisciplineStats() });
@@ -302,9 +290,9 @@ describe('P6 — discipline counters record real events only', () => {
           // And neither bucket can exceed the audited total.
           expect(s.setupsRejected).toBeLessThanOrEqual(s.setupsAudited);
           expect(s.forcedHolds).toBeLessThanOrEqual(s.setupsAudited);
-        },
+        }
       ),
-      { numRuns: 150 },
+      { numRuns: 150 }
     );
   });
 
@@ -323,9 +311,9 @@ describe('P6 — discipline counters record real events only', () => {
     store.recordPlanOutcome(true);
     store.recordPlanOutcome(false);
     expect(stats()).toMatchObject({ plansFollowed: 2, plansDeviated: 1 });
-    expect(
-      computeDisciplineMetrics(stats()).find((m) => m.label === 'Plan Adherence')?.value,
-    ).toBe('67%');
+    expect(computeDisciplineMetrics(stats()).find((m) => m.label === 'Plan Adherence')?.value).toBe(
+      '67%'
+    );
   });
 
   it('clears on resetSession, so counts never survive a portfolio reset', () => {

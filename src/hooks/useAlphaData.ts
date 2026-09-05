@@ -138,7 +138,9 @@ export function usePositions() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`${BASE_URL}/portfolio/positions`, { withCredentials: true });
+      const response = await axios.get(`${BASE_URL}/portfolio/positions`, {
+        withCredentials: true,
+      });
       setData(response.data.positions || null);
     } catch (err: any) {
       console.error('[usePositions] failed to fetch positions:', err);

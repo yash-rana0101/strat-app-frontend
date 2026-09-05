@@ -6,7 +6,13 @@
  * so a single console read says which stage dominates. Free when nothing is
  * listening: `performance.mark` is a ring-buffer write.
  */
-const STAGES = ['auth-ok', 'tv-script-ready', 'widget-ready', 'first-history', 'first-live-bar'] as const;
+const STAGES = [
+  'auth-ok',
+  'tv-script-ready',
+  'widget-ready',
+  'first-history',
+  'first-live-bar',
+] as const;
 type Stage = (typeof STAGES)[number];
 
 const done = new Set<Stage>();

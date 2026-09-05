@@ -14,7 +14,10 @@ export default function BillingTabSkeleton() {
       </div>
       {/* Invoice rows */}
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="grid grid-cols-4 gap-3 px-4 py-3 border-b border-border-default/30 last:border-0">
+        <div
+          key={i}
+          className="grid grid-cols-4 gap-3 px-4 py-3 border-b border-border-default/30 last:border-0"
+        >
           <Skeleton width="80px" height="10px" />
           <Skeleton width="64px" height="10px" />
           <Skeleton width="52px" height="10px" />

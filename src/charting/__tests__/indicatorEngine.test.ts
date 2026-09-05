@@ -348,7 +348,9 @@ describe('listIndicators / searchIndicators', () => {
   });
 
   it('searches by case-insensitive name substring (Requirement 4.2)', () => {
-    const moving = searchIndicators('moving average').map((d) => d.id).sort();
+    const moving = searchIndicators('moving average')
+      .map((d) => d.id)
+      .sort();
     expect(moving).toEqual(['ema', 'sma', 'wma']);
     expect(searchIndicators('RELATIVE').map((d) => d.id)).toEqual(['rsi']);
     expect(searchIndicators('macd').map((d) => d.id)).toEqual(['macd']);

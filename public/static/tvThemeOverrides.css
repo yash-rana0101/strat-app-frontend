@@ -168,8 +168,8 @@
 /* TV popups/menus that list chart types, indicators, etc. */
 .menu-WZ1GFMnl,
 .menuWrap-Kq3ruQo8,
-[class*="menuWrap"],
-[class*="menu-"] {
+[class*='menuWrap'],
+[class*='menu-'] {
   max-height: 80vh !important;
   overflow-y: auto !important;
 }
@@ -220,7 +220,7 @@
   display: flex !important;
   flex-direction: column !important;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7) !important;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   box-sizing: border-box !important;
 }
 

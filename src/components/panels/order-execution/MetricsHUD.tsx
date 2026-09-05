@@ -25,7 +25,9 @@ interface MetricsHUDProps {
 // standing in a zero, which would read as a real reading of 0.
 function formatINR(value: number | null): string {
   if (value === null) return '—';
-  return '₹' + value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (
+    '₹' + value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  );
 }
 
 function formatVolume(vol: number | null): string {
@@ -55,8 +57,11 @@ export default function MetricsHUD({
         </div>
         <div className="text-sm font-bold text-text-primary tabular-nums">{entryDisplay}</div>
         {liveQuote && liveQuote.net_change !== null && (
-          <div className={`text-[9px] font-semibold tabular-nums ${liveQuote.net_change >= 0 ? 'text-bull' : 'text-bear'}`}>
-            {liveQuote.net_change >= 0 ? '+' : ''}{liveQuote.net_change.toFixed(2)}
+          <div
+            className={`text-[9px] font-semibold tabular-nums ${liveQuote.net_change >= 0 ? 'text-bull' : 'text-bear'}`}
+          >
+            {liveQuote.net_change >= 0 ? '+' : ''}
+            {liveQuote.net_change.toFixed(2)}
           </div>
         )}
       </div>
@@ -65,20 +70,32 @@ export default function MetricsHUD({
       {liveQuote && (
         <div className="flex items-center gap-4 border-l border-border-default/60 pl-5">
           <div>
-            <div className="text-[9px] font-bold uppercase tracking-wider text-text-muted">Open</div>
-            <div className="text-sm font-semibold text-text-primary tabular-nums">{formatINR(liveQuote.open)}</div>
+            <div className="text-[9px] font-bold uppercase tracking-wider text-text-muted">
+              Open
+            </div>
+            <div className="text-sm font-semibold text-text-primary tabular-nums">
+              {formatINR(liveQuote.open)}
+            </div>
           </div>
           <div>
-            <div className="text-[9px] font-bold uppercase tracking-wider text-text-muted">High</div>
-            <div className="text-sm font-semibold text-bull tabular-nums">{formatINR(liveQuote.high)}</div>
+            <div className="text-[9px] font-bold uppercase tracking-wider text-text-muted">
+              High
+            </div>
+            <div className="text-sm font-semibold text-bull tabular-nums">
+              {formatINR(liveQuote.high)}
+            </div>
           </div>
           <div>
             <div className="text-[9px] font-bold uppercase tracking-wider text-text-muted">Low</div>
-            <div className="text-sm font-semibold text-bear tabular-nums">{formatINR(liveQuote.low)}</div>
+            <div className="text-sm font-semibold text-bear tabular-nums">
+              {formatINR(liveQuote.low)}
+            </div>
           </div>
           <div>
             <div className="text-[9px] font-bold uppercase tracking-wider text-text-muted">Vol</div>
-            <div className="text-sm font-semibold text-text-secondary tabular-nums">{formatVolume(liveQuote.volume)}</div>
+            <div className="text-sm font-semibold text-text-secondary tabular-nums">
+              {formatVolume(liveQuote.volume)}
+            </div>
           </div>
         </div>
       )}
@@ -91,7 +108,11 @@ export default function MetricsHUD({
               <Target size={9} className="text-bull" />
               Target
             </div>
-            <div className={`text-sm font-semibold tabular-nums ${targetPrice ? 'text-bull' : 'text-text-muted'}`}>{targetDisplay}</div>
+            <div
+              className={`text-sm font-semibold tabular-nums ${targetPrice ? 'text-bull' : 'text-text-muted'}`}
+            >
+              {targetDisplay}
+            </div>
             {targetPrice && entryPrice && (
               <div className="text-[9px] font-medium text-bull tabular-nums">
                 +{(((targetPrice - entryPrice) / entryPrice) * 100).toFixed(1)}%
@@ -103,7 +124,11 @@ export default function MetricsHUD({
               <ShieldAlert size={9} className="text-bear" />
               Stop
             </div>
-            <div className={`text-sm font-semibold tabular-nums ${stopPrice ? 'text-bear' : 'text-text-muted'}`}>{stopDisplay}</div>
+            <div
+              className={`text-sm font-semibold tabular-nums ${stopPrice ? 'text-bear' : 'text-text-muted'}`}
+            >
+              {stopDisplay}
+            </div>
             {stopPrice && entryPrice && (
               <div className="text-[9px] font-medium text-bear tabular-nums">
                 {(((stopPrice - entryPrice) / entryPrice) * 100).toFixed(1)}%

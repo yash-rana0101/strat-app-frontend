@@ -11,25 +11,29 @@ import { kiteFetch } from '../lib/kiteFetch';
 export function useSymbolQuote(symbol: string): SymbolQuote | null {
   const [symbolQuote, setSymbolQuote] = useState<SymbolQuote | null>(null);
 
-  const fetchSymbolQuote = useCallback(async (signal?: AbortSignal) => {
-    if (!symbol || symbol === '---') return;
-    try {
-      const sym = symbol.toUpperCase();
-      const isFno = sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
-      const exchange = isFno ? 'NFO' : 'NSE';
-      const res = await kiteFetch(`/quote?i=${exchange}:${symbol}`);
-      if (signal?.aborted) return;
-      if (!res.ok) return;
-      const data = await res.json();
-      if (data.quotes && data.quotes.length > 0) {
-        setSymbolQuote(data.quotes[0]);
+  const fetchSymbolQuote = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!symbol || symbol === '---') return;
+      try {
+        const sym = symbol.toUpperCase();
+        const isFno =
+          sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
+        const exchange = isFno ? 'NFO' : 'NSE';
+        const res = await kiteFetch(`/quote?i=${exchange}:${symbol}`);
+        if (signal?.aborted) return;
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.quotes && data.quotes.length > 0) {
+          setSymbolQuote(data.quotes[0]);
+        }
+      } catch (err) {
+        // Silence AbortError — expected on unmount
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        console.error('[Header] Quote fetch failed:', err);
       }
-    } catch (err) {
-      // Silence AbortError — expected on unmount
-      if (err instanceof DOMException && err.name === 'AbortError') return;
-      console.error('[Header] Quote fetch failed:', err);
-    }
-  }, [symbol]);
+    },
+    [symbol]
+  );
 
   useEffect(() => {
     const controller = new AbortController();

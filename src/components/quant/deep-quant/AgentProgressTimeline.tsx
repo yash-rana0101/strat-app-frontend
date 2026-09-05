@@ -33,13 +33,17 @@ interface AgentProgressTimelineProps {
 function getTimelineIcon(label: string) {
   const l = label.toLowerCase();
   if (l.includes('consensus')) return <BarChart3 size={10} className="shrink-0 text-cyan-400" />;
-  if (l.includes('trend') || l.includes('candle')) return <TrendingUp size={10} className="shrink-0 text-emerald-400" />;
+  if (l.includes('trend') || l.includes('candle'))
+    return <TrendingUp size={10} className="shrink-0 text-emerald-400" />;
   if (l.includes('pattern')) return <Shapes size={10} className="shrink-0 text-violet-400" />;
   if (l.includes('support') || l.includes('resistance') || l.includes('level'))
     return <ChevronsUpDown size={10} className="shrink-0 text-amber-400" />;
-  if (l.includes('predict') || l.includes('regime')) return <Brain size={10} className="shrink-0 text-indigo-400" />;
-  if (l.includes('option') || l.includes('fno')) return <Layers size={10} className="shrink-0 text-blue-400" />;
-  if (l.includes('decision') || l.includes('trade')) return <Target size={10} className="shrink-0 text-emerald-400" />;
+  if (l.includes('predict') || l.includes('regime'))
+    return <Brain size={10} className="shrink-0 text-indigo-400" />;
+  if (l.includes('option') || l.includes('fno'))
+    return <Layers size={10} className="shrink-0 text-blue-400" />;
+  if (l.includes('decision') || l.includes('trade'))
+    return <Target size={10} className="shrink-0 text-emerald-400" />;
   return <Wrench size={10} className="shrink-0 text-text-muted" />;
 }
 
@@ -79,7 +83,11 @@ export default function AgentProgressTimeline({
             {item.status === 'done' ? (
               <Check size={10} className="shrink-0 text-emerald-400 ml-0.5" aria-hidden="true" />
             ) : (
-              <Loader2 size={10} className="shrink-0 animate-spin text-amber-400 ml-0.5" aria-hidden="true" />
+              <Loader2
+                size={10}
+                className="shrink-0 animate-spin text-amber-400 ml-0.5"
+                aria-hidden="true"
+              />
             )}
           </button>
         </React.Fragment>

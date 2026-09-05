@@ -14,11 +14,7 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 
-import {
-  TOOL_REGISTRY,
-  MULTI_MIN_ANCHORS,
-  isComplete,
-} from '@/charting/engines/drawingEngine';
+import { TOOL_REGISTRY, MULTI_MIN_ANCHORS, isComplete } from '@/charting/engines/drawingEngine';
 import type { Point } from '@/store/useChartUIStore';
 
 const RUNS = 100;
@@ -36,8 +32,8 @@ const arbPoint: fc.Arbitrary<Point> = fc.record({
 
 const TOOLS = Object.keys(TOOL_REGISTRY);
 
-describe('Property 12: drawing creation requires exactly the tool\'s anchor count', () => {
-  it('isComplete is true iff anchors.length >= the tool\'s required anchor count', () => {
+describe("Property 12: drawing creation requires exactly the tool's anchor count", () => {
+  it("isComplete is true iff anchors.length >= the tool's required anchor count", () => {
     fc.assert(
       fc.property(
         fc.constantFrom(...TOOLS),
@@ -56,9 +52,9 @@ describe('Property 12: drawing creation requires exactly the tool\'s anchor coun
           } else {
             expect(complete).toBe(true);
           }
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -70,10 +66,16 @@ describe('Property 12: drawing creation requires exactly the tool\'s anchor coun
 
       // One fewer than required is incomplete (when required >= 1).
       if (required >= 1) {
-        expect(isComplete(tool, make(required - 1)), `${tool} should be incomplete with ${required - 1} anchors`).toBe(false);
+        expect(
+          isComplete(tool, make(required - 1)),
+          `${tool} should be incomplete with ${required - 1} anchors`
+        ).toBe(false);
       }
       // Exactly the required count completes the drawing.
-      expect(isComplete(tool, make(required)), `${tool} should be complete with ${required} anchors`).toBe(true);
+      expect(
+        isComplete(tool, make(required)),
+        `${tool} should be complete with ${required} anchors`
+      ).toBe(true);
     }
   });
 });

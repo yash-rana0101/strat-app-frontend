@@ -72,14 +72,12 @@ describe('FnoOptionChainTable — hook order across the empty→populated transi
     // This is the cold-load sequence. Before the fix React threw here and the
     // whole F&O subtree came down.
     const { rerender, container } = render(
-      <FnoOptionChainTable viewState={viewWith(0)} fnoExpiry="" expiries={[]} />,
+      <FnoOptionChainTable viewState={viewWith(0)} fnoExpiry="" expiries={[]} />
     );
     expect(container.textContent).toContain('No Option Chain Strikes Available');
 
     expect(() =>
-      rerender(
-        <FnoOptionChainTable viewState={viewWith(5)} fnoExpiry="" expiries={[]} />,
-      ),
+      rerender(<FnoOptionChainTable viewState={viewWith(5)} fnoExpiry="" expiries={[]} />)
     ).not.toThrow();
 
     // And it actually rendered the ladder, not just avoided throwing.
@@ -89,12 +87,10 @@ describe('FnoOptionChainTable — hook order across the empty→populated transi
   it('survives the reverse transition too (chain drops back to empty)', () => {
     // Same violation in the other direction: fewer hooks than the previous render.
     const { rerender, container } = render(
-      <FnoOptionChainTable viewState={viewWith(5)} fnoExpiry="" expiries={[]} />,
+      <FnoOptionChainTable viewState={viewWith(5)} fnoExpiry="" expiries={[]} />
     );
     expect(() =>
-      rerender(
-        <FnoOptionChainTable viewState={viewWith(0)} fnoExpiry="" expiries={[]} />,
-      ),
+      rerender(<FnoOptionChainTable viewState={viewWith(0)} fnoExpiry="" expiries={[]} />)
     ).not.toThrow();
     expect(container.textContent).toContain('No Option Chain Strikes Available');
   });
@@ -103,13 +99,11 @@ describe('FnoOptionChainTable — hook order across the empty→populated transi
     // A live panel does this whenever a poll misses: any flap must be survivable,
     // not just the first transition.
     const { rerender } = render(
-      <FnoOptionChainTable viewState={viewWith(0)} fnoExpiry="" expiries={[]} />,
+      <FnoOptionChainTable viewState={viewWith(0)} fnoExpiry="" expiries={[]} />
     );
     expect(() => {
       for (const n of [3, 0, 7, 0, 2]) {
-        rerender(
-          <FnoOptionChainTable viewState={viewWith(n)} fnoExpiry="" expiries={[]} />,
-        );
+        rerender(<FnoOptionChainTable viewState={viewWith(n)} fnoExpiry="" expiries={[]} />);
       }
     }).not.toThrow();
   });

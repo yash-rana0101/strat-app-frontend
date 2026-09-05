@@ -55,11 +55,9 @@ export default function MarketDepthStats({ stats }: MarketDepthStatsProps) {
 
   // Circuit limits fallback (10% standard equity band if broker omits)
   const lowerCircuit =
-    stats?.lower_circuit_limit ??
-    (close != null && close > 0 ? close * 0.9 : null);
+    stats?.lower_circuit_limit ?? (close != null && close > 0 ? close * 0.9 : null);
   const upperCircuit =
-    stats?.upper_circuit_limit ??
-    (close != null && close > 0 ? close * 1.1 : null);
+    stats?.upper_circuit_limit ?? (close != null && close > 0 ? close * 1.1 : null);
 
   const avgPrice = stats?.average_price ?? ltp;
   const refPrice = stats?.ref_price ?? close ?? open;
@@ -171,4 +169,3 @@ export default function MarketDepthStats({ stats }: MarketDepthStatsProps) {
     </div>
   );
 }
-

@@ -48,7 +48,7 @@ import {
 async function ensureActiveSession(
   symbol: string,
   timeframe: string,
-  profile: string,
+  profile: string
 ): Promise<string | undefined> {
   if (!FQ_MULTI_SESSION) return undefined;
 
@@ -68,7 +68,7 @@ async function ensureActiveSession(
   } catch (err) {
     console.warn(
       '[QuantStore] Could not create a session for this run; continuing on the legacy thread path.',
-      err,
+      err
     );
     return undefined;
   }
@@ -78,8 +78,8 @@ async function ensureActiveSession(
 
 export interface ConsensusReport {
   symbol: string;
-  trend_score: number;      // -100 to +100
-  momentum_state: string;   // "OVERBOUGHT" | "OVERSOLD" | "NEUTRAL"
+  trend_score: number; // -100 to +100
+  momentum_state: string; // "OVERBOUGHT" | "OVERSOLD" | "NEUTRAL"
   volatility_state: string; // "SQUEEZING" | "EXPANDING" | "NORMAL"
   volume_flow_state: string; // "ACCUMULATION" | "DISTRIBUTION" | "NEUTRAL"
   active_patterns: string[];
@@ -109,8 +109,8 @@ export interface ConsensusReport {
   ols_value?: number | null;
   ols_slope?: number | null;
   sentiment?: {
-    score: number;           // -100 to +100
-    label: string;           // "Bullish", "Bearish", "Neutral"
+    score: number; // -100 to +100
+    label: string; // "Bullish", "Bearish", "Neutral"
     top_headline: string;
     impact: 'positive' | 'negative' | 'neutral';
   };
@@ -127,11 +127,11 @@ export interface ExecutionLevels {
 export interface AiExecutionPlan {
   // `undefined` when the committed decision emitted no conviction — the UI
   // renders "—" rather than fabricating a default (R1.7). Never defaulted to 75.
-  conviction_score: number | undefined;   // 1–100, or undefined when absent
+  conviction_score: number | undefined; // 1–100, or undefined when absent
   setup_validation: string;
   execution_plan: string;
-  action?: 'BUY' | 'SELL' | 'HOLD';   // from the committed decision
-  opportunity_tier?: string;          // e.g. 'a_plus' | 'stand_aside'
+  action?: 'BUY' | 'SELL' | 'HOLD'; // from the committed decision
+  opportunity_tier?: string; // e.g. 'a_plus' | 'stand_aside'
   execution_levels?: ExecutionLevels; // present ONLY for a validated directional trade
 }
 
@@ -140,7 +140,7 @@ export interface AiExecutionPlan {
 // prices. HOLD, `stand_aside`, an unknown/absent action, or missing/malformed
 // levels all fail safe to non-actionable. Total over null/partial plans.
 export function isActionableTrade(
-  plan: AiExecutionPlan | null,
+  plan: AiExecutionPlan | null
 ): plan is AiExecutionPlan & { execution_levels: ExecutionLevels } {
   if (!plan) return false;
   const act = (plan.action || '').toUpperCase();
@@ -151,7 +151,7 @@ export function isActionableTrade(
   return (
     !!l &&
     [l.entry, l.stop_loss, l.take_profit].every(
-      (n) => typeof n === 'number' && Number.isFinite(n) && n > 0,
+      (n) => typeof n === 'number' && Number.isFinite(n) && n > 0
     )
   );
 }
@@ -181,7 +181,6 @@ export interface MultiTfChartPatterns {
   timeframe: string;
   patterns: ChartPattern[];
 }
-
 
 // ── Deep Quant SSE stream event payload ─────────────────────────────────
 // Shape emitted by the Rust `deep-quant-stream` Tauri event bridge.
@@ -249,11 +248,11 @@ export interface SentimentArticle {
 
 export interface SentimentPayload {
   symbol: string;
-  score: number;           // -100 to +100
-  label: string;           // "Bullish", "Bearish", "Neutral"
+  score: number; // -100 to +100
+  label: string; // "Bullish", "Bearish", "Neutral"
   top_headline: string;
   impact: 'positive' | 'negative' | 'neutral';
-  headlines: string[];     // All fetched headlines for individual display
+  headlines: string[]; // All fetched headlines for individual display
   articles?: SentimentArticle[]; // Detailed articles with link/source if available
 }
 
@@ -286,7 +285,10 @@ interface QuantStore {
   isFetchingSentiment: boolean;
   sentimentError: string | null;
   /** Cache entry: payload + timestamp fetched + optional rate-limit cooldown */
-  sentimentCache: Record<string, { payload: SentimentPayload; fetchedAt: number; rateLimitedUntil?: number }>;
+  sentimentCache: Record<
+    string,
+    { payload: SentimentPayload; fetchedAt: number; rateLimitedUntil?: number }
+  >;
 
   // ── Terminal / Stream States ──────────────────────────────────────────
   sessionStatus: 'idle' | 'running' | 'watching' | 'complete' | 'error';
@@ -424,8 +426,8 @@ export function sentimentSubject(symbol: string): string {
 // only the first call makes a network request. Others wait or skip.
 const sentimentInFlight = new Set<string>();
 
-const SENTIMENT_TTL_MS = 10 * 60 * 1000;  // 10 minutes
-const SENTIMENT_429_COOL = 5 * 60 * 1000;  // 5 minutes cooldown after 429
+const SENTIMENT_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const SENTIMENT_429_COOL = 5 * 60 * 1000; // 5 minutes cooldown after 429
 
 // ── Multi-timeframe chart-pattern cache + in-flight dedup ────────────────
 // fetchMultiTfPatterns is auto-triggered on EVERY Deep Quant run, and the
@@ -436,7 +438,7 @@ const SENTIMENT_429_COOL = 5 * 60 * 1000;  // 5 minutes cooldown after 429
 // duplicate concurrent requests for the same symbol.
 const multiTfInFlight = new Set<string>();
 const multiTfCache = new Map<string, { data: MultiTfChartPatterns[]; fetchedAt: number }>();
-const MULTI_TF_TTL_MS = 2 * 60 * 1000;  // 2 minutes
+const MULTI_TF_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
 // ── Deep-quant stream watchdog (activity-based, not run-total) ────────────
 // A long-but-healthy agent run can legitimately exceed 2 minutes end-to-end
@@ -530,7 +532,7 @@ function extractFinalTrade(text: string): AiExecutionPlan | null {
                 parsed,
                 startIdx,
                 endIdx: j,
-                length: candidateStr.length
+                length: candidateStr.length,
               });
             }
           } catch {
@@ -542,15 +544,16 @@ function extractFinalTrade(text: string): AiExecutionPlan | null {
   }
 
   // Filter for candidates matching the AiExecutionPlan schema
-  const validCandidates = candidates.filter(c => {
+  const validCandidates = candidates.filter((c) => {
     const p = c.parsed;
-    return p && (
-      p.conviction_score !== undefined ||
-      p.conviction !== undefined ||
-      p.execution_plan !== undefined ||
-      p.plan !== undefined ||
-      p.setup_validation !== undefined ||
-      p.setup !== undefined
+    return (
+      p &&
+      (p.conviction_score !== undefined ||
+        p.conviction !== undefined ||
+        p.execution_plan !== undefined ||
+        p.plan !== undefined ||
+        p.setup_validation !== undefined ||
+        p.setup !== undefined)
     );
   });
 
@@ -568,18 +571,24 @@ function extractFinalTrade(text: string): AiExecutionPlan | null {
 
   if (validCandidates.length === 0) {
     // Fallback: search for any valid JSON object at the top level
-    const anyValid = candidates.filter(c => c.parsed && typeof c.parsed === 'object');
+    const anyValid = candidates.filter((c) => c.parsed && typeof c.parsed === 'object');
     if (anyValid.length > 0) {
-      const topLevel = anyValid.filter(c =>
-        !anyValid.some(other => other !== c && other.startIdx <= c.startIdx && other.endIdx >= c.endIdx)
+      const topLevel = anyValid.filter(
+        (c) =>
+          !anyValid.some(
+            (other) => other !== c && other.startIdx <= c.startIdx && other.endIdx >= c.endIdx
+          )
       );
       if (topLevel.length > 0) {
         topLevel.sort((a, b) => b.startIdx - a.startIdx);
         const parsed = topLevel[0].parsed;
         return {
           conviction_score: asScore(parsed.conviction_score, parsed.conviction),
-          setup_validation: asString(parsed.setup_validation) || asString(parsed.validation) || asString(parsed.setup),
-          execution_plan: asString(parsed.execution_plan) || asString(parsed.plan)
+          setup_validation:
+            asString(parsed.setup_validation) ||
+            asString(parsed.validation) ||
+            asString(parsed.setup),
+          execution_plan: asString(parsed.execution_plan) || asString(parsed.plan),
         };
       }
     }
@@ -587,11 +596,9 @@ function extractFinalTrade(text: string): AiExecutionPlan | null {
   }
 
   // Filter out candidates that are nested inside other valid candidates
-  const nonNested = validCandidates.filter(c => {
-    const isNested = validCandidates.some(other =>
-      other !== c &&
-      other.startIdx <= c.startIdx &&
-      other.endIdx >= c.endIdx
+  const nonNested = validCandidates.filter((c) => {
+    const isNested = validCandidates.some(
+      (other) => other !== c && other.startIdx <= c.startIdx && other.endIdx >= c.endIdx
     );
     return !isNested;
   });
@@ -604,8 +611,9 @@ function extractFinalTrade(text: string): AiExecutionPlan | null {
   const best = nonNested[0].parsed;
   return {
     conviction_score: asScore(best.conviction_score, best.conviction),
-    setup_validation: asString(best.setup_validation) || asString(best.validation) || asString(best.setup),
-    execution_plan: asString(best.execution_plan) || asString(best.plan)
+    setup_validation:
+      asString(best.setup_validation) || asString(best.validation) || asString(best.setup),
+    execution_plan: asString(best.execution_plan) || asString(best.plan),
   };
 }
 
@@ -632,7 +640,7 @@ function extractFinalTrade(text: string): AiExecutionPlan | null {
  */
 export function mergeFinalPlan(
   committed: AiExecutionPlan | null,
-  scraped: AiExecutionPlan | null,
+  scraped: AiExecutionPlan | null
 ): AiExecutionPlan | null {
   if (!committed) return scraped;
   if (!scraped) return committed;
@@ -731,7 +739,10 @@ function _newStepId(): string {
 // same symbol analyzed in INTRADAY vs SWING vs INVESTOR vs F&O is a distinct
 // analysis. So `TMPV::INTRADAY` and `TMPV::FNO` persist independently, and
 // switching either the symbol or the mode restores the matching session.
-function _sessionKey(symbol: string | null | undefined, profile: string | null | undefined): string {
+function _sessionKey(
+  symbol: string | null | undefined,
+  profile: string | null | undefined
+): string {
   const sym = (symbol || '').toUpperCase();
   const prof = (profile || 'INTRADAY').toUpperCase();
   return `${sym}::${prof}`;
@@ -762,7 +773,8 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
         const resumeStep: ReasoningStep = {
           id: _newStepId(),
           type: 'message',
-          content: '\n---\n### Resuming Analysis — Fresh Market Data\nThe watcher woke this run. Re-checking the setup with the latest data...\n---\n',
+          content:
+            '\n---\n### Resuming Analysis — Fresh Market Data\nThe watcher woke this run. Re-checking the setup with the latest data...\n---\n',
           timestamp: Date.now(),
         };
         return {
@@ -839,7 +851,10 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
     case 'BEST_CURRENT_READ': {
       const bias = (data?.bias as string) || 'neutral';
       const why = (data?.why_standing_aside as string) || '';
-      const levelsRaw = (data?.levels && typeof data.levels === 'object') ? (data.levels as Record<string, unknown>) : {};
+      const levelsRaw =
+        data?.levels && typeof data.levels === 'object'
+          ? (data.levels as Record<string, unknown>)
+          : {};
       const levelStr = Object.entries(levelsRaw)
         .filter(([, v]) => typeof v === 'number' && Number.isFinite(v as number))
         .map(([k, v]) => `${k}: ${v}`)
@@ -851,7 +866,10 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       ].filter(Boolean);
       return {
         ...session,
-        reasoningSteps: [...session.reasoningSteps, { id: _newStepId(), type: 'message', content: lines.join('\n'), timestamp: Date.now() }],
+        reasoningSteps: [
+          ...session.reasoningSteps,
+          { id: _newStepId(), type: 'message', content: lines.join('\n'), timestamp: Date.now() },
+        ],
         updatedAt: Date.now(),
       };
     }
@@ -862,7 +880,15 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       const body = [outcome, detail].filter(Boolean).join(' — ');
       return {
         ...session,
-        reasoningSteps: [...session.reasoningSteps, { id: _newStepId(), type: 'message', content: `**Verification — ${check}${body ? `: ${body}` : ''}**`, timestamp: Date.now() }],
+        reasoningSteps: [
+          ...session.reasoningSteps,
+          {
+            id: _newStepId(),
+            type: 'message',
+            content: `**Verification — ${check}${body ? `: ${body}` : ''}**`,
+            timestamp: Date.now(),
+          },
+        ],
         updatedAt: Date.now(),
       };
     }
@@ -878,17 +904,25 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       const actionRaw = (data?.action as string) || (data?.decision as string) || '';
       const action = typeof actionRaw === 'string' ? actionRaw.trim().toUpperCase() : '';
       const convictionRaw = data?.conviction_score ?? data?.conviction;
-      const conviction = typeof convictionRaw === 'number' && Number.isFinite(convictionRaw) ? convictionRaw : undefined;
-      const rationale = (data?.rationale as string) || (data?.setup_validation as string) || (data?.thesis as string) || '';
+      const conviction =
+        typeof convictionRaw === 'number' && Number.isFinite(convictionRaw)
+          ? convictionRaw
+          : undefined;
+      const rationale =
+        (data?.rationale as string) ||
+        (data?.setup_validation as string) ||
+        (data?.thesis as string) ||
+        '';
       const executionPlan = (data?.execution_plan as string) || '';
       // Carry the committed decision's action / tier / validated levels through
       // to the plan so the UI can gate on them (R1.1). `execution_levels` is
       // only ever the structured object the Python payload threads for a
       // directional trade — never synthesized here.
       const tier = (data?.opportunity_tier as string) || undefined;
-      const levels = (data?.execution_levels && typeof data.execution_levels === 'object')
-        ? (data.execution_levels as ExecutionLevels)
-        : undefined;
+      const levels =
+        data?.execution_levels && typeof data.execution_levels === 'object'
+          ? (data.execution_levels as ExecutionLevels)
+          : undefined;
       const summaryLines = [
         `**Decision${action ? `: ${action}` : ''}**`,
         conviction !== undefined ? `Conviction: ${conviction}/100` : '',
@@ -897,19 +931,28 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       ].filter(Boolean);
       // Leave `conviction_score` undefined when the payload omits it — no `?? 75`
       // default (R1.7). Build a plan whenever we have any decision signal.
-      const decisionPlan: AiExecutionPlan | null = (conviction !== undefined || rationale || executionPlan || action)
-        ? {
-          conviction_score: conviction,
-          setup_validation: rationale,
-          execution_plan: executionPlan,
-          action: (action as AiExecutionPlan['action']) || undefined,
-          opportunity_tier: tier,
-          execution_levels: levels,
-        }
-        : null;
+      const decisionPlan: AiExecutionPlan | null =
+        conviction !== undefined || rationale || executionPlan || action
+          ? {
+              conviction_score: conviction,
+              setup_validation: rationale,
+              execution_plan: executionPlan,
+              action: (action as AiExecutionPlan['action']) || undefined,
+              opportunity_tier: tier,
+              execution_levels: levels,
+            }
+          : null;
       return {
         ...session,
-        reasoningSteps: [...session.reasoningSteps, { id: _newStepId(), type: 'message', content: summaryLines.join('\n'), timestamp: Date.now() }],
+        reasoningSteps: [
+          ...session.reasoningSteps,
+          {
+            id: _newStepId(),
+            type: 'message',
+            content: summaryLines.join('\n'),
+            timestamp: Date.now(),
+          },
+        ],
         finalTrade: session.finalTrade ?? decisionPlan,
         aiPlan: session.aiPlan ?? decisionPlan,
         updatedAt: Date.now(),
@@ -921,7 +964,17 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       const isWatching = toolName === 'watch_price_condition';
       return {
         ...session,
-        reasoningSteps: [...session.reasoningSteps, { id: _newStepId(), type: 'tool_start', toolName, args: data?.args, content: `> Executing tool: ${toolName}...`, timestamp: Date.now() }],
+        reasoningSteps: [
+          ...session.reasoningSteps,
+          {
+            id: _newStepId(),
+            type: 'tool_start',
+            toolName,
+            args: data?.args,
+            content: `> Executing tool: ${toolName}...`,
+            timestamp: Date.now(),
+          },
+        ],
         sessionStatus: isWatching ? 'watching' : session.sessionStatus,
         _pendingToolCalls: session._pendingToolCalls + 1,
         updatedAt: Date.now(),
@@ -932,7 +985,16 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       if (!toolName) return session;
       return {
         ...session,
-        reasoningSteps: [...session.reasoningSteps, { id: _newStepId(), type: 'tool_end', toolName, content: `Tool ${toolName} completed successfully.`, timestamp: Date.now() }],
+        reasoningSteps: [
+          ...session.reasoningSteps,
+          {
+            id: _newStepId(),
+            type: 'tool_end',
+            toolName,
+            content: `Tool ${toolName} completed successfully.`,
+            timestamp: Date.now(),
+          },
+        ],
         _pendingToolCalls: Math.max(0, session._pendingToolCalls - 1),
         updatedAt: Date.now(),
       };
@@ -941,10 +1003,19 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       if (session._runFinishedProcessed) return session;
       let s = session;
       if (s._pendingToolCalls > 0) s = { ...s, _pendingToolCalls: 0 };
-      const accumulatedText = s.reasoningSteps.filter((step) => step.type === 'message').map((step) => step.content).join('');
+      const accumulatedText = s.reasoningSteps
+        .filter((step) => step.type === 'message')
+        .map((step) => step.content)
+        .join('');
       const tradePlan = extractFinalTrade(accumulatedText);
       if (data?.status === 'paused') {
-        return { ...s, sessionStatus: 'watching', isAnalyzing: false, _runFinishedProcessed: true, updatedAt: Date.now() };
+        return {
+          ...s,
+          sessionStatus: 'watching',
+          isAnalyzing: false,
+          _runFinishedProcessed: true,
+          updatedAt: Date.now(),
+        };
       }
       return {
         ...s,
@@ -961,7 +1032,14 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
     }
     case 'ERROR': {
       const errorMsg = data?.error || 'Unknown streaming error';
-      return { ...session, sessionStatus: 'error', isAnalyzing: false, analysisError: errorMsg, _runFinishedProcessed: true, updatedAt: Date.now() };
+      return {
+        ...session,
+        sessionStatus: 'error',
+        isAnalyzing: false,
+        analysisError: errorMsg,
+        _runFinishedProcessed: true,
+        updatedAt: Date.now(),
+      };
     }
     default:
       return session;
@@ -1009,17 +1087,16 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
   isFetchingPatterns: false,
   patternsError: null,
 
-
   setConsensusData: (data: ConsensusReport) => {
     const sym = data.symbol?.toUpperCase();
-    debugLog(`[QuantStore] Consensus SET symbol=${sym} trend=${data.trend_score} momentum=${data.momentum_state}`);
+    debugLog(
+      `[QuantStore] Consensus SET symbol=${sym} trend=${data.trend_score} momentum=${data.momentum_state}`
+    );
     const computedAt = Date.now();
     set((state) => ({
       consensusData: data,
       consensusComputedAt: computedAt,
-      consensusCache: sym
-        ? { ...state.consensusCache, [sym]: data }
-        : state.consensusCache,
+      consensusCache: sym ? { ...state.consensusCache, [sym]: data } : state.consensusCache,
       consensusComputedAtBySymbol: sym
         ? { ...state.consensusComputedAtBySymbol, [sym]: computedAt }
         : state.consensusComputedAtBySymbol,
@@ -1109,8 +1186,10 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     const now = Date.now();
 
     // Serve fresh cache hit
-    if (entry && (now - entry.fetchedAt) < SENTIMENT_TTL_MS) {
-      debugLog(`[QuantStore] Sentiment CACHE HIT symbol=${symbol} score=${entry.payload.score} age=${Math.round((now - entry.fetchedAt) / 1000)}s`);
+    if (entry && now - entry.fetchedAt < SENTIMENT_TTL_MS) {
+      debugLog(
+        `[QuantStore] Sentiment CACHE HIT symbol=${symbol} score=${entry.payload.score} age=${Math.round((now - entry.fetchedAt) / 1000)}s`
+      );
       set({ activeSentiment: entry.payload, isFetchingSentiment: false, sentimentError: null });
       return;
     }
@@ -1131,9 +1210,8 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         ...(entry.payload
           ? { activeSentiment: entry.payload, sentimentError: null }
           : {
-            sentimentError:
-              `Sentiment is rate limited for ${symbol}. Retrying automatically in ${secs}s.`,
-          }),
+              sentimentError: `Sentiment is rate limited for ${symbol}. Retrying automatically in ${secs}s.`,
+            }),
       });
       return;
     }
@@ -1153,7 +1231,9 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
 
     try {
       const payload = await bridgeInvoke<SentimentPayload>('fetch_symbol_sentiment', { symbol });
-      debugLog(`[QuantStore] Sentiment OK symbol=${symbol} score=${payload.score} label=${payload.label}`);
+      debugLog(
+        `[QuantStore] Sentiment OK symbol=${symbol} score=${payload.score} label=${payload.label}`
+      );
       set((state) => ({
         activeSentiment: payload,
         isFetchingSentiment: false,
@@ -1170,14 +1250,20 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         isFetchingSentiment: false,
         sentimentError: message,
         // On 429: set cooldown so we don't hammer again for 5 minutes
-        sentimentCache: is429 ? {
-          ...state.sentimentCache,
-          [symbol]: {
-            payload: state.sentimentCache[symbol]?.payload ?? (state.activeSentiment?.symbol === symbol ? state.activeSentiment : null as unknown as SentimentPayload),
-            fetchedAt: state.sentimentCache[symbol]?.fetchedAt ?? 0,
-            rateLimitedUntil: Date.now() + SENTIMENT_429_COOL,
-          },
-        } : state.sentimentCache,
+        sentimentCache: is429
+          ? {
+              ...state.sentimentCache,
+              [symbol]: {
+                payload:
+                  state.sentimentCache[symbol]?.payload ??
+                  (state.activeSentiment?.symbol === symbol
+                    ? state.activeSentiment
+                    : (null as unknown as SentimentPayload)),
+                fetchedAt: state.sentimentCache[symbol]?.fetchedAt ?? 0,
+                rateLimitedUntil: Date.now() + SENTIMENT_429_COOL,
+              },
+            }
+          : state.sentimentCache,
       }));
     } finally {
       sentimentInFlight.delete(symbol);
@@ -1194,7 +1280,9 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     // Respect 429 cooldown even on force-refresh
     if (entry?.rateLimitedUntil && now < entry.rateLimitedUntil) {
       const secs = Math.round((entry.rateLimitedUntil - now) / 1000);
-      console.warn(`[QuantStore] Sentiment 429 cooldown — skipping refresh for ${symbol} (${secs}s remaining)`);
+      console.warn(
+        `[QuantStore] Sentiment 429 cooldown — skipping refresh for ${symbol} (${secs}s remaining)`
+      );
       return;
     }
 
@@ -1225,14 +1313,20 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       set((state) => ({
         isFetchingSentiment: false,
         sentimentError: message,
-        sentimentCache: is429 ? {
-          ...state.sentimentCache,
-          [symbol]: {
-            payload: state.sentimentCache[symbol]?.payload ?? (state.activeSentiment?.symbol === symbol ? state.activeSentiment : null as unknown as SentimentPayload),
-            fetchedAt: state.sentimentCache[symbol]?.fetchedAt ?? 0,
-            rateLimitedUntil: Date.now() + SENTIMENT_429_COOL,
-          },
-        } : state.sentimentCache,
+        sentimentCache: is429
+          ? {
+              ...state.sentimentCache,
+              [symbol]: {
+                payload:
+                  state.sentimentCache[symbol]?.payload ??
+                  (state.activeSentiment?.symbol === symbol
+                    ? state.activeSentiment
+                    : (null as unknown as SentimentPayload)),
+                fetchedAt: state.sentimentCache[symbol]?.fetchedAt ?? 0,
+                rateLimitedUntil: Date.now() + SENTIMENT_429_COOL,
+              },
+            }
+          : state.sentimentCache,
       }));
     } finally {
       sentimentInFlight.delete(symbol);
@@ -1256,7 +1350,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       userAnalysis: string;
     }
   ) => {
-    const t0 = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    const t0 = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const activeMode = mode || 'FIND';
 
     // Read the active timeframe AND workspace profile up front so we can key the
@@ -1269,7 +1363,9 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     const activeProfile = useTradeStore.getState().activeProfile;
     const fnoExpiry = useTradeStore.getState().fnoExpiry;
     const runKey = _sessionKey(symbol, activeProfile);
-    debugLog(`[QuantStore] Deep analysis START key=${runKey} mode=${activeMode} tf=${activeTimeframe} ts=${new Date().toISOString()}`);
+    debugLog(
+      `[QuantStore] Deep analysis START key=${runKey} mode=${activeMode} tf=${activeTimeframe} ts=${new Date().toISOString()}`
+    );
 
     // ── RESEARCH SKU gate (compliance blocker P1) ─────────────────────────────
     // FIND produces a directional recommendation, which is regulated research;
@@ -1330,60 +1426,63 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     // appearing after the user hit "Find Quant Trade". Fire-and-forget instead so
     // the agent is invoked immediately and the glass-box transcript streams in
     // with minimal latency.
-    get().refreshSentimentForSymbol(symbol).catch(() => {
-      console.warn('[QuantStore] Sentiment refresh failed, continuing with analysis...');
-    });
+    get()
+      .refreshSentimentForSymbol(symbol)
+      .catch(() => {
+        console.warn('[QuantStore] Sentiment refresh failed, continuing with analysis...');
+      });
 
-    debugLog(`[QuantStore] → AI context: timeframe=${activeTimeframe} profile=${activeProfile} fnoExpiry=${fnoExpiry || '(nearest)'}`);
+    debugLog(
+      `[QuantStore] → AI context: timeframe=${activeTimeframe} profile=${activeProfile} fnoExpiry=${fnoExpiry || '(nearest)'}`
+    );
 
     try {
       debugLog(`[QuantStore] → invoking 'run_deep_quant_agent'…`);
-      const tInvoke = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const tInvoke = typeof performance !== 'undefined' ? performance.now() : Date.now();
 
       // Resolved BEFORE the invoke so the adapter sees a session id on the very first call.
       // Awaited rather than fired in parallel because the branch it selects (session vs
       // legacy thread) has to be decided before the request is built.
       const runSessionId = await ensureActiveSession(symbol, activeTimeframe, activeProfile);
 
-      const threadId = await bridgeInvoke<string>(
-        'run_deep_quant_agent',
-        {
-          symbol,
-          mode: activeMode,
-          timeframe: activeTimeframe,
-          profile: activeProfile,
-          fnoExpiry,
-          // Beta (locked) always uses the deployment default model; production
-          // sends the user's selection.
-          model: MODEL_SELECTION_LOCKED ? null : (get().selectedModel || null),
-          manualTrade: manualTrade ? {
-            side: manualTrade.side,
-            entry: manualTrade.entry,
-            stop_loss: manualTrade.stopLoss,
-            take_profit: manualTrade.takeProfit,
-            user_analysis: manualTrade.userAnalysis
-          } : null,
-          // Authenticated user id → the droplet resolves this user's OpenRouter
-          // key from the backend internal endpoint for the run.
-          userId: useAuthStore.getState().user?.id ?? null,
-          // THE run entry point's session binding.
-          //
-          // Without this the multi-session path was only half-wired: the adapter dispatches on the
-          // presence of `session_id` (see `startSessionRun` in `webAdapters.ts`), and nothing passed
-          // it — so every run took the LEGACY branch, minting a client-side thread id with no session
-          // row and no `runs` row. Its frames then arrived on a thread `useSessionStore` had never
-          // bound, so they were dropped into `unroutableFrames` and the transcript stayed empty.
-          // Found by the e2e journey, which is exactly what that job is for.
-          //
-          // Reading the active id was still not enough on its own: when NOTHING was active it
-          // resolved to `undefined` and silently took that same legacy branch, so a run was never
-          // filed under a conversation. `ensureActiveSession` creates one in that case.
-          //
-          // `undefined` when the flag is off, when there is no symbol, or when creation failed —
-          // which keeps the legacy path byte-identical.
-          session_id: runSessionId,
-        }
-      );
+      const threadId = await bridgeInvoke<string>('run_deep_quant_agent', {
+        symbol,
+        mode: activeMode,
+        timeframe: activeTimeframe,
+        profile: activeProfile,
+        fnoExpiry,
+        // Beta (locked) always uses the deployment default model; production
+        // sends the user's selection.
+        model: MODEL_SELECTION_LOCKED ? null : get().selectedModel || null,
+        manualTrade: manualTrade
+          ? {
+              side: manualTrade.side,
+              entry: manualTrade.entry,
+              stop_loss: manualTrade.stopLoss,
+              take_profit: manualTrade.takeProfit,
+              user_analysis: manualTrade.userAnalysis,
+            }
+          : null,
+        // Authenticated user id → the droplet resolves this user's OpenRouter
+        // key from the backend internal endpoint for the run.
+        userId: useAuthStore.getState().user?.id ?? null,
+        // THE run entry point's session binding.
+        //
+        // Without this the multi-session path was only half-wired: the adapter dispatches on the
+        // presence of `session_id` (see `startSessionRun` in `webAdapters.ts`), and nothing passed
+        // it — so every run took the LEGACY branch, minting a client-side thread id with no session
+        // row and no `runs` row. Its frames then arrived on a thread `useSessionStore` had never
+        // bound, so they were dropped into `unroutableFrames` and the transcript stayed empty.
+        // Found by the e2e journey, which is exactly what that job is for.
+        //
+        // Reading the active id was still not enough on its own: when NOTHING was active it
+        // resolved to `undefined` and silently took that same legacy branch, so a run was never
+        // filed under a conversation. `ensureActiveSession` creates one in that case.
+        //
+        // `undefined` when the flag is off, when there is no symbol, or when creation failed —
+        // which keeps the legacy path byte-identical.
+        session_id: runSessionId,
+      });
 
       // On the SESSION path this return value is the `session_id`, not a thread id — the server mints
       // the thread inside `POST /run` and reports it on `RUN_STARTED`, which `applyFrame` uses to bind
@@ -1404,10 +1503,10 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         });
       }
 
-      const tDone = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const tDone = typeof performance !== 'undefined' ? performance.now() : Date.now();
       debugLog(
         `[QuantStore] Deep analysis triggered symbol=${symbol} ` +
-        `ipc_ms=${Math.round(tDone - tInvoke)} total_ms=${Math.round(tDone - t0)}`
+          `ipc_ms=${Math.round(tDone - tInvoke)} total_ms=${Math.round(tDone - t0)}`
       );
 
       // Bug 2 fix: Activity-based safety watchdog. Rather than a fixed
@@ -1419,16 +1518,22 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       // session happens to be on screen.
       get()._armStreamWatchdog(runKey);
     } catch (err) {
-      const tDone = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const tDone = typeof performance !== 'undefined' ? performance.now() : Date.now();
       const message = err instanceof Error ? err.message : String(err);
       console.error(
         `[QuantStore] Deep analysis FAIL key=${runKey} ` +
-        `total_ms=${Math.round(tDone - t0)} message=${message}`
+          `total_ms=${Math.round(tDone - t0)} message=${message}`
       );
       // Error ONLY this run's session (by key), mirroring to the view if active.
       set((s) => {
         const sess = s.sessionsByKey[runKey] ?? blankSession();
-        const errored: QuantSession = { ...sess, isAnalyzing: false, sessionStatus: 'error', analysisError: message, updatedAt: Date.now() };
+        const errored: QuantSession = {
+          ...sess,
+          isAnalyzing: false,
+          sessionStatus: 'error',
+          analysisError: message,
+          updatedAt: Date.now(),
+        };
         return {
           sessionsByKey: { ...s.sessionsByKey, [runKey]: errored },
           ...(s.activeViewKey === runKey ? projectSession(errored) : {}),
@@ -1437,18 +1542,19 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     }
   },
 
-  clearAiPlan: () => set({
-    aiPlan: null,
-    finalTrade: null,
-    analysisError: null,
-    sessionStatus: 'idle',
-    reasoningSteps: [],
-    _pendingToolCalls: 0,
-    _runFinishedProcessed: false,
-    multiTfPatterns: null,
-    isFetchingPatterns: false,
-    patternsError: null,
-  }),
+  clearAiPlan: () =>
+    set({
+      aiPlan: null,
+      finalTrade: null,
+      analysisError: null,
+      sessionStatus: 'idle',
+      reasoningSteps: [],
+      _pendingToolCalls: 0,
+      _runFinishedProcessed: false,
+      multiTfPatterns: null,
+      isFetchingPatterns: false,
+      patternsError: null,
+    }),
 
   activateSymbolSession: (symbol: string, profile: string) => {
     const st = get();
@@ -1517,12 +1623,14 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       const secs = Math.round(window / 1000);
       const message = stillWatching
         ? `The price watch went quiet — no heartbeat for ${secs}s. The watcher that wakes ` +
-        `this analysis when your condition is met is no longer reporting, so it will not ` +
-        `resume on its own. Please re-run the analysis.`
+          `this analysis when your condition is met is no longer reporting, so it will not ` +
+          `resume on its own. Please re-run the analysis.`
         : `The agent stream stalled — no activity for ${secs}s. The agent server may be ` +
-        `unreachable or the LLM request stalled. Please retry.`;
+          `unreachable or the LLM request stalled. Please retry.`;
 
-      console.warn(`[QuantStore] Stream watchdog tripped after ${secs}s on ${runKey} (status=${sess.sessionStatus}).`);
+      console.warn(
+        `[QuantStore] Stream watchdog tripped after ${secs}s on ${runKey} (status=${sess.sessionStatus}).`
+      );
       const timedOut: QuantSession = {
         ...sess,
         isAnalyzing: false,
@@ -1600,9 +1708,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
 
     const current = st.sessionsByKey[runKey] ?? blankSession();
     const nextSession = applyStreamEvent(current, payload);
-    const threadMapUpdate = (threadId && !st._threadToKey[threadId])
-      ? { [threadId]: runKey }
-      : {};
+    const threadMapUpdate = threadId && !st._threadToKey[threadId] ? { [threadId]: runKey } : {};
 
     set((state) => ({
       _streamingKey: runKey,
@@ -1649,7 +1755,6 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       })();
     }
     return;
-
   },
 
   resetTerminal: () => {
@@ -1701,7 +1806,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     // 3. Synchronously stop legacy run in quant store
     const cancelStep = createCancelReasoningStep();
     set((s) => {
-      const existing = runKey ? s.sessionsByKey[runKey] ?? blankSession() : blankSession();
+      const existing = runKey ? (s.sessionsByKey[runKey] ?? blankSession()) : blankSession();
       const cancelled: QuantSession = {
         ...existing,
         isAnalyzing: false,
@@ -1731,15 +1836,18 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       });
     } catch (err) {
       const cancelDetail = err instanceof Error ? err.message : String(err);
-      console.error(`[QuantStore] Cancel request failed for ${sessionId || threadId}: ${cancelDetail}`);
+      console.error(
+        `[QuantStore] Cancel request failed for ${sessionId || threadId}: ${cancelDetail}`
+      );
     }
   },
 
-  clearQa: () => set({
-    qaMessages: [],
-    qaStatus: 'idle',
-    _qaRunFinishedProcessed: false,
-  }),
+  clearQa: () =>
+    set({
+      qaMessages: [],
+      qaStatus: 'idle',
+      _qaRunFinishedProcessed: false,
+    }),
 
   askQuestion: async (question: string) => {
     const threadId = get().currentThreadId;
@@ -1878,9 +1986,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
             console.error(`[QuantStore] Trade Q&A ERROR: ${errorMsg}`);
             set((state) => ({
               qaMessages: state.qaMessages.map((m) =>
-                m.id === assistantMsgId
-                  ? { ...m, content: m.content || errorMsg, error: true }
-                  : m
+                m.id === assistantMsgId ? { ...m, content: m.content || errorMsg, error: true } : m
               ),
             }));
             finalize();
@@ -1894,7 +2000,12 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       // Invoke the proxy command. NOTE: the Tauri layer that used to convert
       // camelCase args to snake_case params is gone — `bridgeInvoke` passes the
       // args object through verbatim — so the snake_case key here is load-bearing.
-      await bridgeInvoke<void>('ask_trade_question', { thread_id: threadId, question: trimmed, model: MODEL_SELECTION_LOCKED ? null : (get().selectedModel || null), userId: useAuthStore.getState().user?.id ?? null });
+      await bridgeInvoke<void>('ask_trade_question', {
+        thread_id: threadId,
+        question: trimmed,
+        model: MODEL_SELECTION_LOCKED ? null : get().selectedModel || null,
+        userId: useAuthStore.getState().user?.id ?? null,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[QuantStore] askQuestion FAIL: ${message}`);
@@ -1928,8 +2039,11 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     // Serve a fresh cache hit instantly — no DB fan-out, no re-detection.
     const cached = multiTfCache.get(sym);
     if (cached && now - cached.fetchedAt < MULTI_TF_TTL_MS) {
-      debugLog(`[QuantStore] MultiTF CACHE HIT symbol=${sym} age=${Math.round((now - cached.fetchedAt) / 1000)}s`);
-      if (isActiveSymbol()) set({ multiTfPatterns: cached.data, isFetchingPatterns: false, patternsError: null });
+      debugLog(
+        `[QuantStore] MultiTF CACHE HIT symbol=${sym} age=${Math.round((now - cached.fetchedAt) / 1000)}s`
+      );
+      if (isActiveSymbol())
+        set({ multiTfPatterns: cached.data, isFetchingPatterns: false, patternsError: null });
       return;
     }
 
@@ -1943,13 +2057,23 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     multiTfInFlight.add(sym);
     // Keep any stale cached patterns visible instead of flashing empty while we refetch.
     if (isActiveSymbol()) {
-      set((state) => ({ isFetchingPatterns: true, patternsError: null, multiTfPatterns: cached?.data ?? state.multiTfPatterns ?? null }));
+      set((state) => ({
+        isFetchingPatterns: true,
+        patternsError: null,
+        multiTfPatterns: cached?.data ?? state.multiTfPatterns ?? null,
+      }));
     }
     try {
-      const data = await bridgeInvoke<MultiTfChartPatterns[]>('get_multi_timeframe_chart_patterns', { symbol });
+      const data = await bridgeInvoke<MultiTfChartPatterns[]>(
+        'get_multi_timeframe_chart_patterns',
+        { symbol }
+      );
       multiTfCache.set(sym, { data, fetchedAt: Date.now() });
-      debugLog(`[QuantStore] fetchMultiTfPatterns completed symbol=${sym} (${data.length} timeframes)`);
-      if (isActiveSymbol()) set({ multiTfPatterns: data, isFetchingPatterns: false, patternsError: null });
+      debugLog(
+        `[QuantStore] fetchMultiTfPatterns completed symbol=${sym} (${data.length} timeframes)`
+      );
+      if (isActiveSymbol())
+        set({ multiTfPatterns: data, isFetchingPatterns: false, patternsError: null });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[QuantStore] fetchMultiTfPatterns failed for ${sym}: ${message}`);
@@ -1966,5 +2090,4 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       multiTfInFlight.delete(sym);
     }
   },
-
 }));

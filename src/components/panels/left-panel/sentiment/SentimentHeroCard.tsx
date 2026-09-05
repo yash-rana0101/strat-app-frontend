@@ -21,8 +21,9 @@ export default function SentimentHeroCard({ sentiment, inSheet = false }: Sentim
   // Parse top catalyst headline for potential link or publisher
   const parsedTop = parseRawHeadline(sentiment.top_headline);
   const topArticle = sentiment.articles?.find(
-    (a) => a.title.toLowerCase() === sentiment.top_headline.toLowerCase() ||
-      a.title.toLowerCase() === parsedTop.title.toLowerCase(),
+    (a) =>
+      a.title.toLowerCase() === sentiment.top_headline.toLowerCase() ||
+      a.title.toLowerCase() === parsedTop.title.toLowerCase()
   );
   const topUrl = topArticle?.url || parsedTop.url;
 
@@ -140,4 +141,3 @@ export default function SentimentHeroCard({ sentiment, inSheet = false }: Sentim
     </motion.div>
   );
 }
-

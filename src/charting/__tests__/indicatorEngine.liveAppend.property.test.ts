@@ -45,8 +45,7 @@ const approxEqual = (a: number, b: number): boolean =>
   Math.abs(a - b) <= EPS * Math.max(1, Math.abs(a), Math.abs(b));
 
 /** A single finite price value generator. */
-const price = () =>
-  fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
 
 /** Generate a well-formed OHLC candle at a fixed time. */
 const candleAt = (time: number): fc.Arbitrary<ChartCandle> =>
@@ -88,7 +87,7 @@ const byTime = (points: LinePoint[]): Map<number, number> => {
 const assertSharedPointsEqual = (
   label: string,
   fullPts: LinePoint[],
-  prefixPts: LinePoint[],
+  prefixPts: LinePoint[]
 ): void => {
   const prefixMap = byTime(prefixPts);
   for (const p of fullPts) {
@@ -96,7 +95,7 @@ const assertSharedPointsEqual = (
     if (prior === undefined) continue; // new tail point — allowed
     expect(
       approxEqual(p.value, prior),
-      `${label} value at time ${p.time} changed retroactively: full=${p.value} prefix=${prior}`,
+      `${label} value at time ${p.time} changed retroactively: full=${p.value} prefix=${prior}`
     ).toBe(true);
   }
 };
@@ -104,7 +103,7 @@ const assertSharedPointsEqual = (
 const assertBandsEqual = (
   label: string,
   fullBands: IndicatorBand[] | undefined,
-  prefixBands: IndicatorBand[] | undefined,
+  prefixBands: IndicatorBand[] | undefined
 ): void => {
   if (!fullBands || !prefixBands) {
     expect(Boolean(fullBands)).toBe(Boolean(prefixBands));
@@ -120,7 +119,7 @@ const assertBandsEqual = (
 const assertSettledOutputStable = (
   name: string,
   full: IndicatorPlot,
-  prefix: IndicatorPlot,
+  prefix: IndicatorPlot
 ): void => {
   // Match each full line to the prefix line of the same id.
   const prefixLines = new Map(prefix.lines.map((l) => [l.id, l]));
@@ -165,7 +164,7 @@ describe('Property 6: Live append equals full recompute (indicators)', () => {
 
           assertSettledOutputStable(def.id, fullPlot, prefixPlot);
         }),
-        { numRuns: RUNS },
+        { numRuns: RUNS }
       );
     });
   }

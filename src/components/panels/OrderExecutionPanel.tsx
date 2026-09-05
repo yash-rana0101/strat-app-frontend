@@ -46,14 +46,11 @@ interface SymbolQuote {
   volume: number | null;
 }
 
-
-
 export default function OrderExecutionPanel() {
   const { activeDecision, positions } = useTradeStore();
   const ohlcCandles = useTradeStore((s) => s.ohlcCandles);
   const selectedSymbol = useTradeStore((s) => s.selectedSymbol);
   const liveDecisions = useTradeStore((s) => s.liveDecisions);
-
 
   const [liveQuote, setLiveQuote] = useState<SymbolQuote | null>(null);
 
@@ -81,7 +78,8 @@ export default function OrderExecutionPanel() {
     if (!symbol) return;
     try {
       const sym = symbol.toUpperCase();
-      const isFno = sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
+      const isFno =
+        sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
       const exchange = isFno ? 'NFO' : 'NSE';
       const res = await kiteFetch(`/quote?i=${exchange}:${symbol}`);
       if (!res.ok) return;
@@ -105,14 +103,17 @@ export default function OrderExecutionPanel() {
     }
   }, [symbol, fetchQuote]);
 
-
-
   // ── Compute ATR-based Target & Stop from live OHLC candles ─────────
   const { entryPrice, targetPrice, stopPrice, atrValue } = useMemo(() => {
     // Entry: prefer live quote, fallback to decision price
     const entry = liveQuote?.last_price ?? matchedDecision?.price ?? null;
     if (!entry || !symbol) {
-      return { entryPrice: liveQuote?.last_price ?? matchedDecision?.price ?? null, targetPrice: null, stopPrice: null, atrValue: null };
+      return {
+        entryPrice: liveQuote?.last_price ?? matchedDecision?.price ?? null,
+        targetPrice: null,
+        stopPrice: null,
+        atrValue: null,
+      };
     }
 
     // Filter candles for this symbol
@@ -163,9 +164,10 @@ export default function OrderExecutionPanel() {
   const hasDecision = !!matchedDecision;
 
   // Risk:Reward ratio
-  const rrRatio = (entryPrice && targetPrice && stopPrice)
-    ? Math.abs(targetPrice - entryPrice) / Math.max(Math.abs(stopPrice - entryPrice), 0.01)
-    : null;
+  const rrRatio =
+    entryPrice && targetPrice && stopPrice
+      ? Math.abs(targetPrice - entryPrice) / Math.max(Math.abs(stopPrice - entryPrice), 0.01)
+      : null;
 
   return (
     <div className="flex flex-col gap-2 px-4 py-2.5">
@@ -174,15 +176,22 @@ export default function OrderExecutionPanel() {
         <div className="min-w-45">
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-text-muted">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"
+                aria-hidden="true"
+              />
               {hasDecision ? 'Trade Strip' : 'Live Strip'}
             </span>
             {hasDecision && (
-              <span className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wide ${
-                isBuy ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
-                  : isSell ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
-                  : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
-              }`}>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wide ${
+                  isBuy
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                    : isSell
+                      ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                      : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                }`}
+              >
                 {matchedDecision!.action_type}
               </span>
             )}
@@ -190,17 +199,22 @@ export default function OrderExecutionPanel() {
           <div className="mt-1 flex items-center gap-2">
             <span className="text-base font-bold tracking-tight text-text-primary">{symbol}</span>
             {liveQuote && liveQuote.change !== null && (
-              <div className={`flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] font-bold tabular-nums ${
-                liveQuote.change >= 0 ? 'text-bull bg-bull/10' : 'text-bear bg-bear/10'
-              }`}>
+              <div
+                className={`flex items-center gap-0.5 rounded px-1 py-0.5 text-[10px] font-bold tabular-nums ${
+                  liveQuote.change >= 0 ? 'text-bull bg-bull/10' : 'text-bear bg-bear/10'
+                }`}
+              >
                 {liveQuote.change >= 0 ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-                {liveQuote.change >= 0 ? '+' : ''}{liveQuote.change.toFixed(2)}%
+                {liveQuote.change >= 0 ? '+' : ''}
+                {liveQuote.change.toFixed(2)}%
               </div>
             )}
           </div>
           {hasDecision && (
             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-text-secondary">
-              <span className="font-semibold">Conviction {matchedDecision!.final_conviction_score}%</span>
+              <span className="font-semibold">
+                Conviction {matchedDecision!.final_conviction_score}%
+              </span>
               {atrValue !== null ? (
                 <span className="text-[10px] text-text-muted tabular-nums">
                   ATR {atrValue.toFixed(2)}

@@ -96,8 +96,10 @@ vi.mock('react-resizable-panels', async () => {
   const ReactNs = await import('react');
   return {
     __esModule: true,
-    Group: ({ children }: any) => ReactNs.createElement('div', { 'data-testid': 'group' }, children),
-    Panel: ({ children }: any) => ReactNs.createElement('div', { 'data-testid': 'panel' }, children),
+    Group: ({ children }: any) =>
+      ReactNs.createElement('div', { 'data-testid': 'group' }, children),
+    Panel: ({ children }: any) =>
+      ReactNs.createElement('div', { 'data-testid': 'panel' }, children),
     Separator: () => ReactNs.createElement('div', { 'data-testid': 'separator' }),
   };
 });
@@ -208,7 +210,9 @@ describe('FnoSection — streaming + lifecycle integration (R6.2, R7.1, R7.3)', 
     await waitFor(() => expect(tauri.snapshotHandler.current).not.toBeNull());
 
     // Exactly one fno-snapshot listener was registered.
-    const snapshotListens = tauri.listenMock.mock.calls.filter((c: any[]) => c[0] === 'fno-snapshot');
+    const snapshotListens = tauri.listenMock.mock.calls.filter(
+      (c: any[]) => c[0] === 'fno-snapshot'
+    );
     expect(snapshotListens).toHaveLength(1);
 
     // Chart panel mounted exactly once from the initial fetch payload.
@@ -236,7 +240,9 @@ describe('FnoSection — streaming + lifecycle integration (R6.2, R7.1, R7.3)', 
     // the listener was registered only once, and the section root node identity
     // is stable.
     expect(counts.chartPanelMounts).toBe(1);
-    expect(tauri.listenMock.mock.calls.filter((c: any[]) => c[0] === 'fno-snapshot')).toHaveLength(1);
+    expect(tauri.listenMock.mock.calls.filter((c: any[]) => c[0] === 'fno-snapshot')).toHaveLength(
+      1
+    );
     expect(container.firstChild).toBe(rootBefore);
   });
 

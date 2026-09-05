@@ -228,7 +228,7 @@ export function rowsToSearchResults(rows: InstrumentRow[]): SearchResult[] {
 async function searchExchange(query: string, exchange: string): Promise<InstrumentRow[]> {
   try {
     const data = await apiJson<{ results?: InstrumentRow[] }>(
-      kiteApiUrl(`/api/kite/instruments?q=${encodeURIComponent(query)}&exchange=${exchange}`),
+      kiteApiUrl(`/api/kite/instruments?q=${encodeURIComponent(query)}&exchange=${exchange}`)
     );
     return data.results ?? [];
   } catch (err) {
@@ -274,7 +274,7 @@ function bridgeConsensusFrame(frame: { event: string; data: unknown }): void {
 /** Consume one SSE response onto `deep-quant-stream`; report how it ended. */
 async function relayAgentStream(
   res: Response,
-  signal: AbortSignal,
+  signal: AbortSignal
 ): Promise<'paused' | 'completed' | 'errored' | 'disconnected'> {
   if (!res.body) return 'errored';
   let outcome: 'paused' | 'completed' | 'errored' | 'disconnected' = 'disconnected';
@@ -291,7 +291,7 @@ async function relayAgentStream(
       bridgeConsensusFrame(frame);
       emitBridgeEvent('deep-quant-stream', { event: frame.event, data: frame.data });
     },
-    signal,
+    signal
   );
 
   return outcome;
@@ -302,7 +302,7 @@ async function emitPreRunConsensus(symbol: string, timeframe: string): Promise<v
   try {
     const report = await apiJson<unknown>(
       '/api/tools/get_consensus',
-      postJson({ symbol, timeframe, limit: 200 }),
+      postJson({ symbol, timeframe, limit: 200 })
     );
     if (looksLikeConsensus(report)) emitBridgeEvent('quant-consensus', report);
   } catch (err) {
@@ -330,7 +330,8 @@ async function emitPreRunConsensus(symbol: string, timeframe: string): Promise<v
 async function startSessionRun(args: Args): Promise<string> {
   const sessionId = reqStr(args, 'session_id', 'run_deep_quant_agent');
   const mode = optStr(args, 'mode') ?? 'FIND';
-  const manualTrade = (args.manual_trade ?? args.manualTrade) as Record<string, unknown> | undefined;
+  const manualTrade = (args.manual_trade ?? args.manualTrade) as
+    Record<string, unknown> | undefined;
   const symbol = optStr(args, 'symbol') ?? '';
 
   const message = buildRunMessage(symbol, mode, manualTrade);
@@ -377,10 +378,10 @@ async function startSessionRun(args: Args): Promise<string> {
         if (!threadId) break;
 
         const qs = stream.lastSeq > 0 ? `?after_seq=${stream.lastSeq}` : '';
-        const hub = await fetch(
-          `/api/deepquant/stream/${encodeURIComponent(threadId)}${qs}`,
-          { signal: controller.signal, cache: 'no-store' },
-        );
+        const hub = await fetch(`/api/deepquant/stream/${encodeURIComponent(threadId)}${qs}`, {
+          signal: controller.signal,
+          cache: 'no-store',
+        });
         if (!hub.ok) break;
         outcome = await relayAgentStream(hub, controller.signal);
         // A clean disconnect while still paused means the hub connection dropped, not that
@@ -405,7 +406,7 @@ async function startSessionRun(args: Args): Promise<string> {
 function buildRunMessage(
   symbol: string,
   mode: string,
-  manualTrade: Record<string, unknown> | undefined,
+  manualTrade: Record<string, unknown> | undefined
 ): string {
   return mode === 'VERIFY' && manualTrade
     ? `Verify the following proposed trade setup for the trading ticker symbol '${symbol}':\n` +
@@ -429,7 +430,8 @@ async function startAgentRun(args: Args): Promise<string> {
   const mode = optStr(args, 'mode') ?? 'FIND';
   const profile = optStr(args, 'profile') ?? 'INTRADAY';
   const timeframe = optStr(args, 'timeframe');
-  const manualTrade = (args.manual_trade ?? args.manualTrade) as Record<string, unknown> | undefined;
+  const manualTrade = (args.manual_trade ?? args.manualTrade) as
+    Record<string, unknown> | undefined;
 
   // Same id format as the Rust command, so persisted Python threads look alike.
   const threadId = `thread_${symbol}_${Date.now()}`;
@@ -544,7 +546,9 @@ function writeLocal(key: string, value: string): void {
   localStorage.setItem(key, value); // quota / private-mode errors propagate
 }
 
-/** Mirrors `quant::radar::RadarRegistry::set_symbols` — trim, upper, dedupe. */export function cleanRadarSymbols(input: unknown): string[] {
+/** Mirrors `quant::radar::RadarRegistry::set_symbols` — trim, upper, dedupe. */ export function cleanRadarSymbols(
+  input: unknown
+): string[] {
   if (!Array.isArray(input)) return [];
   const cleaned: string[] = [];
   for (const raw of input) {
@@ -568,7 +572,7 @@ function writeLocal(key: string, value: string): void {
  */
 async function questdbRows(query: string): Promise<unknown[][]> {
   const body = await apiJson<{ dataset?: unknown[][]; error?: string }>(
-    `/api/questdb/exec?query=${encodeURIComponent(query)}&fmt=json`,
+    `/api/questdb/exec?query=${encodeURIComponent(query)}&fmt=json`
   );
   if (body.error) throw new Error(`QuestDB: ${body.error}`);
   return body.dataset ?? [];
@@ -578,7 +582,7 @@ async function questdbRows(query: string): Promise<unknown[][]> {
 async function nearestExpiryFor(underlying: string): Promise<string | null> {
   const rows = await questdbRows(
     `SELECT DISTINCT expiry FROM option_chain_snapshots ` +
-      `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()}`,
+      `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()}`
   );
   return nearestExpiry(rows.map(([e]) => String(e)));
 }
@@ -596,7 +600,7 @@ async function chainRows(underlying: string, expiry: string): Promise<ChainRow[]
   const rows = await questdbRows(
     `SELECT strike, option_type, symbol, open_interest FROM option_chain_snapshots ` +
       `WHERE ${where} AND snapshot_ts = (SELECT max(snapshot_ts) FROM option_chain_snapshots WHERE ${where}) ` +
-      `ORDER BY strike ASC`,
+      `ORDER BY strike ASC`
   );
   return rows.flatMap(([strike, optionType, symbol, oi]) => {
     const s = Number(strike);
@@ -609,7 +613,7 @@ async function chainRows(underlying: string, expiry: string): Promise<ChainRow[]
 /** Shared body of `fno_resolve_nearest_contract`: nearest expiry → ATM → contract. */
 async function resolveContract(
   underlying: string,
-  expiryArg?: string,
+  expiryArg?: string
 ): Promise<ResolvedContract | null> {
   const expiry = expiryArg ?? (await nearestExpiryFor(underlying));
   if (!expiry) return null;
@@ -622,7 +626,9 @@ async function resolveContract(
   // No spot ⇒ the median listed strike, matching the Rust fallback. A chain is
   // built around ATM, so its median is a reasonable stand-in.
   const atm =
-    spot !== null ? selectAtm(strikes, spot) ?? strikes[strikes.length >> 1] : strikes[strikes.length >> 1];
+    spot !== null
+      ? (selectAtm(strikes, spot) ?? strikes[strikes.length >> 1])
+      : strikes[strikes.length >> 1];
 
   const picked = pickContract(rows, atm);
   return picked
@@ -642,7 +648,7 @@ async function readSpot(underlying: string): Promise<number | null> {
   if (names.length === 0) return null;
   const rows = await questdbRows(
     `SELECT last_traded_price FROM live_ticks WHERE symbol IN (${names.map(quote).join(',')}) ` +
-      `ORDER BY timestamp DESC LIMIT 1`,
+      `ORDER BY timestamp DESC LIMIT 1`
   );
   const price = Number(rows[0]?.[0]);
   return Number.isFinite(price) && price > 0 ? price : null;
@@ -764,7 +770,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     // which the caller needs to know about.
     const res = await fetch(
       '/api/deepquant/cancel',
-      postJson(runId ? { run_id: runId } : { thread_id: threadId }),
+      postJson(runId ? { run_id: runId } : { thread_id: threadId })
     );
     if (!res.ok) {
       throw await failure(res, `deep-quant /cancel failed with HTTP ${res.status}`);
@@ -887,7 +893,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
   fno_list_chains: async () => {
     const rows = await questdbRows(
       `SELECT DISTINCT underlying, expiry FROM option_chain_snapshots ` +
-        `WHERE ${liveExpiryClause()} ORDER BY underlying, expiry`,
+        `WHERE ${liveExpiryClause()} ORDER BY underlying, expiry`
     );
     // Group under one canonical name per underlying, so `NIFTY` and `NIFTY 50`
     // rows do not present as two separate selector entries.
@@ -911,7 +917,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     if (!underlying) return []; // Rust returns an empty list, not an error.
     const rows = await questdbRows(
       `SELECT DISTINCT expiry FROM option_chain_snapshots ` +
-        `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()} ORDER BY expiry ASC`,
+        `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()} ORDER BY expiry ASC`
     );
     return rows.map(([e]) => String(e)).filter(Boolean);
   },
@@ -925,7 +931,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     if (!underlying) return false;
     const rows = await questdbRows(
       `SELECT count() FROM option_chain_snapshots ` +
-        `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()}`,
+        `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()}`
     );
     return Number(rows[0]?.[0] ?? 0) > 0;
   },
@@ -958,7 +964,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     if (!symbol || !isSafeName(symbol)) return false;
     const rows = await questdbRows(
       `SELECT count() FROM option_chain_snapshots ` +
-        `WHERE symbol = ${quote(symbol.trim().toUpperCase())} AND ${liveExpiryClause()}`,
+        `WHERE symbol = ${quote(symbol.trim().toUpperCase())} AND ${liveExpiryClause()}`
     );
     return Number(rows[0]?.[0] ?? 0) > 0;
   },
@@ -1002,7 +1008,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     // returning nothing, matching the Rust command's ±2-strike widening.
     const atm = selectAtm(
       rows.map((r) => r.strike),
-      strike,
+      strike
     );
     if (atm === null) return null;
     const picked = pickContract(rows, atm);
@@ -1028,7 +1034,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
         symbol: reqStr(args, 'symbol', 'scan_radar_symbol'),
         timeframe: reqStr(args, 'timeframe', 'scan_radar_symbol'),
         lookback: typeof args.lookback === 'number' ? args.lookback : undefined,
-      }),
+      })
     ),
 
   scan_quant_radar: async (args) =>
@@ -1039,13 +1045,13 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
         timeframe: reqStr(args, 'timeframe', 'scan_quant_radar'),
         candles: Array.isArray(args.candles) ? args.candles : [],
         lookback: typeof args.lookback === 'number' ? args.lookback : undefined,
-      }),
+      })
     ),
 
   get_multi_timeframe_chart_patterns: async (args) =>
     apiJson(
       '/api/tools/get_multi_tf_chart_patterns',
-      postJson({ symbol: reqStr(args, 'symbol', 'get_multi_timeframe_chart_patterns') }),
+      postJson({ symbol: reqStr(args, 'symbol', 'get_multi_timeframe_chart_patterns') })
     ),
 
   /**
@@ -1065,7 +1071,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
       postJson({
         symbol: reqStr(args, 'symbol', 'get_consensus'),
         timeframe: optStr(args, 'timeframe') ?? '10m',
-      }),
+      })
     ),
 
   // ── Misc ──────────────────────────────────────────────────────────────────

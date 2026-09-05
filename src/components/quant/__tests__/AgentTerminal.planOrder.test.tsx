@@ -45,8 +45,15 @@ const VIEW_KEY = `${SYMBOL}::INTRADAY`;
 // and restore rather than reset-to-a-guess, so this file cannot decide what
 // another file's starting state should be.
 const QUANT_KEYS = [
-  'sessionsByKey', '_threadToKey', '_streamingKey', 'activeViewKey',
-  'finalTrade', 'aiPlan', 'sessionStatus', 'reasoningSteps', 'qaMessages',
+  'sessionsByKey',
+  '_threadToKey',
+  '_streamingKey',
+  'activeViewKey',
+  'finalTrade',
+  'aiPlan',
+  'sessionStatus',
+  'reasoningSteps',
+  'qaMessages',
 ] as const;
 const TRADE_KEYS = ['selectedSymbol'] as const;
 
@@ -73,7 +80,10 @@ function driveActionableRunToComplete() {
   } as any);
 
   const store = useQuantStore.getState();
-  store.handleStreamEvent({ event: 'RUN_STARTED', data: { thread_id: 't-plan' } } as StreamEventPayload);
+  store.handleStreamEvent({
+    event: 'RUN_STARTED',
+    data: { thread_id: 't-plan' },
+  } as StreamEventPayload);
   store.handleStreamEvent({
     event: 'DECISION',
     data: {
@@ -141,7 +151,7 @@ describe('AgentTerminal — the trade plan stays in the chat flow', () => {
     // DOCUMENT_POSITION_FOLLOWING === 4: the question comes after the plan.
     // This is the regression: with the old order the plan followed the Q&A.
     expect(plan.compareDocumentPosition(firstQuestion) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
+      Node.DOCUMENT_POSITION_FOLLOWING
     );
   });
 
@@ -153,7 +163,7 @@ describe('AgentTerminal — the trade plan stays in the chat flow', () => {
     for (const text of ['WHICH_TOOLS_WERE_UNRELIABLE', 'EVENT_RISK_WAS_UNAVAILABLE']) {
       const turn = screen.getByText(text);
       expect(plan.compareDocumentPosition(turn) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
-        Node.DOCUMENT_POSITION_FOLLOWING,
+        Node.DOCUMENT_POSITION_FOLLOWING
       );
     }
   });

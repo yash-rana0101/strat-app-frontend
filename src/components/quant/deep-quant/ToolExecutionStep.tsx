@@ -138,7 +138,9 @@ export default function ToolExecutionStep({
         <div className="flex items-center justify-between gap-2 font-sans select-none text-text-primary w-full">
           <div className="flex items-center gap-1.5">
             {getToolIcon(step.toolName)}
-            <span className={`text-[11px] font-extrabold capitalize ${isCompleted ? 'text-text-primary' : 'text-amber-500'}`}>
+            <span
+              className={`text-[11px] font-extrabold capitalize ${isCompleted ? 'text-text-primary' : 'text-amber-500'}`}
+            >
               {formattedToolName}
             </span>
           </div>
@@ -152,7 +154,12 @@ export default function ToolExecutionStep({
         {step.args && Object.keys(step.args).length > 0 && (
           <div className="mt-2 ml-[18px] flex flex-wrap gap-1.5 select-none">
             {Object.entries(step.args).map(([k, v]) => {
-              const valDisplay = typeof v === 'string' ? v : typeof v === 'number' || typeof v === 'boolean' ? String(v) : JSON.stringify(v);
+              const valDisplay =
+                typeof v === 'string'
+                  ? v
+                  : typeof v === 'number' || typeof v === 'boolean'
+                    ? String(v)
+                    : JSON.stringify(v);
               return (
                 <span
                   key={k}

@@ -127,7 +127,9 @@ export default function AgentStatusPanel() {
 
   return (
     <section className="rounded-lg border border-border-default bg-card p-4 panel-shadow">
-      <div className="text-xs font-semibold uppercase tracking-widest text-text-secondary">AI Swarm Status</div>
+      <div className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
+        AI Swarm Status
+      </div>
       <div className="mt-3 flex flex-col gap-2">
         {agents.map((agent) => (
           <div key={agent.name} className="flex items-center justify-between" title={agent.title}>

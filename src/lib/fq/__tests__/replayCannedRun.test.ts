@@ -22,12 +22,28 @@ const THREAD = 'thread_CANNED';
 /** Exactly what `POST /run` streams for the stubbed graph, in order. */
 const CANNED: StoredEvent[] = [
   { seq: 1, event: 'RUN_STARTED', data: { thread_id: THREAD } },
-  { seq: 2, event: 'REASONING', data: { thread_id: THREAD, content: 'Scanning RELIANCE on the 10m timeframe.' } },
-  { seq: 3, event: 'REASONING', data: { thread_id: THREAD, content: 'Pulling candles before I commit to a read.' } },
+  {
+    seq: 2,
+    event: 'REASONING',
+    data: { thread_id: THREAD, content: 'Scanning RELIANCE on the 10m timeframe.' },
+  },
+  {
+    seq: 3,
+    event: 'REASONING',
+    data: { thread_id: THREAD, content: 'Pulling candles before I commit to a read.' },
+  },
   { seq: 4, event: 'TOOL_CALL_START', data: { thread_id: THREAD, tool: 'get_ohlc' } },
   { seq: 5, event: 'TOOL_CALL_RESULT', data: { thread_id: THREAD, tool: 'get_ohlc' } },
-  { seq: 6, event: 'TOOL_CALL_END', data: { thread_id: THREAD, tool: 'get_ohlc', status: 'success' } },
-  { seq: 7, event: 'REASONING', data: { thread_id: THREAD, content: 'Momentum is intact above 2,450.' } },
+  {
+    seq: 6,
+    event: 'TOOL_CALL_END',
+    data: { thread_id: THREAD, tool: 'get_ohlc', status: 'success' },
+  },
+  {
+    seq: 7,
+    event: 'REASONING',
+    data: { thread_id: THREAD, content: 'Momentum is intact above 2,450.' },
+  },
   {
     seq: 8,
     event: 'DECISION',
@@ -61,7 +77,10 @@ const COMPLETED_RUN = {
 } as unknown as StoredRun;
 
 function messages(steps: { type: string; content: string }[]): string {
-  return steps.filter((s) => s.type === 'message').map((s) => s.content).join(' | ');
+  return steps
+    .filter((s) => s.type === 'message')
+    .map((s) => s.content)
+    .join(' | ');
 }
 
 describe('replaying a completed canned run', () => {

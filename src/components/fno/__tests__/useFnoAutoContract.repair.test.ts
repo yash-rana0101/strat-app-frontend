@@ -33,7 +33,7 @@ let snapshot: Record<string, unknown>;
 /** Answers the bridge per command; anything unlisted here resolves null. */
 function bridge(handlers: Record<string, unknown>): void {
   invokeMock.mockImplementation((command: string) =>
-    Promise.resolve(command in handlers ? handlers[command] : null),
+    Promise.resolve(command in handlers ? handlers[command] : null)
   );
 }
 
@@ -69,12 +69,12 @@ describe('useFnoAutoContract — repairing an unlisted contract', () => {
     renderHook(() => useFnoAutoContract());
 
     await vi.waitFor(() =>
-      expect(useTradeStore.getState().selectedSymbol).toBe('BANKNIFTY26SEP57000CE'),
+      expect(useTradeStore.getState().selectedSymbol).toBe('BANKNIFTY26SEP57000CE')
     );
     // The user's strike and side are kept — repair, not a reset to ATM.
     expect(invokeMock).toHaveBeenCalledWith(
       'fno_resolve_option_contract',
-      expect.objectContaining({ underlying: 'BANKNIFTY', strike: 57000, optionType: 'CE' }),
+      expect.objectContaining({ underlying: 'BANKNIFTY', strike: 57000, optionType: 'CE' })
     );
     expect(useTradeStore.getState().fnoUnderlying).toBe('BANKNIFTY');
   });
@@ -91,7 +91,7 @@ describe('useFnoAutoContract — repairing an unlisted contract', () => {
     renderHook(() => useFnoAutoContract());
 
     await vi.waitFor(() =>
-      expect(useTradeStore.getState().selectedSymbol).toBe('BANKNIFTY26SEP57000CE'),
+      expect(useTradeStore.getState().selectedSymbol).toBe('BANKNIFTY26SEP57000CE')
     );
   });
 
@@ -106,7 +106,9 @@ describe('useFnoAutoContract — repairing an unlisted contract', () => {
 
     renderHook(() => useFnoAutoContract());
 
-    await vi.waitFor(() => expect(invokeMock).toHaveBeenCalledWith('fno_symbol_is_listed', expect.anything()));
+    await vi.waitFor(() =>
+      expect(invokeMock).toHaveBeenCalledWith('fno_symbol_is_listed', expect.anything())
+    );
     expect(invokeMock.mock.calls.map((c) => c[0])).not.toContain('fno_resolve_option_contract');
     expect(useTradeStore.getState().selectedSymbol).toBe('BANKNIFTY26OCT57000CE');
   });
@@ -132,7 +134,7 @@ describe('useFnoAutoContract — repairing an unlisted contract', () => {
     renderHook(() => useFnoAutoContract());
 
     await vi.waitFor(() =>
-      expect(invokeMock).toHaveBeenCalledWith('fno_resolve_option_contract', expect.anything()),
+      expect(invokeMock).toHaveBeenCalledWith('fno_resolve_option_contract', expect.anything())
     );
     expect(useTradeStore.getState().selectedSymbol).toBe('BANKNIFTY57000CE');
   });
@@ -144,7 +146,7 @@ describe('useFnoAutoContract — repairing an unlisted contract', () => {
     renderHook(() => useFnoAutoContract());
 
     await vi.waitFor(() =>
-      expect(useTradeStore.getState().selectedSymbol).toBe('NIFTY2690124000CE'),
+      expect(useTradeStore.getState().selectedSymbol).toBe('NIFTY2690124000CE')
     );
     expect(invokeMock.mock.calls.map((c) => c[0])).not.toContain('fno_symbol_is_listed');
   });

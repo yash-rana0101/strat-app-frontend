@@ -66,7 +66,12 @@ const malformedArb: fc.Arbitrary<unknown> = fc.oneof(
   fc.record({ kind: fc.constant('STOCK'), symbol: nonEmptyString }),
   fc.record({ symbol: nonEmptyString, name: nonEmptyString }),
   // EQ missing or empty required fields
-  fc.record({ kind: fc.constant('EQ'), symbol: fc.constant(''), name: nonEmptyString, exchange: nonEmptyString }),
+  fc.record({
+    kind: fc.constant('EQ'),
+    symbol: fc.constant(''),
+    name: nonEmptyString,
+    exchange: nonEmptyString,
+  }),
   fc.record({ kind: fc.constant('EQ'), name: nonEmptyString, exchange: nonEmptyString }),
   // FNO with invalid optionType
   fc.record({
@@ -98,7 +103,7 @@ const malformedArb: fc.Arbitrary<unknown> = fc.oneof(
   fc.constant(undefined),
   fc.string(),
   fc.integer(),
-  fc.boolean(),
+  fc.boolean()
 );
 
 // ── Property 8 ────────────────────────────────────────────────────────────────
@@ -109,7 +114,7 @@ describe('Property 8: F&O search results are well-typed and distinguishable', ()
       fc.property(searchResultArb, (r) => {
         expect(isWellFormedSearchResult(r)).toBe(true);
       }),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 
@@ -123,7 +128,7 @@ describe('Property 8: F&O search results are well-typed and distinguishable', ()
         // Strike is a finite number (options) or null (futures) — never NaN.
         expect(r.strike === null || Number.isFinite(r.strike)).toBe(true);
       }),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 
@@ -139,7 +144,7 @@ describe('Property 8: F&O search results are well-typed and distinguishable', ()
         // A routable chart symbol exists for either kind.
         expect(resultSymbol(r).length).toBeGreaterThan(0);
       }),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 
@@ -148,7 +153,7 @@ describe('Property 8: F&O search results are well-typed and distinguishable', ()
       fc.property(malformedArb, (x) => {
         expect(isWellFormedSearchResult(x)).toBe(false);
       }),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 
@@ -164,7 +169,7 @@ describe('Property 8: F&O search results are well-typed and distinguishable', ()
         // Every FNO in the list is distinguishable from an equity.
         expect(fno.every(isDistinguishableFno)).toBe(true);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

@@ -31,11 +31,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import fc from 'fast-check';
 
-import {
-  useTradeStore,
-  type TradeProfile,
-  type ChartTimeframe,
-} from '@/store/useTradeStore';
+import { useTradeStore, type TradeProfile, type ChartTimeframe } from '@/store/useTradeStore';
 
 const PROFILES: TradeProfile[] = ['INTRADAY', 'SWING', 'INVESTOR', 'FNO'];
 const TIMEFRAMES: ChartTimeframe[] = ['1m', '5m', '10m', '15m', '1h', '1D', '1W'];
@@ -109,7 +105,7 @@ describe('Property 1: workspace modes are mutually exclusive', () => {
         const activeCount = PROFILES.filter((p) => p === store().activeProfile).length;
         expect(activeCount).toBe(1);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -132,9 +128,9 @@ describe('Property 1: workspace modes are mutually exclusive', () => {
           expect(store().activeProfile).toBe(last);
           const activeCount = PROFILES.filter((p) => p === store().activeProfile).length;
           expect(activeCount).toBe(1);
-        },
+        }
       ),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });
@@ -148,7 +144,7 @@ describe('Property 3: no second source of truth for F&O', () => {
         const fnoActive = store().activeProfile === 'FNO';
         expect(fnoActive).toBe(target === 'FNO');
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -164,7 +160,7 @@ describe('Property 3: no second source of truth for F&O', () => {
         expect('setFnoMode' in state).toBe(false);
         expect('toggleFnoMode' in state).toBe(false);
       }),
-      { numRuns: 50 },
+      { numRuns: 50 }
     );
   });
 });
@@ -187,7 +183,7 @@ describe('Isolation: switching modes leaves unrelated chart state intact', () =>
         expect(store().activeTimeframe).toBe(before.activeTimeframe);
         expect(store().chartMode).toBe(before.chartMode);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -207,7 +203,7 @@ describe('Isolation: switching modes leaves unrelated chart state intact', () =>
           expect(store().symbolByProfile[p]).toBe(before[p]);
         }
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -241,9 +237,9 @@ describe('Isolation: switching modes leaves unrelated chart state intact', () =>
             if (sequence.includes(p)) continue;
             expect(store().symbolByProfile[p]).toBe(before[p]);
           }
-        },
+        }
       ),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -266,9 +262,9 @@ describe('Isolation: switching modes leaves unrelated chart state intact', () =>
           // the detour did. None of the seeded symbols is an F&O contract, so no
           // underlying substitution is in play here.
           expect(store().selectedSymbol).toBe(pick.toUpperCase());
-        },
+        }
       ),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

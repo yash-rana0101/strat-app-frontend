@@ -19,18 +19,54 @@ export default function ConvictionGauge({
   showLabel = true,
   className = '',
 }: ConvictionGaugeProps) {
-  const safeScore = typeof score === 'number' && !isNaN(score) ? Math.min(100, Math.max(0, score)) : null;
+  const safeScore =
+    typeof score === 'number' && !isNaN(score) ? Math.min(100, Math.max(0, score)) : null;
   const isSell = (action || '').toUpperCase() === 'SELL';
   const isStandAside = tier === 'stand_aside' || (action || '').toUpperCase() === 'HOLD';
 
   // Tone palette
   const getTheme = () => {
-    if (safeScore === null) return { stroke: '#64748b', glow: 'rgba(100, 116, 139, 0.2)', text: 'text-text-muted', badge: 'bg-slate-500/10 text-slate-400 border-slate-500/20' };
-    if (isStandAside) return { stroke: '#f59e0b', glow: 'rgba(245, 158, 11, 0.25)', text: 'text-amber-400', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/25' };
-    if (isSell) return { stroke: '#f43f5e', glow: 'rgba(244, 63, 94, 0.3)', text: 'text-rose-400', badge: 'bg-rose-500/10 text-rose-400 border-rose-500/25' };
-    if (safeScore >= 80) return { stroke: '#10b981', glow: 'rgba(16, 185, 129, 0.35)', text: 'text-emerald-400', badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25' };
-    if (safeScore >= 60) return { stroke: '#06b6d4', glow: 'rgba(6, 182, 212, 0.3)', text: 'text-cyan-400', badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/25' };
-    return { stroke: '#f59e0b', glow: 'rgba(245, 158, 11, 0.25)', text: 'text-amber-400', badge: 'bg-amber-500/10 text-amber-400 border-amber-500/25' };
+    if (safeScore === null)
+      return {
+        stroke: '#64748b',
+        glow: 'rgba(100, 116, 139, 0.2)',
+        text: 'text-text-muted',
+        badge: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+      };
+    if (isStandAside)
+      return {
+        stroke: '#f59e0b',
+        glow: 'rgba(245, 158, 11, 0.25)',
+        text: 'text-amber-400',
+        badge: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
+      };
+    if (isSell)
+      return {
+        stroke: '#f43f5e',
+        glow: 'rgba(244, 63, 94, 0.3)',
+        text: 'text-rose-400',
+        badge: 'bg-rose-500/10 text-rose-400 border-rose-500/25',
+      };
+    if (safeScore >= 80)
+      return {
+        stroke: '#10b981',
+        glow: 'rgba(16, 185, 129, 0.35)',
+        text: 'text-emerald-400',
+        badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25',
+      };
+    if (safeScore >= 60)
+      return {
+        stroke: '#06b6d4',
+        glow: 'rgba(6, 182, 212, 0.3)',
+        text: 'text-cyan-400',
+        badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/25',
+      };
+    return {
+      stroke: '#f59e0b',
+      glow: 'rgba(245, 158, 11, 0.25)',
+      text: 'text-amber-400',
+      badge: 'bg-amber-500/10 text-amber-400 border-amber-500/25',
+    };
   };
 
   const theme = getTheme();
@@ -52,12 +88,16 @@ export default function ConvictionGauge({
   }[size];
 
   const circumference = 2 * Math.PI * config.radius;
-  const strokeDashoffset = safeScore !== null ? circumference - (circumference * safeScore) / 100 : circumference;
+  const strokeDashoffset =
+    safeScore !== null ? circumference - (circumference * safeScore) / 100 : circumference;
 
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
       {/* Radial Gauge */}
-      <div className="relative shrink-0 flex items-center justify-center" style={{ width: config.dim, height: config.dim }}>
+      <div
+        className="relative shrink-0 flex items-center justify-center"
+        style={{ width: config.dim, height: config.dim }}
+      >
         <svg
           className="w-full h-full -rotate-90"
           viewBox={`0 0 ${config.dim} ${config.dim}`}
@@ -94,7 +134,9 @@ export default function ConvictionGauge({
             {safeScore !== null ? `${safeScore}` : '—'}
           </span>
           {size !== 'sm' && (
-            <span className="text-[7.5px] font-bold text-text-muted/70 tracking-widest mt-0.5">%</span>
+            <span className="text-[7.5px] font-bold text-text-muted/70 tracking-widest mt-0.5">
+              %
+            </span>
           )}
         </div>
       </div>

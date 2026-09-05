@@ -146,13 +146,11 @@ export type AddIndicatorError = 'duplicate' | 'at-capacity' | 'unknown-indicator
 
 /** Result of an `addIndicator` call. */
 export type AddIndicatorResult =
-  | { ok: true; instanceId: string }
-  | { ok: false; error: AddIndicatorError; message: string };
+  { ok: true; instanceId: string } | { ok: false; error: AddIndicatorError; message: string };
 
 /** Result of a `setIndicatorParams` call. */
 export type SetIndicatorParamsResult =
-  | { ok: true }
-  | { ok: false; errorParam: string; message: string };
+  { ok: true } | { ok: false; errorParam: string; message: string };
 
 // Monotonic counter backing unique instance ids. A counter (rather than a
 // random source) keeps instance-id generation deterministic and collision-free
@@ -301,14 +299,10 @@ interface ChartUIState {
   setIndicatorParams: (
     symbol: string,
     instanceId: string,
-    params: IndicatorParams,
+    params: IndicatorParams
   ) => SetIndicatorParamsResult;
   /** Update an instance's visual style (partial merge). */
-  setIndicatorStyle: (
-    symbol: string,
-    instanceId: string,
-    style: Partial<LineStyleSpec>,
-  ) => void;
+  setIndicatorStyle: (symbol: string, instanceId: string, style: Partial<LineStyleSpec>) => void;
   /** Flip an instance's visibility without discarding its configuration. */
   toggleIndicatorVisible: (symbol: string, instanceId: string) => void;
   theme: 'light' | 'dark';
@@ -367,17 +361,15 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
   setMagnetMode: (mode) => set({ magnetMode: mode }),
   toggleDrawingsVisible: () => set((state) => ({ drawingsVisible: !state.drawingsVisible })),
   toggleDrawingsLocked: () => set((state) => ({ drawingsLocked: !state.drawingsLocked })),
-  addDrawing: (drawing) =>
-    set((state) => ({ drawings: [...state.drawings, drawing] })),
-  updateDrawing: (id, updates) => set((state) => ({
-    drawings: state.drawings.map((d) => (d.id === id ? { ...d, ...updates } : d))
-  })),
+  addDrawing: (drawing) => set((state) => ({ drawings: [...state.drawings, drawing] })),
+  updateDrawing: (id, updates) =>
+    set((state) => ({
+      drawings: state.drawings.map((d) => (d.id === id ? { ...d, ...updates } : d)),
+    })),
   updateDrawingPoints: (id, points) =>
     set((state) => ({
       // Locked drawings are immutable: reject geometry edits (Requirement 5.7).
-      drawings: state.drawings.map((d) =>
-        d.id === id && !d.locked ? { ...d, points } : d,
-      ),
+      drawings: state.drawings.map((d) => (d.id === id && !d.locked ? { ...d, points } : d)),
     })),
   removeDrawing: (id) =>
     set((state) => {
@@ -395,23 +387,17 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
     set((state) => (state.hoveredDrawingId === id ? state : { hoveredDrawingId: id })),
   toggleDrawingLock: (id) =>
     set((state) => ({
-      drawings: state.drawings.map((d) =>
-        d.id === id ? { ...d, locked: !d.locked } : d,
-      ),
+      drawings: state.drawings.map((d) => (d.id === id ? { ...d, locked: !d.locked } : d)),
     })),
   toggleDrawingHidden: (id) =>
     set((state) => ({
-      drawings: state.drawings.map((d) =>
-        d.id === id ? { ...d, hidden: !d.hidden } : d,
-      ),
+      drawings: state.drawings.map((d) => (d.id === id ? { ...d, hidden: !d.hidden } : d)),
     })),
   setDrawingLineWidth: (id, width) =>
     set((state) => {
       const w = Math.max(1, Math.min(4, Math.round(width)));
       return {
-        drawings: state.drawings.map((d) =>
-          d.id === id ? { ...d, lineWidth: w } : d,
-        ),
+        drawings: state.drawings.map((d) => (d.id === id ? { ...d, lineWidth: w } : d)),
       };
     }),
   // Clone a drawing with a small time/price nudge and place the copy on top
@@ -421,13 +407,15 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
       const src = state.drawings.find((d) => d.id === id);
       if (!src) return state;
       const newId = `draw-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-      const priceNudge =
-        src.points.length > 0 ? Math.abs(src.points[0].price) * 0.004 || 0.5 : 0;
+      const priceNudge = src.points.length > 0 ? Math.abs(src.points[0].price) * 0.004 || 0.5 : 0;
       const clone: Drawing = {
         ...src,
         id: newId,
         locked: false,
-        points: src.points.map((p) => ({ time: p.time, price: +(p.price - priceNudge).toFixed(2) })),
+        points: src.points.map((p) => ({
+          time: p.time,
+          price: +(p.price - priceNudge).toFixed(2),
+        })),
       };
       return { drawings: [...state.drawings, clone], selectedDrawingId: newId };
     }),
@@ -495,11 +483,9 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
   setStrategyParams: (params) => set({ strategyParams: params }),
   setShowIndicatorManager: (value) =>
     set((s) => ({
-      showIndicatorManager:
-        typeof value === 'function' ? value(s.showIndicatorManager) : value,
+      showIndicatorManager: typeof value === 'function' ? value(s.showIndicatorManager) : value,
     })),
-  toggleIndicatorManager: () =>
-    set((s) => ({ showIndicatorManager: !s.showIndicatorManager })),
+  toggleIndicatorManager: () => set((s) => ({ showIndicatorManager: !s.showIndicatorManager })),
   setShowLayersPanel: (value) => set({ showLayersPanel: value }),
   toggleLayersPanel: () => set((s) => ({ showLayersPanel: !s.showLayersPanel })),
 
@@ -644,7 +630,7 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
     const params: IndicatorParams = { ...def.defaults };
 
     const isDuplicate = list.some(
-      (ind) => ind.indicatorId === id && sameParams(ind.params, params),
+      (ind) => ind.indicatorId === id && sameParams(ind.params, params)
     );
     if (isDuplicate) {
       return { ok: false, error: 'duplicate', message: `${def.name} is already active` };
@@ -717,7 +703,7 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
       activeIndicators: {
         ...state.activeIndicators,
         [symbol]: (state.activeIndicators[symbol] ?? []).map((ind) =>
-          ind.instanceId === instanceId ? { ...ind, params: result.value } : ind,
+          ind.instanceId === instanceId ? { ...ind, params: result.value } : ind
         ),
       },
     }));
@@ -734,7 +720,7 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
         activeIndicators: {
           ...state.activeIndicators,
           [symbol]: list.map((ind) =>
-            ind.instanceId === instanceId ? { ...ind, style: { ...ind.style, ...style } } : ind,
+            ind.instanceId === instanceId ? { ...ind, style: { ...ind.style, ...style } } : ind
           ),
         },
       };
@@ -753,7 +739,7 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
         activeIndicators: {
           ...state.activeIndicators,
           [symbol]: list.map((ind) =>
-            ind.instanceId === instanceId ? { ...ind, visible: !ind.visible } : ind,
+            ind.instanceId === instanceId ? { ...ind, visible: !ind.visible } : ind
           ),
         },
       };

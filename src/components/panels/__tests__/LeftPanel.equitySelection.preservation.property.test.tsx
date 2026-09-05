@@ -157,9 +157,9 @@ describe('Preservation (equity selection): routes to chart and never activates F
 
           cleanup();
           vi.clearAllMocks();
-        },
+        }
       ),
-      { numRuns: 5 },
+      { numRuns: 5 }
     );
   });
 
@@ -213,9 +213,9 @@ describe('Preservation (equity selection): routes to chart and never activates F
 
           cleanup();
           vi.clearAllMocks();
-        },
+        }
       ),
-      { numRuns: 5 },
+      { numRuns: 5 }
     );
   });
 });

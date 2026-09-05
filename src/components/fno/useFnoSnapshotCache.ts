@@ -50,10 +50,7 @@ function saveToCache(underlying: string, state: GoodViewState): void {
  * - Whenever a ready/partial viewState arrives, caches it.
  * - Returns the last good viewState (from memory or localStorage).
  */
-export function useFnoSnapshotCache(
-  viewState: FnoViewState | null,
-  underlying: string,
-) {
+export function useFnoSnapshotCache(viewState: FnoViewState | null, underlying: string) {
   const lastGood = useRef<GoodViewState | null>(null);
 
   // On mount or underlying change, load from localStorage.
@@ -70,7 +67,7 @@ export function useFnoSnapshotCache(
         saveToCache(underlying, good);
       }
     },
-    [underlying],
+    [underlying]
   );
 
   // Auto-cache whenever viewState changes.

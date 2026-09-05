@@ -127,7 +127,13 @@ describe('run_deep_quant_agent — session path', () => {
       session_id: SESSION,
       symbol: 'RELIANCE',
       mode: 'VERIFY',
-      manual_trade: { side: 'BUY', entry: 2470, stop_loss: 2435, take_profit: 2550, user_analysis: 'breakout' },
+      manual_trade: {
+        side: 'BUY',
+        entry: 2470,
+        stop_loss: 2435,
+        take_profit: 2550,
+        user_analysis: 'breakout',
+      },
     });
     await settle();
 
@@ -348,7 +354,7 @@ describe('ask_trade_question — session path', () => {
     // reports it on RUN_STARTED. A synthetic terminal should route the same way the server's
     // own frames did, so it carries the LEARNED thread id.
     fetchMock.mockResolvedValue(
-      sseResponse([frame('RUN_STARTED', { thread_id: 'thread_server_minted' })]),
+      sseResponse([frame('RUN_STARTED', { thread_id: 'thread_server_minted' })])
     );
     const frames: Array<{ event: string; data: Record<string, unknown> }> = [];
     const { bridgeListen } = await import('../index');
@@ -360,7 +366,7 @@ describe('ask_trade_question — session path', () => {
     await settle(20);
 
     expect(frames.find((f) => f.event === 'RUN_FINISHED')!.data.thread_id).toBe(
-      'thread_server_minted',
+      'thread_server_minted'
     );
   });
 
@@ -410,9 +416,7 @@ describe('cancel_deep_quant_agent', () => {
     // A silently failed cancel leaves the run burning LLM credits while the UI shows it
     // stopped.
     fetchMock.mockResolvedValue(new Response('{"error":"nope"}', { status: 500 }));
-    await expect(
-      bridgeInvoke('cancel_deep_quant_agent', { run_id: 'run_1' }),
-    ).rejects.toThrow();
+    await expect(bridgeInvoke('cancel_deep_quant_agent', { run_id: 'run_1' })).rejects.toThrow();
   });
 });
 

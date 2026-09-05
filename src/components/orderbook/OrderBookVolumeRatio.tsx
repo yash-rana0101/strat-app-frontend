@@ -34,4 +34,3 @@ export default function OrderBookVolumeRatio({ bidVolPct, askVolPct }: OrderBook
     </div>
   );
 }
-

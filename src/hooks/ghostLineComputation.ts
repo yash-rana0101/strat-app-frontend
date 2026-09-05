@@ -37,7 +37,7 @@ const MAX_PROJECTION_BARS = 20;
  * projected price must stay inside ± this fraction of the anchor; a first
  * forward step that would leave the band rejects the whole projection.
  */
-export const GHOST_PRICE_BAND = 0.20;
+export const GHOST_PRICE_BAND = 0.2;
 /** Per-step cap as a fraction of anchor (curved/forecast clamp). */
 export const GHOST_MAX_STEP_FRAC = 0.02;
 /** Total deviation budget as a fraction of anchor (curved/forecast clamp). */
@@ -64,7 +64,7 @@ export function applyGhostBounds(
   points: { time: number; price: number }[],
   ghostLineMode: string,
   windowCloses: number[],
-  anchor: number,
+  anchor: number
 ): { time: number; price: number }[] {
   if (points.length < 2 || !(anchor > 0) || !Number.isFinite(anchor)) return [];
   const { lo, hi } = priceBand(anchor);
@@ -102,7 +102,7 @@ export function applyGhostBounds(
   out[0] = { time: out[0].time, price: anchorPrice };
   let prev = anchorPrice;
   for (let i = 1; i < out.length; i++) {
-    let raw = Number.isFinite(out[i].price) ? out[i].price : prev;
+    const raw = Number.isFinite(out[i].price) ? out[i].price : prev;
     let d = raw - prev;
     if (d > maxStep) d = maxStep;
     if (d < -maxStep) d = -maxStep;
@@ -139,7 +139,7 @@ export function path1SignalApplies(opts: {
   if (ghostLineMode !== 'forecast') return false;
   if (predictiveSignals.length === 0) return false;
   const sigs = predictiveSignals.filter(
-    (s) => s.symbol?.toUpperCase() === activeSymbol.toUpperCase(),
+    (s) => s.symbol?.toUpperCase() === activeSymbol.toUpperCase()
   );
   const sig = sigs[sigs.length - 1] ?? null;
   if (!sig) return false;
@@ -149,8 +149,7 @@ export function path1SignalApplies(opts: {
   const dev = Math.abs(predicted - last.close) / last.close;
   const conf = sig.confidence_score;
   const confOk = Number.isFinite(conf) && (conf as number) >= PATH1_MIN_CONFIDENCE;
-  const ok =
-    Number.isFinite(predicted) && predicted > 0 && dev < GHOST_PRICE_BAND && confOk;
+  const ok = Number.isFinite(predicted) && predicted > 0 && dev < GHOST_PRICE_BAND && confOk;
   return Boolean(ok && Number.isFinite(targetSec) && targetSec > last.time - intervalSec * 10);
 }
 
@@ -191,15 +190,15 @@ export function sanitizeLookback(bars: LookbackCandle[]): LookbackCandle[] {
       c.close > 0 &&
       Number.isFinite(c.high) &&
       Number.isFinite(c.low) &&
-      Number.isFinite(c.volume),
+      Number.isFinite(c.volume)
   );
 }
 
 // ── NSE Session constants ─────────────────────────────────────────────────
 // NSE trading hours: 09:15 – 15:30 IST (UTC+5:30)
-const IST_OFFSET_SEC = 19800;          // +5:30 = 19800 s
-const NSE_OPEN_IST   = 33_300;         // 09:15:00 in seconds from IST midnight
-const NSE_CLOSE_IST  = 55_800;         // 15:30:00 in seconds from IST midnight
+const IST_OFFSET_SEC = 19800; // +5:30 = 19800 s
+const NSE_OPEN_IST = 33_300; // 09:15:00 in seconds from IST midnight
+const NSE_CLOSE_IST = 55_800; // 15:30:00 in seconds from IST midnight
 
 function isWeekend(utcSec: number): boolean {
   const day = new Date(utcSec * 1000).getUTCDay(); // 0=Sun 6=Sat
@@ -242,19 +241,19 @@ function inferBarIntervalSec(bars: { time: number }[]): number {
  */
 export function resolveIntervalSec(
   effectiveTimeframe: string,
-  lookback: { time: number }[],
+  lookback: { time: number }[]
 ): number {
   const mapInterval = Math.floor((TIMEFRAME_MS[effectiveTimeframe as Timeframe] ?? 0) / 1000);
   if (mapInterval > 0) return mapInterval;
   const barInterval = inferBarIntervalSec(lookback);
   if (barInterval > 0) {
     console.warn(
-      `[GhostLine] resolveIntervalSec — timeframe "${effectiveTimeframe}" missing from TIMEFRAME_MS map; falling back to inferred bar interval ${barInterval}s`,
+      `[GhostLine] resolveIntervalSec — timeframe "${effectiveTimeframe}" missing from TIMEFRAME_MS map; falling back to inferred bar interval ${barInterval}s`
     );
     return barInterval;
   }
   console.warn(
-    `[GhostLine] resolveIntervalSec — timeframe "${effectiveTimeframe}" missing from map and bar interval could not be inferred; using 60s default`,
+    `[GhostLine] resolveIntervalSec — timeframe "${effectiveTimeframe}" missing from map and bar interval could not be inferred; using 60s default`
   );
   return 60;
 }
@@ -305,10 +304,10 @@ function nextSessionSlots(lastBarSec: number, intervalSec: number, count: number
  *  ohlcCandles). Keeps the ghost anchored to exactly what the chart shows.
  *  Timestamps in UNIX seconds. */
 function readStoreCandles(symbol: string, timeframe: string): LookbackCandle[] {
-  const store        = useTradeStore.getState();
-  const sym          = symbol.toUpperCase();
+  const store = useTradeStore.getState();
+  const sym = symbol.toUpperCase();
   const kiteInterval = KITE_INTERVAL_MAP[timeframe as Timeframe] ?? 'minute';
-  const cacheKey     = `${sym}::${timeframe}::${kiteInterval}`; // same key the datafeed writes
+  const cacheKey = `${sym}::${timeframe}::${kiteInterval}`; // same key the datafeed writes
 
   const hist = store.historicalCache[cacheKey] ?? [];
   const allLive = store.ohlcCandles.filter((c) => c.symbol?.toUpperCase() === sym);
@@ -329,24 +328,37 @@ function readStoreCandles(symbol: string, timeframe: string): LookbackCandle[] {
   const live =
     intervalMs > 0
       ? allLive.filter(
-          (c) =>
-            histTimes.has(c.start_timestamp_ms) ||
-            c.start_timestamp_ms % intervalMs === 0,
+          (c) => histTimes.has(c.start_timestamp_ms) || c.start_timestamp_ms % intervalMs === 0
         )
       : allLive;
 
   if (hist.length === 0 && live.length === 0) return [];
 
   const byTime = new Map<number, { close: number; volume: number; high: number; low: number }>();
-  const add = (c: { start_timestamp_ms: number; close: number; volume: number; high: number; low: number }) =>
-    byTime.set(c.start_timestamp_ms, { close: c.close, volume: c.volume || 1, high: c.high, low: c.low });
+  const add = (c: {
+    start_timestamp_ms: number;
+    close: number;
+    volume: number;
+    high: number;
+    low: number;
+  }) =>
+    byTime.set(c.start_timestamp_ms, {
+      close: c.close,
+      volume: c.volume || 1,
+      high: c.high,
+      low: c.low,
+    });
   for (const c of hist) add(c);
   for (const c of live) add(c); // live overrides historical for overlapping bars
 
   return Array.from(byTime.entries())
     .sort((a, b) => a[0] - b[0])
     .map(([ms, v]) => ({
-      time: Math.floor(ms / 1000), close: v.close, volume: v.volume, high: v.high, low: v.low,
+      time: Math.floor(ms / 1000),
+      close: v.close,
+      volume: v.volume,
+      high: v.high,
+      low: v.low,
     }));
 }
 
@@ -398,11 +410,12 @@ async function fetchLookbackCandles(symbol: string, timeframe: string): Promise<
   // same-origin route handler that holds the gateway credential) is applied in one
   // place. Path is the part AFTER `/kite`.
   try {
-    const to   = new Date();
-    const days = timeframe.endsWith('D') || timeframe.endsWith('W') || timeframe.endsWith('M') ? 365 : 10;
+    const to = new Date();
+    const days =
+      timeframe.endsWith('D') || timeframe.endsWith('W') || timeframe.endsWith('M') ? 365 : 10;
     const from = new Date(to.getTime() - days * 86_400_000);
-    const fmt  = (d: Date) => d.toISOString().slice(0, 10);
-    const url  = `/historical?symbol=${encodeURIComponent(symbol)}&interval=${kiteInterval}&from=${fmt(from)}&to=${fmt(to)}`;
+    const fmt = (d: Date) => d.toISOString().slice(0, 10);
+    const url = `/historical?symbol=${encodeURIComponent(symbol)}&interval=${kiteInterval}&from=${fmt(from)}&to=${fmt(to)}`;
     debugLog('[GhostLine] Fetching candles from /kite:', url);
     const res = await kiteFetch(url);
     if (res.ok) {
@@ -412,7 +425,7 @@ async function fetchLookbackCandles(symbol: string, timeframe: string): Promise<
         close: c.close,
         volume: c.volume || 1.0,
         high: typeof c.high === 'number' ? c.high : c.close,
-        low:  typeof c.low  === 'number' ? c.low  : c.close,
+        low: typeof c.low === 'number' ? c.low : c.close,
       }));
       debugLog(`[GhostLine] API candles: ${candles.length} bars`);
       return candles;
@@ -431,31 +444,42 @@ async function fetchLookbackCandles(symbol: string, timeframe: string): Promise<
 export function olsSlope(closes: number[]): number {
   const n = closes.length;
   if (n < 5) return 0;
-  let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
-  for (let i = 0; i < n; i++) { sumX += i; sumY += closes[i]; sumXY += i * closes[i]; sumX2 += i * i; }
+  let sumX = 0,
+    sumY = 0,
+    sumXY = 0,
+    sumX2 = 0;
+  for (let i = 0; i < n; i++) {
+    sumX += i;
+    sumY += closes[i];
+    sumXY += i * closes[i];
+    sumX2 += i * i;
+  }
   const denom = n * sumX2 - sumX * sumX;
   if (denom === 0) return 0;
   return (n * sumXY - sumX * sumY) / denom;
 }
 
 function olsProjection(
-  closes: number[], lastTime: number, intervalSec: number, projLen: number,
+  closes: number[],
+  lastTime: number,
+  intervalSec: number,
+  projLen: number
 ): { time: number; price: number }[] {
   const n = closes.length;
   if (n < 5) return [];
 
-  const slope      = olsSlope(closes);
+  const slope = olsSlope(closes);
   if (!Number.isFinite(slope)) return [];
   const sumX = (n * (n - 1)) / 2;
   const sumY = closes.reduce((a, b) => a + b, 0);
-  const intercept  = (sumY - slope * sumX) / n;
+  const intercept = (sumY - slope * sumX) / n;
   const correction = closes[n - 1] - (intercept + slope * (n - 1)); // anchor to last close
 
   const pts: { time: number; price: number }[] = [];
   for (let i = 0; i <= projLen; i++) {
     const raw = intercept + slope * (n - 1 + i) + correction;
     pts.push({
-      time:  lastTime + i * intervalSec,
+      time: lastTime + i * intervalSec,
       // No absolute 0.01 floor — that painted index-scale "crash to zero" lines.
       // `applyGhostBounds` rejects / clips relative to the anchor after fit.
       price: Number.isFinite(raw) ? raw : closes[n - 1],
@@ -467,15 +491,28 @@ function olsProjection(
 // ── VWLR: volume-weighted linear regression ("advanced OLS") ─────────────────
 
 function vwlrProjection(
-  candles: { close: number; volume: number }[], lastTime: number, intervalSec: number, projLen: number,
+  candles: { close: number; volume: number }[],
+  lastTime: number,
+  intervalSec: number,
+  projLen: number
 ): { time: number; price: number }[] {
   const n = candles.length;
   if (n < 5) return [];
 
-  let sw = 0, swx = 0, swy = 0, swxx = 0, swxy = 0;
+  let sw = 0,
+    swx = 0,
+    swy = 0,
+    swxx = 0,
+    swxy = 0;
   for (let i = 0; i < n; i++) {
-    const x = i, y = candles[i].close, w = Math.max(candles[i].volume, 1);
-    sw += w; swx += w * x; swy += w * y; swxx += w * x * x; swxy += w * x * y;
+    const x = i,
+      y = candles[i].close,
+      w = Math.max(candles[i].volume, 1);
+    sw += w;
+    swx += w * x;
+    swy += w * y;
+    swxx += w * x * x;
+    swxy += w * x * y;
   }
   const denom = sw * swxx - swx * swx;
   if (Math.abs(denom) < 1e-12) return [];
@@ -494,24 +531,52 @@ function vwlrProjection(
 // ── VWEPR curved projection ─────────────────────────────────────────────────
 
 export function vweprProjection(
-  candles: { close: number; volume: number }[], lastTime: number, intervalSec: number, projLen: number,
+  candles: { close: number; volume: number }[],
+  lastTime: number,
+  intervalSec: number,
+  projLen: number
 ): { time: number; price: number }[] {
   const n = candles.length;
   if (n < 5) return [];
 
-  let sw=0, swx=0, swx2=0, swx3=0, swx4=0, swy=0, swxy=0, swx2y=0;
+  let sw = 0,
+    swx = 0,
+    swx2 = 0,
+    swx3 = 0,
+    swx4 = 0,
+    swy = 0,
+    swxy = 0,
+    swx2y = 0;
   for (let i = 0; i < n; i++) {
-    const x = i, y = candles[i].close, w = Math.max(candles[i].volume, 1);
-    sw += w; swx += w*x; swx2 += w*x*x; swx3 += w*x*x*x; swx4 += w*x*x*x*x;
-    swy += w*y; swxy += w*x*y; swx2y += w*x*x*y;
+    const x = i,
+      y = candles[i].close,
+      w = Math.max(candles[i].volume, 1);
+    sw += w;
+    swx += w * x;
+    swx2 += w * x * x;
+    swx3 += w * x * x * x;
+    swx4 += w * x * x * x * x;
+    swy += w * y;
+    swxy += w * x * y;
+    swx2y += w * x * x * y;
   }
-  const A = [[sw,swx,swx2],[swx,swx2,swx3],[swx2,swx3,swx4]];
+  const A = [
+    [sw, swx, swx2],
+    [swx, swx2, swx3],
+    [swx2, swx3, swx4],
+  ];
   const b = [swy, swxy, swx2y];
   const coeffs = solve3x3(A, b);
-  if (!coeffs) return olsProjection(candles.map(c => c.close), lastTime, intervalSec, projLen);
+  if (!coeffs)
+    return olsProjection(
+      candles.map((c) => c.close),
+      lastTime,
+      intervalSec,
+      projLen
+    );
 
   const [a0, a1, a2] = coeffs;
-  const correction = candles[n-1].close - (a0 + a1*(n-1) + a2*(n-1)*(n-1));
+  const correction = candles[n - 1].close - (a0 + a1 * (n - 1) + a2 * (n - 1) * (n - 1));
   const anchor = candles[n - 1].close;
 
   const pts: { time: number; price: number }[] = [];
@@ -523,22 +588,22 @@ export function vweprProjection(
   return pts;
 }
 
-function solve3x3(A: number[][], b: number[]): [number,number,number] | null {
+function solve3x3(A: number[][], b: number[]): [number, number, number] | null {
   const M = A.map((row, i) => [...row, b[i]]);
   for (let col = 0; col < 3; col++) {
     let max = col;
-    for (let r = col+1; r < 3; r++) if (Math.abs(M[r][col]) > Math.abs(M[max][col])) max = r;
+    for (let r = col + 1; r < 3; r++) if (Math.abs(M[r][col]) > Math.abs(M[max][col])) max = r;
     [M[col], M[max]] = [M[max], M[col]];
     if (Math.abs(M[col][col]) < 1e-12) return null;
-    for (let r = col+1; r < 3; r++) {
+    for (let r = col + 1; r < 3; r++) {
       const f = M[r][col] / M[col][col];
       for (let k = col; k <= 3; k++) M[r][k] -= f * M[col][k];
     }
   }
-  const x = [0,0,0];
+  const x = [0, 0, 0];
   for (let i = 2; i >= 0; i--) {
     x[i] = M[i][3];
-    for (let j = i+1; j < 3; j++) x[i] -= M[i][j] * x[j];
+    for (let j = i + 1; j < 3; j++) x[i] -= M[i][j] * x[j];
     x[i] /= M[i][i];
   }
   return [x[0], x[1], x[2]];
@@ -554,7 +619,9 @@ const REGIME_CHOP_RANGING_CUTOFF = 61.8;
 function trueRanges(rows: OhlcRow[]): number[] {
   const trs: number[] = [];
   for (let i = 1; i < rows.length; i++) {
-    const h = rows[i].high, l = rows[i].low, pc = rows[i - 1].close;
+    const h = rows[i].high,
+      l = rows[i].low,
+      pc = rows[i - 1].close;
     if (![h, l, pc].every((v) => Number.isFinite(v))) return [];
     trs.push(Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc)));
   }
@@ -567,7 +634,10 @@ function wilderSmooth(vals: number[], p: number): number[] {
   let run = 0;
   for (let i = 0; i < p; i++) run += vals[i];
   out.push(run);
-  for (let i = p; i < vals.length; i++) { run = run - run / p + vals[i]; out.push(run); }
+  for (let i = p; i < vals.length; i++) {
+    run = run - run / p + vals[i];
+    out.push(run);
+  }
   return out;
 }
 
@@ -575,22 +645,26 @@ function computeADX(rows: OhlcRow[], period: number): number | null {
   if (rows.length < period + 1) return null;
   const trs = trueRanges(rows);
   if (trs.length < period) return null;
-  const plusDM: number[] = [], minusDM: number[] = [];
+  const plusDM: number[] = [],
+    minusDM: number[] = [];
   for (let i = 1; i < rows.length; i++) {
     const up = rows[i].high - rows[i - 1].high;
     const down = rows[i - 1].low - rows[i].low;
     plusDM.push(up > down && up > 0 ? up : 0);
     minusDM.push(down > up && down > 0 ? down : 0);
   }
-  const smTr = wilderSmooth(trs, period), smP = wilderSmooth(plusDM, period), smM = wilderSmooth(minusDM, period);
+  const smTr = wilderSmooth(trs, period),
+    smP = wilderSmooth(plusDM, period),
+    smM = wilderSmooth(minusDM, period);
   const len = Math.min(smTr.length, smP.length, smM.length);
   const dxs: number[] = [];
   for (let i = 0; i < len; i++) {
     if (smTr[i] === 0) continue;
-    const pDI = 100 * smP[i] / smTr[i], mDI = 100 * smM[i] / smTr[i];
+    const pDI = (100 * smP[i]) / smTr[i],
+      mDI = (100 * smM[i]) / smTr[i];
     const s = pDI + mDI;
     if (s === 0) continue;
-    dxs.push(100 * Math.abs(pDI - mDI) / s);
+    dxs.push((100 * Math.abs(pDI - mDI)) / s);
   }
   if (dxs.length === 0) return null;
   const w = dxs.slice(-period);
@@ -603,15 +677,15 @@ function computeChoppiness(rows: OhlcRow[], period: number): number | null {
   const trs = trueRanges(sub);
   if (trs.length === 0) return null;
   const highs = sub.slice(1).map((r) => r.high);
-  const lows  = sub.slice(1).map((r) => r.low);
+  const lows = sub.slice(1).map((r) => r.low);
   const sumTr = trs.reduce((a, b) => a + b, 0);
   const range = Math.max(...highs) - Math.min(...lows);
   if (range <= 0 || sumTr <= 0) return null;
-  return Math.max(0, Math.min(100, 100 * Math.log10(sumTr / range) / Math.log10(period)));
+  return Math.max(0, Math.min(100, (100 * Math.log10(sumTr / range)) / Math.log10(period)));
 }
 
 function classifyTrendState(rows: OhlcRow[]): 'trending' | 'ranging' | 'transitional' {
-  const adx  = computeADX(rows, REGIME_ADX_PERIOD);
+  const adx = computeADX(rows, REGIME_ADX_PERIOD);
   const chop = computeChoppiness(rows, REGIME_CHOP_PERIOD);
   if (adx === null || chop === null) return 'transitional';
   const strong = adx >= REGIME_ADX_TREND_CUTOFF;
@@ -630,16 +704,22 @@ function ewmaMean(values: number[]): number {
   const n = values.length;
   if (n === 0) return 0;
   const oneMinus = 1 - 2 / (n + 1);
-  let wsum = 0, vsum = 0;
+  let wsum = 0,
+    vsum = 0;
   for (let i = 0; i < n; i++) {
     const w = Math.pow(oneMinus, n - 1 - i);
-    wsum += w; vsum += w * values[i];
+    wsum += w;
+    vsum += w * values[i];
   }
   return wsum === 0 ? values.reduce((a, b) => a + b, 0) / n : vsum / wsum;
 }
 
 export function forecastProjection(
-  candles: LookbackCandle[], lastTime: number, intervalSec: number, projLen: number, driftLookback = 30,
+  candles: LookbackCandle[],
+  lastTime: number,
+  intervalSec: number,
+  projLen: number,
+  driftLookback = 30
 ): { time: number; price: number }[] {
   const valid = candles.filter((c) => Number.isFinite(c.close) && c.close > 0);
   const closes = valid.map((c) => c.close);
@@ -661,9 +741,12 @@ export function forecastProjection(
 
   // Regime conditioning: amplify momentum in trends, dampen in ranges.
   const trend = classifyTrendState(valid);
-  const weight = trend === 'trending' ? TREND_CONTINUATION_WEIGHT
-               : trend === 'ranging'  ? RANGE_REVERSION_WEIGHT
-               : 1.0;
+  const weight =
+    trend === 'trending'
+      ? TREND_CONTINUATION_WEIGHT
+      : trend === 'ranging'
+        ? RANGE_REVERSION_WEIGHT
+        : 1.0;
   drift *= weight;
   debugLog(`[GhostLine] Forecast regime=${trend} weight=${weight}`);
 
@@ -683,9 +766,11 @@ export async function computeGhostPoints(
   effectiveTimeframe: string,
   ghostLineMode: string,
   predictiveSignals: any[],
-  visibleFromSec: number = 0,
+  visibleFromSec: number = 0
 ): Promise<{ time: number; price: number }[]> {
-  debugLog(`[GhostLine] computeGhostPoints — symbol=${activeSymbol} tf=${effectiveTimeframe} mode=${ghostLineMode}`);
+  debugLog(
+    `[GhostLine] computeGhostPoints — symbol=${activeSymbol} tf=${effectiveTimeframe} mode=${ghostLineMode}`
+  );
 
   const rawLookback = await fetchLookbackCandles(activeSymbol, effectiveTimeframe);
   const lookback = sanitizeLookback(rawLookback);
@@ -738,7 +823,7 @@ export async function computeGhostPoints(
     })
   ) {
     const sigs = predictiveSignals.filter(
-      (s) => s.symbol?.toUpperCase() === activeSymbol.toUpperCase(),
+      (s) => s.symbol?.toUpperCase() === activeSymbol.toUpperCase()
     );
     const sig = sigs[sigs.length - 1];
     const predicted = sig.predicted_close_price as number;
@@ -757,12 +842,15 @@ export async function computeGhostPoints(
     // (predictive::OLS_MAX_WINDOW / vwepr::MAX_WINDOW) because `quant-core` still
     // fits over the same bars server-side — the agent's read of a projection and
     // the user's must not disagree.
-    const closes = window.map(c => c.close);
+    const closes = window.map((c) => c.close);
     points =
-      ghostLineMode === 'linear'   ? olsProjection(closes, last.time, intervalSec, projBars) :
-      ghostLineMode === 'volume'   ? vwlrProjection(window, last.time, intervalSec, projBars) :
-      ghostLineMode === 'forecast' ? forecastProjection(window, last.time, intervalSec, projBars) :
-      vweprProjection(window, last.time, intervalSec, projBars);
+      ghostLineMode === 'linear'
+        ? olsProjection(closes, last.time, intervalSec, projBars)
+        : ghostLineMode === 'volume'
+          ? vwlrProjection(window, last.time, intervalSec, projBars)
+          : ghostLineMode === 'forecast'
+            ? forecastProjection(window, last.time, intervalSec, projBars)
+            : vweprProjection(window, last.time, intervalSec, projBars);
     debugLog('[GhostLine] Path3:', points.length, 'points');
   }
 
@@ -776,7 +864,10 @@ export async function computeGhostPoints(
   // is the price, so the ghost starts at the live close rather than the close of
   // the last completed bar.
   if (points.length > 0) {
-    const livePrice = latestStorePrice(activeSymbol, TIMEFRAME_MS[effectiveTimeframe as Timeframe] ?? 0);
+    const livePrice = latestStorePrice(
+      activeSymbol,
+      TIMEFRAME_MS[effectiveTimeframe as Timeframe] ?? 0
+    );
     if (livePrice !== null) {
       const dPrice = livePrice - points[0].price;
       if (Math.abs(dPrice) > 1e-9) {
@@ -794,7 +885,7 @@ export async function computeGhostPoints(
       points,
       ghostLineMode,
       window.map((c) => c.close),
-      anchor,
+      anchor
     );
   }
 
@@ -812,7 +903,10 @@ export async function computeGhostPoints(
     const span = points[points.length - 1].time - points[0].time;
     let strictlyIncreasing = true;
     for (let i = 1; i < points.length; i++) {
-      if (points[i].time <= points[i - 1].time) { strictlyIncreasing = false; break; }
+      if (points[i].time <= points[i - 1].time) {
+        strictlyIncreasing = false;
+        break;
+      }
     }
     if (!(span > 0) || !strictlyIncreasing) {
       const base = points[0].time;
@@ -822,8 +916,10 @@ export async function computeGhostPoints(
   }
 
   debugLog(
-    '[GhostLine] FINAL times=', points.map((p) => p.time).join(','),
-    'prices=', points.map((p) => p.price).join(','),
+    '[GhostLine] FINAL times=',
+    points.map((p) => p.time).join(','),
+    'prices=',
+    points.map((p) => p.price).join(',')
   );
   return points;
 }

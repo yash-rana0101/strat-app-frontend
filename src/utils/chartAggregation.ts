@@ -30,7 +30,13 @@ export function aggregateCandles(
   rawCandles: OhlcCandle[],
   timeframe: Timeframe,
   symbol: string
-): { candles: ChartCandle[]; volumes: VolumeBar[]; ema9: EmaPoint[]; ema21: EmaPoint[]; isIndexVolume: boolean } {
+): {
+  candles: ChartCandle[];
+  volumes: VolumeBar[];
+  ema9: EmaPoint[];
+  ema21: EmaPoint[];
+  isIndexVolume: boolean;
+} {
   const empty = { candles: [], volumes: [], ema9: [], ema21: [], isIndexVolume: false };
   const intervalMs = TIMEFRAME_MS[timeframe];
   if (!intervalMs) return empty;
@@ -48,10 +54,13 @@ export function aggregateCandles(
   // arrive with stale, missing, or not-yet-consistent high/low, and dropping
   // them would make the latest candle flicker or vanish. Instead we normalize
   // high/low below so every emitted candle is well-formed.
-  const valid = filtered.filter((c) =>
-    c.start_timestamp_ms > 0 &&
-    Number.isFinite(c.open) && c.open > 0 &&
-    Number.isFinite(c.close) && c.close > 0
+  const valid = filtered.filter(
+    (c) =>
+      c.start_timestamp_ms > 0 &&
+      Number.isFinite(c.open) &&
+      c.open > 0 &&
+      Number.isFinite(c.close) &&
+      c.close > 0
   );
 
   const sorted = [...valid].sort((a, b) => a.start_timestamp_ms - b.start_timestamp_ms);
@@ -101,7 +110,11 @@ export function aggregateCandles(
     const timeSec = Math.floor(key / 1000);
     const isUp = b.close >= b.open;
     candles.push({ time: timeSec, open: b.open, high: b.high, low: b.low, close: b.close });
-    volumes.push({ time: timeSec, value: b.volume, color: isUp ? COLORS.volumeUp : COLORS.volumeDown });
+    volumes.push({
+      time: timeSec,
+      value: b.volume,
+      color: isUp ? COLORS.volumeUp : COLORS.volumeDown,
+    });
     closes.push({ time: timeSec, value: b.close });
   }
 

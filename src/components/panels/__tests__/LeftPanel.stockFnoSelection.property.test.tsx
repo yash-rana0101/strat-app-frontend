@@ -70,7 +70,14 @@ const stockFnoArb: fc.Arbitrary<StockFnoResult> = fc
     const eff = optionType === 'FUT' ? null : strike;
     const tradingsymbol =
       optionType === 'FUT' ? `${underlying}26JULFUT` : `${underlying}26JUL${strike}${optionType}`;
-    return { kind: 'FNO' as const, tradingsymbol, underlying, expiry: '2026-07-28', strike: eff, optionType };
+    return {
+      kind: 'FNO' as const,
+      tradingsymbol,
+      underlying,
+      expiry: '2026-07-28',
+      strike: eff,
+      optionType,
+    };
   });
 
 /** Install invoke so `fno_request_underlying` resolves to `requestResult`. */
@@ -136,7 +143,7 @@ describe('Stock option selection activates F&O when the backend accepts the unde
         cleanup();
         vi.clearAllMocks();
       }),
-      { numRuns: 6 },
+      { numRuns: 6 }
     );
   });
 

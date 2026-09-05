@@ -92,7 +92,7 @@ describe('adapters that talk HTTP', () => {
     // the browser path must not replace it with a generic HTTP message.
     fetchMock.mockResolvedValue(jsonRes({ error: 'No sentiment computed yet for TCS.' }, 503));
     await expect(bridgeInvoke('fetch_symbol_sentiment', { symbol: 'TCS' })).rejects.toThrow(
-      'No sentiment computed yet for TCS.',
+      'No sentiment computed yet for TCS.'
     );
   });
 
@@ -121,8 +121,8 @@ describe('adapters that talk HTTP', () => {
                 results: [
                   { tradingsymbol: 'TCS', name: 'TCS', exchange: 'NSE', instrument_type: 'EQ' },
                 ],
-              }),
-            ),
+              })
+            )
     );
     const out = (await bridgeInvoke('search_instruments', { query: 'TCS' })) as unknown[];
     // All four segments India actually has. BSE was the first missing leg — no BSE
@@ -130,7 +130,7 @@ describe('adapters that talk HTTP', () => {
     // half, without which no SENSEX option could be found either.
     expect(fetchMock).toHaveBeenCalledTimes(4);
     const exchangesQueried = fetchMock.mock.calls.map(
-      (c: unknown[]) => String(c[0]).match(/exchange=(\w+)/)?.[1],
+      (c: unknown[]) => String(c[0]).match(/exchange=(\w+)/)?.[1]
     );
     expect(exchangesQueried).toEqual(expect.arrayContaining(['NSE', 'BSE', 'NFO', 'BFO']));
     expect(out).toEqual([
@@ -155,9 +155,9 @@ describe('adapters that talk HTTP', () => {
                   segment: 'INDICES',
                 },
               ],
-            }),
+            })
           )
-        : Promise.resolve(jsonRes({ results: [] })),
+        : Promise.resolve(jsonRes({ results: [] }))
     );
 
     const out = (await bridgeInvoke('search_instruments', { query: 'SENSEX' })) as Array<
@@ -188,9 +188,9 @@ describe('adapters that talk HTTP', () => {
                   lot_size: 20,
                 },
               ],
-            }),
+            })
           )
-        : Promise.resolve(jsonRes({ results: [] })),
+        : Promise.resolve(jsonRes({ results: [] }))
     );
 
     const out = (await bridgeInvoke('search_instruments', { query: 'SENSEX 76900 CE' })) as Array<
@@ -216,7 +216,7 @@ describe('adapters that talk HTTP', () => {
 
   it('rejects a missing required argument with a readable message', async () => {
     await expect(bridgeInvoke('get_fno_analytics', {})).rejects.toThrow(
-      'get_fno_analytics: argument "underlying" must be a non-empty string',
+      'get_fno_analytics: argument "underlying" must be a non-empty string'
     );
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -245,11 +245,11 @@ describe('local-store adapters', () => {
     // save and `useRadarStore.syncRegistry` believe the symbol set was pushed.
     // Callers that can tolerate it (`syncRegistry`, `persist`) catch and warn.
     await expect(bridgeInvoke('set_radar_symbols', { symbols: ['tcs'] })).rejects.toThrow(
-      /localStorage is unavailable/,
+      /localStorage is unavailable/
     );
-    await expect(bridgeInvoke('save_workspace', { symbol: 'TCS', stateJson: '{}' })).rejects.toThrow(
-      /localStorage is unavailable/,
-    );
+    await expect(
+      bridgeInvoke('save_workspace', { symbol: 'TCS', stateJson: '{}' })
+    ).rejects.toThrow(/localStorage is unavailable/);
     // Reads stay tolerant: a missing store is indistinguishable from a missing
     // key, and both mean "no saved state", which is not an error.
     await expect(bridgeInvoke('get_radar_symbols')).resolves.toEqual([]);
@@ -342,7 +342,10 @@ describe('event bus', () => {
     await bridgeListen('ohlc-tick', () => {
       throw new Error('boom');
     });
-    off = await bridgeListen('ohlc-tick', () => off?.());
+    off = await bridgeListen('ohlc-tick', () => {
+      off?.();
+      off = undefined;
+    });
     await bridgeListen('ohlc-tick', () => seen.push(1));
     expect(() => emitBridgeEvent('ohlc-tick', {})).not.toThrow();
     expect(seen).toEqual([1]);
@@ -356,9 +359,9 @@ describe('SSE relay', () => {
       streamOf(
         'event: RUN_STARTED\ndata: {"thread_id":"t1"}\n\n',
         'event: TOKEN\ndata: {"a":1}\n', // split mid-frame across chunks
-        'data: \n\nevent: RUN_FINISHED\r\ndata: {"status":"paused"}\r\n\r\n',
+        'data: \n\nevent: RUN_FINISHED\r\ndata: {"status":"paused"}\r\n\r\n'
       ),
-      (f) => frames.push(f),
+      (f) => frames.push(f)
     );
     expect(frames.map((f) => f.event)).toEqual(['RUN_STARTED', 'TOKEN', 'RUN_FINISHED']);
     expect(frames[0].data).toEqual({ thread_id: 't1' });
@@ -395,7 +398,7 @@ describe('SSE relay', () => {
         frames.push(f);
         controller.abort();
       },
-      controller.signal,
+      controller.signal
     );
     await expect(done).resolves.toBeUndefined();
     expect(frames).toHaveLength(1);

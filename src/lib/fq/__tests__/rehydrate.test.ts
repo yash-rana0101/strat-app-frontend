@@ -88,8 +88,16 @@ const TRANSCRIPT: StoredEvent[] = [
   { seq: 1, event: 'RUN_STARTED', data: { thread_id: THREAD } },
   { seq: 2, event: 'REASONING', data: { thread_id: THREAD, content: 'Checking the ' } },
   { seq: 3, event: 'REASONING', data: { thread_id: THREAD, content: 'multi-TF trend.' } },
-  { seq: 4, event: 'TOOL_CALL_START', data: { thread_id: THREAD, tool: 'get_candles', args: { symbol: 'RELIANCE' } } },
-  { seq: 5, event: 'TOOL_CALL_END', data: { thread_id: THREAD, tool: 'get_candles', status: 'success' } },
+  {
+    seq: 4,
+    event: 'TOOL_CALL_START',
+    data: { thread_id: THREAD, tool: 'get_candles', args: { symbol: 'RELIANCE' } },
+  },
+  {
+    seq: 5,
+    event: 'TOOL_CALL_END',
+    data: { thread_id: THREAD, tool: 'get_candles', status: 'success' },
+  },
   {
     seq: 6,
     event: 'DECISION',
@@ -168,7 +176,15 @@ describe('replay produces the same session a live stream would', () => {
   });
 
   it('sorts by seq before replaying, so a reordered response cannot corrupt it', () => {
-    const shuffled = [TRANSCRIPT[6], TRANSCRIPT[2], TRANSCRIPT[0], TRANSCRIPT[5], TRANSCRIPT[1], TRANSCRIPT[3], TRANSCRIPT[4]];
+    const shuffled = [
+      TRANSCRIPT[6],
+      TRANSCRIPT[2],
+      TRANSCRIPT[0],
+      TRANSCRIPT[5],
+      TRANSCRIPT[1],
+      TRANSCRIPT[3],
+      TRANSCRIPT[4],
+    ];
     expect(shape(replayEvents(shuffled))).toEqual(shape(replayEvents(TRANSCRIPT)));
   });
 
@@ -265,7 +281,7 @@ describe('reconciliation with the run status', () => {
       // A spinner that never stops is the single most visible way this could lie.
       const reconciled = reconcileWithRun(replayEvents(INTERRUPTED), run({ status }));
       expect(reconciled.isAnalyzing).toBe(false);
-    },
+    }
   );
 });
 
@@ -329,7 +345,14 @@ describe('toQaMessages', () => {
       }),
     ]);
     expect(restored).toEqual([
-      { id: 'm1', role: 'user', content: 'why?', activity: undefined, streaming: false, error: undefined },
+      {
+        id: 'm1',
+        role: 'user',
+        content: 'why?',
+        activity: undefined,
+        streaming: false,
+        error: undefined,
+      },
       {
         id: 'm2',
         role: 'assistant',
@@ -344,7 +367,12 @@ describe('toQaMessages', () => {
   it('excludes analysis messages, which belong to the glass box', () => {
     const restored = toQaMessages([
       message({ kind: 'analysis_request', content: 'find a setup' }),
-      message({ message_id: 'm2', kind: 'analysis_answer', role: 'assistant', content: 'analysis' }),
+      message({
+        message_id: 'm2',
+        kind: 'analysis_answer',
+        role: 'assistant',
+        content: 'analysis',
+      }),
       message({ message_id: 'm3', kind: 'qa_question', content: 'why?' }),
     ]);
     expect(restored.map((m) => m.id)).toEqual(['m3']);
@@ -358,12 +386,17 @@ describe('toQaMessages', () => {
       ]);
       expect(restored.error).toBe(true);
       expect(restored.streaming).toBe(false);
-    },
+    }
   );
 
   it('keeps the partial text of a truncated answer', () => {
     const [restored] = toQaMessages([
-      message({ role: 'assistant', kind: 'qa_answer', content: 'The stop sits at', status: 'truncated' }),
+      message({
+        role: 'assistant',
+        kind: 'qa_answer',
+        content: 'The stop sits at',
+        status: 'truncated',
+      }),
     ]);
     expect(restored.content).toBe('The stop sits at');
   });

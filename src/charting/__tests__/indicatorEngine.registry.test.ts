@@ -76,7 +76,7 @@ describe('indicator registry completeness', () => {
       const results = searchIndicators(def.name);
       expect(
         results.map((d) => d.id),
-        `searching "${def.name}" should surface "${id}"`,
+        `searching "${def.name}" should surface "${id}"`
       ).toContain(id);
     });
   });
@@ -101,19 +101,24 @@ describe('indicator registry completeness', () => {
       expect(ids).toContain(id);
     });
 
-    it.each(OSCILLATOR_IDS)('oscillator "%s" is discoverable by name via searchIndicators', (id) => {
-      const def = getIndicator(id)!;
-      const results = searchIndicators(def.name);
-      expect(
-        results.map((d) => d.id),
-        `searching "${def.name}" should surface "${id}"`,
-      ).toContain(id);
-    });
+    it.each(OSCILLATOR_IDS)(
+      'oscillator "%s" is discoverable by name via searchIndicators',
+      (id) => {
+        const def = getIndicator(id)!;
+        const results = searchIndicators(def.name);
+        expect(
+          results.map((d) => d.id),
+          `searching "${def.name}" should surface "${id}"`
+        ).toContain(id);
+      }
+    );
   });
 
   describe('registry catalogue', () => {
     it('contains exactly the 19 documented indicators and nothing else', () => {
-      const all = listIndicators().map((d) => d.id).sort();
+      const all = listIndicators()
+        .map((d) => d.id)
+        .sort();
       const expected = [...OVERLAY_IDS, ...OSCILLATOR_IDS].sort();
       expect(all).toEqual(expected);
     });

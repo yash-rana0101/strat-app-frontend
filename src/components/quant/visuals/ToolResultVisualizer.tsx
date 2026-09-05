@@ -28,7 +28,10 @@ function tryParseJson(text: string | null): Record<string, unknown> | null {
   if (!text) return null;
   try {
     const trimmed = text.trim();
-    if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+    if (
+      (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+      (trimmed.startsWith('[') && trimmed.endsWith(']'))
+    ) {
       return JSON.parse(trimmed);
     }
     const match = trimmed.match(/\{[\s\S]*\}/);
@@ -83,7 +86,10 @@ export default function ToolResultVisualizer({
             </span>
             <div className="flex flex-col gap-1">
               {resistances.map((r, i) => (
-                <div key={i} className="flex justify-between font-mono text-[10px] font-bold text-rose-300">
+                <div
+                  key={i}
+                  className="flex justify-between font-mono text-[10px] font-bold text-rose-300"
+                >
                   <span>R{i + 1}</span>
                   <span>₹{Number(r).toFixed(2)}</span>
                 </div>
@@ -98,7 +104,10 @@ export default function ToolResultVisualizer({
             </span>
             <div className="flex flex-col gap-1">
               {supports.map((s, i) => (
-                <div key={i} className="flex justify-between font-mono text-[10px] font-bold text-emerald-300">
+                <div
+                  key={i}
+                  className="flex justify-between font-mono text-[10px] font-bold text-emerald-300"
+                >
                   <span>S{i + 1}</span>
                   <span>₹{Number(s).toFixed(2)}</span>
                 </div>
@@ -124,20 +133,28 @@ export default function ToolResultVisualizer({
             <BarChart2 size={11} className="text-emerald-400" />
             Consensus Signal Matrix
           </span>
-          <span className={`text-[9.5px] font-bold px-2 py-0.5 rounded border ${
-            score > 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-          }`}>
+          <span
+            className={`text-[9.5px] font-bold px-2 py-0.5 rounded border ${
+              score > 0
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+            }`}
+          >
             Score: {score > 0 ? `+${score}` : score}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div className="rounded border border-border-default/50 bg-surface/60 p-2 flex flex-col gap-0.5">
-            <span className="text-[8px] font-bold uppercase tracking-wider text-text-muted">Momentum</span>
+            <span className="text-[8px] font-bold uppercase tracking-wider text-text-muted">
+              Momentum
+            </span>
             <span className="text-[11px] font-bold text-text-primary">{momentum}</span>
           </div>
           <div className="rounded border border-border-default/50 bg-surface/60 p-2 flex flex-col gap-0.5">
-            <span className="text-[8px] font-bold uppercase tracking-wider text-text-muted">Volatility</span>
+            <span className="text-[8px] font-bold uppercase tracking-wider text-text-muted">
+              Volatility
+            </span>
             <span className="text-[11px] font-bold text-text-primary">{volatility}</span>
           </div>
         </div>

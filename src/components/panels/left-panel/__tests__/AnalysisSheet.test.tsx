@@ -130,7 +130,7 @@ describe('AnalysisSheet', () => {
     expect(dialog).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'AI News Sentiment' })).toHaveAttribute(
       'aria-selected',
-      'true',
+      'true'
     );
   });
 
@@ -222,7 +222,7 @@ describe('AnalysisSheet', () => {
 
     expect(screen.getByRole('tab', { name: 'Technical Consensus' })).toHaveAttribute(
       'aria-selected',
-      'true',
+      'true'
     );
     expect(dialog).toHaveTextContent('+61');
     // Still the same dialog instance — switching tabs must not tear the sheet down
@@ -275,8 +275,11 @@ describe('AnalysisSheet', () => {
     render(
       <Harness
         initialTab="sentiment"
-        multiTfPatterns={[{ timeframe: '10m', patterns: [] }, { timeframe: '1h', patterns: [] }]}
-      />,
+        multiTfPatterns={[
+          { timeframe: '10m', patterns: [] },
+          { timeframe: '1h', patterns: [] },
+        ]}
+      />
     );
 
     await screen.findByRole('dialog');

@@ -97,7 +97,7 @@ describe('Property 16: clear removes unlocked drawings and retains locked ones',
         // Purity: the input array is unchanged.
         expect(drawings).toEqual(before);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -108,7 +108,7 @@ describe('Property 16: clear removes unlocked drawings and retains locked ones',
         const orderedLocked = drawings.filter((d) => d.locked === true).map((d) => d.id);
         expect(result.map((d) => d.id)).toEqual(orderedLocked);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

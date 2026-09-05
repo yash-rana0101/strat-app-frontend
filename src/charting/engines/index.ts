@@ -9,14 +9,8 @@ export { backingStoreLength } from './rendering';
 
 export { validateNumeric, validateParams } from './validation';
 
-export {
-  canonicalCandles,
-  applyLatestCandleUpdate,
-} from './canonicalCandles';
-export type {
-  LatestCandleUpdateKind,
-  LatestCandleUpdateResult,
-} from './canonicalCandles';
+export { canonicalCandles, applyLatestCandleUpdate } from './canonicalCandles';
+export type { LatestCandleUpdateKind, LatestCandleUpdateResult } from './canonicalCandles';
 
 export {
   buildFootprint,
@@ -26,11 +20,7 @@ export {
   MIN_IMBALANCE_RATIO,
   MAX_IMBALANCE_RATIO,
 } from './footprintEngine';
-export type {
-  FootprintCell,
-  FootprintCandle,
-  BuildFootprintOptions,
-} from './footprintEngine';
+export type { FootprintCell, FootprintCandle, BuildFootprintOptions } from './footprintEngine';
 
 export {
   INDICATOR_REGISTRY,
@@ -61,12 +51,7 @@ export {
   pixelToPoint,
   clearUnlocked,
 } from './drawingEngine';
-export type {
-  DrawingCategory,
-  ToolSpec,
-  Pixel,
-  CoordinateViewport,
-} from './drawingEngine';
+export type { DrawingCategory, ToolSpec, Pixel, CoordinateViewport } from './drawingEngine';
 
 export {
   buildSeries,
@@ -76,11 +61,7 @@ export {
   CHART_TYPE_PARAM_SPEC,
   CHART_TYPE_PARAM_DEFAULTS,
 } from './chartTypeEngine';
-export type {
-  ChartType,
-  ChartTypeParams,
-  RenderableSeries,
-} from './chartTypeEngine';
+export type { ChartType, ChartTypeParams, RenderableSeries } from './chartTypeEngine';
 
 export {
   buildProfile,
@@ -100,12 +81,7 @@ export type {
   BuildProfileOptions,
 } from './volumeProfileEngine';
 
-export {
-  STRATEGY_REGISTRY,
-  registerStrategy,
-  getStrategy,
-  listStrategies,
-} from './strategyEngine';
+export { STRATEGY_REGISTRY, registerStrategy, getStrategy, listStrategies } from './strategyEngine';
 export type {
   SignalKind,
   Signal,

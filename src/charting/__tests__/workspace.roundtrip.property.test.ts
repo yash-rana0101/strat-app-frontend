@@ -34,7 +34,9 @@ const RUNS = 100;
  * emits `"0"`, so a generated `-0` would not survive the round-trip verbatim.
  */
 const finite = (min: number, max: number): fc.Arbitrary<number> =>
-  fc.double({ min, max, noNaN: true, noDefaultInfinity: true }).map((n) => (Object.is(n, -0) ? 0 : n));
+  fc
+    .double({ min, max, noNaN: true, noDefaultInfinity: true })
+    .map((n) => (Object.is(n, -0) ? 0 : n));
 
 /** A chart type drawn from the canonical list (Requirement 1.3). */
 const chartType: fc.Arbitrary<ChartType> = fc.constantFrom(...CHART_TYPES);
@@ -53,7 +55,7 @@ const chartTypeParams = (): fc.Arbitrary<Record<string, number>> =>
       kagiReversal: finite(1, 999_999),
       lineBreakCount: finite(1, 999_999),
     },
-    { requiredKeys: [] },
+    { requiredKeys: [] }
   );
 
 /** A finite numeric parameter bag for an indicator instance. */
@@ -72,7 +74,9 @@ const lineStyle = (): fc.Arbitrary<ActiveIndicator['style']> =>
 const activeIndicator = (): fc.Arbitrary<ActiveIndicator> =>
   fc.record({
     instanceId: fc.string({ minLength: 1, maxLength: 12 }),
-    indicatorId: fc.string({ minLength: 1, maxLength: 12 }) as fc.Arbitrary<ActiveIndicator['indicatorId']>,
+    indicatorId: fc.string({ minLength: 1, maxLength: 12 }) as fc.Arbitrary<
+      ActiveIndicator['indicatorId']
+    >,
     params: indicatorParams(),
     style: lineStyle(),
     visible: fc.boolean(),
@@ -99,7 +103,7 @@ const drawing = (): fc.Arbitrary<Drawing> =>
       locked: fc.boolean(),
       symbol: fc.string({ minLength: 1, maxLength: 8 }),
     },
-    { requiredKeys: ['id', 'tool', 'points'] },
+    { requiredKeys: ['id', 'tool', 'points'] }
   );
 
 /** One oscillator pane layout entry. */
@@ -128,7 +132,7 @@ describe('Property 33: Workspace serialization round-trips', () => {
         const restored = deserializeWorkspace(serializeWorkspace(state));
         expect(restored).toEqual(state);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

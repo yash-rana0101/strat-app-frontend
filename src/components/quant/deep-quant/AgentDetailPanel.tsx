@@ -53,7 +53,8 @@ export default function AgentDetailPanel({
           Deep Quant Visual Inspector
         </p>
         <p className="max-w-64 text-[11px] leading-relaxed text-text-muted mt-1">
-          Pick any step in the transcript or progress timeline to inspect visual data, indicators, and execution logic.
+          Pick any step in the transcript or progress timeline to inspect visual data, indicators,
+          and execution logic.
         </p>
       </div>
     );
@@ -102,9 +103,7 @@ function ToolDetail({
           <Wrench size={12} className="text-primary" />
           <span>{toolName}</span>
         </h3>
-        <span className="text-[8.5px] font-mono text-text-muted uppercase">
-          Step Telemetry
-        </span>
+        <span className="text-[8.5px] font-mono text-text-muted uppercase">Step Telemetry</span>
       </div>
 
       <ToolResultVisualizer
@@ -118,13 +117,7 @@ function ToolDetail({
 
 // ── Decision detail ───────────────────────────────────────────────────────────
 
-function DecisionDetail({
-  finalTrade,
-  symbol,
-}: {
-  finalTrade: AiExecutionPlan;
-  symbol: string;
-}) {
+function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; symbol: string }) {
   const actionable = isActionableTrade(finalTrade);
   const side = finalTrade.action ?? 'HOLD';
   const isBuy = side === 'BUY';

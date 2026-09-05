@@ -42,7 +42,7 @@ beforeEach(() => {
   render(
     <TerminalLayout leftPanel={<div data-testid="left-panel-content">watchlist</div>}>
       <div>chart</div>
-    </TerminalLayout>,
+    </TerminalLayout>
   );
 });
 afterEach(() => cleanup());

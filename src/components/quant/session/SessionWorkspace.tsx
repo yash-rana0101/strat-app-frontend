@@ -70,7 +70,7 @@ export default function SessionWorkspace({ sessionId }: { sessionId: string }) {
         setState('failed');
       }
     },
-    [activate],
+    [activate]
   );
 
   React.useEffect(() => {
@@ -129,7 +129,11 @@ export default function SessionWorkspace({ sessionId }: { sessionId: string }) {
             aria-label="Session history"
             className="flex w-9 shrink-0 items-center justify-center border-b border-border-default/40 bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60"
           >
-            {historyOpen ? <X size={14} aria-hidden="true" /> : <History size={14} aria-hidden="true" />}
+            {historyOpen ? (
+              <X size={14} aria-hidden="true" />
+            ) : (
+              <History size={14} aria-hidden="true" />
+            )}
           </button>
         </div>
 
@@ -152,9 +156,15 @@ export default function SessionWorkspace({ sessionId }: { sessionId: string }) {
             </span>
             <span className="ml-auto shrink-0 text-[11px] text-text-secondary" aria-live="polite">
               {(sessionStatus === 'running' || isSessionLoading) && (
-                <Loader2 size={11} className="mr-1 inline animate-spin text-primary" aria-hidden="true" />
+                <Loader2
+                  size={11}
+                  className="mr-1 inline animate-spin text-primary"
+                  aria-hidden="true"
+                />
               )}
-              {isSessionLoading ? 'Loading session…' : (STATUS_TEXT[sessionStatus] ?? sessionStatus)}
+              {isSessionLoading
+                ? 'Loading session…'
+                : (STATUS_TEXT[sessionStatus] ?? sessionStatus)}
             </span>
           </>
         ) : (
@@ -170,7 +180,11 @@ export default function SessionWorkspace({ sessionId }: { sessionId: string }) {
           role="alert"
           className="flex shrink-0 items-start gap-1.5 border-b border-border-default/40 bg-elevated p-2 text-xs text-text-secondary"
         >
-          <AlertTriangle size={12} className="mt-0.5 shrink-0 text-status-error" aria-hidden="true" />
+          <AlertTriangle
+            size={12}
+            className="mt-0.5 shrink-0 text-status-error"
+            aria-hidden="true"
+          />
           <span className="min-w-0 flex-1">{failure}</span>
           <button
             type="button"

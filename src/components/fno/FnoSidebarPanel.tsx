@@ -59,9 +59,15 @@ export default function FnoSidebarPanel() {
     }
     let cancelled = false;
     bridgeInvoke<string[]>('fno_list_expiries', { underlying: fnoUnderlying })
-      .then((e) => { if (!cancelled) setExpiries(Array.isArray(e) ? e : []); })
-      .catch(() => { if (!cancelled) setExpiries([]); });
-    return () => { cancelled = true; };
+      .then((e) => {
+        if (!cancelled) setExpiries(Array.isArray(e) ? e : []);
+      })
+      .catch(() => {
+        if (!cancelled) setExpiries([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [fnoUnderlying]);
 
   // Auto-sync the underlying when the user charts a different contract/symbol.
@@ -82,9 +88,7 @@ export default function FnoSidebarPanel() {
     if (!extractedUnderlying) return;
 
     const available = chains?.underlyings ?? [];
-    const known = available.some(
-      (u) => u.toUpperCase() === extractedUnderlying.toUpperCase(),
-    );
+    const known = available.some((u) => u.toUpperCase() === extractedUnderlying.toUpperCase());
     if (available.length > 0 && !known && !isFnoSymbol(selectedSymbol)) return;
 
     prevSymbolRef.current = selectedSymbol;
@@ -134,7 +138,9 @@ export default function FnoSidebarPanel() {
             setViewState(toFnoViewState(event.payload));
           }
         });
-      } catch { /* not in Tauri */ }
+      } catch {
+        /* not in Tauri */
+      }
 
       // Same guard as `FnoSection`: a blank underlying fails
       // `get_fno_analytics`'s own argument check before any request is made, and
@@ -165,7 +171,9 @@ export default function FnoSidebarPanel() {
       }
       try {
         await bridgeInvoke('fno_subscribe', { underlying: fnoUnderlying, expiry: fnoExpiry });
-      } catch { /* not in Tauri */ }
+      } catch {
+        /* not in Tauri */
+      }
     })();
 
     return () => {
@@ -175,11 +183,12 @@ export default function FnoSidebarPanel() {
     };
   }, [fnoUnderlying, fnoExpiry]);
 
-  const msg = viewState?.kind === 'unavailable'
-    ? viewState.reason
-    : viewState?.kind === 'service-error'
-      ? viewState.detail
-      : 'F&O data unavailable. Ensure the F&O service is running.';
+  const msg =
+    viewState?.kind === 'unavailable'
+      ? viewState.reason
+      : viewState?.kind === 'service-error'
+        ? viewState.detail
+        : 'F&O data unavailable. Ensure the F&O service is running.';
 
   const [isUnderlyingOpen, setIsUnderlyingOpen] = useState(false);
   const [isExpiryOpen, setIsExpiryOpen] = useState(false);
@@ -222,7 +231,10 @@ export default function FnoSidebarPanel() {
               className="w-full flex items-center justify-between rounded border border-border-default dark:border-zinc-700 bg-surface dark:bg-black pl-3 pr-2.5 py-2 text-[14px] font-black text-text-primary dark:text-white focus:outline-none focus:border-color-primary cursor-pointer transition-colors"
             >
               <span className="truncate">{fnoUnderlying || 'NIFTY'}</span>
-              <ChevronDown className={`transition-transform duration-200 text-text-muted dark:text-zinc-300 ${isUnderlyingOpen ? 'rotate-180' : ''}`} size={14} />
+              <ChevronDown
+                className={`transition-transform duration-200 text-text-muted dark:text-zinc-300 ${isUnderlyingOpen ? 'rotate-180' : ''}`}
+                size={14}
+              />
             </button>
 
             {/* Custom Popover Menu */}
@@ -244,9 +256,11 @@ export default function FnoSidebarPanel() {
                         }`}
                       >
                         {/* Radio Button Icon */}
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                          isSelected ? 'border-emerald-500' : 'border-emerald-500/80'
-                        }`}>
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected ? 'border-emerald-500' : 'border-emerald-500/80'
+                          }`}
+                        >
                           {isSelected && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
                         </div>
                         <span className="text-[13.5px] font-black uppercase tracking-wide text-text-primary dark:text-white">
@@ -269,7 +283,10 @@ export default function FnoSidebarPanel() {
               className="w-full flex items-center justify-between rounded border border-border-default dark:border-zinc-700 bg-surface dark:bg-black pl-3 pr-2.5 py-2 text-[14px] font-black text-text-primary dark:text-white focus:outline-none focus:border-color-primary cursor-pointer transition-colors"
             >
               <span className="truncate">{fnoExpiry || 'Nearest'}</span>
-              <ChevronDown className={`transition-transform duration-200 text-text-muted dark:text-zinc-300 ${isExpiryOpen ? 'rotate-180' : ''}`} size={14} />
+              <ChevronDown
+                className={`transition-transform duration-200 text-text-muted dark:text-zinc-300 ${isExpiryOpen ? 'rotate-180' : ''}`}
+                size={14}
+              />
             </button>
 
             {/* Custom Popover Menu */}
@@ -292,9 +309,11 @@ export default function FnoSidebarPanel() {
                         }`}
                       >
                         {/* Radio Button Icon */}
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                          isSelected ? 'border-emerald-500' : 'border-emerald-500/80'
-                        }`}>
+                        <div
+                          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                            isSelected ? 'border-emerald-500' : 'border-emerald-500/80'
+                          }`}
+                        >
                           {isSelected && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
                         </div>
                         <span className="text-[13.5px] font-black uppercase tracking-wide text-text-primary dark:text-white">
@@ -314,7 +333,9 @@ export default function FnoSidebarPanel() {
       {!fnoUnderlying ? (
         <div className="flex h-40 items-center justify-center gap-2 text-text-secondary bg-surface/20">
           <Activity size={14} />
-          <span className="text-[11px] font-semibold uppercase tracking-wider">Select a symbol…</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wider">
+            Select a symbol…
+          </span>
         </div>
       ) : loading && viewState === null ? (
         <FnoSkeleton />
@@ -329,8 +350,11 @@ export default function FnoSidebarPanel() {
             onClick={() => {
               setLoading(true);
               setViewState(null);
-              bridgeInvoke<FnoSnapshot>('get_fno_analytics', { underlying: fnoUnderlying, expiry: fnoExpiry })
-                .then(p => setViewState(toFnoViewState(p)))
+              bridgeInvoke<FnoSnapshot>('get_fno_analytics', {
+                underlying: fnoUnderlying,
+                expiry: fnoExpiry,
+              })
+                .then((p) => setViewState(toFnoViewState(p)))
                 .catch(() => setViewState({ kind: 'service-error', detail: 'Retry failed' }))
                 .finally(() => setLoading(false));
             }}

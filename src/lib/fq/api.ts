@@ -149,15 +149,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
           ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
           ...(init?.headers ?? {}),
         },
-      }),
+      })
     );
   } catch (err) {
     // A transport failure is not a 4xx, and must not be reported as one — "session not
     // found" for an offline client would send the user to delete and recreate it.
-    throw new FqApiError(
-      err instanceof Error ? err.message : 'network request failed',
-      0,
-    );
+    throw new FqApiError(err instanceof Error ? err.message : 'network request failed', 0);
   }
 
   if (!res.ok) {
@@ -193,7 +190,12 @@ export function createSession(input: CreateSessionInput): Promise<SessionSummary
 }
 
 export function listSessions(
-  params: { status?: 'active' | 'archived'; cursor?: string | null; limit?: number; q?: string } = {},
+  params: {
+    status?: 'active' | 'archived';
+    cursor?: string | null;
+    limit?: number;
+    q?: string;
+  } = {}
 ): Promise<SessionListPage> {
   const qs = new URLSearchParams();
   if (params.status) qs.set('status', params.status);
@@ -216,7 +218,12 @@ export function getSession(sessionId: string): Promise<SessionSummary> {
  */
 export function patchSession(
   sessionId: string,
-  patch: { title?: string | null; timeframe?: string; status?: 'active' | 'archived'; active_run_id?: string | null },
+  patch: {
+    title?: string | null;
+    timeframe?: string;
+    status?: 'active' | 'archived';
+    active_run_id?: string | null;
+  }
 ): Promise<SessionSummary> {
   return request<SessionSummary>(`/sessions/${encodeURIComponent(sessionId)}`, {
     method: 'PATCH',
@@ -234,7 +241,7 @@ export function reopenSession(sessionId: string): Promise<SessionSummary> {
 
 export function deleteSession(
   sessionId: string,
-  opts: { hard?: boolean } = {},
+  opts: { hard?: boolean } = {}
 ): Promise<{ session_id: string; status: string; hard: boolean }> {
   const qs = opts.hard ? '?hard=true' : '';
   return request(`/sessions/${encodeURIComponent(sessionId)}${qs}`, { method: 'DELETE' });
@@ -242,14 +249,14 @@ export function deleteSession(
 
 export function listMessages(
   sessionId: string,
-  params: { afterSeq?: number; limit?: number } = {},
+  params: { afterSeq?: number; limit?: number } = {}
 ): Promise<MessagePage> {
   const qs = new URLSearchParams();
   if (params.afterSeq) qs.set('after_seq', String(params.afterSeq));
   if (params.limit) qs.set('limit', String(params.limit));
   const query = qs.toString();
   return request<MessagePage>(
-    `/sessions/${encodeURIComponent(sessionId)}/messages${query ? `?${query}` : ''}`,
+    `/sessions/${encodeURIComponent(sessionId)}/messages${query ? `?${query}` : ''}`
   );
 }
 
@@ -266,7 +273,7 @@ export function listRuns(sessionId: string): Promise<{ items: StoredRun[] }> {
  */
 export function listRunEvents(
   runId: string,
-  params: { afterSeq?: number; limit?: number } = {},
+  params: { afterSeq?: number; limit?: number } = {}
 ): Promise<EventPage> {
   const qs = new URLSearchParams();
   if (params.afterSeq) qs.set('after_seq', String(params.afterSeq));
