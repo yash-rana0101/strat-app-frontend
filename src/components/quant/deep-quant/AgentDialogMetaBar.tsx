@@ -9,7 +9,6 @@
 import React from 'react';
 import { Coins, Loader2, Shield, Square, Zap } from 'lucide-react';
 import { isFnoSymbol } from '../../../charting/symbolUtils';
-import ModelSelector from './ModelSelector';
 import type { QuantMode } from './QuantActionBar';
 
 export interface AgentDialogMetaBarProps {
@@ -22,8 +21,8 @@ export interface AgentDialogMetaBarProps {
   reasoningStepsCount?: number;
   qaMessagesCount?: number;
   sessionTime?: string;
-  selectedModel: string;
-  onModelChange: (modelId: string) => void;
+  selectedModel?: string;
+  onModelChange?: (modelId: string) => void;
   isAnalyzing: boolean;
   credit?: {
     credits: number;
@@ -70,16 +69,6 @@ export default function AgentDialogMetaBar({
         <span className="rounded-sm border border-border-default bg-elevated px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-text-secondary">
           {activeProfile}
         </span>
-
-        {/* Model Selector badge */}
-        <div className="scale-90 origin-left">
-          <ModelSelector
-            value={selectedModel}
-            onChange={onModelChange}
-            disabled={isAnalyzing}
-            variant="inline"
-          />
-        </div>
 
         {/* Credits & plan badge */}
         {credit && (

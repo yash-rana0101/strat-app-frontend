@@ -6,7 +6,7 @@
 // interactive price ladder, conviction gauge, confluence matrix, and rich tool inspector.
 
 import React from 'react';
-import { Target, Wrench, ShieldAlert, Sparkles, Layers } from 'lucide-react';
+import { Target, ShieldAlert, Sparkles, Layers } from 'lucide-react';
 
 import {
   isActionableTrade,
@@ -19,26 +19,21 @@ import ConvictionGauge from '../visuals/ConvictionGauge';
 import PriceLadderBar from '../visuals/PriceLadderBar';
 import ConfluenceMatrix from '../visuals/ConfluenceMatrix';
 import StructuredAnalysisCards from '../visuals/StructuredAnalysisCards';
-import ToolResultVisualizer from '../visuals/ToolResultVisualizer';
 
 interface AgentDetailPanelProps {
-  /** The tool step being inspected, or null when nothing but the decision is selected. */
-  step: ReasoningStep | null;
+  step?: ReasoningStep | null;
   finalTrade: AiExecutionPlan | null;
-  /** The `tool_end` content paired with `step`, when the stream carried one. */
-  resultContent: string | null;
+  resultContent?: string | null;
   symbol?: string;
   sessionStatus?: string;
 }
 
 export default function AgentDetailPanel({
-  step,
   finalTrade,
-  resultContent,
   symbol = '',
   sessionStatus,
 }: AgentDetailPanelProps) {
-  if (!step && !finalTrade) {
+  if (!finalTrade) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center select-none">
         {sessionStatus === 'watching' && (
@@ -53,8 +48,7 @@ export default function AgentDetailPanel({
           Deep Quant Visual Inspector
         </p>
         <p className="max-w-64 text-[11px] leading-relaxed text-text-muted mt-1">
-          Pick any step in the transcript or progress timeline to inspect visual data, indicators,
-          and execution logic.
+          Analysis is underway. Final trade setup and risk guards will appear here once synthesized.
         </p>
       </div>
     );
@@ -68,49 +62,10 @@ export default function AgentDetailPanel({
         </div>
       )}
 
-      {/* Selected Tool Inspector Section */}
-      {step && (
-        <div className="p-3.5">
-          <ToolDetail step={step} resultContent={resultContent} />
-        </div>
-      )}
-
       {/* Final Decision / Trade Setup Visual Dashboard (NO nested boxes) */}
-      {finalTrade && (
-        <div className="p-3.5">
-          <DecisionDetail finalTrade={finalTrade} symbol={symbol} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Tool detail ───────────────────────────────────────────────────────────────
-
-function ToolDetail({
-  step,
-  resultContent,
-}: {
-  step: ReasoningStep;
-  resultContent: string | null;
-}) {
-  const toolName = step.toolName ? step.toolName.replace(/_/g, ' ') : 'Tool Inspection';
-
-  return (
-    <div className="space-y-2.5">
-      <div className="flex items-center justify-between border-b border-border-default/40 pb-2">
-        <h3 className="flex items-center gap-1.5 text-[10.5px] font-black uppercase tracking-wider text-text-primary">
-          <Wrench size={12} className="text-primary" />
-          <span>{toolName}</span>
-        </h3>
-        <span className="text-[8px] font-mono text-text-muted uppercase">Step Telemetry</span>
+      <div className="p-3.5">
+        <DecisionDetail finalTrade={finalTrade} symbol={symbol} />
       </div>
-
-      <ToolResultVisualizer
-        toolName={step.toolName || 'tool'}
-        args={step.args}
-        resultContent={resultContent}
-      />
     </div>
   );
 }
