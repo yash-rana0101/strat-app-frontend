@@ -34,11 +34,11 @@ const THEME_DEFAULTS = {
     accent: '#10b981',
   },
   dark: {
-    surface: '#161b22',
-    elevated: '#21262d',
-    border: '#30363d',
-    textPrimary: '#f0f6fc',
-    textMuted: '#8b949e',
+    surface: '#191a1b',
+    elevated: '#262729',
+    border: '#2e3033',
+    textPrimary: '#f0f1f3',
+    textMuted: '#8a8f98',
     accent: '#10b981',
   },
 } as const;
@@ -130,11 +130,6 @@ export function injectIframeDropdownStyles(doc: Document) {
       background-color: ${c.surface};
       border: 1px solid ${c.border};
       border-radius: 8px;
-      box-shadow: ${
-        c.isLight
-          ? '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)'
-          : '0 10px 25px -5px rgba(0, 0, 0, 0.6)'
-      };
       box-shadow: ${
         c.isLight
           ? '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05)'

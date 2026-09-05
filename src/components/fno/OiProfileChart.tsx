@@ -55,15 +55,15 @@ function readThemeTokens() {
     rootStyles.getPropertyValue(name).trim() || fallback;
 
   return {
-    chartBackground: read('--chart-bg', '#0d1117'),
-    chartGrid: read('--chart-grid', '#21262d'),
-    chartText: read('--text-secondary', '#c9d1d9'),
-    borderDefault: read('--border-default', '#30363d'),
+    chartBackground: read('--chart-bg', '#191a1b'),
+    chartGrid: read('--chart-grid', '#242527'),
+    chartText: read('--text-secondary', '#caced3'),
+    borderDefault: read('--border-default', '#2e3033'),
     // The theme's bull/bear colors distinguish call OI from put OI (R3.4).
     bull: read('--color-bull', '#10b981'),
     bear: read('--color-bear', '#ef4444'),
     neutral: read('--color-neutral', '#f59e0b'),
-    textMuted: read('--text-muted', '#8b949e'),
+    textMuted: read('--text-muted', '#8a8f98'),
   };
 }
 

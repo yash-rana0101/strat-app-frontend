@@ -6,6 +6,7 @@
 
 :root {
   --bg-base: #0d1117;
+  --bg-base: #191a1b;
   --bg-main: var(--bg-base);
   /* Panels sit on #161b22 surface above the #0d1117 canvas so the chart pane
      reads as the focal surface and the side panels / header frame it cleanly. */
@@ -20,6 +21,20 @@
   --text-secondary: #c9d1d9;
   --text-muted: #8b949e;
   --text-muted-soft: #6e7681;
+  /* Sleek neutral charcoal dark theme based on #191a1b.
+     Panels, sidebars, and headers sit on #191a1b surface with subtle
+     elevation for cards and clean neutral borders for contrast. */
+  --bg-surface: #191a1b;
+  --bg-card: #202123;
+  --bg-elevated: #262729;
+  --bg-muted: #141516;
+  /* Panel dividers. #2e3033 neutral dark border. */
+  --border-default: #2e3033;
+  --border-subtle: #242527;
+  --text-primary: #f0f1f3;
+  --text-secondary: #caced3;
+  --text-muted: #8a8f98;
+  --text-muted-soft: #6b6f76;
   --color-primary: #10b981;
   --color-primary-hover: #059669;
   --color-bull: #10b981;
@@ -28,6 +43,7 @@
   --chart-bg: var(--bg-base);
   /* Kept subtle and independent of --border-default. */
   --chart-grid: #21262d;
+  --chart-grid: #242527;
   --candle-green: #10b981;
   --candle-red: #ef4444;
   --status-live: #10b981;
@@ -241,16 +257,16 @@ body {
 /* ── Auth color tokens ───────────────────────────────────────────────────── */
 :root {
   --auth-bg-base: var(--bg-main);
-  --auth-bg-tint: #161b22;
-  --auth-card-bg: rgba(22, 27, 34, 0.92);
-  --auth-card-border: rgba(48, 54, 61, 0.5);
-  --auth-input-bg: #0d1117;
+  --auth-bg-tint: #191a1b;
+  --auth-card-bg: rgba(25, 26, 27, 0.94);
+  --auth-card-border: rgba(46, 48, 51, 0.6);
+  --auth-input-bg: #141516;
   --auth-input-border: var(--border-default);
   --auth-input-focus: rgba(16, 185, 129, 0.4);
   --auth-input-error: rgba(239, 68, 68, 0.35);
   --auth-text: var(--text-primary);
   --auth-muted: var(--text-secondary);
-  --auth-label: #c9d1d9;
+  --auth-label: #caced3;
   --auth-link: var(--color-primary);
   --auth-accent: var(--color-primary);
   --auth-accent-soft: rgba(16, 185, 129, 0.12);
@@ -268,9 +284,9 @@ body {
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(120% 80% at 10% -10%, rgba(16, 185, 129, 0.05) 0%, rgba(13, 17, 23, 0.95) 55%),
-    radial-gradient(100% 70% at 90% 10%, rgba(245, 158, 11, 0.02) 0%, rgba(13, 17, 23, 0.95) 60%),
-    linear-gradient(180deg, #161b22 0%, #0d1117 70%, #090d12 100%);
+    radial-gradient(120% 80% at 10% -10%, rgba(16, 185, 129, 0.05) 0%, rgba(20, 21, 22, 0.95) 55%),
+    radial-gradient(100% 70% at 90% 10%, rgba(245, 158, 11, 0.02) 0%, rgba(20, 21, 22, 0.95) 60%),
+    linear-gradient(180deg, #191a1b 0%, #141516 70%, #0e0f10 100%);
   overflow: hidden;
   padding: 2rem 1rem;
   font-family: var(--font-manrope), var(--font-inter), sans-serif;
@@ -950,6 +966,12 @@ html[data-theme-changing] * {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
+  --background: var(--bg-main);
+  --foreground: var(--text-primary);
+  --card: var(--bg-card);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-elevated);
+  --popover-foreground: var(--text-primary);
   --primary: oklch(0.922 0 0);
   --primary-foreground: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
@@ -958,9 +980,15 @@ html[data-theme-changing] * {
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
+  --muted: var(--bg-muted);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--bg-elevated);
+  --accent-foreground: var(--text-primary);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
+  --border: var(--border-default);
+  --input: var(--border-default);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
@@ -969,11 +997,16 @@ html[data-theme-changing] * {
   --chart-5: oklch(0.269 0 0);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar: var(--bg-surface);
+  --sidebar-foreground: var(--text-primary);
   --sidebar-primary: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-accent: var(--bg-elevated);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--border-default);
   --sidebar-ring: oklch(0.556 0 0);
 }
 

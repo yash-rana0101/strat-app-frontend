@@ -28,8 +28,8 @@ export default function GlobalError({
           alignItems: 'center',
           justifyContent: 'center',
           gap: '16px',
-          background: '#0d1117',
-          color: '#f0f6fc',
+          background: '#191a1b',
+          color: '#f0f1f3',
           fontFamily: 'system-ui, -apple-system, sans-serif',
           textAlign: 'center',
           padding: '24px',
@@ -41,7 +41,7 @@ export default function GlobalError({
         <p
           style={{
             fontSize: '12px',
-            color: '#8b949e',
+            color: '#8a8f98',
             maxWidth: '28rem',
             margin: 0,
             lineHeight: 1.6,
@@ -54,9 +54,9 @@ export default function GlobalError({
             style={{
               fontSize: '10px',
               fontFamily: 'ui-monospace, monospace',
-              color: '#8b949e',
-              background: '#161b22',
-              border: '1px solid #30363d',
+              color: '#8a8f98',
+              background: '#202123',
+              border: '1px solid #2e3033',
               borderRadius: '4px',
               padding: '6px 8px',
               maxWidth: '28rem',

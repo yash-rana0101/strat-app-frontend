@@ -173,16 +173,16 @@ export const TIMEFRAME_GROUPS: { label: string; items: { tf: Timeframe; display:
 
 // ── Institutional Dark-Mode Palette ──────────────────────────────────────
 export const COLORS = {
-  canvasBg: '#0d1117',
+  canvasBg: '#191a1b',
   text: '#d1d5db',
   up: '#10b981',
   down: '#ef4444',
   volumeUp: 'rgba(16, 185, 129, 0.25)',
   volumeDown: 'rgba(239, 68, 68, 0.20)',
-  grid: '#21262d',
+  grid: '#242527',
   crosshair: 'rgba(156, 163, 175, 0.4)',
-  crosshairLabel: '#21262d',
-  border: '#30363d',
+  crosshairLabel: '#262729',
+  border: '#2e3033',
   ghostLine: '#f59e0b',
   ema9: '#38bdf8',
   ema21: '#f472b6',
