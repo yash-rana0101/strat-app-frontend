@@ -29,18 +29,18 @@ export default function AuthGateScreen({ status }: AuthGateScreenProps) {
   const checking = status === 'unknown';
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-[#0a0e17] px-6">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-surface px-6 transition-colors duration-200">
       <Image
         src="/strat.svg"
         alt="Strat AI"
         width={56}
         height={56}
-        className="h-14 w-14 object-contain drop-shadow-lg"
+        className="h-14 w-14 object-contain drop-shadow-md"
         priority
       />
 
-      <div className="flex items-center gap-2.5 text-white/70">
-        <Loader2 size={15} className="animate-spin" aria-hidden="true" />
+      <div className="flex items-center gap-2.5 text-text-secondary">
+        <Loader2 size={15} className="animate-spin text-color-primary" aria-hidden="true" />
         <p className="text-sm font-medium" role="status">
           {checking ? 'Verifying your session…' : 'Taking you to sign in…'}
         </p>
@@ -56,7 +56,7 @@ export default function AuthGateScreen({ status }: AuthGateScreenProps) {
       {!checking && (
         <a
           href={signInUrl()}
-          className="rounded-lg border border-[#1e2a3a] bg-[#131922] px-5 py-2.5 text-xs font-semibold text-white/90 transition-colors hover:border-[#2a3a4e] hover:bg-[#1a2332]"
+          className="rounded-lg border border-border-default bg-card px-5 py-2.5 text-xs font-semibold text-text-primary transition-colors hover:border-border-default/80 hover:bg-elevated"
         >
           Continue to sign in
         </a>
