@@ -808,6 +808,7 @@ body {
 
 /* ── Hide scrollbar entirely ────────────────────────────────────────── */
 .scrollbar-none,
+.no-scrollbar,
 .dropdown-menu,
 [class*='Dropdown'],
 [class*='dropdown'],
@@ -817,6 +818,7 @@ body {
   -ms-overflow-style: none !important; /* IE and Edge */
 }
 .scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar,
 .dropdown-menu::-webkit-scrollbar,
 [class*='Dropdown']::-webkit-scrollbar,
 [class*='dropdown']::-webkit-scrollbar,

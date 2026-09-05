@@ -234,9 +234,9 @@ export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
           aria-label="Analysis sessions"
           aria-orientation="horizontal"
           onKeyDown={onKeyDown}
-          className="flex min-w-0 flex-1 items-stretch gap-1 overflow-x-auto"
+          className="flex min-w-0 flex-1 items-stretch gap-1 overflow-x-auto scrollbar-none no-scrollbar"
           // Horizontal scroll that settles on a tab edge rather than mid-label.
-          style={{ scrollSnapType: 'x proximity', scrollbarWidth: 'thin' }}
+          style={{ scrollSnapType: 'x proximity', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {visible.map((session) => (
             <SessionTab
