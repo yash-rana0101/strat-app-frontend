@@ -61,7 +61,6 @@ export default function QuantActionBar({
       ? 'STOP ANALYSIS'
       : mode === 'VERIFY'
         ? 'VERIFY MY SETUP'
-        : 'FIND QUANT TRADE';
         : 'FIND TRADE';
 
   return (

@@ -3,7 +3,6 @@
 // components/quant/deep-quant/AgentDialogMetaBar.tsx
 //
 // Meta information bar and primary execution controls for DeepQuantAgentDialog.
-// Displays symbol badges, candle count, step count, model selector, credits,
 // Displays symbol badges, model selector, credits,
 // mode switch tabs (Find / Verify), and the main action button.
 
@@ -18,11 +17,6 @@ export interface AgentDialogMetaBarProps {
   activeTimeframe: string;
   activeProfile: string;
   dataReady: boolean;
-  insufficientData: boolean;
-  symbolCandleCount: number;
-  reasoningStepsCount: number;
-  qaMessagesCount: number;
-  sessionTime: string;
   insufficientData?: boolean;
   symbolCandleCount?: number;
   reasoningStepsCount?: number;
@@ -50,11 +44,6 @@ export default function AgentDialogMetaBar({
   activeTimeframe,
   activeProfile,
   dataReady,
-  insufficientData,
-  symbolCandleCount,
-  reasoningStepsCount,
-  qaMessagesCount,
-  sessionTime,
   selectedModel,
   onModelChange,
   isAnalyzing,
@@ -70,7 +59,6 @@ export default function AgentDialogMetaBar({
   const symbolLabel = `${symbol} · ${activeTimeframe}`;
 
   return (
-    <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border-default/40 px-4 py-2.5 bg-elevated/5">
     <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border-default/40 px-4 py-2 bg-elevated/5">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[11px] font-bold text-text-primary">{symbolLabel}</span>
@@ -79,13 +67,6 @@ export default function AgentDialogMetaBar({
         </span>
         <span className="rounded-sm border border-border-default bg-elevated px-1.5 py-px text-[8px] font-bold uppercase tracking-wider text-text-secondary">
           {activeProfile}
-        </span>
-        <span className="text-[9px] text-text-muted">
-          {dataReady ? `${symbolCandleCount} candles` : 'Loading candles…'}
-          {insufficientData ? ' (low)' : ''}
-          {reasoningStepsCount > 0 ? ` · ${reasoningStepsCount} steps` : ''}
-          {qaMessagesCount > 0 ? ` · ${qaMessagesCount} messages` : ''}
-          {sessionTime ? ` · ${sessionTime}` : ''}
         </span>
 
         {/* Model Selector badge */}
@@ -114,19 +95,14 @@ export default function AgentDialogMetaBar({
 
       {/* Mode tabs and Primary Action */}
       <div className="flex items-center gap-2">
-        <div className="flex rounded bg-elevated/40 p-0.5 border border-border-default/60">
         <div className="flex h-7 items-center rounded bg-elevated/40 p-0.5 border border-border-default/60">
           <button
             type="button"
             disabled={isAnalyzing}
             onClick={() => onModeChange('FIND')}
-            className={`rounded px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-            className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              mode === 'FIND'
             className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${mode === 'FIND'
                 ? 'bg-elevated text-text-primary shadow-xs'
                 : 'text-text-muted hover:text-text-primary'
-            }`}
               }`}
           >
             Find Trade
@@ -135,13 +111,9 @@ export default function AgentDialogMetaBar({
             type="button"
             disabled={isAnalyzing}
             onClick={() => onModeChange('VERIFY')}
-            className={`rounded px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-            className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-              mode === 'VERIFY'
             className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${mode === 'VERIFY'
                 ? 'bg-elevated text-text-primary shadow-xs'
                 : 'text-text-muted hover:text-text-primary'
-            }`}
               }`}
           >
             Verify Setup
@@ -152,13 +124,9 @@ export default function AgentDialogMetaBar({
           <button
             type="button"
             onClick={onToggleConfigureSetup}
-            className={`rounded px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
-            className={`h-7 flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
-              isConfiguringSetup
             className={`h-7 flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${isConfiguringSetup
                 ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-400'
                 : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
-            }`}
               }`}
           >
             {isConfiguringSetup ? 'View Analysis' : 'Edit Setup'}
@@ -172,15 +140,11 @@ export default function AgentDialogMetaBar({
             if (isAnalyzing) onStop();
             else onRun();
           }}
-          className={`flex h-8 items-center justify-center gap-1.5 rounded px-3 text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-          className={`flex h-7 items-center justify-center gap-1.5 rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-            !dataReady && !isAnalyzing
           className={`flex h-7 items-center justify-center gap-1.5 rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${!dataReady && !isAnalyzing
               ? 'bg-elevated/40 text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
               : isAnalyzing
                 ? 'bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white'
                 : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white'
-          }`}
             }`}
         >
           {!dataReady && !isAnalyzing ? (
@@ -198,11 +162,9 @@ export default function AgentDialogMetaBar({
               ? 'Stop analysis'
               : mode === 'VERIFY'
                 ? 'Verify my setup'
-                : 'Find quant trade'}
                 : 'Find Trade'}
         </button>
       </div>
     </div>
   );
 }
-
