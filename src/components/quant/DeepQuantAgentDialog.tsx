@@ -15,7 +15,6 @@ import { formatSessionTime } from './session/sessionLabel';
 import AgentTerminal from './AgentTerminal';
 import TradeQaPanel from './TradeQaPanel';
 import AgentDetailPanel from './deep-quant/AgentDetailPanel';
-import AgentProgressTimeline from './deep-quant/AgentProgressTimeline';
 import AgentDialogMetaBar from './deep-quant/AgentDialogMetaBar';
 import AgentHistoryPanel from './deep-quant/AgentHistoryPanel';
 import { useAgentStepDetail } from './deep-quant/useAgentStepDetail';
@@ -214,14 +213,6 @@ export default function DeepQuantAgentDialog({
             isSessionLoading={isSessionLoading}
             isConfiguringSetup={isConfiguringSetup}
             onToggleConfigureSetup={() => setIsConfiguringSetup((v) => !v)}
-          />
-
-          <AgentProgressTimeline
-            reasoningSteps={reasoningSteps}
-            sessionStatus={sessionStatus}
-            finalTrade={finalTrade}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
           />
 
           {/* ── Body ───────────────────────────────────────────────────── */}

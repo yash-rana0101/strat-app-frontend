@@ -40,13 +40,13 @@ export default function AgentDetailPanel({
 }: AgentDetailPanelProps) {
   if (!step && !finalTrade) {
     return (
-      <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+      <div className="flex h-full flex-col items-center justify-center p-6 text-center select-none">
         {sessionStatus === 'watching' && (
           <div className="w-full mb-4 text-left">
             <WatchingIndicator />
           </div>
         )}
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-elevated/60 border border-border-default mb-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-elevated/60 border border-border-default mb-3">
           <Layers size={20} className="text-text-muted" />
         </div>
         <p className="max-w-64 text-xs font-semibold text-text-primary">
@@ -61,23 +61,23 @@ export default function AgentDetailPanel({
   }
 
   return (
-    <div className="flex flex-col font-sans divide-y divide-border-default/40">
+    <div className="flex flex-col font-sans divide-y divide-border-default/30 select-text">
       {sessionStatus === 'watching' && (
-        <div className="p-4 pb-0">
+        <div className="p-3.5 pb-0">
           <WatchingIndicator />
         </div>
       )}
 
       {/* Selected Tool Inspector Section */}
       {step && (
-        <div className="p-4">
+        <div className="p-3.5">
           <ToolDetail step={step} resultContent={resultContent} />
         </div>
       )}
 
-      {/* Final Decision / Trade Setup Visual Dashboard */}
+      {/* Final Decision / Trade Setup Visual Dashboard (NO nested boxes) */}
       {finalTrade && (
-        <div className="p-4">
+        <div className="p-3.5">
           <DecisionDetail finalTrade={finalTrade} symbol={symbol} />
         </div>
       )}
@@ -97,13 +97,13 @@ function ToolDetail({
   const toolName = step.toolName ? step.toolName.replace(/_/g, ' ') : 'Tool Inspection';
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <div className="flex items-center justify-between border-b border-border-default/40 pb-2">
-        <h3 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-text-primary">
+        <h3 className="flex items-center gap-1.5 text-[10.5px] font-black uppercase tracking-wider text-text-primary">
           <Wrench size={12} className="text-primary" />
           <span>{toolName}</span>
         </h3>
-        <span className="text-[8.5px] font-mono text-text-muted uppercase">Step Telemetry</span>
+        <span className="text-[8px] font-mono text-text-muted uppercase">Step Telemetry</span>
       </div>
 
       <ToolResultVisualizer
@@ -123,104 +123,107 @@ function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; s
   const isBuy = side === 'BUY';
   const consensusData = useQuantStore((s) => s.consensusData);
 
-  // ── Stand Aside Visual Card ───────────────────────────────────────────────
+  // ── Stand Aside Visual View (NO nested boxes) ─────────────────────────────
   if (!actionable) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border-default/60 pb-2">
-          <h3 className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-primary">
-            <ShieldAlert size={13} className="text-amber-500" />
+        <div className="flex items-center justify-between border-b border-border-default/40 pb-2">
+          <h3 className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-amber-400 font-mono">
+            <ShieldAlert size={13} />
             <span>Stand Aside — Risk Guard</span>
           </h3>
-          <span className="rounded px-2 py-0.5 text-[8.5px] font-semibold uppercase tracking-wider bg-elevated text-text-muted border border-border-default">
+          <span className="rounded px-2 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider bg-elevated text-amber-400 border border-amber-500/25">
             Capital Preservation
           </span>
         </div>
 
-        {/* Hero Card */}
-        <div className="rounded-lg border border-border-default bg-surface p-3.5 space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-[8.5px] font-semibold uppercase tracking-wider text-text-muted">
-                Market Condition
-              </span>
-              <span className="block text-sm font-bold text-text-primary mt-0.5">
-                No High-Conviction Setup
-              </span>
-            </div>
-
-            <ConvictionGauge
-              score={finalTrade.conviction_score}
-              action="HOLD"
-              tier="stand_aside"
-              size="md"
-              showLabel={true}
-            />
+        {/* Hero Section — Directly on surface */}
+        <div className="flex items-center justify-between py-1">
+          <div className="flex flex-col">
+            <span className="text-[8px] font-bold uppercase tracking-widest text-text-muted">
+              Market Condition
+            </span>
+            <span className="block text-sm font-extrabold text-text-primary mt-0.5">
+              No High-Conviction Edge
+            </span>
           </div>
+
+          <ConvictionGauge
+            score={finalTrade.conviction_score}
+            action="HOLD"
+            tier="stand_aside"
+            size="md"
+            showLabel={true}
+          />
         </div>
 
         {/* Consensus Indicators */}
-        <ConfluenceMatrix consensus={consensusData} />
+        <div className="pt-1 border-t border-border-default/30">
+          <ConfluenceMatrix consensus={consensusData} />
+        </div>
 
         {/* Structured Analysis */}
-        <StructuredAnalysisCards
-          setupValidation={finalTrade.setup_validation}
-          executionPlan={finalTrade.execution_plan}
-        />
+        <div className="pt-1 border-t border-border-default/30">
+          <StructuredAnalysisCards
+            setupValidation={finalTrade.setup_validation}
+            executionPlan={finalTrade.execution_plan}
+          />
+        </div>
       </div>
     );
   }
 
-  // ── Actionable Trade Setup Visual Dashboard ────────────────────────────────
+  // ── Actionable Trade Setup Visual Dashboard (NO nested boxes) ─────────────
   const { entry, take_profit: target, stop_loss: stopLoss } = finalTrade.execution_levels;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Title Bar */}
-      <div className="flex items-center justify-between border-b border-border-default/60 pb-2">
-        <h3 className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-text-primary">
-          <Sparkles size={12} className="text-emerald-500" />
+      <div className="flex items-center justify-between border-b border-border-default/40 pb-2">
+        <h3 className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-wider text-text-primary font-mono">
+          <Sparkles size={12} className="text-emerald-400" />
           <span>Committed Trade Plan</span>
         </h3>
         <span
-          className={`rounded px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-widest border ${
+          className={`rounded px-2 py-0.5 text-[8.5px] font-mono font-bold uppercase tracking-widest border ${
             isBuy
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-              : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+              : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
           }`}
         >
           {side} {symbol}
         </span>
       </div>
 
-      {/* Hero Decision Tile */}
-      <div className="rounded-lg border border-border-default bg-surface p-3.5">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-[8.5px] font-semibold uppercase tracking-wider text-text-muted">
-              Directional Setup
-            </span>
-            <span
-              className={`text-xl font-bold tracking-tight mt-0.5 ${
-                isBuy ? 'text-emerald-400' : 'text-rose-400'
-              }`}
-            >
-              {side} {symbol}
-            </span>
-          </div>
-
-          <ConvictionGauge
-            score={finalTrade.conviction_score}
-            action={side}
-            tier={finalTrade.opportunity_tier}
-            size="md"
-            showLabel={true}
-          />
+      {/* Directional Setup & Conviction Row — Directly on surface */}
+      <div className="flex items-center justify-between py-1">
+        <div className="flex flex-col">
+          <span className="text-[8px] font-bold uppercase tracking-widest text-text-muted">
+            Directional Setup
+          </span>
+          <span
+            className={`text-xl font-black tracking-tight mt-0.5 ${
+              isBuy ? 'text-emerald-400' : 'text-rose-400'
+            }`}
+          >
+            {side} {symbol}
+          </span>
         </div>
+
+        <ConvictionGauge
+          score={finalTrade.conviction_score}
+          action={side}
+          tier={finalTrade.opportunity_tier}
+          size="md"
+          showLabel={true}
+        />
       </div>
 
-      {/* Interactive Price Ladder & Visual Risk-Reward Bar */}
+      {/* Divider */}
+      <div className="border-t border-border-default/30" />
+
+      {/* Interactive Price Ladder & Visual Risk-Reward Bar (Unboxed) */}
       <PriceLadderBar
         entry={entry}
         target={target}
@@ -230,13 +233,17 @@ function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; s
       />
 
       {/* Market Confluence Matrix */}
-      <ConfluenceMatrix consensus={consensusData} />
+      <div className="pt-1 border-t border-border-default/30">
+        <ConfluenceMatrix consensus={consensusData} />
+      </div>
 
-      {/* Structured Analysis Cards (Catalysts, Invalidation, Milestones) */}
-      <StructuredAnalysisCards
-        setupValidation={finalTrade.setup_validation}
-        executionPlan={finalTrade.execution_plan}
-      />
+      {/* Structured Analysis Cards (Flat accordions, unboxed) */}
+      <div className="pt-1 border-t border-border-default/30">
+        <StructuredAnalysisCards
+          setupValidation={finalTrade.setup_validation}
+          executionPlan={finalTrade.execution_plan}
+        />
+      </div>
     </div>
   );
 }
