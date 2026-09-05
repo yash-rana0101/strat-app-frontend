@@ -19,11 +19,11 @@ import { injectIframeDropdownStyles, showIframeDropdown } from '../iframeDropdow
 
 /** The `globals.css` values for each theme, as the real stylesheet defines them. */
 const DARK = {
-  '--bg-surface': '#262626',
-  '--bg-elevated': '#323232',
-  '--border-default': '#3d3d3d',
-  '--text-primary': '#f5f5f5',
-  '--text-muted': '#9ca3af',
+  '--bg-surface': '#161b22',
+  '--bg-elevated': '#21262d',
+  '--border-default': '#30363d',
+  '--text-primary': '#f0f6fc',
+  '--text-muted': '#8b949e',
   '--color-primary': '#10b981',
 };
 const LIGHT = {
@@ -61,9 +61,9 @@ describe('the injected iframe CSS follows the app’s theme', () => {
     applyTheme('dark');
     injectIframeDropdownStyles(document);
 
-    expect(css()).toContain('background-color: #262626'); // dropdown surface
-    expect(css()).toContain('color: #f5f5f5'); // item text
-    expect(css()).toContain('1px solid #3d3d3d'); // border
+    expect(css()).toContain('background-color: #161b22'); // dropdown surface
+    expect(css()).toContain('color: #f0f6fc'); // item text
+    expect(css()).toContain('1px solid #30363d'); // border
     // Not a single light value anywhere.
     for (const light of Object.values(LIGHT)) {
       if (Object.values(DARK).includes(light)) continue; // the shared accent
@@ -79,21 +79,21 @@ describe('the injected iframe CSS follows the app’s theme', () => {
     expect(css()).toContain('color: #0f172a'); // item text
     expect(css()).toContain('1px solid #d0c8b8'); // border
     // The dark surface is what showed through before; it must be gone entirely.
-    expect(css()).not.toContain('#262626');
-    expect(css()).not.toContain('#f5f5f5');
-    expect(css()).not.toContain('#3d3d3d');
+    expect(css()).not.toContain('#161b22');
+    expect(css()).not.toContain('#f0f6fc');
+    expect(css()).not.toContain('#30363d');
   });
 
   it('repaints on re-injection, so a theme switch is picked up', () => {
     applyTheme('dark');
     injectIframeDropdownStyles(document);
-    expect(css()).toContain('#262626');
+    expect(css()).toContain('#161b22');
 
     applyTheme('light');
     injectIframeDropdownStyles(document);
 
     expect(css()).toContain('#f0eee9');
-    expect(css()).not.toContain('#262626');
+    expect(css()).not.toContain('#161b22');
     // Reuses its own <style> element rather than stacking a new one each time.
     expect(document.querySelectorAll('#tv-custom-dropdown-styles')).toHaveLength(1);
   });
@@ -135,7 +135,7 @@ describe('the injected iframe CSS follows the app’s theme', () => {
     // `background-color: ;`.
     injectIframeDropdownStyles(document);
     expect(css()).not.toMatch(/:\s*;/);
-    expect(css()).toContain('#262626');
+    expect(css()).toContain('#161b22');
   });
 });
 

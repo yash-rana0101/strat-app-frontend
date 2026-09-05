@@ -34,11 +34,11 @@ const THEME_DEFAULTS = {
     accent: '#10b981',
   },
   dark: {
-    surface: '#262626',
-    elevated: '#323232',
-    border: '#3d3d3d',
-    textPrimary: '#f5f5f5',
-    textMuted: '#9ca3af',
+    surface: '#161b22',
+    elevated: '#21262d',
+    border: '#30363d',
+    textPrimary: '#f0f6fc',
+    textMuted: '#8b949e',
     accent: '#10b981',
   },
 } as const;
