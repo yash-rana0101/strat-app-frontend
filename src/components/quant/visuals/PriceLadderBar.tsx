@@ -47,13 +47,13 @@ export default function PriceLadderBar({
         {/* Metric Header */}
         <div className="flex items-center justify-between text-[10px]">
           <span className="font-bold uppercase tracking-wider text-text-muted text-[8.5px]">
-            Risk : Reward
+            Execution Ladder
           </span>
           <span
-            className={`font-mono text-[10px] font-black px-1.5 py-0.5 rounded border ${
+            className={`font-mono text-[9.5px] font-bold px-1.5 py-0.2 rounded border ${
               isHealthyRr
-                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+                : 'bg-amber-500/10 text-amber-400 border-amber-500/25'
             }`}
           >
             1 : {rrRatio} R:R
@@ -61,10 +61,10 @@ export default function PriceLadderBar({
         </div>
 
         {/* Proportional visual bar */}
-        <div className="relative h-2 w-full overflow-hidden rounded-full bg-border-default/30 flex shadow-inner">
+        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-border-default/40 flex shadow-inner">
           <div
             style={{ width: `${riskWidthPct}%` }}
-            className="h-full bg-gradient-to-r from-rose-500/80 to-rose-500"
+            className="h-full bg-gradient-to-r from-rose-600 to-rose-500"
             title={`Stop Loss Risk: -${riskPct}%`}
           />
           <div
@@ -74,136 +74,121 @@ export default function PriceLadderBar({
           />
         </div>
 
-        {/* 3 Price milestones */}
-        <div className="flex items-center justify-between text-[9.5px] font-mono font-bold">
-          <div className="flex flex-col text-left">
-            <span className="text-[7.5px] font-bold uppercase tracking-wider text-text-muted">
+        {/* 3 Price milestones (No nested boxes) */}
+        <div className="grid grid-cols-3 divide-x divide-border-default/30 text-center pt-1 font-mono">
+          <div className="flex flex-col px-1">
+            <span className="text-[7.5px] font-bold uppercase tracking-wider text-rose-400/80">
               SL (-{riskPct}%)
             </span>
-            <span className="text-rose-400">₹{stopLoss.toFixed(2)}</span>
+            <span className="text-rose-400 font-bold text-[11px]">₹{stopLoss.toFixed(2)}</span>
           </div>
-          <div className="flex flex-col text-center">
+          <div className="flex flex-col px-1">
             <span className="text-[7.5px] font-bold uppercase tracking-wider text-text-muted">
-              Entry
+              Entry ({side})
             </span>
-            <span className="text-text-primary">₹{entry.toFixed(2)}</span>
+            <span className="text-text-primary font-bold text-[11px]">₹{entry.toFixed(2)}</span>
           </div>
-          <div className="flex flex-col text-right">
-            <span className="text-[7.5px] font-bold uppercase tracking-wider text-text-muted">
+          <div className="flex flex-col px-1">
+            <span className="text-[7.5px] font-bold uppercase tracking-wider text-emerald-400/80">
               Target (+{rewardPct}%)
             </span>
-            <span className="text-emerald-400">₹{target.toFixed(2)}</span>
+            <span className="text-emerald-400 font-bold text-[11px]">₹{target.toFixed(2)}</span>
           </div>
         </div>
       </div>
     );
   }
 
-  // Full / Expanded Variant (for Agent Detail & Actionable Trade Plan)
+  // Full / Expanded Variant — Unboxed, flat, sleek institutional design (NO nested boxes)
   return (
-    <div
-      className={`rounded-lg border border-border-default bg-surface p-3.5 font-sans ${className}`}
-    >
-      {/* Top Level Bar Header */}
-      <div className="flex items-center justify-between border-b border-border-default/40 pb-2.5 mb-3">
-        <div className="flex items-center gap-2">
-          <div
-            className={`flex h-6 w-6 items-center justify-center rounded-md ${
-              isBuy ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
-            }`}
-          >
-            {isBuy ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
-          </div>
-          <div>
-            <span className="text-[11px] font-black uppercase tracking-wider text-text-primary">
-              Execution Ladder
-            </span>
-            <span className="block text-[8.5px] text-text-muted">
-              {isBuy ? 'Long Setup Payoff Matrix' : 'Short Setup Payoff Matrix'}
-            </span>
-          </div>
+    <div className={`flex flex-col gap-2 font-sans select-none ${className}`}>
+      {/* Top Header Row (No box) */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono">
+            Execution Ladder
+          </span>
+          <span className="text-[9px] text-text-muted/60">
+            • {isBuy ? 'Long Payoff' : 'Short Payoff'}
+          </span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex flex-col items-end">
-            <span className="text-[8px] font-bold uppercase tracking-widest text-text-muted">
-              Risk/Reward
-            </span>
-            <span
-              className={`font-mono text-xs font-black px-2 py-0.5 rounded border ${
-                isHealthyRr
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
-                  : 'bg-amber-500/10 text-amber-400 border-amber-500/25'
-              }`}
-            >
-              1 : {rrRatio}
-            </span>
-          </div>
+        <div className="flex items-center gap-1.5 font-mono text-[9.5px]">
+          <span className="text-text-muted text-[8px] uppercase tracking-widest">R:R</span>
+          <span
+            className={`font-bold px-1.5 py-0.2 rounded border ${
+              isHealthyRr
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'
+                : 'bg-amber-500/10 text-amber-400 border-amber-500/25'
+            }`}
+          >
+            1 : {rrRatio}
+          </span>
         </div>
       </div>
 
       {/* Visual Payoff Slider Bar */}
-      <div className="space-y-1.5 my-3">
-        <div className="flex justify-between text-[9px] font-mono font-semibold text-text-muted px-0.5">
+      <div className="space-y-1">
+        <div className="relative h-2 w-full overflow-hidden rounded-full bg-border-default/40 flex shadow-inner">
+          <div
+            style={{ width: `${riskWidthPct}%` }}
+            className="h-full bg-gradient-to-r from-rose-600 to-rose-500"
+          />
+          {/* Entry Divider Pin */}
+          <div className="w-0.5 h-full bg-white z-10" />
+          <div
+            style={{ width: `${rewardWidthPct}%` }}
+            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+          />
+        </div>
+
+        <div className="flex justify-between text-[8.5px] font-mono font-medium text-text-muted px-0.5">
           <span className="text-rose-400 flex items-center gap-1">
-            <ShieldAlert size={10} />
+            <ShieldAlert size={9} />
             Risk: -₹{riskPts.toFixed(2)} (-{riskPct}%)
           </span>
           <span className="text-emerald-400 flex items-center gap-1">
-            <Target size={10} />
+            <Target size={9} />
             Target: +₹{rewardPts.toFixed(2)} (+{rewardPct}%)
           </span>
         </div>
-
-        <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-surface border border-border-default/50 flex shadow-inner">
-          <div
-            style={{ width: `${riskWidthPct}%` }}
-            className="h-full bg-gradient-to-r from-rose-600/80 to-rose-500 relative group"
-          />
-          {/* Entry Divider Pin */}
-          <div className="w-1 h-full bg-white z-10" />
-          <div
-            style={{ width: `${rewardWidthPct}%` }}
-            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 relative group"
-          />
-        </div>
       </div>
 
-      {/* 3 Prominent Metric Cards */}
-      <div className="grid grid-cols-3 gap-2 mt-3">
-        {/* Stop Loss Card */}
-        <div className="flex flex-col gap-0.5 rounded-lg border border-rose-500/20 bg-rose-500/5 p-2.5">
-          <span className="text-[8px] font-bold uppercase tracking-widest text-rose-400/90">
+      {/* 3 Metric Columns — Divided, flat, NO nested boxes */}
+      <div className="grid grid-cols-3 divide-x divide-border-default/30 pt-1 text-center font-mono">
+        {/* Stop Loss Column */}
+        <div className="flex flex-col gap-0.5 px-2 text-left">
+          <span className="text-[8px] font-bold uppercase tracking-wider text-rose-400/90">
             Stop Loss
           </span>
-          <span className="font-mono text-sm font-extrabold text-rose-400">
+          <span className="text-sm font-extrabold text-rose-400">
             ₹{stopLoss.toFixed(2)}
           </span>
-          <span className="font-mono text-[8.5px] text-rose-400/70">-{riskPct}% risk</span>
+          <span className="text-[8px] text-rose-400/70">-{riskPct}% risk</span>
         </div>
 
-        {/* Entry Card */}
-        <div className="flex flex-col gap-0.5 rounded-lg border border-border-default bg-surface/80 p-2.5">
-          <span className="text-[8px] font-bold uppercase tracking-widest text-text-muted">
+        {/* Entry Column */}
+        <div className="flex flex-col gap-0.5 px-2 text-center">
+          <span className="text-[8px] font-bold uppercase tracking-wider text-text-muted">
             Entry ({side})
           </span>
-          <span className="font-mono text-sm font-extrabold text-text-primary">
+          <span className="text-sm font-extrabold text-text-primary">
             ₹{entry.toFixed(2)}
           </span>
-          <span className="text-[8.5px] text-text-muted">
+          <span className="text-[8px] text-text-muted">
             {currentPrice ? `LTP: ₹${currentPrice.toFixed(2)}` : 'Planned Level'}
           </span>
         </div>
 
-        {/* Target Card */}
-        <div className="flex flex-col gap-0.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-2.5">
-          <span className="text-[8px] font-bold uppercase tracking-widest text-emerald-400/90">
+        {/* Target Column */}
+        <div className="flex flex-col gap-0.5 px-2 text-right">
+          <span className="text-[8px] font-bold uppercase tracking-wider text-emerald-400/90">
             Take Profit
           </span>
-          <span className="font-mono text-sm font-extrabold text-emerald-400">
+          <span className="text-sm font-extrabold text-emerald-400">
             ₹{target.toFixed(2)}
           </span>
-          <span className="font-mono text-[8.5px] text-emerald-400/70">+{rewardPct}% upside</span>
+          <span className="text-[8px] text-emerald-400/70">+{rewardPct}% target</span>
         </div>
       </div>
     </div>

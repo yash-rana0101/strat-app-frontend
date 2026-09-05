@@ -5,33 +5,29 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --bg-base: #1e1e1e;
+  --bg-base: #0d1117;
   --bg-main: var(--bg-base);
-  /* Panels sit one elevation step above the #1e1e1e canvas so the chart pane
-     (kept at base #1e1e1e) reads as the focal surface and the side panels /
-     header / order panel frame it. Separation now comes from fill + border,
-     not border alone. */
-  --bg-surface: #262626;
-  --bg-card: #2c2c2c;
-  --bg-elevated: #323232;
-  --bg-muted: #1e1e1e;
-  /* Panel dividers. Raised from #333333 so adjacent same-fill (#1e1e1e) panels
-     read as distinct on the flatter palette. --chart-grid is decoupled below so
-     this does not also brighten chart gridlines. */
-  --border-default: #3d3d3d;
-  --border-subtle: #303030;
-  --text-primary: #f5f5f5;
-  --text-secondary: #d1d5db;
-  --text-muted: #9ca3af;
-  --text-muted-soft: #6b7280;
+  /* Panels sit on #161b22 surface above the #0d1117 canvas so the chart pane
+     reads as the focal surface and the side panels / header frame it cleanly. */
+  --bg-surface: #161b22;
+  --bg-card: #161b22;
+  --bg-elevated: #21262d;
+  --bg-muted: #0d1117;
+  /* Panel dividers. #30363d matches GitHub Dark border convention. */
+  --border-default: #30363d;
+  --border-subtle: #21262d;
+  --text-primary: #f0f6fc;
+  --text-secondary: #c9d1d9;
+  --text-muted: #8b949e;
+  --text-muted-soft: #6e7681;
   --color-primary: #10b981;
   --color-primary-hover: #059669;
   --color-bull: #10b981;
   --color-bear: #ef4444;
   --color-neutral: #f59e0b;
-  --chart-bg: var(--bg-card);
-  /* Kept subtle and independent of --border-default (panel dividers). */
-  --chart-grid: #292929;
+  --chart-bg: var(--bg-base);
+  /* Kept subtle and independent of --border-default. */
+  --chart-grid: #21262d;
   --candle-green: #10b981;
   --candle-red: #ef4444;
   --status-live: #10b981;
@@ -245,16 +241,16 @@ body {
 /* ── Auth color tokens ───────────────────────────────────────────────────── */
 :root {
   --auth-bg-base: var(--bg-main);
-  --auth-bg-tint: #252525;
-  --auth-card-bg: rgba(37, 37, 37, 0.92);
-  --auth-card-border: rgba(51, 51, 51, 0.5);
-  --auth-input-bg: #1a1a1a;
+  --auth-bg-tint: #161b22;
+  --auth-card-bg: rgba(22, 27, 34, 0.92);
+  --auth-card-border: rgba(48, 54, 61, 0.5);
+  --auth-input-bg: #0d1117;
   --auth-input-border: var(--border-default);
   --auth-input-focus: rgba(16, 185, 129, 0.4);
   --auth-input-error: rgba(239, 68, 68, 0.35);
   --auth-text: var(--text-primary);
   --auth-muted: var(--text-secondary);
-  --auth-label: #d1d5db;
+  --auth-label: #c9d1d9;
   --auth-link: var(--color-primary);
   --auth-accent: var(--color-primary);
   --auth-accent-soft: rgba(16, 185, 129, 0.12);
@@ -272,9 +268,9 @@ body {
   align-items: center;
   justify-content: center;
   background:
-    radial-gradient(120% 80% at 10% -10%, rgba(16, 185, 129, 0.05) 0%, rgba(30, 30, 30, 0.95) 55%),
-    radial-gradient(100% 70% at 90% 10%, rgba(245, 158, 11, 0.02) 0%, rgba(30, 30, 30, 0.95) 60%),
-    linear-gradient(180deg, #252525 0%, #1e1e1e 70%, #161616 100%);
+    radial-gradient(120% 80% at 10% -10%, rgba(16, 185, 129, 0.05) 0%, rgba(13, 17, 23, 0.95) 55%),
+    radial-gradient(100% 70% at 90% 10%, rgba(245, 158, 11, 0.02) 0%, rgba(13, 17, 23, 0.95) 60%),
+    linear-gradient(180deg, #161b22 0%, #0d1117 70%, #090d12 100%);
   overflow: hidden;
   padding: 2rem 1rem;
   font-family: var(--font-manrope), var(--font-inter), sans-serif;

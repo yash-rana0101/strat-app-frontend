@@ -365,28 +365,9 @@ export default function DeepQuantPanel() {
             <SessionLoadingState variant="compact" symbol={symbol} />
           ) : hasRun ? (
             <>
-              {/* Condensed progress — one row per tool the agent actually called. The full tool
-                  output and the reasoning prose are in the dialog, not here. */}
-              <QuantCompactProgress
-                reasoningSteps={reasoningSteps}
-                sessionStatus={sessionStatus}
-                finalTrade={finalTrade}
-                onSelect={(stepId) => openDialog(stepId)}
-              />
-
               {/* Phased radar sweep & loading theatre while awaiting first reasoning step */}
               {reasoningSteps.length === 0 && sessionStatus === 'running' && (
                 <LoadingState />
-              )}
-
-              {reasoningSteps.length === 0 && sessionStatus === 'complete' && (
-                <div className="mx-2 my-2 rounded border border-amber-500/25 bg-amber-500/5 px-2.5 py-2">
-                  <p className="text-[10px] font-bold text-amber-500">No reasoning was streamed</p>
-                  <p className="mt-1 text-[9px] leading-relaxed text-amber-600 dark:text-amber-300/80">
-                    The agent run completed but produced no visible reasoning, tool, or decision
-                    steps. Press <span className="font-bold">Find Quant Trade</span> again to retry.
-                  </p>
-                </div>
               )}
 
               {/* Dedicated watching state indicator */}
@@ -396,12 +377,30 @@ export default function DeepQuantPanel() {
                 </div>
               )}
 
-              {/* The result, compact. `View Full Analysis` is the way to the reasoning. */}
+              {/* The committed trade plan renders FIRST when complete/watching so it's 100% visible without scrolling */}
               {(sessionStatus === 'complete' || sessionStatus === 'watching') && (
                 <QuantSidebarResult
                   finalTrade={finalTrade}
                   onOpenFullAnalysis={() => openDialog('decision')}
                 />
+              )}
+
+              {/* Condensed progress — live streaming while running, collapsed telemetry summary when complete */}
+              <QuantCompactProgress
+                reasoningSteps={reasoningSteps}
+                sessionStatus={sessionStatus}
+                finalTrade={finalTrade}
+                onSelect={(stepId) => openDialog(stepId)}
+              />
+
+              {reasoningSteps.length === 0 && sessionStatus === 'complete' && (
+                <div className="mx-2 my-2 rounded border border-amber-500/25 bg-amber-500/5 px-2.5 py-2">
+                  <p className="text-[10px] font-bold text-amber-500">No reasoning was streamed</p>
+                  <p className="mt-1 text-[9px] leading-relaxed text-amber-600 dark:text-amber-300/80">
+                    The agent run completed but produced no visible reasoning, tool, or decision
+                    steps. Press <span className="font-bold">Find Quant Trade</span> again to retry.
+                  </p>
+                </div>
               )}
 
               {/* The existing error card, with the existing strings and the existing Retry gate. */}

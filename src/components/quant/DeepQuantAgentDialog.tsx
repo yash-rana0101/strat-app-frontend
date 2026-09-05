@@ -15,11 +15,10 @@ import { formatSessionTime } from './session/sessionLabel';
 import AgentTerminal from './AgentTerminal';
 import TradeQaPanel from './TradeQaPanel';
 import AgentDetailPanel from './deep-quant/AgentDetailPanel';
-import AgentProgressTimeline from './deep-quant/AgentProgressTimeline';
 import AgentDialogMetaBar from './deep-quant/AgentDialogMetaBar';
 import AgentHistoryPanel from './deep-quant/AgentHistoryPanel';
-import { useAgentStepDetail } from './deep-quant/useAgentStepDetail';
 import VerificationForm, { type VerificationFormProps } from './deep-quant/VerificationForm';
+import ModelSelector from './deep-quant/ModelSelector';
 import ErrorState from './deep-quant/ErrorState';
 import EmptyState from './deep-quant/EmptyState';
 import type { QuantMode } from './deep-quant/QuantActionBar';
@@ -74,11 +73,6 @@ export default function DeepQuantAgentDialog({
   const [historyOpen, setHistoryOpen] = React.useState(false);
   const [isConfiguringSetup, setIsConfiguringSetup] = React.useState(false);
 
-  const { selectedId, setSelectedId, selectedStep, selectedResult } = useAgentStepDetail(
-    initialSelectedId,
-    reasoningSteps
-  );
-
   const handleVerifySubmit = () => {
     setIsConfiguringSetup(false);
     verificationForm?.onSubmit();
@@ -115,14 +109,24 @@ export default function DeepQuantAgentDialog({
           "
         >
           {/* ── Header ─────────────────────────────────────────────────── */}
-          <div className="flex shrink-0 items-start gap-3 border-b border-border-default px-4 py-3">
-            <div className="min-w-0 flex-1">
-              <Dialog.Title className="text-xs font-black uppercase tracking-wider text-text-primary">
-                Strat Agent
-              </Dialog.Title>
-              <p className="mt-0.5 text-[10px] text-text-muted">
-                AI-powered trading analysis for smarter decisions
-              </p>
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border-default px-4 py-2.5">
+            <div className="flex items-center gap-3 min-w-0">
+              <div>
+                <Dialog.Title className="text-xs font-black uppercase tracking-wider text-text-primary">
+                  Strat Agent
+                </Dialog.Title>
+                <p className="mt-0.5 text-[10px] text-text-muted">
+                  AI-powered trading analysis for smarter decisions
+                </p>
+              </div>
+
+              <div className="w-[180px] shrink-0">
+                <ModelSelector
+                  value={selectedModel}
+                  onChange={setSelectedModel}
+                  disabled={run.isAnalyzing}
+                />
+              </div>
             </div>
 
             <div className="flex shrink-0 items-center gap-2">
@@ -201,14 +205,6 @@ export default function DeepQuantAgentDialog({
             onToggleConfigureSetup={() => setIsConfiguringSetup((v) => !v)}
           />
 
-          <AgentProgressTimeline
-            reasoningSteps={reasoningSteps}
-            sessionStatus={sessionStatus}
-            finalTrade={finalTrade}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
-          />
-
           {/* ── Body ───────────────────────────────────────────────────── */}
           <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
             {/* Reasoning timeline / Verification setup form */}
@@ -242,8 +238,6 @@ export default function DeepQuantAgentDialog({
                 </div>
               ) : (
                 <AgentTerminal
-                  onSelectStep={(step) => setSelectedId(step.id)}
-                  selectedStepId={selectedId}
                   showTradePlan={false}
                 />
               )}
@@ -253,9 +247,7 @@ export default function DeepQuantAgentDialog({
             {hasRun && (!isConfiguringSetup || mode !== 'VERIFY') && (
               <aside className="min-h-0 shrink-0 overflow-y-auto border-t border-border-default/40 scrollbar-thin lg:w-[380px] lg:border-t-0 xl:w-[420px] max-lg:max-h-[45%]">
                 <AgentDetailPanel
-                  step={selectedStep}
                   finalTrade={finalTrade}
-                  resultContent={selectedResult}
                   symbol={run.symbol}
                   sessionStatus={sessionStatus}
                 />

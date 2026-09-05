@@ -44,7 +44,7 @@ export function getTvWidgetOptions({
       'volume.volume.transparency': 50,
     },
     loading_screen: {
-      backgroundColor: theme === 'light' ? '#f0eee9' : '#1e1e1e',
+      backgroundColor: theme === 'light' ? '#f0eee9' : '#0d1117',
       foregroundColor: '#10b981',
     },
     // ── On the 1–8 pane layout grid ───────────────────────────────────────────

@@ -29,11 +29,11 @@ export function getThemeOverrides(
 ): Record<string, string | number | boolean> {
   const isDark = mode === 'dark';
 
-  // Colors sourced from globals.css — :root (dark, --bg-base #1e1e1e) and .light (--bg-base #f0eee9)
-  const bg = isDark ? '#1e1e1e' : '#f0eee9';
-  const grid = isDark ? '#2d2d2d' : '#ddd8ce';
-  const text = isDark ? '#9ca3af' : '#4a5568';
-  const scaleBg = isDark ? '#1e1e1e' : '#f0eee9';
+  // Colors sourced from globals.css — :root (dark, --bg-base #0d1117) and .light (--bg-base #f0eee9)
+  const bg = isDark ? '#0d1117' : '#f0eee9';
+  const grid = isDark ? '#21262d' : '#ddd8ce';
+  const text = isDark ? '#8b949e' : '#4a5568';
+  const scaleBg = isDark ? '#0d1117' : '#f0eee9';
   const up = '#10b981';
   const down = '#ef4444';
   const areaFill1 = isDark ? 'rgba(16, 185, 129, 0.28)' : 'rgba(16, 185, 129, 0.15)';
