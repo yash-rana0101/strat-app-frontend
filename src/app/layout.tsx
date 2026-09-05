@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Geist } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
@@ -41,6 +41,14 @@ export const metadata: Metadata = {
   description: 'Market analysis and charting terminal for NSE and NFO.',
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -75,7 +83,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+      <body className="h-full min-h-full flex flex-col" suppressHydrationWarning>
         {/* Inject test mode flag for client-side detection */}
         {isTestMode && (
           <script

@@ -253,7 +253,7 @@ export default function Home() {
   // ── Render ────────────────────────────────────────────────────────
   return (
     <div className="flex h-full flex-col bg-background">
-      <div className="min-h-0 flex-1">
+      <div className="h-full min-h-0 flex-1 flex flex-col">
         <TerminalLayout
           leftPanel={<LeftPanel />}
           mobileBottomNav={<MobileBottomNav />}

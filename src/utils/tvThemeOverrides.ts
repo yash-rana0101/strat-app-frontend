@@ -79,3 +79,40 @@ export function getThemeOverrides(
     volumePaneSize: 'medium',
   };
 }
+
+/**
+ * Point the widget at `theme` and re-assert our colour overrides.
+ */
+export function applyChartTheme(
+  widget: unknown,
+  theme: 'light' | 'dark',
+  onThemeApplied?: () => void
+): void {
+  const w = widget as {
+    changeTheme?: (t: string) => unknown;
+    applyOverrides?: (o: Record<string, unknown>) => void;
+  } | null;
+  if (!w || typeof w.changeTheme !== 'function') return;
+
+  const overrides = () => {
+    try {
+      w.applyOverrides?.(getThemeOverrides(theme));
+    } catch (err) {
+      console.warn('[TradingViewWidget] applyOverrides failed:', err);
+    }
+    onThemeApplied?.();
+  };
+
+  try {
+    const result = w.changeTheme(theme === 'light' ? 'light' : 'dark');
+    if (result && typeof (result as Promise<void>).then === 'function') {
+      (result as Promise<void>).then(overrides, overrides);
+    } else {
+      overrides();
+    }
+  } catch (err) {
+    console.warn('[TradingViewWidget] changeTheme failed:', err);
+    overrides();
+  }
+}
+

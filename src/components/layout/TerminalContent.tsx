@@ -44,8 +44,8 @@ export default function TerminalContent({
           } md:flex flex-1 min-h-0 overflow-hidden`}
       >
         <MobileChartHeader />
-        <div className="flex flex-1 min-h-0 w-full overflow-hidden">
-          <div className="min-h-0 flex-1 bg-surface relative flex flex-col p-0 overflow-hidden">
+        <div className="flex flex-1 h-full min-h-0 w-full overflow-hidden">
+          <div className="min-h-0 flex-1 h-full w-full bg-surface relative flex flex-col p-0 overflow-hidden">
             {renderProfileContent()}
           </div>
         </div>

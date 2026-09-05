@@ -45,6 +45,11 @@ export default function ChartSurface({
   return (
     <div className={`relative h-full w-full ${className}`}>
       <TradingViewWidget symbolOverride={symbolOverride} timeframeOverride={timeframeOverride} />
+      <TradingViewWidget
+        className="h-full w-full"
+        symbolOverride={symbolOverride}
+        timeframeOverride={timeframeOverride}
+      />
     </div>
   );
 }

@@ -105,7 +105,7 @@ export default function TerminalLayout({
   }, []);
 
   return (
-    <div className="flex h-screen bg-background font-sans text-text-primary">
+    <div className="flex h-screen h-[100dvh] max-h-[100dvh] md:max-h-none bg-background font-sans text-text-primary overflow-hidden">
       {/* ── Primary Navigation Rail ─────────────────────────── */}
       <NavRail
         onOpenSearch={() => {
@@ -173,7 +173,7 @@ export default function TerminalLayout({
         {/* Right of the left panel: ticker strip above the central area, so
             the marquee only spans the chart/content column, not the
             Market Watch panel. */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-visible">
+        <div className="flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-visible">
           {/* ── Live Market Ticker Strip ──────────────────────── */}
           <MarketTickerStrip />
 
@@ -182,7 +182,7 @@ export default function TerminalLayout({
               edge of the chart here, as the only way to bring the Market Watch
               column back. It is gone: the rail's toggle is always in the same
               place, is visible in both states, and does not overlap the chart. */}
-          <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-visible pb-14 md:pb-0">
+          <main className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-visible pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
             {children}
           </main>
         </div>

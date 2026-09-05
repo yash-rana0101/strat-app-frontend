@@ -12,96 +12,19 @@ import {
 import { markOnce } from '../../lib/perfMarks';
 import { useGhostLine } from '../../hooks/useGhostLine';
 import type { IChartingLibraryWidget } from '../../charting/datafeedTypes';
-import { TIMEFRAME_TO_RESOLUTION, getThemeOverrides } from '../../utils/tvThemeOverrides';
+import { TIMEFRAME_TO_RESOLUTION, getThemeOverrides, applyChartTheme } from '../../utils/tvThemeOverrides';
 import { useTradingViewScript } from '../../hooks/useTradingViewScript';
 import { getTvWidgetOptions } from '../../utils/tvWidgetOptions';
 import { AlertTriangle } from 'lucide-react';
-import { showIframeDropdown, injectIframeDropdownStyles } from '../../utils/iframeDropdown';
+import { showIframeDropdown } from '../../utils/iframeDropdown';
 import { whenChartReady, whenHeaderReady } from '../../charting/widgetReady';
-import { SVGS } from './toolbarIcons';
+import { syncButtonStates } from '../../utils/tvWidgetSync';
 import { openExternalUrl, dashboardUrl } from '../../lib/redirect';
-
-/**
- * Point the widget at `theme` and re-assert our colour overrides.
- *
- * `changeTheme` is promise-returning in this library version. The previous code
- * fired it and then re-applied the overrides after a blind 150ms `setTimeout`,
- * so whenever the theme change settled later than that the overrides landed on
- * the OLD theme and were then overwritten — the chart kept the previous theme.
- * Chaining off the promise removes the race; the callback form is still handled
- * for older bundles.
- */
-function applyChartTheme(
-  widget: unknown,
-  theme: 'light' | 'dark',
-  onThemeApplied?: () => void
-): void {
-  const w = widget as {
-    changeTheme?: (t: string) => unknown;
-    applyOverrides?: (o: Record<string, unknown>) => void;
-  } | null;
-  if (!w || typeof w.changeTheme !== 'function') return;
-
-  const overrides = () => {
-    try {
-      w.applyOverrides?.(getThemeOverrides(theme));
-    } catch (err) {
-      // Worth seeing: a silent failure here is exactly how the "chart stays in
-      // the old theme" bug hid for so long.
-      console.warn('[TradingViewWidget] applyOverrides failed:', err);
-    }
-    onThemeApplied?.();
-  };
-
-  try {
-    const result = w.changeTheme(theme === 'light' ? 'light' : 'dark');
-    if (result && typeof (result as Promise<void>).then === 'function') {
-      (result as Promise<void>).then(overrides, overrides);
-    } else {
-      overrides();
-    }
-  } catch (err) {
-    console.warn('[TradingViewWidget] changeTheme failed:', err);
-    overrides();
-  }
-}
 
 export interface TradingViewWidgetProps {
   symbolOverride?: string;
   timeframeOverride?: string;
   className?: string;
-}
-
-function syncButtonStates(doc: Document) {
-  // No theme argument: the injector reads the live tokens off the parent document,
-  // so it cannot be handed a value that disagrees with what is on screen.
-  injectIframeDropdownStyles(doc);
-
-  const ghostLineMode = useChartUIStore.getState().ghostLineMode;
-  const splitView = useChartUIStore.getState().splitView;
-
-  // The custom Standard / Vol Profile / Footprint button used to be synced here.
-  // Removed with the button itself — see the note at its creation site below.
-
-  const ghostLineBtn = doc.getElementById('tv-btn-ghost-line');
-  if (ghostLineBtn) {
-    ghostLineBtn.innerHTML = SVGS.ghostLine;
-    if (ghostLineMode === 'curved') {
-      ghostLineBtn.classList.add('active');
-    } else {
-      ghostLineBtn.classList.remove('active');
-    }
-  }
-
-  const splitViewBtn = doc.getElementById('tv-btn-split-view');
-  if (splitViewBtn) {
-    splitViewBtn.innerHTML = splitView ? SVGS.splitView : SVGS.singleView;
-    if (splitView) {
-      splitViewBtn.classList.add('active');
-    } else {
-      splitViewBtn.classList.remove('active');
-    }
-  }
 }
 
 export default function TradingViewWidget({
@@ -490,6 +413,30 @@ export default function TradingViewWidget({
     // icon. Dropped with it — nothing in syncButtonStates reads it any more.
   }, [ghostLineMode, splitView, sidebarOpen, buttonsCreated, theme]);
 
+  // ResizeObserver to trigger window resize so TradingView autosizes accurately on layout changes
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+
+    let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(() => {
+            window.dispatchEvent(new Event('resize'));
+          }, 50);
+        }
+      }
+    });
+
+    observer.observe(el);
+    return () => {
+      clearTimeout(resizeTimer);
+      observer.disconnect();
+    };
+  }, []);
+
   useGhostLine(widgetState, activeSymbol, effectiveTimeframe);
 
   const displayError = scriptError || widgetError;
@@ -515,7 +462,8 @@ export default function TradingViewWidget({
       )}
       <div
         ref={containerRef}
-        className={`flex-1 min-h-0 ${className}`}
+        data-tradingview-container="true"
+        className={`relative flex-1 w-full h-full min-h-0 ${className}`}
         style={{ minHeight: '320px' }}
       />
     </div>

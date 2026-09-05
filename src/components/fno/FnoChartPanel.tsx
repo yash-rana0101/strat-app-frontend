@@ -42,7 +42,7 @@ export default function FnoChartPanel() {
 
   return (
     <div className="flex h-full w-full flex-col bg-surface">
-      <div className="min-h-0 flex-1">
+      <div className="h-full min-h-0 flex-1">
         <ChartSurface className="h-full w-full" symbolOverride={selectedSymbol} />
       </div>
     </div>
