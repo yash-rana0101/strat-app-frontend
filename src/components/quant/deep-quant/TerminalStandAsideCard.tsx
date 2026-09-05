@@ -3,7 +3,6 @@
 import React from 'react';
 import { ShieldAlert } from 'lucide-react';
 import ConvictionGauge from '../visuals/ConvictionGauge';
-import { highlightNumbers } from './textHighlighter';
 import type { AiExecutionPlan } from '../../../store/useQuantStore';
 
 interface TerminalStandAsideCardProps {
@@ -11,38 +10,41 @@ interface TerminalStandAsideCardProps {
 }
 
 export default function TerminalStandAsideCard({ finalTrade }: TerminalStandAsideCardProps) {
-  return (
-    <div className="flex justify-start animate-fade-in font-sans w-full my-3 select-text">
-      <div className="w-full rounded-lg border border-border-default bg-surface p-3.5 space-y-3">
-        <div className="flex items-center justify-between border-b border-border-default/60 pb-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-elevated text-amber-500">
-              <ShieldAlert size={13} />
-            </div>
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-text-primary">
-                Stand Aside — Risk Guard Active
-              </span>
-              <span className="block text-[9px] text-text-muted">
-                No directional edge identified under current risk parameters
-              </span>
-            </div>
-          </div>
+  const actionLabel = finalTrade.action ? String(finalTrade.action).toUpperCase() : 'NO TRADE';
 
-          <span className="rounded px-2 py-0.5 text-[8.5px] font-mono font-semibold uppercase tracking-wider bg-elevated text-text-muted border border-border-default">
-            {finalTrade.action ? String(finalTrade.action).toUpperCase() : 'NO TRADE'}
+  return (
+    <div className="flex justify-start animate-fade-in font-sans w-full my-2.5 select-text">
+      <div className="w-full rounded-lg border border-amber-500/25 bg-amber-500/5 p-4 flex flex-col items-center text-center gap-3 relative overflow-hidden">
+        {/* Subtle ambient amber glow */}
+        <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-32 h-32 rounded-full bg-amber-500/10 blur-2xl pointer-events-none" />
+
+        {/* Shield Icon */}
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 shadow-sm">
+          <ShieldAlert size={20} />
+        </div>
+
+        {/* Header & Subtitle */}
+        <div className="flex flex-col items-center gap-0.5">
+          <span className="text-[12px] font-bold uppercase tracking-wider text-amber-400 font-mono">
+            Stand Aside — Risk Guard Active
+          </span>
+          <span className="text-[10px] text-text-muted">
+            No directional edge under current market conditions
           </span>
         </div>
 
-        <div className="flex items-center justify-between gap-3 bg-elevated/30 rounded-md p-2.5 border border-border-default/60">
-          <div className="flex flex-col">
-            <span className="text-[8.5px] font-semibold uppercase tracking-wider text-text-muted">
-              Decision Bias
+        {/* Conviction & Action Status Row */}
+        <div className="flex items-center justify-center gap-4 pt-1 w-full border-t border-amber-500/15 mt-1">
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] uppercase tracking-wider text-text-muted font-mono">
+              Action:
             </span>
-            <span className="text-sm font-bold text-text-primary mt-0.5">
-              Capital Preservation Prioritized
+            <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold uppercase tracking-wider bg-elevated text-amber-400 border border-amber-500/30">
+              {actionLabel}
             </span>
           </div>
+
+          <div className="h-4 w-px bg-border-default/60" />
 
           <ConvictionGauge
             score={finalTrade.conviction_score}
@@ -52,20 +54,6 @@ export default function TerminalStandAsideCard({ finalTrade }: TerminalStandAsid
             showLabel={true}
           />
         </div>
-
-        {finalTrade.setup_validation && (
-          <div className="rounded-md border border-border-default/60 bg-elevated/20 p-2.5 text-[10.5px] leading-relaxed text-text-secondary">
-            <p className="italic border-l-2 border-border-default pl-2">
-              &ldquo;{highlightNumbers(finalTrade.setup_validation)}&rdquo;
-            </p>
-          </div>
-        )}
-
-        {finalTrade.execution_plan && (
-          <p className="text-[10px] text-text-muted leading-relaxed pt-1">
-            {highlightNumbers(finalTrade.execution_plan)}
-          </p>
-        )}
       </div>
     </div>
   );

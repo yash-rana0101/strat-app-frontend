@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Loader2, User, Wrench, Copy, Check, ThumbsUp, ThumbsDown, Share2 } from 'lucide-react';
+import { User, Wrench, Copy, Check, ThumbsUp, ThumbsDown, Share2 } from 'lucide-react';
 import { QaChatMessage } from '../../../store/useQuantStore';
 import { useFqQaMessages } from '../useFqSession';
 import MarkdownRenderer from './MarkdownRenderer';
 
-// Small copy-to-clipboard button with transient "copied" feedback. Used to copy
-// either a user prompt or the assistant's Q&A answer verbatim.
+// Small copy-to-clipboard button with transient "copied" feedback.
 function CopyButton({
   text,
   label,
@@ -51,7 +50,7 @@ function CopyButton({
       aria-label={label}
       className={
         className ||
-        'shrink-0 inline-flex items-center justify-center h-5 w-5 rounded-none text-text-muted hover:text-text-primary hover:bg-elevated/60 transition-colors'
+        'shrink-0 inline-flex items-center justify-center h-5 w-5 rounded text-text-muted hover:text-text-primary hover:bg-elevated/60 transition-colors'
       }
     >
       {copied ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
@@ -68,23 +67,23 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
     <div className="flex justify-start items-start gap-2.5 animate-fade-in font-sans w-full my-2">
       {/* AI Avatar with official Strat AI logo */}
       <div
-        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border select-none overflow-hidden ${
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border select-none overflow-hidden ${
           msg.error ? 'bg-rose-500/10 border-rose-500/20' : 'bg-elevated border-border-default/60'
         }`}
       >
         <img
           src="/strat.svg"
           alt="Strat AI"
-          className={`h-4 w-4 shrink-0 object-contain ${msg.streaming ? 'animate-pulse' : ''}`}
+          className={`h-3.5 w-3.5 shrink-0 object-contain ${msg.streaming ? 'animate-pulse' : ''}`}
         />
       </div>
 
       {/* Bubble */}
       <div
-        className={`group relative max-w-[80%] rounded pl-3 pr-7 py-2 text-[11px] leading-relaxed shadow-sm ${
+        className={`group relative max-w-[85%] rounded-lg pl-3 pr-6 py-2.5 text-[11px] leading-relaxed shadow-sm ${
           msg.error
-            ? 'bg-rose-500/5 text-text-primary border border-rose-500/20'
-            : 'bg-elevated/40 text-text-primary border border-border-default/40'
+            ? 'bg-rose-500/5 text-text-primary border border-rose-500/25'
+            : 'bg-surface/90 text-text-primary border border-border-default/50'
         }`}
       >
         {msg.activity && msg.activity.length > 0 && (
@@ -106,19 +105,30 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
             <MarkdownRenderer content={msg.content} simple />
           </div>
         ) : msg.streaming ? (
-          <div className="flex items-center gap-2 text-[10px] text-text-muted/60 animate-pulse py-1">
-            <Loader2 size={11} className="animate-spin text-text-muted" />
-            <span>Thinking…</span>
+          <div className="flex items-center gap-1 py-1 px-0.5">
+            <span
+              className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"
+              style={{ animationDelay: '0ms' }}
+            />
+            <span
+              className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"
+              style={{ animationDelay: '150ms' }}
+            />
+            <span
+              className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"
+              style={{ animationDelay: '300ms' }}
+            />
           </div>
         ) : (
-          <div className="text-[10px] italic text-text-muted/60 py-1">
-            No answer was produced for this question. Please try rephrasing or ask again.
+          <div className="text-[10px] text-text-muted/60 py-0.5 flex items-center gap-1.5 font-mono">
+            <span>—</span>
+            <span className="text-[9px]">No output generated</span>
           </div>
         )}
 
         {/* Bottom Action Bar */}
         {msg.content && !msg.streaming && (
-          <div className="flex items-center gap-1 mt-2.5 pt-1.5 border-t border-border-default/15 select-none text-text-muted">
+          <div className="flex items-center gap-1 mt-2 pt-1.5 border-t border-border-default/15 select-none text-text-muted">
             <CopyButton
               text={msg.content}
               label="Copy AI response"
@@ -171,22 +181,21 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
 }
 
 // Renders the Q&A conversation turns (user prompts + assistant answers) INLINE
-// within the agent console's scroll flow.
 export default function QaMessages() {
   const qaMessages = useFqQaMessages();
 
   if (!qaMessages || qaMessages.length === 0) return null;
 
   return (
-    <div className="space-y-4 mt-6 pt-4 border-t border-border-default/30">
+    <div className="space-y-3.5 mt-5 pt-3 border-t border-border-default/30">
       {qaMessages.map((msg) =>
         msg.role === 'user' ? (
           <div
             key={msg.id}
-            className="flex justify-end items-start gap-2.5 animate-fade-in font-sans w-full my-2"
+            className="flex justify-end items-start gap-2 animate-fade-in font-sans w-full my-1.5"
           >
             {/* Bubble */}
-            <div className="group relative max-w-[80%] bg-elevated text-text-primary border border-border-default/60 rounded pl-3 pr-7 py-2 text-[11px] leading-relaxed shadow-sm">
+            <div className="group relative max-w-[80%] bg-emerald-500/10 text-emerald-100 border border-emerald-500/25 rounded-lg pl-3 pr-7 py-2 text-[11px] leading-relaxed shadow-sm">
               <span className="text-text-primary break-words whitespace-pre-wrap">
                 {msg.content}
               </span>
@@ -196,8 +205,8 @@ export default function QaMessages() {
             </div>
 
             {/* User Avatar */}
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 select-none">
-              <User size={13} className="shrink-0" />
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 select-none">
+              <User size={12} className="shrink-0" />
             </div>
           </div>
         ) : (

@@ -16,7 +16,6 @@ import {
   Brain,
   Layers,
   Wrench,
-  Activity,
   Target,
 } from 'lucide-react';
 
@@ -66,10 +65,10 @@ export default function QuantCompactProgress({
             type="button"
             onClick={() => onSelect(item.id)}
             title={`Open ${item.label} in the full analysis`}
-            className={`group flex w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-primary cursor-pointer ${
+            className={`group flex w-full items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-all duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500 cursor-pointer ${
               item.status === 'active'
-                ? 'border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10'
-                : 'border-border-default/40 bg-surface/60 hover:bg-elevated hover:border-border-default/80'
+                ? 'border-emerald-500/35 bg-emerald-500/10 shadow-[0_0_10px_rgba(16,185,129,0.08)]'
+                : 'border-border-default/40 bg-surface/60 hover:bg-elevated hover:border-border-default/80 opacity-80 hover:opacity-100'
             }`}
           >
             <div className="flex items-center gap-2 min-w-0">
@@ -80,7 +79,7 @@ export default function QuantCompactProgress({
               <div className="min-w-0 flex-1">
                 <span
                   className={`block truncate text-[10.5px] font-bold ${
-                    item.status === 'done' ? 'text-text-primary' : 'text-amber-400'
+                    item.status === 'done' ? 'text-text-primary' : 'text-emerald-400'
                   }`}
                 >
                   {item.label}
@@ -97,7 +96,10 @@ export default function QuantCompactProgress({
               {item.status === 'done' ? (
                 <CheckCircle2 size={12} className="text-emerald-400" aria-hidden="true" />
               ) : (
-                <Loader2 size={12} className="animate-spin text-amber-400" aria-hidden="true" />
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  <Loader2 size={12} className="animate-spin text-emerald-400" aria-hidden="true" />
+                </div>
               )}
             </span>
           </button>
