@@ -24,6 +24,7 @@ export default function ThinkingGroupRenderer({
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
         aria-expanded={isExpanded}
+        aria-label={isRunning ? 'Thinking (Analyzing market structure…)' : 'Thinking (Analysis Complete)'}
         className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md border transition-all duration-200 select-none focus:outline-none ${
           isRunning
             ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 shadow-sm'

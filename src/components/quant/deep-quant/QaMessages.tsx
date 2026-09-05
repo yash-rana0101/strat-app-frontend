@@ -5,6 +5,7 @@ import { User, Wrench, Copy, Check, ThumbsUp, ThumbsDown, Share2 } from 'lucide-
 import { QaChatMessage } from '../../../store/useQuantStore';
 import { useFqQaMessages } from '../useFqSession';
 import MarkdownRenderer from './MarkdownRenderer';
+import StratAiLogo from '../../brand/StratAiLogo';
 
 // Small copy-to-clipboard button with transient "copied" feedback.
 function CopyButton({
@@ -59,31 +60,40 @@ function CopyButton({
 }
 
 // Renders individual Assistant message rows, managing its own Like/Dislike state.
+// Unboxed: uses full canvas width instead of an enclosed bubble/card.
 function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
 
   return (
-    <div className="flex justify-start items-start gap-2.5 animate-fade-in font-sans w-full my-2">
-      {/* AI Avatar with official Strat AI logo */}
-      <div
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border select-none overflow-hidden ${
-          msg.error ? 'bg-rose-500/10 border-rose-500/20' : 'bg-elevated border-border-default/60'
-        }`}
-      >
-        <img
-          src="/strat.svg"
-          alt="Strat AI"
-          className={`h-3.5 w-3.5 shrink-0 object-contain ${msg.streaming ? 'animate-pulse' : ''}`}
-        />
+    <div className="w-full my-2.5 animate-fade-in font-sans flex flex-col gap-1.5">
+      {/* Header: AI Avatar with sharp vector Strat AI logo + Title */}
+      <div className="flex items-center gap-2">
+        <div
+          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border select-none ${
+            msg.error
+              ? 'bg-rose-500/10 border-rose-500/30'
+              : 'bg-[#18181b] border-border-default/80 shadow-xs'
+          }`}
+        >
+          <StratAiLogo size={12} className={msg.streaming ? 'animate-pulse' : ''} />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[11px] font-semibold tracking-wide text-text-primary">
+            Strat AI
+          </span>
+          {msg.streaming && (
+            <span className="text-[9px] font-normal text-text-muted animate-pulse">
+              Generating...
+            </span>
+          )}
+        </div>
       </div>
 
-      {/* Bubble */}
+      {/* Body: Full Canvas, Unboxed */}
       <div
-        className={`group relative max-w-[85%] rounded-lg pl-3 pr-6 py-2.5 text-[11px] leading-relaxed shadow-sm ${
-          msg.error
-            ? 'bg-rose-500/5 text-text-primary border border-rose-500/25'
-            : 'bg-surface/90 text-text-primary border border-border-default/50'
+        className={`w-full pl-7 pr-1 text-[11px] leading-relaxed ${
+          msg.error ? 'text-rose-400' : 'text-text-primary'
         }`}
       >
         {msg.activity && msg.activity.length > 0 && (
@@ -101,11 +111,11 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
         )}
 
         {msg.content ? (
-          <div>
+          <div className="w-full">
             <MarkdownRenderer content={msg.content} simple />
           </div>
         ) : msg.streaming ? (
-          <div className="flex items-center gap-1 py-1 px-0.5">
+          <div className="flex items-center gap-1 py-1">
             <span
               className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"
               style={{ animationDelay: '0ms' }}
@@ -128,11 +138,11 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
 
         {/* Bottom Action Bar */}
         {msg.content && !msg.streaming && (
-          <div className="flex items-center gap-1 mt-2 pt-1.5 border-t border-border-default/15 select-none text-text-muted">
+          <div className="flex items-center gap-1 mt-2 text-text-muted select-none">
             <CopyButton
               text={msg.content}
               label="Copy AI response"
-              className="p-1 hover:bg-elevated rounded transition-all cursor-pointer flex items-center justify-center"
+              className="p-1 hover:bg-elevated rounded transition-all cursor-pointer flex items-center justify-center hover:text-text-primary"
             />
 
             <button
@@ -166,7 +176,7 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
             <button
               type="button"
               onClick={() => {
-                navigator.clipboard.writeText(`Quant AI Response:\n${msg.content}`);
+                navigator.clipboard?.writeText(`Quant AI Response:\n${msg.content}`);
               }}
               className="p-1 hover:bg-elevated rounded hover:text-text-primary transition-all cursor-pointer flex items-center justify-center"
               title="Share response"
@@ -187,14 +197,14 @@ export default function QaMessages() {
   if (!qaMessages || qaMessages.length === 0) return null;
 
   return (
-    <div className="space-y-3.5 mt-5 pt-3 border-t border-border-default/30">
+    <div className="space-y-3.5 mt-2">
       {qaMessages.map((msg) =>
         msg.role === 'user' ? (
           <div
             key={msg.id}
             className="flex justify-end items-start gap-2 animate-fade-in font-sans w-full my-1.5"
           >
-            {/* Bubble */}
+            {/* Bubble - user message stays in box container */}
             <div className="group relative max-w-[80%] bg-emerald-500/10 text-emerald-100 border border-emerald-500/25 rounded-lg pl-3 pr-7 py-2 text-[11px] leading-relaxed shadow-sm">
               <span className="text-text-primary break-words whitespace-pre-wrap">
                 {msg.content}

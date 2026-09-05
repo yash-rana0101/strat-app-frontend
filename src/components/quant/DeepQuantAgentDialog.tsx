@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Dialog } from '@base-ui/react/dialog';
-import { History, Minimize2, Square, X } from 'lucide-react';
+import { History, Square, X } from 'lucide-react';
 
 import { useQuantStore } from '../../store/useQuantStore';
 import { useTradeStore } from '../../store/useTradeStore';
@@ -128,22 +128,7 @@ export default function DeepQuantAgentDialog({
             <div className="flex shrink-0 items-center gap-2">
               <QuantStatusPill status={sessionStatus} />
 
-              {/* Mode Switcher: Agent Mode -> Chat Mode */}
-              <div className="flex items-center rounded-md bg-elevated/40 p-0.5 border border-border-default/60 text-[9px] font-bold uppercase tracking-wider">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  aria-label="Switch to Chat mode"
-                  title="Switch to Chat Mode (Sidebar View)"
-                  className="rounded px-2 py-0.5 text-text-muted hover:text-text-primary transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                  <Minimize2 size={10} aria-hidden="true" />
-                  <span>Chat Mode</span>
-                </button>
-                <span className="rounded px-2 py-0.5 bg-elevated text-text-primary shadow-xs">
-                  Agent Mode
-                </span>
-              </div>
+
 
               {/* History Button (toggles right-side panel) */}
               {FQ_MULTI_SESSION && (

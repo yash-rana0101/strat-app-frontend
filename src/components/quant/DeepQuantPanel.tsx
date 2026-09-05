@@ -345,20 +345,15 @@ export default function DeepQuantPanel() {
       <div className="shrink-0 flex items-center justify-between border-b border-border-default/40 px-3 py-1.5">
         <QuantStatusPill status={sessionStatus} />
 
-        {/* Mode Switcher: Chat Mode <-> Agent Mode */}
-        <div className="flex items-center rounded-md bg-elevated/40 p-0.5 border border-border-default/60 text-[9px] font-bold uppercase tracking-wider">
-          <span className="rounded px-2 py-0.5 bg-elevated text-text-primary shadow-xs">Chat</span>
-          <button
-            type="button"
-            onClick={() => openDialog(finalTrade ? 'decision' : null)}
-            aria-label="Open full analysis"
-            title="Switch to Agent Mode (Dialog View)"
-            className="rounded px-2 py-0.5 text-text-muted hover:text-text-primary transition-colors flex items-center gap-1 cursor-pointer"
-          >
-            <span>Agent Mode</span>
-            <Maximize2 size={10} aria-hidden="true" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => openDialog(finalTrade ? 'decision' : null)}
+          aria-label="Expand analysis"
+          title="Expand analysis view"
+          className="flex h-6 w-6 items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-elevated transition-colors cursor-pointer"
+        >
+          <Maximize2 size={12} />
+        </button>
       </div>
 
       {/* ── Content Area ──────────────────────────────────── */}
