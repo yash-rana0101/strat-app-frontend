@@ -163,7 +163,6 @@ export default function ConfluenceMatrix({
               className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[8.5px] font-semibold bg-elevated border border-border-default/60 text-text-secondary"
             >
               <CheckCircle2 size={9} className="text-emerald-400 shrink-0" />
-              {p.pattern_type.replace(/_/g, ' ')}
               {(typeof p === 'string' ? p : (p as { pattern_type?: string }).pattern_type || '').replace(/_/g, ' ')}
             </span>
           ))}

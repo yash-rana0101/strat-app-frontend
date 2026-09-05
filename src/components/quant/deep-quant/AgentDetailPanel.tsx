@@ -232,7 +232,6 @@ function DecisionDetail({
         entry={entry}
         target={target}
         stopLoss={stopLoss}
-        side={side}
         side={side === 'BUY' || side === 'SELL' ? side : undefined}
         compact={false}
       />
