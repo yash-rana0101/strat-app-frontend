@@ -60,37 +60,44 @@ function CopyButton({
 }
 
 // Renders individual Assistant message rows, managing its own Like/Dislike state.
-// Unboxed: uses full canvas width instead of an enclosed bubble/card.
+// Side-by-side: logo avatar on the left, unboxed AI response on the right.
 function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
 
   return (
-    <div className="w-full my-2.5 animate-fade-in font-sans flex flex-col gap-1.5">
-      {/* Header: AI Avatar with sharp vector Strat AI logo (word 'Strat AI' removed) */}
-      <div className="flex items-center gap-2">
-        <div
-          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border select-none ${
-            msg.error
-              ? 'bg-rose-500/10 border-rose-500/30'
-              : 'bg-[#18181b] border-border-default/80 shadow-xs'
-          }`}
-        >
-          <StratAiLogo size={12} className={msg.streaming ? 'animate-pulse' : ''} />
-        </div>
-        {msg.streaming && (
-          <span className="text-[10px] font-normal text-text-muted animate-pulse">
-            Thinking…
-          </span>
-        )}
-      </div>
-
-      {/* Body: Full Canvas, Unboxed */}
+    <div className="w-full my-3 animate-fade-in font-sans flex items-start gap-2.5 sm:gap-3">
+      {/* Left: AI Avatar with sharp vector Strat AI logo */}
       <div
-        className={`w-full text-[11px] leading-relaxed ${
-          msg.error ? 'text-rose-400' : 'text-text-primary'
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border select-none mt-0.5 ${
+          msg.error
+            ? 'bg-rose-500/10 border-rose-500/30'
+            : 'bg-[#18181b] border-border-default/80 shadow-xs'
         }`}
       >
+        <StratAiLogo size={13} className={msg.streaming ? 'animate-pulse' : ''} />
+      </div>
+
+      {/* Right: AI Response Content (unboxed, uses available canvas width) */}
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        {msg.streaming && !msg.content && (
+          <div className="flex items-center gap-1.5 py-0.5 text-text-muted text-[11px]">
+            <span className="animate-pulse font-normal">Thinking…</span>
+            <span
+              className="w-1 h-1 rounded-full bg-emerald-400 animate-bounce"
+              style={{ animationDelay: '0ms' }}
+            />
+            <span
+              className="w-1 h-1 rounded-full bg-emerald-400 animate-bounce"
+              style={{ animationDelay: '150ms' }}
+            />
+            <span
+              className="w-1 h-1 rounded-full bg-emerald-400 animate-bounce"
+              style={{ animationDelay: '300ms' }}
+            />
+          </div>
+        )}
+
         {msg.activity && msg.activity.length > 0 && (
           <div className="mb-2 flex flex-col gap-0.5 border-b border-border-default/20 pb-1.5">
             {msg.activity.map((line, i) => (
@@ -106,25 +113,14 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
         )}
 
         {msg.content ? (
-          <div className="w-full">
+          <div
+            className={`w-full text-[11px] leading-relaxed ${
+              msg.error ? 'text-rose-400' : 'text-text-primary'
+            }`}
+          >
             <MarkdownRenderer content={msg.content} simple />
           </div>
-        ) : msg.streaming ? (
-          <div className="flex items-center gap-1 py-1">
-            <span
-              className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"
-              style={{ animationDelay: '0ms' }}
-            />
-            <span
-              className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"
-              style={{ animationDelay: '150ms' }}
-            />
-            <span
-              className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"
-              style={{ animationDelay: '300ms' }}
-            />
-          </div>
-        ) : (
+        ) : msg.streaming ? null : (
           <div className="text-[10px] text-text-muted/60 py-0.5 flex items-center gap-1.5 font-mono">
             <span>—</span>
             <span className="text-[9px]">No output generated</span>
@@ -171,8 +167,6 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
             <button
               type="button"
               onClick={() => {
-                navigator.clipboard?.writeText(`Quant AI Response:
-${msg.content}`);
                 navigator.clipboard?.writeText('Quant AI Response:\n' + msg.content);
               }}
               className="p-1 hover:bg-elevated rounded hover:text-text-primary transition-all cursor-pointer flex items-center justify-center"
