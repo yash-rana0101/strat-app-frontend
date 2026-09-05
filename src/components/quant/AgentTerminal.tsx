@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Shield, Loader2, AlertTriangle, Lock } from 'lucide-react';
+import { Shield, Loader2, AlertTriangle, Lock, ShieldAlert } from 'lucide-react';
 import { isActionableTrade } from '../../store/useQuantStore';
 import {
   useFqAnalysisError,
@@ -22,6 +22,7 @@ import { classifyAgentError } from './deep-quant/agentErrorClassifier';
 import { highlightNumbers } from './deep-quant/textHighlighter';
 import { buildRenderGroups } from './deep-quant/agentTimeline';
 import type { ReasoningStep } from '../../store/useQuantStore';
+import ConvictionGauge from './visuals/ConvictionGauge';
 
 interface AgentTerminalProps {
   /**
@@ -200,24 +201,57 @@ export default function AgentTerminal({
 
         {/* Stand-Aside decision rendered INLINE in the terminal log */}
         {sessionStatus === 'complete' && finalTrade && !isActionableTrade(finalTrade) && (
-          <div className="flex justify-start animate-fade-in font-sans w-full my-2 select-text">
-            <div className="w-full rounded border border-amber-500/15 bg-gradient-to-r from-amber-500/5 via-elevated/20 to-elevated/5 px-3 py-2.5 text-[11px] leading-relaxed shadow-sm">
-              <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-text-muted mb-2 select-none">
-                <Shield size={11} className="text-text-muted shrink-0" />
-                <span>Stand Aside — No Trade</span>
-                {finalTrade.action && (
-                  <span className="ml-auto rounded-sm px-1.5 py-0.5 text-[8px] font-black tracking-widest bg-elevated text-text-muted border border-border-default">
-                    {String(finalTrade.action).toUpperCase()}
-                  </span>
-                )}
+          <div className="flex justify-start animate-fade-in font-sans w-full my-3 select-text">
+            <div className="w-full rounded-2xl border border-amber-500/25 bg-gradient-to-b from-amber-500/10 via-elevated/40 to-elevated/20 p-4 shadow-lg space-y-3">
+              <div className="flex items-center justify-between border-b border-amber-500/20 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-amber-500/20 text-amber-400">
+                    <ShieldAlert size={13} />
+                  </div>
+                  <div>
+                    <span className="text-xs font-black uppercase tracking-wider text-amber-400">
+                      Stand Aside — Risk Guard Active
+                    </span>
+                    <span className="block text-[9px] text-text-muted">
+                      No directional edge identified under current risk parameters
+                    </span>
+                  </div>
+                </div>
+
+                <span className="rounded-md px-2 py-0.5 text-[9px] font-mono font-black uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                  {finalTrade.action ? String(finalTrade.action).toUpperCase() : 'NO TRADE'}
+                </span>
               </div>
+
+              <div className="flex items-center justify-between gap-3 bg-surface/60 rounded-xl p-3 border border-border-default/50">
+                <div className="flex flex-col">
+                  <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">
+                    Decision Bias
+                  </span>
+                  <span className="text-sm font-extrabold text-amber-400">
+                    Capital Preservation Prioritized
+                  </span>
+                </div>
+
+                <ConvictionGauge
+                  score={finalTrade.conviction_score}
+                  action="HOLD"
+                  tier="stand_aside"
+                  size="sm"
+                  showLabel={true}
+                />
+              </div>
+
               {finalTrade.setup_validation && (
-                <p className="text-text-secondary italic border-l-2 border-border-default/40 pl-2.5 mb-2 leading-relaxed">
-                  &ldquo;{highlightNumbers(finalTrade.setup_validation)}&rdquo;
-                </p>
+                <div className="rounded-lg border border-amber-500/15 bg-amber-500/5 p-2.5 text-[10.5px] leading-relaxed text-text-secondary">
+                  <p className="italic border-l-2 border-amber-500/40 pl-2">
+                    &ldquo;{highlightNumbers(finalTrade.setup_validation)}&rdquo;
+                  </p>
+                </div>
               )}
+
               {finalTrade.execution_plan && (
-                <p className="text-[10px] text-text-muted mt-2 border-t border-border-default/40 pt-2 leading-relaxed">
+                <p className="text-[10px] text-text-muted leading-relaxed pt-1">
                   {highlightNumbers(finalTrade.execution_plan)}
                 </p>
               )}

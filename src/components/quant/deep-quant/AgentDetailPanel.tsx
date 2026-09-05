@@ -2,33 +2,24 @@
 
 // components/quant/deep-quant/AgentDetailPanel.tsx
 //
-// The Agent View's right-hand column: the selected step, and the committed plan, in full.
-//
-// This is where the text that used to crush the sidebar belongs. `setup_validation` and the
-// execution plan render UNTRUNCATED and unaltered — no clamp, no summarising — because the
-// sidebar's compact card exists precisely so this one can be complete.
-//
-// Nothing is computed here. Action, conviction and the three prices are read off the plan the
-// backend committed; a missing field renders "—" rather than a derived stand-in, and there is no
-// frontend-calculated risk/reward. `isActionableTrade` is the SAME shared guard the transcript
-// uses, so a HOLD / stand_aside / level-less decision shows the honest no-trade heading rather
-// than a grid of fabricated prices.
-//
-// NOT built on `AiExecutionPlanView`, deliberately. That component renders conviction + the two
-// prose blocks and would have been the obvious reuse, but it is unreachable in the current panel
-// (its branch sits behind `aiPlan`, which cannot be set without `reasoningSteps.length > 0`, so
-// the transcript branch always won) and its `Clear & Reset` button calls `clearAiPlan`, which
-// writes the legacy flat store fields and does nothing on the multi-session path. Mounting it here
-// would have put a dead control in front of the user.
+// The Agent View's right-hand column: visual trade intelligence dashboard,
+// interactive price ladder, conviction gauge, confluence matrix, and rich tool inspector.
 
 import React from 'react';
-import { Target, Wrench } from 'lucide-react';
+import { Target, Wrench, ShieldAlert, Sparkles, Layers } from 'lucide-react';
 
-import { isActionableTrade, type AiExecutionPlan, type ReasoningStep, useQuantStore } from '../../../store/useQuantStore';
-import { formatToolName } from './agentTimeline';
-import { highlightNumbers } from './textHighlighter';
-import MarkdownRenderer from './MarkdownRenderer';
+import {
+  isActionableTrade,
+  type AiExecutionPlan,
+  type ReasoningStep,
+  useQuantStore,
+} from '../../../store/useQuantStore';
 import WatchingIndicator from './WatchingIndicator';
+import ConvictionGauge from '../visuals/ConvictionGauge';
+import PriceLadderBar from '../visuals/PriceLadderBar';
+import ConfluenceMatrix from '../visuals/ConfluenceMatrix';
+import StructuredAnalysisCards from '../visuals/StructuredAnalysisCards';
+import ToolResultVisualizer from '../visuals/ToolResultVisualizer';
 
 interface AgentDetailPanelProps {
   /** The tool step being inspected, or null when nothing but the decision is selected. */
@@ -47,10 +38,6 @@ export default function AgentDetailPanel({
   symbol = '',
   sessionStatus,
 }: AgentDetailPanelProps) {
-  // The trade section renders whenever a plan exists, whether or not a tool step is also selected.
-  // Making it the "else" branch meant clicking any step made the trade disappear from the dialog —
-  // and the transcript no longer carries the plan card here (`showTradePlan={false}`), so this
-  // column is the only place those levels appear.
   if (!step && !finalTrade) {
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center">
@@ -59,190 +46,204 @@ export default function AgentDetailPanel({
             <WatchingIndicator />
           </div>
         )}
-        <p className="max-w-60 text-[11px] leading-relaxed text-text-muted">
-          Pick a step on the left to see exactly what the agent called and what came back.
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-elevated/60 border border-border-default mb-3">
+          <Layers size={20} className="text-text-muted" />
+        </div>
+        <p className="max-w-64 text-xs font-semibold text-text-primary">
+          Deep Quant Visual Inspector
+        </p>
+        <p className="max-w-64 text-[11px] leading-relaxed text-text-muted mt-1">
+          Pick any step in the transcript or progress timeline to inspect visual data, indicators, and execution logic.
         </p>
       </div>
     );
   }
 
   return (
-    <>
+    <div className="flex flex-col font-sans divide-y divide-border-default/40">
       {sessionStatus === 'watching' && (
         <div className="p-4 pb-0">
           <WatchingIndicator />
         </div>
       )}
-      {step && <ToolDetail step={step} resultContent={resultContent} />}
+
+      {/* Selected Tool Inspector Section */}
+      {step && (
+        <div className="p-4">
+          <ToolDetail step={step} resultContent={resultContent} />
+        </div>
+      )}
+
+      {/* Final Decision / Trade Setup Visual Dashboard */}
       {finalTrade && (
-        <div className={step ? 'border-t border-border-default/40' : ''}>
+        <div className="p-4">
           <DecisionDetail finalTrade={finalTrade} symbol={symbol} />
         </div>
       )}
-    </>
+    </div>
   );
 }
 
 // ── Tool detail ───────────────────────────────────────────────────────────────
 
-function ToolDetail({ step, resultContent }: { step: ReasoningStep; resultContent: string | null }) {
-  const argEntries = Object.entries(step.args ?? {});
+function ToolDetail({
+  step,
+  resultContent,
+}: {
+  step: ReasoningStep;
+  resultContent: string | null;
+}) {
+  const toolName = step.toolName ? step.toolName.replace(/_/g, ' ') : 'Tool Inspection';
 
   return (
-    <div className="flex flex-col gap-3 p-4">
-      <Heading icon={<Wrench size={11} aria-hidden="true" />}>{formatToolName(step.toolName)}</Heading>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between border-b border-border-default/40 pb-2">
+        <h3 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-text-primary">
+          <Wrench size={12} className="text-primary" />
+          <span>{toolName}</span>
+        </h3>
+        <span className="text-[8.5px] font-mono text-text-muted uppercase">
+          Step Telemetry
+        </span>
+      </div>
 
-      {argEntries.length > 0 ? (
-        <div>
-          <Label>Arguments</Label>
-          {/* EVERY argument, not the short allowlist the progress rows use. Someone reading this
-              panel is asking exactly what the tool was called with. */}
-          <dl className="mt-1.5 flex flex-col gap-1 rounded border border-border-default/50 bg-elevated/20 p-2.5">
-            {argEntries.map(([key, value]) => (
-              <div key={key} className="flex gap-2 text-[10px] leading-relaxed">
-                <dt className="shrink-0 font-semibold text-text-muted">{key}</dt>
-                <dd className="min-w-0 flex-1 break-all text-text-secondary">
-                  {typeof value === 'string' ? value : JSON.stringify(value)}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      ) : (
-        <p className="text-[10px] text-text-muted">This tool was called with no arguments.</p>
-      )}
-
-      {resultContent && (
-        <div>
-          <Label>Result</Label>
-          <div className="mt-1.5 rounded border border-border-default/50 bg-elevated/20 p-2.5 text-[10.5px] leading-relaxed text-text-secondary">
-            <MarkdownRenderer content={resultContent} simple />
-          </div>
-        </div>
-      )}
+      <ToolResultVisualizer
+        toolName={step.toolName || 'tool'}
+        args={step.args}
+        resultContent={resultContent}
+      />
     </div>
   );
 }
 
 // ── Decision detail ───────────────────────────────────────────────────────────
 
-function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; symbol: string }) {
+function DecisionDetail({
+  finalTrade,
+  symbol,
+}: {
+  finalTrade: AiExecutionPlan;
+  symbol: string;
+}) {
   const actionable = isActionableTrade(finalTrade);
-  const side = finalTrade.action ?? '—';
-  const conviction =
-    typeof finalTrade.conviction_score === 'number' ? `${finalTrade.conviction_score}%` : '—';
-  const consensusReport = useQuantStore((s) => s.consensusData);
-  const atr = consensusReport?.atr_14 != null ? consensusReport.atr_14.toFixed(2) : null;
-  // Read existing calculated risk/reward if provided
-  const tradeRecord = finalTrade as unknown as Record<string, unknown>;
-  const riskReward = tradeRecord.risk_reward ? String(tradeRecord.risk_reward) : null;
+  const side = finalTrade.action ?? 'HOLD';
+  const isBuy = side === 'BUY';
+  const consensusData = useQuantStore((s) => s.consensusData);
+
+  // ── Stand Aside Visual Card ───────────────────────────────────────────────
+  if (!actionable) {
+    return (
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-border-default/40 pb-2">
+          <h3 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-400">
+            <ShieldAlert size={13} />
+            <span>Stand Aside — Risk Guard</span>
+          </h3>
+          <span className="rounded px-1.5 py-0.5 text-[8.5px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-300 border border-amber-500/25">
+            CAPITAL PRESERVATION
+          </span>
+        </div>
+
+        {/* Hero Card */}
+        <div className="rounded-xl border border-amber-500/20 bg-gradient-to-b from-amber-500/10 via-elevated/40 to-elevated/10 p-3.5 shadow-sm space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">
+                Market Condition
+              </span>
+              <span className="block text-base font-black text-amber-400">
+                No High-Conviction Setup
+              </span>
+            </div>
+
+            <ConvictionGauge
+              score={finalTrade.conviction_score}
+              action="HOLD"
+              tier="stand_aside"
+              size="md"
+              showLabel={true}
+            />
+          </div>
+        </div>
+
+        {/* Consensus Indicators */}
+        <ConfluenceMatrix consensus={consensusData} />
+
+        {/* Structured Analysis */}
+        <StructuredAnalysisCards
+          setupValidation={finalTrade.setup_validation}
+          executionPlan={finalTrade.execution_plan}
+        />
+      </div>
+    );
+  }
+
+  // ── Actionable Trade Setup Visual Dashboard ────────────────────────────────
+  const { entry, take_profit: target, stop_loss: stopLoss } = finalTrade.execution_levels;
 
   return (
-    <div className="flex flex-col gap-3 p-4">
-      <Heading icon={<Target size={11} aria-hidden="true" />}>
-        {actionable ? 'Declare Trade' : 'Stand Aside — No Trade'}
-      </Heading>
+    <div className="space-y-4">
+      {/* Title Bar */}
+      <div className="flex items-center justify-between border-b border-border-default/40 pb-2">
+        <h3 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-emerald-400">
+          <Sparkles size={12} />
+          <span>Committed Trade Plan</span>
+        </h3>
+        <span
+          className={`rounded px-2 py-0.5 text-[8.5px] font-black uppercase tracking-widest border ${
+            isBuy
+              ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25'
+              : 'bg-rose-500/15 text-rose-300 border-rose-500/25'
+          }`}
+        >
+          {side} {symbol}
+        </span>
+      </div>
 
-      {/* Prominent Trade Plan Section matching the spec */}
-      {actionable ? (
-        <div className="rounded border border-emerald-500/20 bg-gradient-to-b from-emerald-500/5 to-transparent p-3">
-          <div className="flex items-baseline justify-between mb-2">
+      {/* Hero Decision Tile */}
+      <div className="rounded-xl border border-emerald-500/25 bg-gradient-to-b from-emerald-500/10 via-elevated/40 to-elevated/10 p-3.5 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-[8.5px] font-bold uppercase tracking-wider text-text-muted">
+              Directional Setup
+            </span>
             <span
-              className={`text-base font-black tracking-tight ${side === 'SELL' ? 'text-rose-400' : 'text-emerald-400'
-                }`}
+              className={`text-2xl font-black tracking-tight ${
+                isBuy ? 'text-emerald-400' : 'text-rose-400'
+              }`}
             >
               {side} {symbol}
             </span>
-            <span className="font-mono text-xs font-bold text-text-primary">
-              {conviction} CONVICTION
-            </span>
           </div>
 
-          <dl className="grid grid-cols-3 gap-px overflow-hidden rounded border border-border-default/50 bg-border-default/40">
-            <Metric label="Entry" value={`₹${finalTrade.execution_levels.entry.toFixed(2)}`} />
-            <Metric
-              label="Target"
-              value={`₹${finalTrade.execution_levels.take_profit.toFixed(2)}`}
-              tone="text-emerald-400"
-            />
-            <Metric
-              label="Stop Loss"
-              value={`₹${finalTrade.execution_levels.stop_loss.toFixed(2)}`}
-              tone="text-rose-400"
-            />
-            <Metric label="Conviction" value={conviction} />
-            {atr && <Metric label="ATR" value={atr} />}
-            {riskReward && <Metric label="Risk / Reward" value={riskReward} />}
-            {finalTrade.opportunity_tier && <Metric label="Tier" value={finalTrade.opportunity_tier} />}
-          </dl>
-        </div>
-      ) : (
-        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded border border-border-default/50 bg-border-default/40">
-          <Metric
-            label="Action"
-            value={side}
-            tone={side === 'SELL' ? 'text-rose-400' : side === 'BUY' ? 'text-emerald-400' : undefined}
+          <ConvictionGauge
+            score={finalTrade.conviction_score}
+            action={side}
+            tier={finalTrade.opportunity_tier}
+            size="md"
+            showLabel={true}
           />
-          <Metric label="Conviction" value={conviction} />
-          {finalTrade.opportunity_tier && <Metric label="Tier" value={finalTrade.opportunity_tier} />}
-        </dl>
-      )}
-
-      {/* IN FULL. This is the whole reason the dialog exists — no line clamp, and
-          `whitespace-pre-line` so the model's own paragraphing survives. */}
-      {finalTrade.setup_validation && (
-        <div>
-          <Label>Setup Validation</Label>
-          <p className="mt-1.5 whitespace-pre-line text-[11px] leading-relaxed text-text-secondary">
-            {highlightNumbers(finalTrade.setup_validation)}
-          </p>
         </div>
-      )}
+      </div>
 
-      {finalTrade.execution_plan && (
-        <div>
-          <Label>Execution Plan</Label>
-          <div className="mt-1.5 rounded border border-border-default/50 bg-elevated/20 p-2.5">
-            <p className="whitespace-pre-line text-[11px] leading-relaxed text-text-secondary">
-              {highlightNumbers(finalTrade.execution_plan)}
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+      {/* Interactive Price Ladder & Visual Risk-Reward Bar */}
+      <PriceLadderBar
+        entry={entry}
+        target={target}
+        stopLoss={stopLoss}
+        side={side}
+        compact={false}
+      />
 
-// ── Small shared bits ─────────────────────────────────────────────────────────
+      {/* Market Confluence Matrix */}
+      <ConfluenceMatrix consensus={consensusData} />
 
-function Heading({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <h3 className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-text-primary">
-      <span className="text-text-muted">{icon}</span>
-      {children}
-    </h3>
-  );
-}
-
-function Label({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="text-[9px] font-bold uppercase tracking-wider text-text-muted">{children}</span>
-  );
-}
-
-function Metric({
-  label,
-  value,
-  tone = 'text-text-primary',
-}: {
-  label: string;
-  value: string;
-  tone?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-0.5 bg-surface px-2.5 py-2">
-      <span className="text-[8px] font-bold uppercase tracking-widest text-text-muted">{label}</span>
-      <span className={`font-mono text-xs font-bold ${tone}`}>{value}</span>
+      {/* Structured Analysis Cards (Catalysts, Invalidation, Milestones) */}
+      <StructuredAnalysisCards
+        setupValidation={finalTrade.setup_validation}
+        executionPlan={finalTrade.execution_plan}
+      />
     </div>
   );
 }
