@@ -40,20 +40,15 @@ describe('SplitViewToggle — control visibility (R4.7, R5.3)', () => {
   beforeEach(() => resetStores());
   afterEach(() => cleanup());
 
-  it.each(GATED_PROFILES)(
-    'renders the single/split control in the %s mode (R4.7)',
-    (profile) => {
-      useTradeStore.setState({ activeProfile: profile });
-      render(<SplitViewToggle />);
+  it.each(GATED_PROFILES)('renders the single/split control in the %s mode (R4.7)', (profile) => {
+    useTradeStore.setState({ activeProfile: profile });
+    render(<SplitViewToggle />);
 
-      // Both segments of the gated control are present.
-      expect(document.getElementById('split-view-single')).toBeInTheDocument();
-      expect(document.getElementById('split-view-split')).toBeInTheDocument();
-      expect(
-        screen.getByRole('group', { name: /chart layout/i }),
-      ).toBeInTheDocument();
-    },
-  );
+    // Both segments of the gated control are present.
+    expect(document.getElementById('split-view-single')).toBeInTheDocument();
+    expect(document.getElementById('split-view-split')).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: /chart layout/i })).toBeInTheDocument();
+  });
 
   it.each(HIDDEN_PROFILES)(
     'hides the single/split control in the %s mode (R4.7, R5.3)',
@@ -65,10 +60,8 @@ describe('SplitViewToggle — control visibility (R4.7, R5.3)', () => {
       expect(container).toBeEmptyDOMElement();
       expect(document.getElementById('split-view-single')).toBeNull();
       expect(document.getElementById('split-view-split')).toBeNull();
-      expect(
-        screen.queryByRole('group', { name: /chart layout/i }),
-      ).toBeNull();
-    },
+      expect(screen.queryByRole('group', { name: /chart layout/i })).toBeNull();
+    }
   );
 
   it.each(GATED_PROFILES)(
@@ -85,6 +78,6 @@ describe('SplitViewToggle — control visibility (R4.7, R5.3)', () => {
       // The Single segment routes back to single view.
       fireEvent.click(document.getElementById('split-view-single')!);
       expect(useChartUIStore.getState().splitView).toBe(false);
-    },
+    }
   );
 });

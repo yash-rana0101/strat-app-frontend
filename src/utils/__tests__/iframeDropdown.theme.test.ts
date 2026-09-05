@@ -106,7 +106,7 @@ describe('the injected iframe CSS follows the app’s theme', () => {
     const rules = css();
     const btnBlock = rules.slice(
       rules.indexOf('.tv-custom-toolbar-btn {'),
-      rules.indexOf('.tv-custom-dropdown {'),
+      rules.indexOf('.tv-custom-dropdown {')
     );
     expect(btnBlock).toContain(LIGHT['--text-muted']);
     expect(btnBlock).toContain(LIGHT['--bg-elevated']);
@@ -153,7 +153,7 @@ describe('the dropdown itself', () => {
       ],
       active,
       onSelect,
-      document,
+      document
     );
     return { btn, onSelect };
   }
@@ -206,7 +206,7 @@ describe('the dropdown itself', () => {
       [{ value: 'x', label: '<img src=x onerror=alert(1)>', description: '<b>desc</b>' }],
       'x',
       vi.fn(),
-      document,
+      document
     );
 
     const item = document.querySelector('.tv-custom-dropdown-item') as HTMLElement;

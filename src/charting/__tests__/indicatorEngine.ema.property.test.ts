@@ -28,8 +28,7 @@ const approxEqual = (a: number, b: number): boolean =>
   Math.abs(a - b) <= EPS * Math.max(1, Math.abs(a), Math.abs(b));
 
 /** A single finite price value generator. */
-const price = () =>
-  fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
 
 /** Generate a well-formed OHLC candle at a fixed time. */
 const candleAt = (time: number): fc.Arbitrary<ChartCandle> =>
@@ -53,9 +52,9 @@ const candleSeries = (minLength: number) =>
 
 /** Build a (series, period) pair where period never exceeds the candle count. */
 const seriesAndPeriod = () =>
-  fc.integer({ min: 1, max: 40 }).chain((period) =>
-    candleSeries(period).map((series) => ({ series, period })),
-  );
+  fc
+    .integer({ min: 1, max: 40 })
+    .chain((period) => candleSeries(period).map((series) => ({ series, period })));
 
 describe('Property 2: EMA uses the standard smoothing factor', () => {
   const ema = getIndicator('ema');
@@ -89,7 +88,7 @@ describe('Property 2: EMA uses the standard smoothing factor', () => {
           expect(approxEqual(points[i].value, expected)).toBe(true);
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -108,7 +107,7 @@ describe('Property 2: EMA uses the standard smoothing factor', () => {
         const expectedSeed = sum / period;
         expect(approxEqual(points[0].value, expectedSeed)).toBe(true);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

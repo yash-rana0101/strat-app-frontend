@@ -19,7 +19,10 @@ export const TAB_SHORT_LABELS: Record<AnalysisTab, string> = {
   patterns: 'Patterns',
 };
 
-export const TAB_ICONS: Record<AnalysisTab, React.ComponentType<{ size?: number; className?: string }>> = {
+export const TAB_ICONS: Record<
+  AnalysisTab,
+  React.ComponentType<{ size?: number; className?: string }>
+> = {
   sentiment: Newspaper,
   technical: TrendingUp,
   patterns: Sparkles,
@@ -37,8 +40,8 @@ export function EmptyTechnical({ symbol }: { symbol?: string }) {
         <span className="font-extrabold text-primary">{symbol || 'this symbol'}</span>
       </p>
       <p className="max-w-70 text-[11px] leading-relaxed text-text-secondary">
-        Run Deep Quant Analysis to compute the technical consensus, patterns and active
-        strategies for this instrument.
+        Run Deep Quant Analysis to compute the technical consensus, patterns and active strategies
+        for this instrument.
       </p>
     </div>
   );

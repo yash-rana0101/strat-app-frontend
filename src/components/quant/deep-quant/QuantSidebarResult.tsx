@@ -62,7 +62,8 @@ export default function QuantSidebarResult({
           </div>
 
           <p className="line-clamp-3 text-[10px] leading-relaxed text-text-secondary border-l-2 border-amber-500/30 pl-2 italic">
-            {finalTrade.setup_validation || 'The agent identified unfavorable risk-to-reward or conflicting market signals.'}
+            {finalTrade.setup_validation ||
+              'The agent identified unfavorable risk-to-reward or conflicting market signals.'}
           </p>
         </div>
 

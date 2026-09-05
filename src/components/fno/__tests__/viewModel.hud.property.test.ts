@@ -51,10 +51,16 @@ function numField(): fc.Arbitrary<{ raw: unknown; expected: number | null }> {
     { weight: 1, arbitrary: fc.constant({ raw: null as unknown, expected: null }) },
     { weight: 1, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) },
     { weight: 1, arbitrary: fc.constant({ raw: Number.NaN as unknown, expected: null }) },
-    { weight: 1, arbitrary: fc.constant({ raw: Number.POSITIVE_INFINITY as unknown, expected: null }) },
-    { weight: 1, arbitrary: fc.constant({ raw: Number.NEGATIVE_INFINITY as unknown, expected: null }) },
+    {
+      weight: 1,
+      arbitrary: fc.constant({ raw: Number.POSITIVE_INFINITY as unknown, expected: null }),
+    },
+    {
+      weight: 1,
+      arbitrary: fc.constant({ raw: Number.NEGATIVE_INFINITY as unknown, expected: null }),
+    },
     { weight: 1, arbitrary: fc.string().map((s) => ({ raw: s as unknown, expected: null })) },
-    { weight: 1, arbitrary: fc.constant({ raw: 0 as unknown, expected: 0 }) }, // genuine zero must pass through
+    { weight: 1, arbitrary: fc.constant({ raw: 0 as unknown, expected: 0 }) } // genuine zero must pass through
   );
 }
 
@@ -64,7 +70,7 @@ function strField(): fc.Arbitrary<{ raw: unknown; expected: string | null }> {
     { weight: 4, arbitrary: fc.string().map((s) => ({ raw: s as unknown, expected: s })) },
     { weight: 1, arbitrary: fc.constant({ raw: null as unknown, expected: null }) },
     { weight: 1, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) },
-    { weight: 1, arbitrary: finiteNumber.map((n) => ({ raw: n as unknown, expected: null })) },
+    { weight: 1, arbitrary: finiteNumber.map((n) => ({ raw: n as unknown, expected: null })) }
   );
 }
 
@@ -83,7 +89,7 @@ function biasStateField(): fc.Arbitrary<{ raw: unknown; expected: OptionsBiasSta
         raw: s as unknown,
         expected: (BIAS_STATES as string[]).includes(s) ? (s as OptionsBiasState) : null,
       })),
-    },
+    }
   );
 }
 
@@ -92,7 +98,9 @@ function chainContextField(): fc.Arbitrary<{ raw: unknown; expected: ChainContex
   return fc.oneof(
     {
       weight: 4,
-      arbitrary: fc.constantFrom(...CHAIN_CONTEXTS).map((c) => ({ raw: c as unknown, expected: c })),
+      arbitrary: fc
+        .constantFrom(...CHAIN_CONTEXTS)
+        .map((c) => ({ raw: c as unknown, expected: c })),
     },
     { weight: 1, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) },
     { weight: 1, arbitrary: fc.constant({ raw: null as unknown, expected: null }) },
@@ -102,7 +110,7 @@ function chainContextField(): fc.Arbitrary<{ raw: unknown; expected: ChainContex
         raw: s as unknown,
         expected: (CHAIN_CONTEXTS as string[]).includes(s) ? (s as ChainContext) : null,
       })),
-    },
+    }
   );
 }
 
@@ -112,11 +120,14 @@ function signalsField(): fc.Arbitrary<{ raw: unknown; expected: Record<string, u
     {
       weight: 3,
       arbitrary: fc
-        .dictionary(fc.string(), fc.oneof(finiteNumber, fc.string(), fc.boolean(), fc.constant(null)))
+        .dictionary(
+          fc.string(),
+          fc.oneof(finiteNumber, fc.string(), fc.boolean(), fc.constant(null))
+        )
         .map((o) => ({ raw: o as unknown, expected: o as Record<string, unknown> })),
     },
     { weight: 1, arbitrary: fc.constant({ raw: null as unknown, expected: null }) },
-    { weight: 1, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) },
+    { weight: 1, arbitrary: fc.constant({ raw: undefined as unknown, expected: null }) }
   );
 }
 
@@ -136,7 +147,7 @@ function ivSkewField(): fc.Arbitrary<{
           raw: { put_minus_call: pmc.raw, slope: slope.raw, atm_iv: atm.raw } as unknown,
           expected: { putMinusCall: pmc.expected, slope: slope.expected, atmIv: atm.expected },
         })),
-    },
+    }
   );
 }
 
@@ -265,7 +276,7 @@ describe('Property 4: HUD is complete and renders nulls as explicit N/A, never f
         expect(hud.ivSkew).toEqual(expected.ivSkew);
         expect(hud.context).toEqual(expected.context);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -300,7 +311,7 @@ describe('Property 4: HUD is complete and renders nulls as explicit N/A, never f
           }
         }
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

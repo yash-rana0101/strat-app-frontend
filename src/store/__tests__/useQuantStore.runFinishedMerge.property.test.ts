@@ -86,9 +86,9 @@ describe('RUN_FINISHED preserves a committed directional decision', () => {
           // The scrape may still enrich prose the decision left empty.
           expect(after?.execution_plan).toBe('Scale out at R1.');
           expect(useQuantStore.getState().aiPlan?.action).toBe(action);
-        },
+        }
       ),
-      { numRuns: 60 },
+      { numRuns: 60 }
     );
   });
 
@@ -96,11 +96,19 @@ describe('RUN_FINISHED preserves a committed directional decision', () => {
     ev({ event: 'RUN_STARTED', data: { thread_id: 't-h' } });
     ev({
       event: 'DECISION',
-      data: { thread_id: 't-h', action: 'HOLD', opportunity_tier: 'stand_aside', rationale: 'Chop, no edge.' },
+      data: {
+        thread_id: 't-h',
+        action: 'HOLD',
+        opportunity_tier: 'stand_aside',
+        rationale: 'Chop, no edge.',
+      },
     });
     ev({
       event: 'TEXT_MESSAGE',
-      data: { thread_id: 't-h', content: '{"conviction_score": 90, "execution_plan": "Long here."}' },
+      data: {
+        thread_id: 't-h',
+        content: '{"conviction_score": 90, "execution_plan": "Long here."}',
+      },
     });
     ev({ event: 'RUN_FINISHED', data: { thread_id: 't-h', status: 'completed' } });
 
@@ -114,7 +122,10 @@ describe('RUN_FINISHED preserves a committed directional decision', () => {
     ev({ event: 'RUN_STARTED', data: { thread_id: 't-n' } });
     ev({
       event: 'TEXT_MESSAGE',
-      data: { thread_id: 't-n', content: '{"conviction_score": 55, "setup_validation": "Weak.", "execution_plan": "Wait."}' },
+      data: {
+        thread_id: 't-n',
+        content: '{"conviction_score": 55, "setup_validation": "Weak.", "execution_plan": "Wait."}',
+      },
     });
     ev({ event: 'RUN_FINISHED', data: { thread_id: 't-n', status: 'completed' } });
 
@@ -137,7 +148,12 @@ describe('watch pause → resume', () => {
     ev({ event: 'RUN_STARTED', data: { thread_id: 't-w' } });
     ev({
       event: 'DECISION',
-      data: { thread_id: 't-w', action: 'HOLD', opportunity_tier: 'watch', rationale: 'Watch armed.' },
+      data: {
+        thread_id: 't-w',
+        action: 'HOLD',
+        opportunity_tier: 'watch',
+        rationale: 'Watch armed.',
+      },
     });
     ev({ event: 'RUN_FINISHED', data: { thread_id: 't-w', status: 'paused' } });
     expect(useQuantStore.getState().sessionStatus).toBe('watching');
@@ -173,7 +189,7 @@ describe('watch pause → resume', () => {
     ev({ event: 'RUN_STARTED', data: { thread_id: 't-t' } });
     expect(useQuantStore.getState().reasoningSteps.length).toBeGreaterThan(before);
     expect(
-      useQuantStore.getState().reasoningSteps.some((s) => s.content.includes('Leg one analysis.')),
+      useQuantStore.getState().reasoningSteps.some((s) => s.content.includes('Leg one analysis.'))
     ).toBe(true);
   });
 
@@ -203,28 +219,25 @@ describe('watch pause → resume', () => {
 describe('DECISION action case normalization', () => {
   it('lowercase actions are upper-cased so raw === comparisons cannot invert a SELL', () => {
     fc.assert(
-      fc.property(
-        fc.constantFrom('sell', 'Sell', 'SELL', ' sell ', 'sElL'),
-        (raw) => {
-          resetStore();
-          ev({ event: 'RUN_STARTED', data: { thread_id: 't-c' } });
-          ev({
-            event: 'DECISION',
-            data: {
-              thread_id: 't-c',
-              action: raw,
-              conviction_score: 60,
-              execution_levels: { entry: 100, stop_loss: 101, take_profit: 97 },
-            },
-          });
-          const plan = useQuantStore.getState().finalTrade;
-          expect(plan?.action).toBe('SELL');
-          // The exact comparison the execution components make.
-          expect(plan?.action === 'SELL' ? 'SELL' : 'BUY').toBe('SELL');
-          expect(isActionableTrade(plan)).toBe(true);
-        },
-      ),
-      { numRuns: 20 },
+      fc.property(fc.constantFrom('sell', 'Sell', 'SELL', ' sell ', 'sElL'), (raw) => {
+        resetStore();
+        ev({ event: 'RUN_STARTED', data: { thread_id: 't-c' } });
+        ev({
+          event: 'DECISION',
+          data: {
+            thread_id: 't-c',
+            action: raw,
+            conviction_score: 60,
+            execution_levels: { entry: 100, stop_loss: 101, take_profit: 97 },
+          },
+        });
+        const plan = useQuantStore.getState().finalTrade;
+        expect(plan?.action).toBe('SELL');
+        // The exact comparison the execution components make.
+        expect(plan?.action === 'SELL' ? 'SELL' : 'BUY').toBe('SELL');
+        expect(isActionableTrade(plan)).toBe(true);
+      }),
+      { numRuns: 20 }
     );
   });
 
@@ -250,7 +263,11 @@ describe('mergeFinalPlan', () => {
   it('is a no-op passthrough when either side is null', () => {
     expect(mergeFinalPlan(null, null)).toBeNull();
     expect(mergeFinalPlan(committed, null)).toEqual(committed);
-    const scraped: AiExecutionPlan = { conviction_score: 1, setup_validation: 'a', execution_plan: 'b' };
+    const scraped: AiExecutionPlan = {
+      conviction_score: 1,
+      setup_validation: 'a',
+      execution_plan: 'b',
+    };
     expect(mergeFinalPlan(null, scraped)).toEqual(scraped);
   });
 

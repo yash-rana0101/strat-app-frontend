@@ -38,7 +38,12 @@ export default function SplitViewToggle({ noText = false }: SplitViewToggleProps
   const CurrentIcon = splitView ? BsWindowSplit : IoSquareOutline;
 
   return (
-    <div className="relative flex items-center justify-center" ref={ref} role="group" aria-label="Chart layout">
+    <div
+      className="relative flex items-center justify-center"
+      ref={ref}
+      role="group"
+      aria-label="Chart layout"
+    >
       <button
         type="button"
         id="split-view-dropdown-trigger"
@@ -58,17 +63,25 @@ export default function SplitViewToggle({ noText = false }: SplitViewToggleProps
               }`
         }
       >
-        <CurrentIcon size={noText ? 18 : 11} className={isOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-muted'} />
+        <CurrentIcon
+          size={noText ? 18 : 11}
+          className={isOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-muted'}
+        />
         {!noText && <span>{splitView ? 'Split' : 'Single'}</span>}
-        {!noText && <ChevronDown size={11} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />}
+        {!noText && (
+          <ChevronDown
+            size={11}
+            className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          />
+        )}
       </button>
 
       {/* Dropdown Options (always rendered in DOM for unit test compatibility, hidden via class when closed) */}
-      <div className={`absolute right-0 z-50 mt-px w-32 rounded-none border border-border-default bg-surface/95 p-1 shadow-2xl backdrop-blur-xl ${
-        isOpen ? 'block' : 'hidden'
-      } ${
-        noText ? 'top-[32px]' : 'top-full'
-      }`}>
+      <div
+        className={`absolute right-0 z-50 mt-px w-32 rounded-none border border-border-default bg-surface/95 p-1 shadow-2xl backdrop-blur-xl ${
+          isOpen ? 'block' : 'hidden'
+        } ${noText ? 'top-[32px]' : 'top-full'}`}
+      >
         <button
           key="single"
           type="button"
@@ -115,4 +128,3 @@ export default function SplitViewToggle({ noText = false }: SplitViewToggleProps
     </div>
   );
 }
-

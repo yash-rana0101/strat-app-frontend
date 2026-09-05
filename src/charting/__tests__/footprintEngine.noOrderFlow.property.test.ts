@@ -27,16 +27,13 @@ import type { OrderFlowTick } from '@/store/useTradeStore';
 const RUNS = 100;
 
 /** Bounded finite price generator (Requirement: keep synthetic rows finite). */
-const price = () =>
-  fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
 
 /** Bounded finite, non-negative volume generator. */
-const volume = () =>
-  fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
+const volume = () => fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
 
 /** Bounded tick size — large enough to keep the synthetic row count small. */
-const tickSize = () =>
-  fc.double({ min: 5, max: 100, noNaN: true, noDefaultInfinity: true });
+const tickSize = () => fc.double({ min: 5, max: 100, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Well-formed candle series with strictly ascending unique timestamps
@@ -49,16 +46,14 @@ const candleSeries = (): fc.Arbitrary<ChartCandle[]> =>
       const sorted = [...times].sort((x, y) => x - y);
       return fc.tuple(
         ...sorted.map((t) =>
-          fc
-            .record({ a: price(), b: price(), c: price(), d: price() })
-            .map(({ a, b, c, d }) => ({
-              time: t,
-              open: a,
-              close: b,
-              high: Math.max(a, b, c, d),
-              low: Math.min(a, b, c, d),
-            })),
-        ),
+          fc.record({ a: price(), b: price(), c: price(), d: price() }).map(({ a, b, c, d }) => ({
+            time: t,
+            open: a,
+            close: b,
+            high: Math.max(a, b, c, d),
+            low: Math.min(a, b, c, d),
+          }))
+        )
       );
     })
     .map((arr) => arr as ChartCandle[]);
@@ -84,8 +79,8 @@ const griddedScenario = (): fc.Arbitrary<{
           d: price(),
           tick: fc.boolean(),
         }),
-        { minLength: 2, maxLength: 12 },
-      ),
+        { minLength: 2, maxLength: 12 }
+      )
     )
     .map(([interval, rows]) => {
       const candles: ChartCandle[] = rows.map((r, i) => ({
@@ -119,7 +114,7 @@ describe('Footprint reports absent order flow instead of inventing it', () => {
           expect(fp.imbalances).toHaveLength(0);
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -162,7 +157,7 @@ describe('Footprint reports absent order flow instead of inventing it', () => {
           }
         });
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

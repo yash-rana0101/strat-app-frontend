@@ -148,9 +148,7 @@ async function renderAndReadPanelText(): Promise<string> {
   const { container } = render(React.createElement(FnoSection));
   // Wait until the section settles out of its loading state (the unavailable /
   // service panel has resolved).
-  await waitFor(() =>
-    expect(screen.queryByText(/Loading F&O analytics/i)).not.toBeInTheDocument(),
-  );
+  await waitFor(() => expect(screen.queryByText(/Loading F&O analytics/i)).not.toBeInTheDocument());
   return container.textContent ?? '';
 }
 
@@ -179,9 +177,9 @@ describe('Defect A (service unreachable): distinct render state — EXPECTED FAI
           // the generic no-data panel, so no actionable service/config signal
           // is present.
           expect(hasServiceConfigSignal(text)).toBe(true);
-        },
+        }
       ),
-      { numRuns: 6 },
+      { numRuns: 6 }
     );
   });
 
@@ -191,7 +189,7 @@ describe('Defect A (service unreachable): distinct render state — EXPECTED FAI
         fc.constantFrom(
           'no chain snapshot available for NIFTY 50',
           'no chain snapshot available for NIFTY 50 / 2024-12-26',
-          'market closed',
+          'market closed'
         ),
         fc.option(fc.integer({ min: 1_600_000_000_000, max: 2_000_000_000_000 }), { nil: null }),
         async (reason, lastTs) => {
@@ -203,9 +201,9 @@ describe('Defect A (service unreachable): distinct render state — EXPECTED FAI
           // never surface the actionable service-config signal. (Holds today
           // and must keep holding — this is the distinctness counterpart.)
           expect(hasServiceConfigSignal(text)).toBe(false);
-        },
+        }
       ),
-      { numRuns: 6 },
+      { numRuns: 6 }
     );
   });
 });

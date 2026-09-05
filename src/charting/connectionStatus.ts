@@ -34,14 +34,12 @@ export interface ConnectionStatus {
  */
 export function deriveConnectionStatus(
   connectionStatus: string | null | undefined,
-  wsStatus: string | null | undefined,
+  wsStatus: string | null | undefined
 ): ConnectionStatus {
-  const isConnected =
-    connectionStatus === 'CONNECTED' || wsStatus === 'connected';
+  const isConnected = connectionStatus === 'CONNECTED' || wsStatus === 'connected';
 
   const isConnecting =
-    !isConnected &&
-    (connectionStatus === 'CONNECTING' || wsStatus === 'connecting');
+    !isConnected && (connectionStatus === 'CONNECTING' || wsStatus === 'connecting');
 
   const status: FeedConnectionStatus = isConnected
     ? 'connected'

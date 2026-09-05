@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '../../store/useAuthStore';
-import {
-  User,
-  X,
-  LogOut,
-  CreditCard,
-  Wallet,
-} from 'lucide-react';
+import { User, X, LogOut, CreditCard, Wallet } from 'lucide-react';
 
 import ProfileTab from './tabs/ProfileTab';
 import SubscriptionTab from './tabs/SubscriptionTab';
@@ -26,8 +20,18 @@ export default function UserProfileModal({ isOpen, onClose }: UserProfileModalPr
   const { user, logout, fetchProfile } = useAuthStore();
   const [activeTab, setActiveTab] = useState<ModalTab>('profile');
 
-  const { data: creditData, loading: creditLoading, error: creditError, refetch: refetchCredit } = useCredit();
-  const { data: billingData, loading: billingLoading, error: billingError, refetch: refetchBilling } = useBillingHistory();
+  const {
+    data: creditData,
+    loading: creditLoading,
+    error: creditError,
+    refetch: refetchCredit,
+  } = useCredit();
+  const {
+    data: billingData,
+    loading: billingLoading,
+    error: billingError,
+    refetch: refetchBilling,
+  } = useBillingHistory();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -52,7 +56,8 @@ export default function UserProfileModal({ isOpen, onClose }: UserProfileModalPr
     }
   };
 
-  const planName = creditData?.planName && creditData.planName !== 'none' ? creditData.planName : null;
+  const planName =
+    creditData?.planName && creditData.planName !== 'none' ? creditData.planName : null;
 
   const navItems: { key: ModalTab; label: string; icon: React.ReactNode }[] = [
     { key: 'profile', label: 'Profile', icon: <User size={15} /> },
@@ -79,7 +84,9 @@ export default function UserProfileModal({ isOpen, onClose }: UserProfileModalPr
             <div className="p-5 border-b border-border-default flex items-center gap-3">
               <div className="min-w-0">
                 <h3 className="text-sm font-bold text-text-primary truncate">{user?.name}</h3>
-                <p className={`text-[10px] font-semibold tracking-wider uppercase mt-0.5 ${planName ? 'text-emerald-400' : 'text-text-secondary'}`}>
+                <p
+                  className={`text-[10px] font-semibold tracking-wider uppercase mt-0.5 ${planName ? 'text-emerald-400' : 'text-text-secondary'}`}
+                >
                   {planName ? `${planName} Plan` : 'No Plan'}
                 </p>
               </div>
@@ -120,19 +127,25 @@ export default function UserProfileModal({ isOpen, onClose }: UserProfileModalPr
         {/* ── RIGHT DETAIL VIEW PANEL ── */}
         <main className="flex-1 flex flex-col min-h-0 bg-surface p-8 pr-14 overflow-y-auto scrollbar-none">
           {activeTab === 'profile' && (
-            <ProfileTab
-              user={user}
-              planName={planName}
-              formatDate={formatDate}
-            />
+            <ProfileTab user={user} planName={planName} formatDate={formatDate} />
           )}
 
           {activeTab === 'subscription' && (
-            <SubscriptionTab credit={creditData} loading={creditLoading} error={creditError} refetch={refetchCredit} />
+            <SubscriptionTab
+              credit={creditData}
+              loading={creditLoading}
+              error={creditError}
+              refetch={refetchCredit}
+            />
           )}
 
           {activeTab === 'billing' && (
-            <BillingTab history={billingData} loading={billingLoading} error={billingError} refetch={refetchBilling} />
+            <BillingTab
+              history={billingData}
+              loading={billingLoading}
+              error={billingError}
+              refetch={refetchBilling}
+            />
           )}
         </main>
       </div>

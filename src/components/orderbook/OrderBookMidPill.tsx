@@ -18,9 +18,14 @@ export default function OrderBookMidPill({ book }: OrderBookMidPillProps) {
       {/* Centered Theme-Adaptive Pill Badge */}
       <div className="relative z-10 inline-flex items-center gap-1.5 rounded-full bg-card dark:bg-[#373e4d] text-text-primary dark:text-white px-3.5 py-0.5 shadow-xl border border-border-default dark:border-slate-500/60 pointer-events-auto">
         <span className="text-[12px] font-black font-sans tracking-tight text-text-primary dark:text-white">
-          {book.midPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {book.midPrice.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}
         </span>
-        <span className="text-[9.5px] font-extrabold text-text-muted dark:text-zinc-400 uppercase">MID</span>
+        <span className="text-[9.5px] font-extrabold text-text-muted dark:text-zinc-400 uppercase">
+          MID
+        </span>
         <span className="text-[10px] text-text-muted dark:text-zinc-400 font-light">|</span>
         <span className="text-[11px] font-extrabold text-amber-500 dark:text-amber-400 font-sans tracking-tight">
           {book.spread.toFixed(2)} ({book.spreadPct}%)
@@ -29,4 +34,3 @@ export default function OrderBookMidPill({ book }: OrderBookMidPillProps) {
     </div>
   );
 }
-

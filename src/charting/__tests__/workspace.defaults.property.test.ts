@@ -43,35 +43,26 @@ const absentWorkspace = (): fc.Arbitrary<unknown> =>
     // Empty string.
     fc.constant(''),
     // Non-empty strings that are not valid JSON.
-    fc
-      .string({ minLength: 1 })
-      .filter((s) => {
-        try {
-          JSON.parse(s);
-          return false;
-        } catch {
-          return true;
-        }
-      }),
+    fc.string({ minLength: 1 }).filter((s) => {
+      try {
+        JSON.parse(s);
+        return false;
+      } catch {
+        return true;
+      }
+    }),
     // Valid JSON strings whose parsed value is not a plain object.
     fc
-      .oneof(
-        fc.double({ noNaN: true }),
-        fc.boolean(),
-        fc.constant(null),
-        fc.array(fc.anything()),
-      )
+      .oneof(fc.double({ noNaN: true }), fc.boolean(), fc.constant(null), fc.array(fc.anything()))
       .map((v) => JSON.stringify(v)),
     // Valid JSON object strings whose `version` is not 1.
     fc
       .record({
-        version: fc
-          .anything()
-          .filter((v) => v !== 1),
+        version: fc.anything().filter((v) => v !== 1),
         chartType: fc.constantFrom('candlestick', 'line', 'bogus'),
         drawings: fc.array(fc.anything()),
       })
-      .map((o) => JSON.stringify(o)),
+      .map((o) => JSON.stringify(o))
   );
 
 describe('Property 34: absent persisted workspace yields defaults', () => {
@@ -80,7 +71,7 @@ describe('Property 34: absent persisted workspace yields defaults', () => {
       fc.property(absentWorkspace(), (raw) => {
         expect(deserializeWorkspace(raw)).toEqual(DEFAULT_WORKSPACE);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

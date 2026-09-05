@@ -184,7 +184,9 @@ describe('P1 — useQuantStore issues no IPC for an unentitled user', () => {
     // Property form: no symbol string, and no RESEARCH mode, produces IPC.
     await fc.assert(
       fc.asyncProperty(
-        fc.constantFrom(...RUNNABLE_MODES.filter((m) => (RESEARCH_MODES as readonly string[]).includes(m))),
+        fc.constantFrom(
+          ...RUNNABLE_MODES.filter((m) => (RESEARCH_MODES as readonly string[]).includes(m))
+        ),
         fc.string({ minLength: 1, maxLength: 20 }),
         async (mode, symbol) => {
           invokeSpy.mockClear();
@@ -192,9 +194,9 @@ describe('P1 — useQuantStore issues no IPC for an unentitled user', () => {
           setSku(TERMINAL_FLAGS);
           await useQuantStore.getState().fetchDeepAnalysis(symbol, mode as 'FIND' | 'VERIFY');
           expect(invokeSpy).not.toHaveBeenCalled();
-        },
+        }
       ),
-      { numRuns: 40 },
+      { numRuns: 40 }
     );
   });
 

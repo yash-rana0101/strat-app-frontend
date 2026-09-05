@@ -55,13 +55,14 @@ export default function QuantActionBar({
   const iconSize = size === 'md' ? 12 : 11;
   const textSize = size === 'md' ? 'text-[11px]' : 'text-[10px]';
 
-  const label = !dataReady && !isAnalyzing
-    ? 'AWAITING DATA…'
-    : isAnalyzing
-      ? 'STOP ANALYSIS'
-      : mode === 'VERIFY'
-        ? 'VERIFY MY SETUP'
-        : 'FIND TRADE';
+  const label =
+    !dataReady && !isAnalyzing
+      ? 'AWAITING DATA…'
+      : isAnalyzing
+        ? 'STOP ANALYSIS'
+        : mode === 'VERIFY'
+          ? 'VERIFY MY SETUP'
+          : 'FIND TRADE';
 
   return (
     <div className="relative">
@@ -78,11 +79,12 @@ export default function QuantActionBar({
             relative flex-grow flex ${h} items-center justify-center gap-1.5
             rounded-l-md px-3 ${textSize} font-bold uppercase tracking-wider
             transition-all duration-300 ease-out border border-r-0
-            ${!dataReady && !isAnalyzing
-              ? 'bg-elevated/40 text-text-muted/50 border-border-default opacity-50 cursor-not-allowed'
-              : isAnalyzing
-                ? 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700 hover:border-rose-700 active:scale-[0.99] cursor-pointer'
-                : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 active:scale-[0.99]'
+            ${
+              !dataReady && !isAnalyzing
+                ? 'bg-elevated/40 text-text-muted/50 border-border-default opacity-50 cursor-not-allowed'
+                : isAnalyzing
+                  ? 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700 hover:border-rose-700 active:scale-[0.99] cursor-pointer'
+                  : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 active:scale-[0.99]'
             }
           `}
         >
@@ -110,9 +112,10 @@ export default function QuantActionBar({
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={`
             ${h} w-8 rounded-r-md border transition-all duration-300 flex items-center justify-center
-            ${isAnalyzing
-              ? 'bg-elevated/40 border-border-default text-text-muted/50 cursor-not-allowed'
-              : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 border-l-emerald-700/50'
+            ${
+              isAnalyzing
+                ? 'bg-elevated/40 border-border-default text-text-muted/50 cursor-not-allowed'
+                : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 border-l-emerald-700/50'
             }
           `}
         >
@@ -148,7 +151,9 @@ export default function QuantActionBar({
                     "Autonomous" reads as acting without the user (§1.1 rule 11). The mode scans
                     and proposes; it never acts. */}
                 <span>Find a Trade Setup</span>
-                <span className="text-[8px] font-normal text-text-muted">Scans breakouts &amp; quant signals</span>
+                <span className="text-[8px] font-normal text-text-muted">
+                  Scans breakouts &amp; quant signals
+                </span>
               </div>
             </button>
 
@@ -164,7 +169,9 @@ export default function QuantActionBar({
               <Shield size={13} className="text-text-secondary" />
               <div className="flex flex-col">
                 <span>Verify My Trade Idea</span>
-                <span className="text-[8px] font-normal text-text-muted">Co-pilot critical Risk Manager critique</span>
+                <span className="text-[8px] font-normal text-text-muted">
+                  Co-pilot critical Risk Manager critique
+                </span>
               </div>
             </button>
           </div>

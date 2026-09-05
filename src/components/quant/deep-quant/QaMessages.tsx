@@ -8,7 +8,15 @@ import MarkdownRenderer from './MarkdownRenderer';
 
 // Small copy-to-clipboard button with transient "copied" feedback. Used to copy
 // either a user prompt or the assistant's Q&A answer verbatim.
-function CopyButton({ text, label, className }: { text: string; label: string; className?: string }) {
+function CopyButton({
+  text,
+  label,
+  className,
+}: {
+  text: string;
+  label: string;
+  className?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (e: React.MouseEvent) => {
@@ -41,7 +49,10 @@ function CopyButton({ text, label, className }: { text: string; label: string; c
       onClick={handleCopy}
       title={copied ? 'Copied!' : label}
       aria-label={label}
-      className={className || "shrink-0 inline-flex items-center justify-center h-5 w-5 rounded-none text-text-muted hover:text-text-primary hover:bg-elevated/60 transition-colors"}
+      className={
+        className ||
+        'shrink-0 inline-flex items-center justify-center h-5 w-5 rounded-none text-text-muted hover:text-text-primary hover:bg-elevated/60 transition-colors'
+      }
     >
       {copied ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} />}
     </button>
@@ -58,9 +69,7 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
       {/* AI Avatar with official Strat AI logo */}
       <div
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border select-none overflow-hidden ${
-          msg.error
-            ? 'bg-rose-500/10 border-rose-500/20'
-            : 'bg-elevated border-border-default/60'
+          msg.error ? 'bg-rose-500/10 border-rose-500/20' : 'bg-elevated border-border-default/60'
         }`}
       >
         <img
@@ -172,10 +181,15 @@ export default function QaMessages() {
     <div className="space-y-4 mt-6 pt-4 border-t border-border-default/30">
       {qaMessages.map((msg) =>
         msg.role === 'user' ? (
-          <div key={msg.id} className="flex justify-end items-start gap-2.5 animate-fade-in font-sans w-full my-2">
+          <div
+            key={msg.id}
+            className="flex justify-end items-start gap-2.5 animate-fade-in font-sans w-full my-2"
+          >
             {/* Bubble */}
             <div className="group relative max-w-[80%] bg-elevated text-text-primary border border-border-default/60 rounded pl-3 pr-7 py-2 text-[11px] leading-relaxed shadow-sm">
-              <span className="text-text-primary break-words whitespace-pre-wrap">{msg.content}</span>
+              <span className="text-text-primary break-words whitespace-pre-wrap">
+                {msg.content}
+              </span>
               <span className="absolute right-1.5 top-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                 <CopyButton text={msg.content} label="Copy your message" />
               </span>

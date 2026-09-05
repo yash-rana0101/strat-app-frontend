@@ -78,7 +78,7 @@ export default function FnoSection() {
       cancelled = true;
       unlisten?.();
       bridgeInvoke('fno_unsubscribe').catch((err) =>
-        console.warn('[FnoSection] fno_unsubscribe failed:', err),
+        console.warn('[FnoSection] fno_unsubscribe failed:', err)
       );
     };
   }, []);
@@ -172,7 +172,7 @@ export default function FnoSection() {
   // Derive the selector option lists (pure helpers from ./selectors).
   const underlyings = useMemo(
     () => deriveUnderlyingOptions(chains, fnoUnderlying),
-    [chains, fnoUnderlying],
+    [chains, fnoUnderlying]
   );
 
   // Seed the underlying on a cold start, from a chain that actually exists.
@@ -208,7 +208,7 @@ export default function FnoSection() {
 
   const expiries = useMemo(
     () => deriveExpiryOptions(chains, fnoUnderlying),
-    [chains, fnoUnderlying],
+    [chains, fnoUnderlying]
   );
 
   // Header status label — from active viewState or cached fallback.
@@ -232,7 +232,8 @@ export default function FnoSection() {
   const effectiveView = isFallback ? lastGoodViewState.current! : renderState;
 
   const statusLabel = useMemo(() => {
-    if (!effectiveView || (effectiveView.kind !== 'ready' && effectiveView.kind !== 'partial')) return null;
+    if (!effectiveView || (effectiveView.kind !== 'ready' && effectiveView.kind !== 'partial'))
+      return null;
     const ts = formatSnapshotTs(effectiveView.snapshotTs);
     const closed = effectiveView.marketStatus === 'closed';
     return { ts, closed };
@@ -279,10 +280,7 @@ export default function FnoSection() {
       {isFallback &&
         effectiveView &&
         (effectiveView.kind === 'ready' || effectiveView.kind === 'partial') && (
-          <HistoricalDataBanner
-            snapshotTs={effectiveView.snapshotTs}
-            reason={fallbackReason}
-          />
+          <HistoricalDataBanner snapshotTs={effectiveView.snapshotTs} reason={fallbackReason} />
         )}
 
       {/* Body */}

@@ -3,7 +3,7 @@ import type { ReasoningStep } from '../../../store/useQuantStore';
 
 export function useAgentStepDetail(
   initialSelectedId: string | null,
-  reasoningSteps: ReasoningStep[],
+  reasoningSteps: ReasoningStep[]
 ) {
   const [selectedId, setSelectedId] = React.useState<string | null>(initialSelectedId);
   const [syncedInitial, setSyncedInitial] = React.useState(initialSelectedId);
@@ -35,4 +35,3 @@ export function useAgentStepDetail(
     selectedResult,
   };
 }
-

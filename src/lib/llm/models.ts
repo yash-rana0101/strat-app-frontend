@@ -14,9 +14,7 @@ export interface ModelProviderGroup {
 export const MODEL_PROVIDERS_OPENROUTER: ModelProviderGroup[] = [
   {
     provider: 'Default',
-    models: [
-      { id: '', label: 'Auto' },
-    ],
+    models: [{ id: '', label: 'Auto' }],
   },
   {
     provider: 'Anthropic (Claude)',
@@ -72,9 +70,7 @@ export const MODEL_PROVIDERS_OPENROUTER: ModelProviderGroup[] = [
 export const MODEL_PROVIDERS_OMNIROUTE: ModelProviderGroup[] = [
   {
     provider: 'Default',
-    models: [
-      { id: '', label: 'Auto (Claude Sonnet 4.6)' },
-    ],
+    models: [{ id: '', label: 'Auto (Claude Sonnet 4.6)' }],
   },
   {
     provider: 'Anthropic (Claude)',
@@ -88,7 +84,11 @@ export const MODEL_PROVIDERS_OMNIROUTE: ModelProviderGroup[] = [
   {
     provider: 'Google (Gemini)',
     models: [
-      { id: 'antigravity/gemini-3.7-flash-high', label: 'Gemini 3.7 Flash (High)', recommended: true },
+      {
+        id: 'antigravity/gemini-3.7-flash-high',
+        label: 'Gemini 3.7 Flash (High)',
+        recommended: true,
+      },
       { id: 'antigravity/gemini-3.7-flash-medium', label: 'Gemini 3.7 Flash (Medium)' },
       { id: 'antigravity/gemini-3.7-flash-low', label: 'Gemini 3.7 Flash (Low)' },
       { id: 'antigravity/gemini-3.7-flash-tiered', label: 'Gemini 3.7 Flash (Tiered)' },
@@ -115,4 +115,3 @@ export const MODEL_SELECTION_LOCKED = false;
 // NEXT_PUBLIC_LLM_GATEWAY=openrouter.
 export const MODEL_PROVIDERS: ModelProviderGroup[] =
   LLM_GATEWAY === 'openrouter' ? MODEL_PROVIDERS_OPENROUTER : MODEL_PROVIDERS_OMNIROUTE;
-

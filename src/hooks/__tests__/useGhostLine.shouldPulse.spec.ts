@@ -27,51 +27,33 @@ describe('shouldPulseOnRangeChange', () => {
     // The window tracks the latest bar: `from` and `to` both advance by the
     // same delta with the width unchanged — exactly what TradingView does on
     // a new bar while the user is parked at the right edge.
-    expect(
-      shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 110, to: 210 }),
-    ).toBe(false);
+    expect(shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 110, to: 210 })).toBe(false);
     // Repeated auto-scrolls also stay silent.
-    expect(
-      shouldPulseOnRangeChange({ from: 110, to: 210 }, { from: 120, to: 220 }),
-    ).toBe(false);
+    expect(shouldPulseOnRangeChange({ from: 110, to: 210 }, { from: 120, to: 220 })).toBe(false);
     // Sliding left (e.g. loading older history) is the same constant-width
     // move, just negative — also not a user zoom.
-    expect(
-      shouldPulseOnRangeChange({ from: 110, to: 210 }, { from: 100, to: 200 }),
-    ).toBe(false);
+    expect(shouldPulseOnRangeChange({ from: 110, to: 210 }, { from: 100, to: 200 })).toBe(false);
   });
 
   it('does NOT pulse on a constant-width window slide (pan or auto-scroll)', () => {
     // When the width is unchanged the projection length is unchanged, so we
     // never re-project — this is also the signature of programmatic auto-scroll
     // on a new bar (both edges slide forward by one bar). Slide right:
-    expect(
-      shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 120, to: 220 }),
-    ).toBe(false);
+    expect(shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 120, to: 220 })).toBe(false);
     // Slide left:
-    expect(
-      shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 90, to: 190 }),
-    ).toBe(false);
+    expect(shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 90, to: 190 })).toBe(false);
   });
 
   it('pulses when the range width changes (user zoom)', () => {
     // `from` unchanged, width grew (zoomed out).
-    expect(
-      shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 100, to: 250 }),
-    ).toBe(true);
+    expect(shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 100, to: 250 })).toBe(true);
     // `from` unchanged, width shrank (zoomed in).
-    expect(
-      shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 100, to: 150 }),
-    ).toBe(true);
+    expect(shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 100, to: 150 })).toBe(true);
     // Both edges moved AND width changed (zoom + pan) — still a user zoom.
-    expect(
-      shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 120, to: 250 }),
-    ).toBe(true);
+    expect(shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 120, to: 250 })).toBe(true);
   });
 
   it('does not pulse when nothing moved (width unchanged, edges identical)', () => {
-    expect(
-      shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 100, to: 200 }),
-    ).toBe(false);
+    expect(shouldPulseOnRangeChange({ from: 100, to: 200 }, { from: 100, to: 200 })).toBe(false);
   });
 });

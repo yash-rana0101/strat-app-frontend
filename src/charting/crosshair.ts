@@ -43,10 +43,7 @@ function clampPrecision(precision: number): number {
  * number (`null`, `undefined`, `NaN`, `±Infinity`) — the building block for the
  * warm-up / out-of-range placeholder behavior (Requirements 10.3, 10.8).
  */
-export function formatValue(
-  value: number | null | undefined,
-  precision: number,
-): string {
+export function formatValue(value: number | null | undefined, precision: number): string {
   if (value === null || value === undefined || !Number.isFinite(value)) {
     return NO_VALUE;
   }
@@ -78,7 +75,7 @@ export const EMPTY_OHLC_READOUT: OhlcReadout = {
  */
 export function findCandleAt(
   candles: ChartCandle[],
-  time: number | null | undefined,
+  time: number | null | undefined
 ): ChartCandle | undefined {
   if (time === null || time === undefined || !Number.isFinite(time)) {
     return undefined;
@@ -99,7 +96,7 @@ export function findCandleAt(
 export function formatOhlcAt(
   candles: ChartCandle[],
   time: number | null | undefined,
-  precision: number,
+  precision: number
 ): OhlcReadout {
   const candle = findCandleAt(candles, time);
   if (!candle) return { ...EMPTY_OHLC_READOUT };
@@ -121,7 +118,7 @@ export function formatOhlcAt(
  */
 export function indicatorPointAt(
   points: LinePoint[],
-  time: number | null | undefined,
+  time: number | null | undefined
 ): number | undefined {
   if (time === null || time === undefined || !Number.isFinite(time)) {
     return undefined;
@@ -197,9 +194,7 @@ export function buildCrosshairReadout(args: {
 }): CrosshairReadout {
   const { time, candles, indicators, precision } = args;
   const normalizedTime =
-    time === null || time === undefined || !Number.isFinite(time)
-      ? null
-      : time;
+    time === null || time === undefined || !Number.isFinite(time) ? null : time;
 
   const candle = findCandleAt(candles, normalizedTime);
 

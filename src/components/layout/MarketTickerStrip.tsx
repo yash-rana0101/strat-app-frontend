@@ -23,7 +23,9 @@ function TickerItem({ indicator }: { indicator: MacroIndicator }) {
       <span className="text-[11px] font-mono font-bold text-text-primary tabular-nums">
         {indicator.value}
       </span>
-      <span className={`flex items-center gap-0.5 text-[10px] font-mono font-semibold ${colorClass}`}>
+      <span
+        className={`flex items-center gap-0.5 text-[10px] font-mono font-semibold ${colorClass}`}
+      >
         <Icon size={11} />
         {indicator.change}
       </span>
@@ -48,7 +50,7 @@ export default function MarketTickerStrip() {
     indicators.map((ind, indIdx) => ({
       ...ind,
       key: `${ind.label}-c${copyIdx}-i${indIdx}`,
-    })),
+    }))
   );
 
   return (

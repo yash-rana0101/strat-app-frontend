@@ -33,7 +33,7 @@ function getBars(fromMs: number, toMs: number) {
       '1' as ResolutionString,
       { from: fromMs / 1000, to: toMs / 1000, countBack: 0, firstDataRequest: true },
       (bars) => resolve(bars),
-      reject,
+      reject
     );
   });
 }
@@ -49,7 +49,14 @@ describe('getBars over a persisted scroll-back cache', () => {
     } as unknown as Response);
 
     // Sixty 1m bars from a previous session, as `schedulePersist` writes them.
-    const rows = Array.from({ length: 60 }, (_, i) => [YESTERDAY_0400 + i * MIN, 100, 101, 99, 100, 1]);
+    const rows = Array.from({ length: 60 }, (_, i) => [
+      YESTERDAY_0400 + i * MIN,
+      100,
+      101,
+      99,
+      100,
+      1,
+    ]);
     localStorage.setItem('stratai.bars.TCS::1m', JSON.stringify(rows));
   });
 

@@ -94,7 +94,7 @@ describe('routing', () => {
     // the entire run rather than one frame.
     const store = useSessionStore.getState();
     const routed = store.applyFrame(
-      frame('RUN_STARTED', THREAD_A, { session_id: A, run_id: 'run_1' }),
+      frame('RUN_STARTED', THREAD_A, { session_id: A, run_id: 'run_1' })
     );
     expect(routed).toBe(A);
     const after = useSessionStore.getState();
@@ -143,7 +143,10 @@ describe('routing', () => {
     // every later frame whose thread id was missing.
     const store = useSessionStore.getState();
 
-    const routed = store.applyFrame({ event: 'RUN_FINISHED', data: { session_id: A, status: 'completed' } });
+    const routed = store.applyFrame({
+      event: 'RUN_FINISHED',
+      data: { session_id: A, status: 'completed' },
+    });
 
     expect(routed).toBe(A);
     expect(useSessionStore.getState().threadToSession['']).toBeUndefined();
@@ -238,9 +241,11 @@ describe('isolation between concurrent sessions', () => {
 
     // `activateSymbolSession` had to copy the flat mirror back into the archive on every
     // switch, and three actions bypassed that copy. There is nothing to copy here.
-    expect(selectReasoningSteps(useSessionStore.getState()).map((s) => s.content).join('')).toBe(
-      'A content',
-    );
+    expect(
+      selectReasoningSteps(useSessionStore.getState())
+        .map((s) => s.content)
+        .join('')
+    ).toBe('A content');
   });
 
   it("A's terminal event does not finish B", () => {
@@ -270,11 +275,13 @@ describe('isolation between concurrent sessions', () => {
 
   it("A's decision does not appear in B", () => {
     const store = useSessionStore.getState();
-    store.applyFrame(frame('DECISION', THREAD_A, {
-      action: 'BUY',
-      conviction_score: 78,
-      execution_levels: { entry: 2470, stop_loss: 2435, take_profit: 2550 },
-    }));
+    store.applyFrame(
+      frame('DECISION', THREAD_A, {
+        action: 'BUY',
+        conviction_score: 78,
+        execution_levels: { entry: 2470, stop_loss: 2435, take_profit: 2550 },
+      })
+    );
 
     const after = useSessionStore.getState();
     expect(after.sessions[A].finalTrade?.action).toBe('BUY');
@@ -331,7 +338,7 @@ describe('Q&A isolation', () => {
     expect(after.sessions[B].qaStatus).toBe('streaming');
   });
 
-  it("a Q&A answer for A does not append to B", () => {
+  it('a Q&A answer for A does not append to B', () => {
     const store = useSessionStore.getState();
     store.upsertSession(A, {
       qaMessages: [{ id: 'q1', role: 'user', content: 'why that stop?' }],
@@ -532,7 +539,11 @@ describe('selectors', () => {
     store.applyFrame(frame('REASONING', THREAD_A, { content: 'live' }));
 
     const state = useSessionStore.getState();
-    expect(selectReasoningSteps(state).map((s) => s.content).join('')).toBe('live');
+    expect(
+      selectReasoningSteps(state)
+        .map((s) => s.content)
+        .join('')
+    ).toBe('live');
     expect(selectQaMessages(state)).toEqual([]);
     expect(selectCurrentThreadId(state)).toBe(THREAD_A);
   });

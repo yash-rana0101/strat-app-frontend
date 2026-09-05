@@ -33,9 +33,7 @@ export default function ErrorState({
       </div>
       <div className="text-center">
         <p className="text-[11px] font-semibold text-rose-400">Analysis Failed</p>
-        <p className="text-[9px] text-text-muted/60 mt-1 max-w-[200px] leading-relaxed">
-          {error}
-        </p>
+        <p className="text-[9px] text-text-muted/60 mt-1 max-w-[200px] leading-relaxed">{error}</p>
       </div>
       <button
         type="button"

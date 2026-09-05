@@ -83,10 +83,16 @@ export default function ConnectionLost() {
           {/* Internet */}
           <div className="flex flex-col items-center rounded-xl border border-border-default bg-surface p-3">
             <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-text-muted">
-              {isOnline ? <Wifi size={11} className="text-primary" /> : <WifiOff size={11} className="text-rose-400" />}
+              {isOnline ? (
+                <Wifi size={11} className="text-primary" />
+              ) : (
+                <WifiOff size={11} className="text-rose-400" />
+              )}
               Internet
             </div>
-            <span className={`text-xs font-extrabold ${isOnline ? 'text-primary' : 'text-rose-400 animate-pulse'}`}>
+            <span
+              className={`text-xs font-extrabold ${isOnline ? 'text-primary' : 'text-rose-400 animate-pulse'}`}
+            >
               {isOnline ? 'ONLINE' : 'OFFLINE'}
             </span>
           </div>
@@ -96,13 +102,23 @@ export default function ConnectionLost() {
             <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-text-muted">
               <Server
                 size={11}
-                className={serverConnected ? 'text-primary' : serverConnecting ? 'text-amber-400 animate-pulse' : 'text-rose-400'}
+                className={
+                  serverConnected
+                    ? 'text-primary'
+                    : serverConnecting
+                      ? 'text-amber-400 animate-pulse'
+                      : 'text-rose-400'
+                }
               />
               Server
             </div>
             <span
               className={`text-xs font-extrabold ${
-                serverConnected ? 'text-primary' : serverConnecting ? 'text-amber-400 animate-pulse' : 'text-rose-400'
+                serverConnected
+                  ? 'text-primary'
+                  : serverConnecting
+                    ? 'text-amber-400 animate-pulse'
+                    : 'text-rose-400'
               }`}
             >
               {serverConnected ? 'CONNECTED' : serverConnecting ? 'CONNECTING…' : 'OFFLINE'}

@@ -43,21 +43,16 @@ const queryArb: fc.Arbitrary<string> = (() => {
     .constantFrom(...names)
     .chain((name) =>
       fc
-        .tuple(
-          fc.nat({ max: name.length }),
-          fc.nat({ max: name.length }),
-        )
-        .map(([a, b]) => name.slice(Math.min(a, b), Math.max(a, b))),
+        .tuple(fc.nat({ max: name.length }), fc.nat({ max: name.length }))
+        .map(([a, b]) => name.slice(Math.min(a, b), Math.max(a, b)))
     )
     .chain((sub) =>
-      fc
-        .array(fc.boolean(), { minLength: sub.length, maxLength: sub.length })
-        .map((flips) =>
-          sub
-            .split('')
-            .map((ch, i) => (flips[i] ? ch.toUpperCase() : ch.toLowerCase()))
-            .join(''),
-        ),
+      fc.array(fc.boolean(), { minLength: sub.length, maxLength: sub.length }).map((flips) =>
+        sub
+          .split('')
+          .map((ch, i) => (flips[i] ? ch.toUpperCase() : ch.toLowerCase()))
+          .join('')
+      )
     );
 
   const whitespace = fc
@@ -67,7 +62,7 @@ const queryArb: fc.Arbitrary<string> = (() => {
   return fc.oneof(
     { weight: 5, arbitrary: nameSubstring },
     { weight: 3, arbitrary: fc.string() },
-    { weight: 2, arbitrary: whitespace },
+    { weight: 2, arbitrary: whitespace }
   );
 })();
 
@@ -94,12 +89,12 @@ describe('Property 9: indicator search returns exactly the case-insensitive name
           } else {
             expect(
               present,
-              `"${def.id}" presence (${present}) must match name-contains "${query}" (${nameContains})`,
+              `"${def.id}" presence (${present}) must match name-contains "${query}" (${nameContains})`
             ).toBe(nameContains);
           }
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 

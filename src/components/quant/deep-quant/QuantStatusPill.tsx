@@ -57,7 +57,10 @@ export default function QuantStatusPill({
             aria-hidden="true"
           />
         )}
-        <span className={`relative inline-flex h-1.5 w-1.5 rounded-full ${style.dot}`} aria-hidden="true" />
+        <span
+          className={`relative inline-flex h-1.5 w-1.5 rounded-full ${style.dot}`}
+          aria-hidden="true"
+        />
       </span>
       {style.label}
     </span>

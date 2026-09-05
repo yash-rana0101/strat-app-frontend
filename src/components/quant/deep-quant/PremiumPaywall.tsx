@@ -33,7 +33,10 @@ export default function PremiumPaywall({ onUpgradeClick }: PremiumPaywallProps) 
       className="grow flex flex-col items-center justify-center gap-6 p-6 w-full h-full min-h-112.5 max-w-md mx-auto text-center"
     >
       {/* Large SVG Illustration */}
-      <motion.div variants={fadeInUp} className="w-72 h-40 flex items-center justify-center shrink-0">
+      <motion.div
+        variants={fadeInUp}
+        className="w-72 h-40 flex items-center justify-center shrink-0"
+      >
         <SubscriptionIcon className="w-full h-full object-contain" />
       </motion.div>
 
@@ -46,7 +49,8 @@ export default function PremiumPaywall({ onUpgradeClick }: PremiumPaywallProps) 
           Subscription Access Required
         </h2>
         <p className="text-xs text-text-secondary leading-relaxed">
-          You don&apos;t have an active subscription that includes this feature. Subscribe from the dashboard to unlock it.
+          You don&apos;t have an active subscription that includes this feature. Subscribe from the
+          dashboard to unlock it.
         </p>
       </motion.div>
 
@@ -77,9 +81,7 @@ export default function PremiumPaywall({ onUpgradeClick }: PremiumPaywallProps) 
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-none border border-emerald-500/20 bg-emerald-500/10 text-emerald-500 dark:text-emerald-400">
               <Icon size={12} />
             </span>
-            <span className="text-xs font-medium text-text-secondary leading-snug">
-              {label}
-            </span>
+            <span className="text-xs font-medium text-text-secondary leading-snug">{label}</span>
           </div>
         ))}
       </motion.div>

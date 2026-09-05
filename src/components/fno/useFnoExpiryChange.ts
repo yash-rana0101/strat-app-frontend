@@ -66,6 +66,6 @@ export function useFnoExpiryChange(): (expiry: string) => void {
         })
         .catch((err) => console.warn('[useFnoExpiryChange] resolve failed:', err));
     },
-    [fnoUnderlying, selectedSymbol, setFnoExpiry, setSelectedSymbol],
+    [fnoUnderlying, selectedSymbol, setFnoExpiry, setSelectedSymbol]
   );
 }

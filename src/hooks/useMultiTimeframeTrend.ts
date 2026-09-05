@@ -25,10 +25,10 @@ export interface TimeframeTrend {
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const TIMEFRAME_CONFIGS = [
-  { label: '1H',  ms: 60 * 60_000 },
-  { label: '4H',  ms: 4 * 60 * 60_000 },
-  { label: '1D',  ms: 24 * 60 * 60_000 },
-  { label: '1W',  ms: 7 * 24 * 60 * 60_000 },
+  { label: '1H', ms: 60 * 60_000 },
+  { label: '4H', ms: 4 * 60 * 60_000 },
+  { label: '1D', ms: 24 * 60 * 60_000 },
+  { label: '1W', ms: 7 * 24 * 60 * 60_000 },
 ] as const;
 
 // ── EMA Calculation (identical to AlphaPredictiveChart's engine) ─────────────
@@ -82,7 +82,7 @@ function calculateRSI(closes: number[], period: number = 14): number | null {
 
   if (avgLoss === 0) return 100;
   const rs = avgGain / avgLoss;
-  return 100 - (100 / (1 + rs));
+  return 100 - 100 / (1 + rs);
 }
 
 // ── Candle Aggregation (same bucket logic as AlphaPredictiveChart) ────────────
@@ -90,7 +90,7 @@ function calculateRSI(closes: number[], period: number = 14): number | null {
 function aggregateToTimeframe(
   candles: OhlcCandle[],
   intervalMs: number,
-  symbol: string,
+  symbol: string
 ): { opens: number[]; closes: number[]; highs: number[]; lows: number[] } {
   const filtered = symbol
     ? candles.filter((c) => c.symbol.toUpperCase() === symbol.toUpperCase())
@@ -190,16 +190,13 @@ function computeTrend(closes: number[]): { bias: TrendBias; strength: number } {
   const avgScore = score / signals;
 
   // Map to bias
-  const bias: TrendBias =
-    avgScore > 15 ? 'BULLISH' : avgScore < -15 ? 'BEARISH' : 'NEUTRAL';
+  const bias: TrendBias = avgScore > 15 ? 'BULLISH' : avgScore < -15 ? 'BEARISH' : 'NEUTRAL';
 
   // Map to 0-100 strength (50 = neutral center)
   const strength = Math.round(Math.max(0, Math.min(100, 50 + avgScore / 2)));
 
   return { bias, strength };
 }
-
-
 
 // ── Hook ─────────────────────────────────────────────────────────────────────
 
@@ -220,7 +217,7 @@ export function useMultiTimeframeTrend(): TimeframeTrend[] {
     // Gather all historical candles for this symbol across all cache entries
     const symPrefix = `${activeSymbol.toUpperCase()}::`;
     let allCandles: OhlcCandle[] = [];
-    
+
     for (const [key, cachedCandles] of Object.entries(historicalCache)) {
       if (key.startsWith(symPrefix) && cachedCandles && cachedCandles.length > 0) {
         allCandles = [...allCandles, ...cachedCandles];
@@ -239,7 +236,9 @@ export function useMultiTimeframeTrend(): TimeframeTrend[] {
       }
     }
 
-    const merged = Array.from(uniqueMap.values()).sort((a, b) => a.start_timestamp_ms - b.start_timestamp_ms);
+    const merged = Array.from(uniqueMap.values()).sort(
+      (a, b) => a.start_timestamp_ms - b.start_timestamp_ms
+    );
 
     const finalCandles = merged;
 

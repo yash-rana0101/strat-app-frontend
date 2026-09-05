@@ -44,8 +44,7 @@ const pxPerPriceArb = () =>
   fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
 
 /** Non-negative snap threshold in pixels. */
-const thresholdArb = () =>
-  fc.double({ min: 0, max: 1_000, noNaN: true, noDefaultInfinity: true });
+const thresholdArb = () => fc.double({ min: 0, max: 1_000, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Reference computation of the nearest OHLC value and its pixel distance,
@@ -88,9 +87,9 @@ describe('Property 14: magnet snaps to the nearest OHLC within threshold, else t
             // Outside threshold: anchor stays at the exact pointer price.
             expect(result.price).toBe(pointer.price);
           }
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -107,7 +106,7 @@ describe('Property 14: magnet snaps to the nearest OHLC within threshold, else t
           expect(result.price).toBe(pointer.price);
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

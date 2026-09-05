@@ -41,7 +41,8 @@ function NoSubscriptionCard({ feature }: { feature: FeatureId }) {
           {label} requires a subscription
         </p>
         <p className="text-[11px] text-text-secondary mt-1 max-w-[260px]">
-          You don&apos;t have an active subscription that includes this feature. Subscribe from the dashboard to unlock it.
+          You don&apos;t have an active subscription that includes this feature. Subscribe from the
+          dashboard to unlock it.
         </p>
       </div>
       <button
@@ -62,11 +63,7 @@ export default function FeatureGate({ feature, children, fallback, inline }: Fea
 
   const content = fallback ?? <NoSubscriptionCard feature={feature} />;
   if (inline) return <>{content}</>;
-  return (
-    <div className="flex h-full w-full items-center justify-center">
-      {content}
-    </div>
-  );
+  return <div className="flex h-full w-full items-center justify-center">{content}</div>;
 }
 
 export function isFeatureStrictMode(): boolean {
@@ -115,9 +112,7 @@ function ResearchLockedCard() {
         <p className="text-xs font-bold uppercase tracking-wider text-text-primary">
           Research plan required
         </p>
-        <p className="text-[11px] text-text-secondary mt-1 max-w-70">
-          {RESEARCH_LOCKED_MESSAGE}
-        </p>
+        <p className="text-[11px] text-text-secondary mt-1 max-w-70">{RESEARCH_LOCKED_MESSAGE}</p>
       </div>
       <button
         onClick={() => openExternalUrl(dashboardUrl())}

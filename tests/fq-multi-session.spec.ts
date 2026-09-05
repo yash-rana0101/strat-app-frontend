@@ -63,9 +63,9 @@ async function signIn(page: Page, token = ALICE) {
 
 /** Every visible session tab, by its accessible name. */
 async function tabNames(page: Page): Promise<string[]> {
-  return page.getByRole('tab').evaluateAll((els) =>
-    els.map((el) => el.getAttribute('aria-label') ?? el.textContent ?? ''),
-  );
+  return page
+    .getByRole('tab')
+    .evaluateAll((els) => els.map((el) => el.getAttribute('aria-label') ?? el.textContent ?? ''));
 }
 
 /**
@@ -113,7 +113,7 @@ async function runFind(page: Page) {
   await expect(
     button,
     'the FIND button never enabled: no candles in historicalCache, so `dataReady` is false. Check that ' +
-      '`stubCandles` still matches the query in useHistoricalData.getQueries().',
+      '`stubCandles` still matches the query in useHistoricalData.getQueries().'
   ).toBeEnabled({ timeout: 20_000 });
   await button.click();
 }
@@ -173,7 +173,9 @@ test.describe('Find Quant multi-session workspace', () => {
     // `attach` puts it in the HTML report and the trace, where it survives a truncated terminal.
     const body = agentCalls.length ? agentCalls.join('\n') : '(no /api/deepquant/* calls observed)';
     await test.info().attach('agent-calls', { body, contentType: 'text/plain' });
-    console.log(`[e2e] agent calls (${agentCalls.length}):\n  ${agentCalls.join('\n  ') || '(none)'}`);
+    console.log(
+      `[e2e] agent calls (${agentCalls.length}):\n  ${agentCalls.join('\n  ') || '(none)'}`
+    );
     agentCalls.length = 0;
   });
 
@@ -290,7 +292,10 @@ test.describe('Find Quant multi-session workspace', () => {
     const history = page.getByRole('list', { name: 'Session history' });
     await expect(history).toBeVisible();
 
-    await history.getByRole('button', { name: /^Archive/ }).first().click();
+    await history
+      .getByRole('button', { name: /^Archive/ })
+      .first()
+      .click();
     await expect(page.getByRole('tab')).toHaveCount(before + 1);
   });
 
@@ -306,9 +311,12 @@ test.describe('Find Quant multi-session workspace', () => {
     await expect(page.getByRole('tab')).toHaveCount(startCount + 1);
 
     // Read the id straight off the tab, which is the only place the client holds it.
-    const sessionId = await page.getByRole('tab').last().evaluate((el) => {
-      return el.closest('[data-session-id]')?.getAttribute('data-session-id') ?? '';
-    });
+    const sessionId = await page
+      .getByRole('tab')
+      .last()
+      .evaluate((el) => {
+        return el.closest('[data-session-id]')?.getAttribute('data-session-id') ?? '';
+      });
     expect(sessionId).not.toBe('');
 
     // Become Bob.
@@ -332,9 +340,12 @@ test.describe('Find Quant multi-session workspace', () => {
     await runFind(page);
     await waitForComplete(page);
 
-    const sessionId = await page.getByRole('tab').last().evaluate((el) => {
-      return el.closest('[data-session-id]')?.getAttribute('data-session-id') ?? '';
-    });
+    const sessionId = await page
+      .getByRole('tab')
+      .last()
+      .evaluate((el) => {
+        return el.closest('[data-session-id]')?.getAttribute('data-session-id') ?? '';
+      });
 
     // A brand-new context: no store, no cache, nothing but the URL and the cookie.
     await page.goto(`/find-trade/session/${sessionId}`);

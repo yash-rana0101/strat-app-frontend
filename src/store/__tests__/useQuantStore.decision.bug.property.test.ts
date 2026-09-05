@@ -102,9 +102,9 @@ describe('R1 DECISION reducer: HOLD must not fabricate conviction or drop action
 
           // R1.4 — a HOLD carries no synthesized execution levels.
           expect(plan?.execution_levels).toBeUndefined();
-        },
+        }
       ),
-      { numRuns: 100 },
+      { numRuns: 100 }
     );
   });
 

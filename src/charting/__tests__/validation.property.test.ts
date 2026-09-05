@@ -49,7 +49,7 @@ function inRangeArb(range: NumericRange): fc.Arbitrary<number> {
 
 // A range paired with a value that is valid for it.
 const rangeWithValidValue = rangeArb.chain((range) =>
-  inRangeArb(range).map((value) => ({ range, value })),
+  inRangeArb(range).map((value) => ({ range, value }))
 );
 
 // A range paired with a value strictly outside it (below min or above max).
@@ -63,7 +63,7 @@ const rangeWithOutOfRange = rangeArb.chain((range) =>
       const delta = range.integer ? Math.max(1, Math.round(offset)) : offset;
       const value = below ? range.min - delta : range.max + delta;
       return { range, value };
-    }),
+    })
 );
 
 // Values that are not numbers at all.
@@ -74,11 +74,15 @@ const nonNumberArb: fc.Arbitrary<unknown> = fc.oneof(
   fc.constant(undefined),
   fc.object(),
   fc.array(fc.integer()),
-  fc.bigInt(),
+  fc.bigInt()
 );
 
 // Numeric values that are not finite.
-const nonFiniteArb = fc.constantFrom(Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY);
+const nonFiniteArb = fc.constantFrom(
+  Number.NaN,
+  Number.POSITIVE_INFINITY,
+  Number.NEGATIVE_INFINITY
+);
 
 describe('Property 3: invalid parameters are rejected and last valid values are retained', () => {
   it('accepts any in-range value of the correct type and returns it unchanged', () => {
@@ -88,7 +92,7 @@ describe('Property 3: invalid parameters are rejected and last valid values are 
         expect(result.ok).toBe(true);
         if (result.ok) expect(result.value).toBe(value);
       }),
-      RUNS,
+      RUNS
     );
   });
 
@@ -99,7 +103,7 @@ describe('Property 3: invalid parameters are rejected and last valid values are 
         expect(result.ok).toBe(false);
         if (!result.ok) expect(result.errorParam).toBe(name);
       }),
-      RUNS,
+      RUNS
     );
   });
 
@@ -110,7 +114,7 @@ describe('Property 3: invalid parameters are rejected and last valid values are 
         expect(result.ok).toBe(false);
         if (!result.ok) expect(result.errorParam).toBe(name);
       }),
-      RUNS,
+      RUNS
     );
   });
 
@@ -121,7 +125,7 @@ describe('Property 3: invalid parameters are rejected and last valid values are 
         expect(result.ok).toBe(false);
         if (!result.ok) expect(result.errorParam).toBe(name);
       }),
-      RUNS,
+      RUNS
     );
   });
 
@@ -135,7 +139,7 @@ describe('Property 3: invalid parameters are rejected and last valid values are 
         expect(result.ok).toBe(false);
         if (!result.ok) expect(result.errorParam).toBe(name);
       }),
-      RUNS,
+      RUNS
     );
   });
 
@@ -143,9 +147,9 @@ describe('Property 3: invalid parameters are rejected and last valid values are 
   const specEntriesArb = fc.uniqueArray(
     fc.tuple(
       paramNameArb,
-      rangeArb.chain((range) => inRangeArb(range).map((value) => ({ range, value }))),
+      rangeArb.chain((range) => inRangeArb(range).map((value) => ({ range, value })))
     ),
-    { minLength: 1, maxLength: 6, selector: ([name]) => name },
+    { minLength: 1, maxLength: 6, selector: ([name]) => name }
   );
 
   it('validateParams accepts a fully valid bag and returns only the spec keys', () => {
@@ -162,45 +166,40 @@ describe('Property 3: invalid parameters are rejected and last valid values are 
         const result = validateParams(params, spec);
         expect(result).toEqual({ ok: true, value: expected });
       }),
-      RUNS,
+      RUNS
     );
   });
 
   it('validateParams rejects an invalid update, names the parameter, and retains the last valid set', () => {
     const invalidValueArb = fc.oneof(nonNumberArb, nonFiniteArb);
     fc.assert(
-      fc.property(
-        specEntriesArb,
-        fc.nat(),
-        invalidValueArb,
-        (entries, idxSeed, invalidValue) => {
-          const spec: Record<string, NumericRange> = {};
-          const lastValid: Record<string, number> = {};
-          for (const [name, { range, value }] of entries) {
-            spec[name] = range;
-            lastValid[name] = value;
-          }
+      fc.property(specEntriesArb, fc.nat(), invalidValueArb, (entries, idxSeed, invalidValue) => {
+        const spec: Record<string, NumericRange> = {};
+        const lastValid: Record<string, number> = {};
+        for (const [name, { range, value }] of entries) {
+          spec[name] = range;
+          lastValid[name] = value;
+        }
 
-          const names = Object.keys(spec);
-          const target = names[idxSeed % names.length];
+        const names = Object.keys(spec);
+        const target = names[idxSeed % names.length];
 
-          // The trader attempts to update one parameter to an invalid value.
-          const attempted: Record<string, unknown> = { ...lastValid, [target]: invalidValue };
-          const snapshot = { ...attempted };
+        // The trader attempts to update one parameter to an invalid value.
+        const attempted: Record<string, unknown> = { ...lastValid, [target]: invalidValue };
+        const snapshot = { ...attempted };
 
-          const result = validateParams(attempted, spec);
+        const result = validateParams(attempted, spec);
 
-          // Rejected, identifying exactly the offending parameter (it is the
-          // only invalid one, so the first short-circuit failure is on it).
-          expect(result.ok).toBe(false);
-          if (!result.ok) expect(result.errorParam).toBe(target);
+        // Rejected, identifying exactly the offending parameter (it is the
+        // only invalid one, so the first short-circuit failure is on it).
+        expect(result.ok).toBe(false);
+        if (!result.ok) expect(result.errorParam).toBe(target);
 
-          // The caller would keep `lastValid` since the update was rejected;
-          // validation itself is pure and must not mutate the attempted bag.
-          expect(attempted).toEqual(snapshot);
-        },
-      ),
-      RUNS,
+        // The caller would keep `lastValid` since the update was rejected;
+        // validation itself is pure and must not mutate the attempted bag.
+        expect(attempted).toEqual(snapshot);
+      }),
+      RUNS
     );
   });
 });

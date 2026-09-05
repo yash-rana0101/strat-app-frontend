@@ -27,8 +27,21 @@ const fullScan = {
   momentum_state: 'OVERBOUGHT',
   volatility_state: 'EXPANDING',
   volume_flow_state: 'ACCUMULATION',
-  patterns: [{ name: 'Hammer', bias: 'BULLISH', candle_index: 3, time: 1, open: 1, high: 2, low: 0, close: 1.5 }],
-  strategies: [{ name: 'Golden Cross', bias: 'BULLISH', candle_index: 5, time: 2, price: 1304, level: null }],
+  patterns: [
+    {
+      name: 'Hammer',
+      bias: 'BULLISH',
+      candle_index: 3,
+      time: 1,
+      open: 1,
+      high: 2,
+      low: 0,
+      close: 1.5,
+    },
+  ],
+  strategies: [
+    { name: 'Golden Cross', bias: 'BULLISH', candle_index: 5, time: 2, price: 1304, level: null },
+  ],
 };
 
 describe('normalizeScan', () => {

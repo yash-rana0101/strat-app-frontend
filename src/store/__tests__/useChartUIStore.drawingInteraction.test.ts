@@ -38,7 +38,7 @@ beforeEach(() => {
 
 describe('drawing interaction paths', () => {
   describe('drag updates geometry — updateDrawingPoints (Req 5.5)', () => {
-    it('rewrites an unlocked drawing\'s points to the dragged geometry', () => {
+    it("rewrites an unlocked drawing's points to the dragged geometry", () => {
       store().addDrawing(makeDrawing());
 
       const dragged: Point[] = [
@@ -58,9 +58,7 @@ describe('drawing interaction paths', () => {
 
       store().updateDrawingPoints('a', [{ time: 0, price: 0 }]);
 
-      expect(store().drawings.find((d) => d.id === 'a')!.points).toEqual([
-        { time: 0, price: 0 },
-      ]);
+      expect(store().drawings.find((d) => d.id === 'a')!.points).toEqual([{ time: 0, price: 0 }]);
       expect(store().drawings.find((d) => d.id === 'b')!.points).toEqual(bBefore);
     });
 
@@ -70,9 +68,7 @@ describe('drawing interaction paths', () => {
 
       store().updateDrawingPoints('locked-1', [{ time: 999, price: 999 }]);
 
-      expect(store().drawings.find((d) => d.id === 'locked-1')!.points).toEqual(
-        original.points,
-      );
+      expect(store().drawings.find((d) => d.id === 'locked-1')!.points).toEqual(original.points);
     });
   });
 

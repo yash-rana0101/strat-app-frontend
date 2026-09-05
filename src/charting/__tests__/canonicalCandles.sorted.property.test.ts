@@ -20,22 +20,19 @@ import type { OhlcCandle } from '@/store/useTradeStore';
 const RUNS = 100;
 
 /** A single finite OHLC value generator. */
-const price = () =>
-  fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Map a base symbol to an arbitrary mixed-case variant so we exercise the
  * case-insensitive matching contract (e.g. "btcusdt" -> "BtCuSdT").
  */
 const mixedCase = (symbol: string): fc.Arbitrary<string> =>
-  fc
-    .array(fc.boolean(), { minLength: symbol.length, maxLength: symbol.length })
-    .map((flags) =>
-      symbol
-        .split('')
-        .map((ch, i) => (flags[i] ? ch.toUpperCase() : ch.toLowerCase()))
-        .join(''),
-    );
+  fc.array(fc.boolean(), { minLength: symbol.length, maxLength: symbol.length }).map((flags) =>
+    symbol
+      .split('')
+      .map((ch, i) => (flags[i] ? ch.toUpperCase() : ch.toLowerCase()))
+      .join('')
+  );
 
 /**
  * A raw OHLC candle generator drawing its symbol from a small alphabet of base
@@ -59,7 +56,7 @@ const rawCandle = (): fc.Arbitrary<OhlcCandle> =>
         low: price(),
         close: price(),
         volume: fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true }),
-      }),
+      })
     );
 
 /** A buffer of raw candles, typically containing duplicates / out-of-order times. */
@@ -92,7 +89,7 @@ describe('Property 28: canonical candle series is sorted and de-duplicated', () 
         const expectedTimes = new Set(
           raw
             .filter((c) => c.symbol.toUpperCase() === wanted)
-            .map((c) => Math.floor(c.start_timestamp_ms / 1000)),
+            .map((c) => Math.floor(c.start_timestamp_ms / 1000))
         );
         for (const t of times) {
           expect(expectedTimes.has(t)).toBe(true);
@@ -101,7 +98,7 @@ describe('Property 28: canonical candle series is sorted and de-duplicated', () 
         // Completeness: every requested-symbol timestamp is represented.
         expect(new Set(times)).toEqual(expectedTimes);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -112,7 +109,7 @@ describe('Property 28: canonical candle series is sorted and de-duplicated', () 
         const upper = canonicalCandles(raw, baseSymbol.toUpperCase());
         expect(lower).toEqual(upper);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -122,7 +119,7 @@ describe('Property 28: canonical candle series is sorted and de-duplicated', () 
         const series = canonicalCandles(raw, 'NOSUCHSYMBOL');
         expect(series).toEqual([]);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

@@ -41,7 +41,7 @@ const arbDirtyNumber: fc.Arbitrary<number> = fc.oneof(
   fc.double({ min: -1_000_000, max: Math.fround(-0.01), noNaN: true, noDefaultInfinity: true }),
   fc.constant(Number.NaN),
   fc.constant(Number.POSITIVE_INFINITY),
-  fc.constant(Number.NEGATIVE_INFINITY),
+  fc.constant(Number.NEGATIVE_INFINITY)
 );
 
 /** A three-finite-positive-price execution_levels object. */
@@ -60,7 +60,7 @@ const arbLevelsVariant: fc.Arbitrary<any> = fc.oneof(
   // Missing one or more fields.
   fc.record({ entry: arbPositivePrice, stop_loss: arbPositivePrice }, { requiredKeys: [] }),
   fc.constant(undefined),
-  fc.constant(null),
+  fc.constant(null)
 );
 
 /** Faithful mirror of the predicate's level check, for cross-verification. */
@@ -69,7 +69,7 @@ function hasThreeFinitePositive(l: any): boolean {
     !!l &&
     typeof l === 'object' &&
     [l.entry, l.stop_loss, l.take_profit].every(
-      (n) => typeof n === 'number' && Number.isFinite(n) && n > 0,
+      (n) => typeof n === 'number' && Number.isFinite(n) && n > 0
     )
   );
 }
@@ -80,7 +80,7 @@ const arbTierNonStandAside = fc.constantFrom<string | undefined>(
   'a',
   'b',
   'watch',
-  'scout',
+  'scout'
 );
 
 // ───────────────────────────────────────────────────────────────────────────
@@ -97,11 +97,13 @@ describe('Property 8: HOLD or stand_aside plans are never actionable', () => {
         // Force the bug condition: action HOLD, OR tier stand_aside (or both).
         fc.oneof(
           fc.constant<'HOLD'>('HOLD'),
-          fc.constantFrom<'BUY' | 'SELL' | 'HOLD'>('BUY', 'SELL', 'HOLD'),
+          fc.constantFrom<'BUY' | 'SELL' | 'HOLD'>('BUY', 'SELL', 'HOLD')
         ),
         fc.boolean(),
         arbLevelsVariant,
-        fc.option(fc.double({ min: 0, max: 100, noNaN: true, noDefaultInfinity: true }), { nil: undefined }),
+        fc.option(fc.double({ min: 0, max: 100, noNaN: true, noDefaultInfinity: true }), {
+          nil: undefined,
+        }),
         (action, forceStandAside, levels, conviction) => {
           // Guarantee at least one arm of the bug condition holds.
           const isHold = action === 'HOLD';
@@ -120,9 +122,9 @@ describe('Property 8: HOLD or stand_aside plans are never actionable', () => {
           fc.pre(action === 'HOLD' || tier === 'stand_aside');
 
           expect(isActionableTrade(plan)).toBe(false);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });
@@ -142,7 +144,9 @@ describe('Property 9: directional plans are actionable iff execution_levels hold
         fc.constantFrom<'BUY' | 'SELL'>('BUY', 'SELL'),
         arbTierNonStandAside,
         arbLevelsVariant,
-        fc.option(fc.double({ min: 0, max: 100, noNaN: true, noDefaultInfinity: true }), { nil: undefined }),
+        fc.option(fc.double({ min: 0, max: 100, noNaN: true, noDefaultInfinity: true }), {
+          nil: undefined,
+        }),
         (action, tier, levels, conviction) => {
           const plan: AiExecutionPlan = {
             conviction_score: conviction,
@@ -156,9 +160,9 @@ describe('Property 9: directional plans are actionable iff execution_levels hold
           // The predicate must agree exactly with the finite-positive check —
           // never derived from prose or a last-close fallback.
           expect(isActionableTrade(plan)).toBe(hasThreeFinitePositive(levels));
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -177,9 +181,9 @@ describe('Property 9: directional plans are actionable iff execution_levels hold
             // execution_levels intentionally omitted
           };
           expect(isActionableTrade(plan)).toBe(false);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });
@@ -215,10 +219,9 @@ describe('Property 10: the DECISION reducer carries conviction verbatim and neve
     fc.assert(
       fc.property(
         // conviction present (any finite number, incl. values != 75) or absent.
-        fc.option(
-          fc.double({ min: -50, max: 200, noNaN: true, noDefaultInfinity: true }),
-          { nil: undefined },
-        ),
+        fc.option(fc.double({ min: -50, max: 200, noNaN: true, noDefaultInfinity: true }), {
+          nil: undefined,
+        }),
         // Which key the payload uses to carry conviction.
         fc.constantFrom<'conviction_score' | 'conviction'>('conviction_score', 'conviction'),
         fc.constantFrom<'BUY' | 'SELL' | 'HOLD'>('BUY', 'SELL', 'HOLD'),
@@ -228,7 +231,10 @@ describe('Property 10: the DECISION reducer carries conviction verbatim and neve
           resetStore();
           const store = useQuantStore.getState();
 
-          const started: StreamEventPayload = { event: 'RUN_STARTED', data: { thread_id: 't-prop10' } };
+          const started: StreamEventPayload = {
+            event: 'RUN_STARTED',
+            data: { thread_id: 't-prop10' },
+          };
           const decisionData: Record<string, unknown> = {
             action,
             rationale: `read ${prose}`,
@@ -249,19 +255,18 @@ describe('Property 10: the DECISION reducer carries conviction verbatim and neve
             expect(built!.conviction_score).toBeUndefined();
             expect(built!.conviction_score).not.toBe(75);
           }
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
   it('conviction survives a subsequent RUN_FINISHED without acquiring a 75 default', () => {
     fc.assert(
       fc.property(
-        fc.option(
-          fc.double({ min: -50, max: 200, noNaN: true, noDefaultInfinity: true }),
-          { nil: undefined },
-        ),
+        fc.option(fc.double({ min: -50, max: 200, noNaN: true, noDefaultInfinity: true }), {
+          nil: undefined,
+        }),
         fc.constantFrom<'BUY' | 'SELL' | 'HOLD'>('BUY', 'SELL', 'HOLD'),
         (conviction, action) => {
           resetStore();
@@ -277,7 +282,10 @@ describe('Property 10: the DECISION reducer carries conviction verbatim and neve
 
           store.handleStreamEvent({ event: 'RUN_STARTED', data: { thread_id: 't-prop10b' } });
           store.handleStreamEvent({ event: 'DECISION', data: decisionData });
-          store.handleStreamEvent({ event: 'RUN_FINISHED', data: { thread_id: 't-prop10b', status: 'completed' } });
+          store.handleStreamEvent({
+            event: 'RUN_FINISHED',
+            data: { thread_id: 't-prop10b', status: 'completed' },
+          });
 
           const built = useQuantStore.getState().finalTrade;
           expect(built).not.toBeNull();
@@ -286,9 +294,9 @@ describe('Property 10: the DECISION reducer carries conviction verbatim and neve
           } else {
             expect(built!.conviction_score).toBeUndefined();
           }
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

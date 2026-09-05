@@ -66,9 +66,7 @@ export function parseInlineMarkdown(text: string, simple?: boolean): React.React
         <strong
           key={i}
           className={
-            simple
-              ? 'font-semibold text-text-primary'
-              : 'font-bold text-reasoning-green-300'
+            simple ? 'font-semibold text-text-primary' : 'font-bold text-reasoning-green-300'
           }
         >
           {parseInlineMarkdown(inner, simple)}

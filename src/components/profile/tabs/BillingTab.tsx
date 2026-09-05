@@ -44,7 +44,9 @@ export default function BillingTab({ history, loading, error, refetch }: Billing
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-extrabold text-text-primary tracking-tight">Billing History</h2>
+          <h2 className="text-xl font-extrabold text-text-primary tracking-tight">
+            Billing History
+          </h2>
           <p className="text-xs text-text-secondary mt-1">Invoices and payment status</p>
         </div>
         <button
@@ -73,7 +75,9 @@ export default function BillingTab({ history, loading, error, refetch }: Billing
         <div className="flex flex-col items-center justify-center p-8 text-center rounded-xl border border-border-default bg-elevated/60">
           <Receipt size={40} className="text-text-secondary mb-3 opacity-40" />
           <h4 className="text-sm font-bold text-text-primary">No Payments Yet</h4>
-          <p className="text-xs text-text-secondary mt-1">Your invoices will appear here after your first subscription or top-up.</p>
+          <p className="text-xs text-text-secondary mt-1">
+            Your invoices will appear here after your first subscription or top-up.
+          </p>
         </div>
       ) : (
         <div className="rounded-xl border border-border-default overflow-hidden flex flex-col">
@@ -81,11 +85,21 @@ export default function BillingTab({ history, loading, error, refetch }: Billing
             <table className="w-full text-left border-collapse">
               <thead className="sticky top-0 z-10 bg-elevated border-b border-border-default">
                 <tr>
-                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary">Invoice</th>
-                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary">Type</th>
-                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary text-right">Amount</th>
-                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary">Status</th>
-                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary text-right">Date</th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+                    Invoice
+                  </th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+                    Type
+                  </th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary text-right">
+                    Amount
+                  </th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-text-secondary text-right">
+                    Date
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-default">
@@ -94,9 +108,13 @@ export default function BillingTab({ history, loading, error, refetch }: Billing
                   const isSub = p.type === 'subscription';
                   return (
                     <tr key={p.id} className="hover:bg-elevated transition-colors">
-                      <td className="px-4 py-3 text-xs font-mono text-text-primary">{p.invoiceId || '—'}</td>
+                      <td className="px-4 py-3 text-xs font-mono text-text-primary">
+                        {p.invoiceId || '—'}
+                      </td>
                       <td className="px-4 py-3 text-xs">
-                        <span className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase border ${isSub ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'}`}>
+                        <span
+                          className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase border ${isSub ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'}`}
+                        >
                           {p.type}
                         </span>
                       </td>
@@ -104,11 +122,15 @@ export default function BillingTab({ history, loading, error, refetch }: Billing
                         ₹{p.amount.toLocaleString('en-IN')}
                       </td>
                       <td className="px-4 py-3 text-xs">
-                        <span className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase border ${STATUS_COLORS[status] ?? STATUS_COLORS.pending}`}>
+                        <span
+                          className={`rounded px-2 py-0.5 text-[9px] font-bold uppercase border ${STATUS_COLORS[status] ?? STATUS_COLORS.pending}`}
+                        >
                           {status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-text-secondary text-right font-mono">{formatDate(p.createdAt)}</td>
+                      <td className="px-4 py-3 text-xs text-text-secondary text-right font-mono">
+                        {formatDate(p.createdAt)}
+                      </td>
                     </tr>
                   );
                 })}

@@ -122,7 +122,7 @@ export function useFnoAutoContract(): void {
       try {
         const resolved = await bridgeInvoke<ResolvedContract | null>(
           'fno_resolve_nearest_contract',
-          { underlying: selectedSymbol },
+          { underlying: selectedSymbol }
         );
         if (cancelled) return;
         if (resolved?.tradingsymbol) {

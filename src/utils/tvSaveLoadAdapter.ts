@@ -7,10 +7,7 @@
  * Everything is namespaced under `tv.sl.*` keys so it can be cleared at once.
  */
 
-import type {
-  StudyTemplateData,
-  StudyTemplateMetaInfo,
-} from '../charting/datafeedTypes';
+import type { StudyTemplateData, StudyTemplateMetaInfo } from '../charting/datafeedTypes';
 
 // ── localStorage keys ────────────────────────────────────────────────────────
 const KEY = {
@@ -87,9 +84,7 @@ export const tvSaveLoadAdapter = {
         name: c.name,
         symbol: c.symbol,
         resolution: c.resolution,
-        timestamp: typeof (c as any).timestamp === 'number'
-          ? (c as any).timestamp
-          : Date.now(),
+        timestamp: typeof (c as any).timestamp === 'number' ? (c as any).timestamp : Date.now(),
       }));
   },
 
@@ -191,7 +186,11 @@ export const tvSaveLoadAdapter = {
     writeJSON(KEY.drawingTemplates, items);
   },
 
-  async saveDrawingTemplate(toolName: string, templateName: string, content: string): Promise<void> {
+  async saveDrawingTemplate(
+    toolName: string,
+    templateName: string,
+    content: string
+  ): Promise<void> {
     const items = readJSON<Record<string, Record<string, string>>>(KEY.drawingTemplates, {});
     if (!items[toolName]) items[toolName] = {};
     items[toolName][templateName] = content;

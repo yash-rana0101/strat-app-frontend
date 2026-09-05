@@ -18,12 +18,7 @@
 // Requirements covered by this task (2.1): 1.1 (all 11 types), 1.5/1.6
 // (configurable parameters + validation), 1.7 (Heikin Ashi formula).
 
-import type {
-  ChartCandle,
-  LinePoint,
-  NumericRange,
-  ValidationResult,
-} from '../types';
+import type { ChartCandle, LinePoint, NumericRange, ValidationResult } from '../types';
 import { validateParams } from './validation';
 
 /** The 11 supported professional chart types (Requirement 1.1). */
@@ -131,7 +126,7 @@ export const CHART_TYPE_PARAM_DEFAULTS: Required<ChartTypeParams> = {
  */
 export function validateChartTypeParams(
   type: ChartType,
-  params: ChartTypeParams,
+  params: ChartTypeParams
 ): ValidationResult<ChartTypeParams> {
   const spec = CHART_TYPE_PARAM_SPEC[type];
   const result = validateParams(params as Record<string, unknown>, spec);
@@ -161,8 +156,7 @@ export function computeHeikinAshi(candles: ChartCandle[]): ChartCandle[] {
   for (let i = 0; i < candles.length; i++) {
     const c = candles[i];
     const haClose = (c.open + c.high + c.low + c.close) / 4;
-    const haOpen =
-      i === 0 ? (c.open + c.close) / 2 : (prevHaOpen + prevHaClose) / 2;
+    const haOpen = i === 0 ? (c.open + c.close) / 2 : (prevHaOpen + prevHaClose) / 2;
     const haHigh = Math.max(c.high, haOpen, haClose);
     const haLow = Math.min(c.low, haOpen, haClose);
 
@@ -273,7 +267,7 @@ function buildKagi(candles: ChartCandle[], reversal: number): LinePoint[] {
 function buildPointFigure(
   candles: ChartCandle[],
   boxSize: number,
-  reversal: number,
+  reversal: number
 ): ChartCandle[] {
   if (candles.length === 0) return [];
 
@@ -383,7 +377,7 @@ function buildLineBreak(candles: ChartCandle[], count: number): ChartCandle[] {
 export function buildSeries(
   candles: ChartCandle[],
   type: ChartType,
-  params: ChartTypeParams,
+  params: ChartTypeParams
 ): RenderableSeries {
   const p = { ...CHART_TYPE_PARAM_DEFAULTS, ...params };
 

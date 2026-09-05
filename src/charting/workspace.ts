@@ -168,10 +168,7 @@ const pendingState = new Map<string, WorkspaceState>();
  * @returns `true` when the backend accepted the write, `false` when the write
  *          failed and only the in-memory copy holds it (caller may retry).
  */
-export async function flushWorkspace(
-  symbol: string,
-  state: WorkspaceState,
-): Promise<boolean> {
+export async function flushWorkspace(symbol: string, state: WorkspaceState): Promise<boolean> {
   memoryStore.set(symbol, state);
   try {
     await bridgeInvoke('save_workspace', { symbol, stateJson: serializeWorkspace(state) });

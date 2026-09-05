@@ -1,7 +1,17 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { ChevronUp, ChevronDown, GripVertical, Trash2, ArrowUpRight, ArrowDownRight, Loader2, RefreshCw, AlertTriangle } from 'lucide-react';
+import {
+  ChevronUp,
+  ChevronDown,
+  GripVertical,
+  Trash2,
+  ArrowUpRight,
+  ArrowDownRight,
+  Loader2,
+  RefreshCw,
+  AlertTriangle,
+} from 'lucide-react';
 import { useTradeStore, hydrateWatchlist } from '../../../store/useTradeStore';
 import { useChartUIStore } from '../../../store/useChartUIStore';
 import { isFnoSymbol } from '../../../charting/symbolUtils';
@@ -41,7 +51,11 @@ interface QuoteData {
   last_price: number;
   change: number | null;
   net_change: number | null;
-  open: number | null; high: number | null; low: number | null; close: number | null; volume: number | null;
+  open: number | null;
+  high: number | null;
+  low: number | null;
+  close: number | null;
+  volume: number | null;
 }
 
 let globalDragIndex: number | null = null;
@@ -91,7 +105,7 @@ export default function WatchlistBlock() {
         try {
           const resolved = await bridgeInvoke<ResolvedContract | null>(
             'fno_resolve_nearest_contract',
-            { underlying: symbol },
+            { underlying: symbol }
           );
           if (resolved?.tradingsymbol) {
             setFnoUnderlying(symbol);
@@ -113,13 +127,7 @@ export default function WatchlistBlock() {
         setSelectedSymbol(symbol);
       }
     },
-    [
-      activeProfile,
-      splitView,
-      setPaneSymbol,
-      setSelectedSymbol,
-      setFnoUnderlying,
-    ],
+    [activeProfile, splitView, setPaneSymbol, setSelectedSymbol, setFnoUnderlying]
   );
 
   // ── Fetch quotes for all watchlist symbols ─────────────────────
@@ -141,7 +149,8 @@ export default function WatchlistBlock() {
       const params = watchlistItems
         .map((item) => {
           const sym = item.symbol.toUpperCase();
-          const isFno = sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
+          const isFno =
+            sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
           const exchange = isFno ? 'NFO' : 'NSE';
           return `i=${exchange}:${item.symbol}`;
         })
@@ -161,7 +170,7 @@ export default function WatchlistBlock() {
         setQuotesError(
           res.status === 401 || res.status === 403
             ? 'Broker session expired — reconnect your broker to resume live prices.'
-            : `Quotes unavailable (HTTP ${res.status}).`,
+            : `Quotes unavailable (HTTP ${res.status}).`
         );
         return;
       }
@@ -194,7 +203,9 @@ export default function WatchlistBlock() {
   }, []);
 
   const fetchQuotesRef = useRef(fetchQuotes);
-  useEffect(() => { fetchQuotesRef.current = fetchQuotes; }, [fetchQuotes]);
+  useEffect(() => {
+    fetchQuotesRef.current = fetchQuotes;
+  }, [fetchQuotes]);
 
   useEffect(() => {
     const init = async () => {
@@ -216,7 +227,10 @@ export default function WatchlistBlock() {
 
   // `null` means the upstream did not report it — render an em-dash rather than
   // standing in a zero, which would read as a real reading of 0.
-  const formatPrice = (price: number | null) => price ? '₹' + price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—';
+  const formatPrice = (price: number | null) =>
+    price
+      ? '₹' + price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : '—';
   const formatChange = (change: number | null) =>
     change === null ? '—' : `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
 
@@ -227,8 +241,9 @@ export default function WatchlistBlock() {
        now one-line strips pinned at the bottom, so the watchlist gets the height
        that was being rationed. */
     <div
-      className={`flex min-h-0 flex-col gap-0 border-b border-border-default ${watchlistCollapsed ? 'shrink-0' : 'flex-1'
-        }`}
+      className={`flex min-h-0 flex-col gap-0 border-b border-border-default ${
+        watchlistCollapsed ? 'shrink-0' : 'flex-1'
+      }`}
     >
       {/* Watchlist toggle header */}
       <div className="flex shrink-0 items-center justify-between px-3 py-1.5 bg-surface/50 border-b border-border-subtle">
@@ -238,21 +253,28 @@ export default function WatchlistBlock() {
           className="flex w-full items-center justify-between px-1 py-0.5 text-[10px] font-bold uppercase tracking-widest text-text-muted/70 hover:text-text-primary transition-colors"
         >
           <span>Watchlist</span>
-          <ChevronDown size={12} className={`transition-transform duration-300 ${watchlistCollapsed ? '' : 'rotate-180'}`} />
+          <ChevronDown
+            size={12}
+            className={`transition-transform duration-300 ${watchlistCollapsed ? '' : 'rotate-180'}`}
+          />
         </button>
         {/* Manual refresh. There was no way to re-request quotes other than
             waiting out the 30s poll, which is why a failed fetch read as
             "refresh is broken" — there was nothing to press. */}
         <button
           type="button"
-          onClick={() => { setQuotesLoading(true); void fetchQuotes(); }}
+          onClick={() => {
+            setQuotesLoading(true);
+            void fetchQuotes();
+          }}
           disabled={quotesLoading}
           aria-label="Refresh watchlist quotes"
           title={quotesError ?? 'Refresh quotes'}
-          className={`ml-1 shrink-0 rounded p-0.5 transition-colors disabled:opacity-40 ${quotesError
+          className={`ml-1 shrink-0 rounded p-0.5 transition-colors disabled:opacity-40 ${
+            quotesError
               ? 'text-amber-500 hover:bg-amber-500/10 dark:text-amber-400'
               : 'text-text-muted hover:bg-elevated hover:text-text-primary'
-            }`}
+          }`}
         >
           <RefreshCw size={11} className={quotesLoading ? 'animate-spin' : ''} />
         </button>
@@ -278,10 +300,11 @@ export default function WatchlistBlock() {
 
       {/* Watchlist content with smooth CSS Grid expand/collapse animation */}
       <div
-        className={`grid min-h-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] border-b border-border-default ${watchlistCollapsed
+        className={`grid min-h-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] border-b border-border-default ${
+          watchlistCollapsed
             ? 'grid-rows-[0fr] opacity-0 pointer-events-none'
             : 'flex-1 grid-rows-[1fr] opacity-100'
-          }`}
+        }`}
       >
         <div className="overflow-hidden min-h-0">
           <div className="h-full overflow-y-auto scrollbar-thin">
@@ -289,7 +312,9 @@ export default function WatchlistBlock() {
               <WatchlistSkeleton rows={5} />
             ) : watchlist.length === 0 ? (
               <div className="flex items-center justify-center py-6">
-                <p className="text-xs text-text-muted/60 italic">Search and add symbols to your watchlist</p>
+                <p className="text-xs text-text-muted/60 italic">
+                  Search and add symbols to your watchlist
+                </p>
               </div>
             ) : (
               // Rendered newest-first: reverse a copy for display while keeping
@@ -313,7 +338,10 @@ export default function WatchlistBlock() {
                   // there is no direction to show — no arrow, no bull/bear colour.
                   const changeVal: number | null = quote ? quote.change : item.change;
                   const isPositive = changeVal !== null && changeVal >= 0;
-                  const sectorColor = SECTOR_COLORS[item.sector] ?? SECTOR_COLORS['EQ'] ?? 'bg-slate-500/10 text-slate-400';
+                  const sectorColor =
+                    SECTOR_COLORS[item.sector] ??
+                    SECTOR_COLORS['EQ'] ??
+                    'bg-slate-500/10 text-slate-400';
                   const isDragging = dragIndex === idx;
                   const isDragOver = dragOverIndex === idx;
 
@@ -340,10 +368,12 @@ export default function WatchlistBlock() {
                       onDragLeave={() => setDragOverIndex(null)}
                       onDrop={(e) => {
                         e.preventDefault();
-                        const fromIndex = globalDragIndex ?? (() => {
-                          const fromIndexStr = e.dataTransfer.getData('text/plain');
-                          return fromIndexStr !== '' ? parseInt(fromIndexStr, 10) : null;
-                        })();
+                        const fromIndex =
+                          globalDragIndex ??
+                          (() => {
+                            const fromIndexStr = e.dataTransfer.getData('text/plain');
+                            return fromIndexStr !== '' ? parseInt(fromIndexStr, 10) : null;
+                          })();
 
                         if (fromIndex !== null && !isNaN(fromIndex) && fromIndex !== idx) {
                           reorderWatchlist(fromIndex, idx);
@@ -358,11 +388,13 @@ export default function WatchlistBlock() {
                         setDragOverIndex(null);
                       }}
                       onClick={() => routeSymbolToChart(item.symbol)}
-                      className={`group flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left cursor-pointer transition-all border-l-2 ${isDragging ? 'opacity-40 scale-95' : ''
-                        } ${isDragOver ? 'bg-primary/5 border-t-2 border-t-primary/40' : ''} ${isActive
+                      className={`group flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left cursor-pointer transition-all border-l-2 ${
+                        isDragging ? 'opacity-40 scale-95' : ''
+                      } ${isDragOver ? 'bg-primary/5 border-t-2 border-t-primary/40' : ''} ${
+                        isActive
                           ? 'bg-primary/10 border-primary text-text-primary'
                           : 'hover:bg-elevated/70 border-transparent hover:border-primary/50'
-                        }`}
+                      }`}
                     >
                       {/* Reorder Grip Handle — hidden by default, expands on hover without overlapping text */}
                       <div className="w-0 group-hover:w-4 opacity-0 group-hover:opacity-75 transition-all overflow-hidden shrink-0 flex items-center justify-center cursor-grab active:cursor-grabbing -ml-1 group-hover:mr-1">
@@ -370,15 +402,26 @@ export default function WatchlistBlock() {
                       </div>
 
                       {(() => {
-                        const isFnoItem = item.sector === 'CE' || item.sector === 'PE' || item.sector === 'FUT';
-                        const displayName = (isFnoItem ? (item.name || item.symbol) : item.symbol).replace(/"/g, '');
-                        const subtitle = isFnoItem ? null : (item.name !== item.symbol ? item.name.replace(/"/g, '') : null);
+                        const isFnoItem =
+                          item.sector === 'CE' || item.sector === 'PE' || item.sector === 'FUT';
+                        const displayName = (
+                          isFnoItem ? item.name || item.symbol : item.symbol
+                        ).replace(/"/g, '');
+                        const subtitle = isFnoItem
+                          ? null
+                          : item.name !== item.symbol
+                            ? item.name.replace(/"/g, '')
+                            : null;
 
                         return (
                           <div className="flex flex-col items-start text-left min-w-0 flex-1 w-full select-none">
                             <div className="flex items-center gap-1.5 w-full min-w-0">
-                              <span className="font-extrabold text-[13px] text-text-primary truncate">{displayName}</span>
-                              <span className={`rounded-sm px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider ${sectorColor} shrink-0`}>
+                              <span className="font-extrabold text-[13px] text-text-primary truncate">
+                                {displayName}
+                              </span>
+                              <span
+                                className={`rounded-sm px-1.5 py-0.5 text-[8px] font-extrabold uppercase tracking-wider ${sectorColor} shrink-0`}
+                              >
                                 {item.sector}
                               </span>
                             </div>
@@ -395,9 +438,18 @@ export default function WatchlistBlock() {
                       <div className="flex flex-col items-end justify-center gap-0.5 shrink-0 min-w-[75px] group-hover:hidden transition-all">
                         {displayPrice > 0 ? (
                           <>
-                            <span className="font-extrabold text-text-primary tabular-nums text-[13px]">{formatPrice(displayPrice)}</span>
-                            <span className={`flex items-center gap-0.5 text-[10px] font-bold tabular-nums ${changeVal === null ? 'text-text-muted' : isPositive ? 'text-bull' : 'text-bear'}`}>
-                              {changeVal !== null && (isPositive ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />)}
+                            <span className="font-extrabold text-text-primary tabular-nums text-[13px]">
+                              {formatPrice(displayPrice)}
+                            </span>
+                            <span
+                              className={`flex items-center gap-0.5 text-[10px] font-bold tabular-nums ${changeVal === null ? 'text-text-muted' : isPositive ? 'text-bull' : 'text-bear'}`}
+                            >
+                              {changeVal !== null &&
+                                (isPositive ? (
+                                  <ArrowUpRight size={10} />
+                                ) : (
+                                  <ArrowDownRight size={10} />
+                                ))}
                               {formatChange(changeVal)}
                             </span>
                           </>
@@ -410,7 +462,10 @@ export default function WatchlistBlock() {
                       <div className="hidden group-hover:flex items-center justify-end shrink-0 min-w-[75px] transition-all">
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); removeFromWatchlist(item.symbol); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeFromWatchlist(item.symbol);
+                          }}
                           className="p-1.5 rounded-md text-text-muted hover:text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center justify-center"
                           title={`Remove ${item.symbol} from watchlist`}
                           draggable={false}

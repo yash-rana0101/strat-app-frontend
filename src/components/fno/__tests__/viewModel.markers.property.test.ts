@@ -50,7 +50,7 @@ function analyticLeafArb(): fc.Arbitrary<unknown> {
       weight: 5,
       arbitrary: fc.double({ min: -1e9, max: 1e9, noNaN: true, noDefaultInfinity: true }),
     },
-    { weight: 1, arbitrary: fc.constantFrom(NaN, Infinity, -Infinity) },
+    { weight: 1, arbitrary: fc.constantFrom(NaN, Infinity, -Infinity) }
   );
 }
 
@@ -86,7 +86,9 @@ function payloadArb(): fc.Arbitrary<FnoPayload> {
       max_pain: analyticLeafArb() as fc.Arbitrary<NaOr<number>>,
       oi_buildup: fc.record({
         call: fc.constantFrom(null, 'short_buildup', 'long_buildup') as fc.Arbitrary<NaOr<string>>,
-        put: fc.constantFrom(null, 'long_unwinding', 'short_covering') as fc.Arbitrary<NaOr<string>>,
+        put: fc.constantFrom(null, 'long_unwinding', 'short_covering') as fc.Arbitrary<
+          NaOr<string>
+        >,
       }),
       iv_skew: fc.record({
         put_minus_call: analyticLeafArb() as fc.Arbitrary<NaOr<number>>,
@@ -149,7 +151,7 @@ describe('Property 3: analytic marker levels surface exactly when non-null', () 
         // presence iff source non-null; absence (null) is never a fabricated level
         expect(maxPain === null).toBe(expected === null);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -162,7 +164,7 @@ describe('Property 3: analytic marker levels surface exactly when non-null', () 
         expect(support).toBe(expected);
         expect(support === null).toBe(expected === null);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -175,7 +177,7 @@ describe('Property 3: analytic marker levels surface exactly when non-null', () 
         expect(resistance).toBe(expected);
         expect(resistance === null).toBe(expected === null);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -190,7 +192,7 @@ describe('Property 3: analytic marker levels surface exactly when non-null', () 
 
         const spotPresent = expectedLevel(payload.analytics?.spot) !== null;
         const hasStrike = (Array.isArray(payload.chain) ? payload.chain : []).some(
-          (r) => r != null && typeof r.strike === 'number' && Number.isFinite(r.strike),
+          (r) => r != null && typeof r.strike === 'number' && Number.isFinite(r.strike)
         );
 
         // Present exactly when spot is non-null AND at least one valid strike exists.
@@ -201,7 +203,7 @@ describe('Property 3: analytic marker levels surface exactly when non-null', () 
           expect(payload.chain.map((r) => r.strike)).toContain(atmStrike);
         }
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

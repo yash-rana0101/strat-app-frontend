@@ -46,8 +46,8 @@ export default function TerminalError({
           Something in the terminal stopped responding
         </h2>
         <p className="text-xs leading-relaxed text-text-secondary">
-          A panel hit an unexpected error. The rest of your session is intact —
-          retrying reloads just this view.
+          A panel hit an unexpected error. The rest of your session is intact — retrying reloads
+          just this view.
         </p>
         {error.message && (
           <p className="mt-1 break-words rounded border border-border-default bg-card px-2 py-1.5 font-mono text-[10px] leading-normal text-text-muted">

@@ -44,15 +44,7 @@ export type OverlayId =
 
 /** Separate-pane oscillator indicators (registered by task 3.2). */
 export type OscillatorId =
-  | 'rsi'
-  | 'macd'
-  | 'stochastic'
-  | 'adx'
-  | 'atr'
-  | 'obv'
-  | 'cci'
-  | 'mfi'
-  | 'williams-r';
+  'rsi' | 'macd' | 'stochastic' | 'adx' | 'atr' | 'obv' | 'cci' | 'mfi' | 'williams-r';
 
 export type IndicatorId = OverlayId | OscillatorId;
 
@@ -471,8 +463,12 @@ const BOLLINGER_DEF: IndicatorDef = {
     const src = closes(candles);
     const mid = smaSeries(src, p.period);
     const sd = stdevSeries(src, p.period);
-    const upper: Series = mid.map((m, i) => (m === null || sd[i] === null ? null : m + p.stdDev * (sd[i] as number)));
-    const lower: Series = mid.map((m, i) => (m === null || sd[i] === null ? null : m - p.stdDev * (sd[i] as number)));
+    const upper: Series = mid.map((m, i) =>
+      m === null || sd[i] === null ? null : m + p.stdDev * (sd[i] as number)
+    );
+    const lower: Series = mid.map((m, i) =>
+      m === null || sd[i] === null ? null : m - p.stdDev * (sd[i] as number)
+    );
     const upperPts = toPoints(candles, upper);
     const lowerPts = toPoints(candles, lower);
     return {
@@ -545,7 +541,9 @@ const ICHIMOKU_DEF: IndicatorDef = {
 
     const tenkan = midOf(convHH, convLL);
     const kijun = midOf(baseHH, baseLL);
-    const spanARaw = tenkan.map((t, i) => (t === null || kijun[i] === null ? null : (t + (kijun[i] as number)) / 2));
+    const spanARaw = tenkan.map((t, i) =>
+      t === null || kijun[i] === null ? null : (t + (kijun[i] as number)) / 2
+    );
     const spanBRaw = midOf(spanBHH, spanBLL);
 
     // Senkou spans are projected forward by `displacement` bars.
@@ -615,10 +613,8 @@ const SUPERTREND_DEF: IndicatorDef = {
       }
 
       const prevClose = candles[i - 1].close;
-      finalUpper =
-        basicUpper < finalUpper || prevClose > finalUpper ? basicUpper : finalUpper;
-      finalLower =
-        basicLower > finalLower || prevClose < finalLower ? basicLower : finalLower;
+      finalUpper = basicUpper < finalUpper || prevClose > finalUpper ? basicUpper : finalUpper;
+      finalLower = basicLower > finalLower || prevClose < finalLower ? basicLower : finalLower;
 
       if (trendUp) {
         if (c.close < finalLower) {
@@ -715,7 +711,9 @@ const DONCHIAN_DEF: IndicatorDef = {
     if (candles.length < this.minLookback(p)) return insufficient(candles.length);
     const upper = highestHigh(candles, p.period);
     const lower = lowestLow(candles, p.period);
-    const mid: Series = upper.map((u, i) => (u === null || lower[i] === null ? null : (u + (lower[i] as number)) / 2));
+    const mid: Series = upper.map((u, i) =>
+      u === null || lower[i] === null ? null : (u + (lower[i] as number)) / 2
+    );
     const upperPts = toPoints(candles, upper);
     const lowerPts = toPoints(candles, lower);
     return {
@@ -742,8 +740,12 @@ const KELTNER_DEF: IndicatorDef = {
     if (candles.length < this.minLookback(p)) return insufficient(candles.length);
     const mid = emaSeries(closes(candles), p.period);
     const atr = atrSeries(candles, p.atrPeriod);
-    const upper: Series = mid.map((m, i) => (m === null || atr[i] === null ? null : m + p.multiplier * (atr[i] as number)));
-    const lower: Series = mid.map((m, i) => (m === null || atr[i] === null ? null : m - p.multiplier * (atr[i] as number)));
+    const upper: Series = mid.map((m, i) =>
+      m === null || atr[i] === null ? null : m + p.multiplier * (atr[i] as number)
+    );
+    const lower: Series = mid.map((m, i) =>
+      m === null || atr[i] === null ? null : m - p.multiplier * (atr[i] as number)
+    );
     const upperPts = toPoints(candles, upper);
     const lowerPts = toPoints(candles, lower);
     return {
@@ -804,14 +806,18 @@ const MACD_DEF: IndicatorDef = {
     const slow = emaSeries(src, p.slow);
     // MACD line is defined wherever both EMAs are defined (i.e. from the slow
     // EMA's first value onward, since slow > fast for sane parameters).
-    const macd: Series = fast.map((f, i) => (f === null || slow[i] === null ? null : f - (slow[i] as number)));
+    const macd: Series = fast.map((f, i) =>
+      f === null || slow[i] === null ? null : f - (slow[i] as number)
+    );
     // The signal line is an EMA of the MACD line over its defined region.
     const start = firstDefined(macd);
     const macdDefined = macd.slice(start).map((v) => v as number);
     const signalCompact = emaSeries(macdDefined, p.signal);
     const signal: Series = new Array(candles.length).fill(null);
     for (let i = 0; i < signalCompact.length; i++) signal[start + i] = signalCompact[i];
-    const histogram: Series = macd.map((m, i) => (m === null || signal[i] === null ? null : m - (signal[i] as number)));
+    const histogram: Series = macd.map((m, i) =>
+      m === null || signal[i] === null ? null : m - (signal[i] as number)
+    );
     return {
       lines: [
         line('macd', toPoints(candles, macd), '#2563eb', 2),

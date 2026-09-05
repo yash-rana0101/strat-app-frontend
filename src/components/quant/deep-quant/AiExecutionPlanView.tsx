@@ -18,9 +18,27 @@ interface AiExecutionPlanViewProps {
 }
 
 function convictionColor(score: number) {
-  if (score >= 80) return { text: 'text-text-primary', bg: 'bg-text-primary', ring: 'ring-border-default/40', glow: '' };
-  if (score >= 60) return { text: 'text-text-secondary', bg: 'bg-text-secondary', ring: 'ring-border-default/20', glow: '' };
-  if (score >= 40) return { text: 'text-text-secondary/80', bg: 'bg-text-muted', ring: 'ring-border-default/20', glow: '' };
+  if (score >= 80)
+    return {
+      text: 'text-text-primary',
+      bg: 'bg-text-primary',
+      ring: 'ring-border-default/40',
+      glow: '',
+    };
+  if (score >= 60)
+    return {
+      text: 'text-text-secondary',
+      bg: 'bg-text-secondary',
+      ring: 'ring-border-default/20',
+      glow: '',
+    };
+  if (score >= 40)
+    return {
+      text: 'text-text-secondary/80',
+      bg: 'bg-text-muted',
+      ring: 'ring-border-default/20',
+      glow: '',
+    };
   return { text: 'text-text-muted', bg: 'bg-text-muted', ring: 'ring-border-default/25', glow: '' };
 }
 
@@ -36,10 +54,7 @@ function convictionIcon(score: number) {
   return <Shield size={14} className="text-text-secondary" />;
 }
 
-export default function AiExecutionPlanView({
-  aiPlan,
-  onClear,
-}: AiExecutionPlanViewProps) {
+export default function AiExecutionPlanView({ aiPlan, onClear }: AiExecutionPlanViewProps) {
   // Conviction may be absent (R1.7). Use 0 for color/label/bar math and render
   // "—" for the numeric readout rather than a fabricated value.
   const score = aiPlan.conviction_score ?? 0;
@@ -61,46 +76,46 @@ export default function AiExecutionPlanView({
                 AI Conviction
               </h3>
             </div>
-            <p className="text-[11px] text-text-secondary">
-              Available on the Research plan.
-            </p>
+            <p className="text-[11px] text-text-secondary">Available on the Research plan.</p>
           </div>
         }
       >
-      <div className="px-3 py-3 border-b border-border-default">
-        <div className="flex items-center gap-1.5 mb-2">
-          <Shield size={11} className="text-text-muted" />
-          <h3 className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">
-            AI Conviction
-          </h3>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Big score */}
-          <div className={`relative flex items-baseline gap-0.5 ${convictionColor(score).text}`}>
-            <span className="text-4xl font-black tabular-nums tracking-tighter">
-              {scoreLabel}
-            </span>
-            <span className="text-base font-semibold text-text-muted/50">/100</span>
+        <div className="px-3 py-3 border-b border-border-default">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Shield size={11} className="text-text-muted" />
+            <h3 className="text-[10px] font-semibold text-text-secondary uppercase tracking-wider">
+              AI Conviction
+            </h3>
           </div>
 
-          <div className="flex-1 flex flex-col gap-1.5">
-            {/* Label badge */}
-            <div className={`inline-flex items-center gap-1 self-start rounded-none px-2 py-0.5 text-[9px] font-bold ${convictionColor(score).text} ${convictionColor(score).bg}/15 ring-1 ${convictionColor(score).ring}`}>
-              {convictionIcon(score)}
-              {convictionLabel(score)}
+          <div className="flex items-center gap-3">
+            {/* Big score */}
+            <div className={`relative flex items-baseline gap-0.5 ${convictionColor(score).text}`}>
+              <span className="text-4xl font-black tabular-nums tracking-tighter">
+                {scoreLabel}
+              </span>
+              <span className="text-base font-semibold text-text-muted/50">/100</span>
             </div>
 
-            {/* Progress bar */}
-            <div className="h-1.5 w-full rounded-none bg-elevated overflow-hidden">
+            <div className="flex-1 flex flex-col gap-1.5">
+              {/* Label badge */}
               <div
-                className={`h-1.5 rounded-none transition-all duration-1000 ease-out ${convictionColor(score).bg}`}
-                style={{ width: `${score}%` }}
-              />
+                className={`inline-flex items-center gap-1 self-start rounded-none px-2 py-0.5 text-[9px] font-bold ${convictionColor(score).text} ${convictionColor(score).bg}/15 ring-1 ${convictionColor(score).ring}`}
+              >
+                {convictionIcon(score)}
+                {convictionLabel(score)}
+              </div>
+
+              {/* Progress bar */}
+              <div className="h-1.5 w-full rounded-none bg-elevated overflow-hidden">
+                <div
+                  className={`h-1.5 rounded-none transition-all duration-1000 ease-out ${convictionColor(score).bg}`}
+                  style={{ width: `${score}%` }}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </div>
       </ResearchGate>
 
       {/* Setup Validation */}

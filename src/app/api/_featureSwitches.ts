@@ -132,6 +132,6 @@ export function assertFeatureEnabled(id: FeatureId, label: string): Response | n
         `${label} is disabled in this deployment. If you believe you have access to it, ` +
         `contact support — the operator controls this switch, not your plan.`,
     },
-    { status: 403 },
+    { status: 403 }
   );
 }

@@ -47,7 +47,7 @@ export function useSidebarDrag(): UseSidebarDragReturn {
       document.addEventListener('mousemove', doDrag);
       document.addEventListener('mouseup', stopDrag);
     },
-    [sidebarWidth],
+    [sidebarWidth]
   );
 
   return {

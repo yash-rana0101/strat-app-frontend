@@ -31,7 +31,7 @@ import type { FnoChains } from './viewModel';
  */
 export function deriveUnderlyingOptions(
   chains: FnoChains | null,
-  selectedUnderlying?: string,
+  selectedUnderlying?: string
 ): string[] {
   // This used to union the chain list with a hardcoded
   // ['NIFTY','BANKNIFTY','SENSEX','FINNIFTY','MIDCPNIFTY','BANKEX'], which
@@ -62,7 +62,7 @@ export function deriveUnderlyingOptions(
  */
 export function deriveExpiryOptions(
   chains: FnoChains | null,
-  selectedUnderlying: string,
+  selectedUnderlying: string
 ): string[] {
   const expiries = chains?.expiries_by_underlying?.[selectedUnderlying];
   return Array.isArray(expiries) ? expiries : [];

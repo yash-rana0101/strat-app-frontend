@@ -44,7 +44,11 @@ export function useActivateSession() {
 
   return useCallback(
     async (sessionId: string): Promise<ActivateResult> => {
-      if (!sessionId) return { ok: false, error: { notFound: true, unauthenticated: false, message: 'No session id.' } };
+      if (!sessionId)
+        return {
+          ok: false,
+          error: { notFound: true, unauthenticated: false, message: 'No session id.' },
+        };
 
       const store = useSessionStore.getState();
 
@@ -89,13 +93,14 @@ export function useActivateSession() {
           error: {
             notFound: status === 404,
             unauthenticated: status === 401,
-            message: err instanceof Error && err.message ? err.message : 'Could not open this session.',
+            message:
+              err instanceof Error && err.message ? err.message : 'Could not open this session.',
           },
         };
       } finally {
         useSessionStore.getState().setActivating(sessionId, false);
       }
     },
-    [client],
+    [client]
   );
 }

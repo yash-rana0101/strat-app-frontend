@@ -164,10 +164,7 @@ export function normaliseMode(raw: string | null | undefined): AgentMode | null 
  */
 export function skuEnforcementEnabled(): boolean {
   if (process.env.NEXT_PUBLIC_RESEARCH_BETA_OPEN === 'true') return false;
-  return (
-    process.env.NEXT_PUBLIC_PROD === 'true' ||
-    process.env.NEXT_PUBLIC_SKU_ENFORCE === 'true'
-  );
+  return process.env.NEXT_PUBLIC_PROD === 'true' || process.env.NEXT_PUBLIC_SKU_ENFORCE === 'true';
 }
 
 /** Human-readable reason for a refusal, shown in the locked-state UI. */
@@ -188,7 +185,7 @@ export type ModeGateResult =
 export function checkModeGate(
   accessFlags: AccessFlags | null | undefined,
   rawMode: string | null | undefined,
-  enforced: boolean = skuEnforcementEnabled(),
+  enforced: boolean = skuEnforcementEnabled()
 ): ModeGateResult {
   const mode = normaliseMode(rawMode);
   if (!mode) {

@@ -94,7 +94,9 @@ export default function NavRail({
 
   // Circular view-transition theme swap, centred on the button that was pressed.
   const handleThemeToggle = (event: React.MouseEvent<HTMLButtonElement>) => {
-    const doc = document as Document & { startViewTransition?: (cb: () => void) => { finished: Promise<void> } };
+    const doc = document as Document & {
+      startViewTransition?: (cb: () => void) => { finished: Promise<void> };
+    };
 
     if (!doc.startViewTransition) {
       toggleTheme();
@@ -102,8 +104,8 @@ export default function NavRail({
     }
 
     const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX || (rect.left + rect.width / 2);
-    const y = event.clientY || (rect.top + rect.height / 2);
+    const x = event.clientX || rect.left + rect.width / 2;
+    const y = event.clientY || rect.top + rect.height / 2;
     const endRadius = Math.hypot(
       Math.max(x, window.innerWidth - x),
       Math.max(y, window.innerHeight - y)

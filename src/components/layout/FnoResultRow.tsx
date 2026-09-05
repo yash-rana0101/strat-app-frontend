@@ -20,7 +20,13 @@ interface FnoResultRowProps {
 }
 
 /** Enhanced F&O result row — shows CE/PE/FUT badge, formatted contract, NFO tag. */
-export default function FnoResultRow({ result, isSelected, query, onClick, onMouseEnter }: FnoResultRowProps) {
+export default function FnoResultRow({
+  result,
+  isSelected,
+  query,
+  onClick,
+  onMouseEnter,
+}: FnoResultRowProps) {
   const badgeColor =
     result.optionType === 'CE'
       ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
@@ -42,12 +48,16 @@ export default function FnoResultRow({ result, isSelected, query, onClick, onMou
       onClick={onClick}
       onMouseEnter={onMouseEnter}
       className={`flex justify-between items-center px-4 py-2.5 cursor-pointer transition-colors ${
-        isSelected ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-text-primary font-medium' : 'hover:bg-elevated/40 text-text-secondary'
+        isSelected
+          ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-text-primary font-medium'
+          : 'hover:bg-elevated/40 text-text-secondary'
       }`}
     >
       <div className="flex items-center gap-3 min-w-0">
         {/* CE/PE/FUT badge */}
-        <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-[9px] font-black uppercase tracking-wider ${badgeColor}`}>
+        <span
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-[9px] font-black uppercase tracking-wider ${badgeColor}`}
+        >
           {result.optionType}
         </span>
         <div className="flex flex-col min-w-0">
@@ -82,10 +92,14 @@ export function formatFnoExpiry(iso: string): string {
 /** Map option type to a human-readable label. */
 export function optionTypeLabel(t: string): string {
   switch (t) {
-    case 'CE': return 'Call';
-    case 'PE': return 'Put';
-    case 'FUT': return 'Future';
-    default: return t;
+    case 'CE':
+      return 'Call';
+    case 'PE':
+      return 'Put';
+    case 'FUT':
+      return 'Future';
+    default:
+      return t;
   }
 }
 

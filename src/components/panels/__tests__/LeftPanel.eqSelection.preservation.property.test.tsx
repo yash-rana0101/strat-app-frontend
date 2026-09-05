@@ -170,7 +170,7 @@ describe('Preservation (R3.4): equity selection routes to the chart and never ac
         cleanup();
         vi.clearAllMocks();
       }),
-      { numRuns: 5 },
+      { numRuns: 5 }
     );
   });
 
@@ -205,9 +205,9 @@ describe('Preservation (R3.4): equity selection routes to the chart and never ac
 
           cleanup();
           vi.clearAllMocks();
-        },
+        }
       ),
-      { numRuns: 5 },
+      { numRuns: 5 }
     );
   });
 

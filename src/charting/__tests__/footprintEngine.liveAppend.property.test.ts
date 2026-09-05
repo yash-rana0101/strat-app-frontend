@@ -31,12 +31,10 @@ import type { OrderFlowTick } from '@/store/useTradeStore';
 const RUNS = 100;
 
 /** A finite, bounded price value generator (avoids heap blowups). */
-const price = () =>
-  fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
 
 /** A finite, non-negative volume value generator. */
-const volume = () =>
-  fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
+const volume = () => fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Generate a well-formed candle series on a *regular* time grid (seconds), with
@@ -55,16 +53,14 @@ const candleSeries = (): fc.Arbitrary<ChartCandle[]> =>
       const times = Array.from({ length: count }, (_, i) => start + i * intervalSec);
       return fc.tuple(
         ...times.map((t) =>
-          fc
-            .record({ a: price(), b: price(), c: price(), d: price() })
-            .map(({ a, b, c, d }) => ({
-              time: t,
-              open: a,
-              close: b,
-              high: Math.max(a, b, c, d),
-              low: Math.min(a, b, c, d),
-            })),
-        ),
+          fc.record({ a: price(), b: price(), c: price(), d: price() }).map(({ a, b, c, d }) => ({
+            time: t,
+            open: a,
+            close: b,
+            high: Math.max(a, b, c, d),
+            low: Math.min(a, b, c, d),
+          }))
+        )
       );
     })
     .map((arr) => arr as ChartCandle[]);
@@ -83,7 +79,7 @@ const tickArray = (): fc.Arbitrary<OrderFlowTick[]> =>
       ask_volume: volume(),
       delta: fc.double({ min: -10_000, max: 10_000, noNaN: true, noDefaultInfinity: true }),
     }),
-    { maxLength: 80 },
+    { maxLength: 80 }
   );
 
 describe('Property 6: Footprint live append equals full recompute', () => {
@@ -107,9 +103,9 @@ describe('Property 6: Footprint live append equals full recompute', () => {
           for (let i = 0; i < prefix.length; i++) {
             expect(full[i]).toEqual(prefix[i]);
           }
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

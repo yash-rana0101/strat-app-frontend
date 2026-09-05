@@ -63,12 +63,10 @@ const viewport = (): fc.Arbitrary<CoordinateViewport> =>
  * property also covers anchors just outside the visible window.
  */
 const pointWithin = (vp: CoordinateViewport): fc.Arbitrary<Point> =>
-  fc
-    .record({ ft: finite(-0.25, 1.25), fp: finite(-0.25, 1.25) })
-    .map(({ ft, fp }) => ({
-      time: vp.timeFrom + ft * (vp.timeTo - vp.timeFrom),
-      price: vp.priceMin + fp * (vp.priceMax - vp.priceMin),
-    }));
+  fc.record({ ft: finite(-0.25, 1.25), fp: finite(-0.25, 1.25) }).map(({ ft, fp }) => ({
+    time: vp.timeFrom + ft * (vp.timeTo - vp.timeFrom),
+    price: vp.priceMin + fp * (vp.priceMax - vp.priceMin),
+  }));
 
 describe('Property 13: Drawing anchors survive a coordinate round-trip', () => {
   it('pixelToPoint(pointToPixel(p, vp), vp) reproduces p within 1 pixel', () => {
@@ -84,9 +82,9 @@ describe('Property 13: Drawing anchors survive a coordinate round-trip', () => {
           // 1-pixel tolerance of the original pixel on both axes.
           expect(Math.abs(reprojected.x - original.x)).toBeLessThanOrEqual(PIXEL_TOLERANCE);
           expect(Math.abs(reprojected.y - original.y)).toBeLessThanOrEqual(PIXEL_TOLERANCE);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

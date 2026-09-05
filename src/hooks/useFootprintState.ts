@@ -27,7 +27,7 @@ export function useFootprintState(timeframe: string) {
 
   // ── Pan and Zoom State ────────────────────────────────────────────────
   const [zoomX, setZoomX] = useState(120); // column width px
-  const [zoomY, setZoomY] = useState(24);  // row height px
+  const [zoomY, setZoomY] = useState(24); // row height px
   const [scrollX, setScrollX] = useState(0);
   const [scrollY, setScrollY] = useState(0);
 
@@ -53,7 +53,7 @@ export function useFootprintState(timeframe: string) {
 
   // ── Fetch Historical and Merge Live Candles ───────────────────────────
   const effectiveTimeframe = (activeTimeframe as Timeframe) ?? timeframe;
-  
+
   const rangeDays = useMemo(() => {
     const tfStr = effectiveTimeframe as string;
     if (tfStr === '1d') return 60;
@@ -63,7 +63,10 @@ export function useFootprintState(timeframe: string) {
 
   const kiteInterval = KITE_INTERVAL_MAP[effectiveTimeframe] ?? '10minute';
   const { candles: historicalCandles, loading: histLoading } = useHistoricalData(
-    activeSymbol, rangeDays, kiteInterval, effectiveTimeframe
+    activeSymbol,
+    rangeDays,
+    kiteInterval,
+    effectiveTimeframe
   );
 
   const mergedCandles = useMemo(() => {
@@ -85,7 +88,9 @@ export function useFootprintState(timeframe: string) {
     for (const c of histAsOhlc) candleMap.set(c.start_timestamp_ms, c);
     for (const c of liveForSymbol) candleMap.set(c.start_timestamp_ms, c);
 
-    return Array.from(candleMap.values()).sort((a, b) => a.start_timestamp_ms - b.start_timestamp_ms);
+    return Array.from(candleMap.values()).sort(
+      (a, b) => a.start_timestamp_ms - b.start_timestamp_ms
+    );
   }, [historicalCandles, ohlcCandles, activeSymbol]);
 
   const { candles: chartDataRaw } = useMemo(
@@ -98,7 +103,6 @@ export function useFootprintState(timeframe: string) {
     if (chartDataRaw.length <= limit) return chartDataRaw;
     return chartDataRaw.slice(chartDataRaw.length - limit);
   }, [chartDataRaw]);
-
 
   // ── Auto-center Y-axis on latest close on first load ───────────────────
   const initialCenterSet = useRef<string | null>(null);
@@ -182,11 +186,16 @@ export function useFootprintState(timeframe: string) {
   }, [setZoomX, setZoomY]);
 
   return {
-    zoomX, setZoomX,
-    zoomY, setZoomY,
-    scrollX, setScrollX,
-    scrollY, setScrollY,
-    dimensions, setDimensions,
+    zoomX,
+    setZoomX,
+    zoomY,
+    setZoomY,
+    scrollX,
+    setScrollX,
+    scrollY,
+    setScrollY,
+    dimensions,
+    setDimensions,
     chartData,
     tickSize,
     fpByTime,
@@ -196,7 +205,7 @@ export function useFootprintState(timeframe: string) {
     handleMouseMove,
     handleMouseUp,
     containerRef,
-    canvasRef
+    canvasRef,
   };
 }
 

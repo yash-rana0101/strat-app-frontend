@@ -48,7 +48,7 @@ describe('Property 17: Fibonacci retracement levels match the canonical ratios',
           expect(Math.abs(levelPrice - expected)).toBeLessThanOrEqual(tol);
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -70,7 +70,7 @@ describe('Property 17: Fibonacci retracement levels match the canonical ratios',
         // multiply-add can round near subnormals, so compare within tolerance.
         expect(Math.abs(one!.price - p2)).toBeLessThanOrEqual(tolerance(p1, p2));
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

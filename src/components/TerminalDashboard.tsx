@@ -2,44 +2,48 @@
 
 import React, { useState, useEffect } from 'react';
 import { useMargins, usePositions, useOrderBook } from '../hooks/useAlphaData';
-import { 
-  Shield, 
-  Activity, 
-  Layers, 
-  ClipboardList, 
-  RefreshCw, 
-  TrendingUp, 
-  TrendingDown, 
-  AlertCircle, 
+import {
+  Shield,
+  Activity,
+  Layers,
+  ClipboardList,
+  RefreshCw,
+  TrendingUp,
+  TrendingDown,
+  AlertCircle,
   HelpCircle,
-  Clock
+  Clock,
 } from 'lucide-react';
-import { RiskMarginsSkeleton, PositionsSkeleton, OrdersSkeleton } from './skeletons/DashboardSkeletons';
+import {
+  RiskMarginsSkeleton,
+  PositionsSkeleton,
+  OrdersSkeleton,
+} from './skeletons/DashboardSkeletons';
 
 export default function TerminalDashboard() {
   const [activeTab, setActiveTab] = useState<'risk' | 'positions' | 'orders'>('risk');
   const [positionsSubTab, setPositionsSubTab] = useState<'net' | 'day'>('net');
 
   // Load backend data hooks
-  const { 
-    data: marginsData, 
-    loading: marginsLoading, 
-    error: marginsError, 
-    refetch: refetchMargins 
+  const {
+    data: marginsData,
+    loading: marginsLoading,
+    error: marginsError,
+    refetch: refetchMargins,
   } = useMargins();
 
-  const { 
-    data: positionsData, 
-    loading: positionsLoading, 
-    error: positionsError, 
-    refetch: refetchPositions 
+  const {
+    data: positionsData,
+    loading: positionsLoading,
+    error: positionsError,
+    refetch: refetchPositions,
   } = usePositions();
 
-  const { 
-    orders: ordersData, 
-    loading: ordersLoading, 
-    error: ordersError, 
-    refetch: refetchOrders 
+  const {
+    orders: ordersData,
+    loading: ordersLoading,
+    error: ordersError,
+    refetch: refetchOrders,
   } = useOrderBook();
 
   // Helper to format currency
@@ -143,7 +147,6 @@ export default function TerminalDashboard() {
 
       {/* Main Tab Content Panels */}
       <div className="p-4 overflow-y-auto max-h-[350px] min-h-[160px] bg-surface/30">
-        
         {/* TAB 1: RISK & MARGINS */}
         {activeTab === 'risk' && (
           <div className="space-y-4">
@@ -154,9 +157,7 @@ export default function TerminalDashboard() {
               </div>
             )}
 
-            {marginsLoading && !marginsData && (
-              <RiskMarginsSkeleton />
-            )}
+            {marginsLoading && !marginsData && <RiskMarginsSkeleton />}
 
             {marginsData && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -169,7 +170,8 @@ export default function TerminalDashboard() {
                     {formatCurrency(
                       marginsData.equity?.net !== undefined && marginsData.equity?.net !== 0
                         ? marginsData.equity.net
-                        : ((marginsData.equity?.available as any)?.live_balance ?? marginsData.equity?.available?.cash)
+                        : ((marginsData.equity?.available as any)?.live_balance ??
+                            marginsData.equity?.available?.cash)
                     )}
                   </div>
                   <div className="text-[10px] text-text-secondary mt-1 flex items-center gap-1">
@@ -193,16 +195,23 @@ export default function TerminalDashboard() {
                     <div className="flex items-center justify-between border-b border-border-default/30 pb-1.5">
                       <span className="text-text-secondary font-medium flex items-center gap-1">
                         Utilised M2M
-                        <span className="cursor-help" title="Real-time mark to market margin deduction">
+                        <span
+                          className="cursor-help"
+                          title="Real-time mark to market margin deduction"
+                        >
                           <HelpCircle size={10} className="text-text-muted" />
                         </span>
                       </span>
-                      <span className={`font-mono font-semibold ${getPnlClass(marginsData.equity?.utilised.m2m || 0)}`}>
+                      <span
+                        className={`font-mono font-semibold ${getPnlClass(marginsData.equity?.utilised.m2m || 0)}`}
+                      >
                         {formatCurrency(marginsData.equity?.utilised.m2m)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between border-b border-border-default/30 pb-1.5">
-                      <span className="text-text-secondary font-medium">Margin Utilised (Debits)</span>
+                      <span className="text-text-secondary font-medium">
+                        Margin Utilised (Debits)
+                      </span>
                       <span className="font-mono text-text-primary font-semibold">
                         {formatCurrency(marginsData.equity?.utilised.debits)}
                       </span>
@@ -210,7 +219,10 @@ export default function TerminalDashboard() {
                     <div className="flex items-center justify-between border-b border-border-default/30 pb-1.5">
                       <span className="text-text-secondary font-medium flex items-center gap-1">
                         Active Exposure
-                        <span className="cursor-help" title="Margin required for open futures/options/MIS trades">
+                        <span
+                          className="cursor-help"
+                          title="Margin required for open futures/options/MIS trades"
+                        >
                           <HelpCircle size={10} className="text-text-muted" />
                         </span>
                       </span>
@@ -235,9 +247,7 @@ export default function TerminalDashboard() {
               </div>
             )}
 
-            {positionsLoading && !positionsData && (
-              <PositionsSkeleton />
-            )}
+            {positionsLoading && !positionsData && <PositionsSkeleton />}
 
             {positionsData && (
               <>
@@ -281,35 +291,52 @@ export default function TerminalDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border-default/20">
-                      {(positionsSubTab === 'net' ? positionsData.net : positionsData.day)?.map((pos, idx) => {
-                        const isShort = pos.quantity < 0;
-                        const qtyText = isShort ? `${pos.quantity}` : `+${pos.quantity}`;
-                        const qtyClass = isShort ? 'text-rose-400 font-semibold' : 'text-emerald-400 font-semibold';
-                        
-                        return (
-                          <tr key={`${pos.tradingsymbol}-${idx}`} className="hover:bg-elevated/20 transition-colors">
-                            <td className="py-2.5 font-bold text-text-primary flex items-center gap-1.5">
-                              <span>{pos.tradingsymbol}</span>
-                              <span className="text-[8px] bg-surface-elevated text-text-secondary px-1 py-0.5 rounded font-mono">
-                                {pos.exchange}
-                              </span>
-                            </td>
-                            <td className="py-2.5 text-text-secondary font-mono">{pos.product}</td>
-                            <td className={`py-2.5 text-right font-mono ${qtyClass}`}>{qtyText}</td>
-                            <td className="py-2.5 text-right font-mono text-text-secondary">
-                              {pos.average_price.toFixed(2)}
-                            </td>
-                            <td className="py-2.5 text-right font-mono text-text-primary">
-                              {pos.last_price.toFixed(2)}
-                            </td>
-                            <td className={`py-2.5 text-right font-mono font-bold ${getPnlClass(pos.pnl)}`}>
-                              {pos.pnl >= 0 ? '+' : ''}{pos.pnl.toFixed(2)}
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {(positionsSubTab === 'net' ? positionsData.net : positionsData.day)?.map(
+                        (pos, idx) => {
+                          const isShort = pos.quantity < 0;
+                          const qtyText = isShort ? `${pos.quantity}` : `+${pos.quantity}`;
+                          const qtyClass = isShort
+                            ? 'text-rose-400 font-semibold'
+                            : 'text-emerald-400 font-semibold';
 
-                      {(!positionsData.net || (positionsSubTab === 'net' ? positionsData.net.length : positionsData.day.length) === 0) && (
+                          return (
+                            <tr
+                              key={`${pos.tradingsymbol}-${idx}`}
+                              className="hover:bg-elevated/20 transition-colors"
+                            >
+                              <td className="py-2.5 font-bold text-text-primary flex items-center gap-1.5">
+                                <span>{pos.tradingsymbol}</span>
+                                <span className="text-[8px] bg-surface-elevated text-text-secondary px-1 py-0.5 rounded font-mono">
+                                  {pos.exchange}
+                                </span>
+                              </td>
+                              <td className="py-2.5 text-text-secondary font-mono">
+                                {pos.product}
+                              </td>
+                              <td className={`py-2.5 text-right font-mono ${qtyClass}`}>
+                                {qtyText}
+                              </td>
+                              <td className="py-2.5 text-right font-mono text-text-secondary">
+                                {pos.average_price.toFixed(2)}
+                              </td>
+                              <td className="py-2.5 text-right font-mono text-text-primary">
+                                {pos.last_price.toFixed(2)}
+                              </td>
+                              <td
+                                className={`py-2.5 text-right font-mono font-bold ${getPnlClass(pos.pnl)}`}
+                              >
+                                {pos.pnl >= 0 ? '+' : ''}
+                                {pos.pnl.toFixed(2)}
+                              </td>
+                            </tr>
+                          );
+                        }
+                      )}
+
+                      {(!positionsData.net ||
+                        (positionsSubTab === 'net'
+                          ? positionsData.net.length
+                          : positionsData.day.length) === 0) && (
                         <tr>
                           <td colSpan={6} className="py-8 text-center text-text-muted italic">
                             No active {positionsSubTab} positions.
@@ -334,9 +361,7 @@ export default function TerminalDashboard() {
               </div>
             )}
 
-            {ordersLoading && !ordersData.length && (
-              <OrdersSkeleton />
-            )}
+            {ordersLoading && !ordersData.length && <OrdersSkeleton />}
 
             {ordersData && ordersData.length > 0 ? (
               <div className="overflow-x-auto">
@@ -353,9 +378,11 @@ export default function TerminalDashboard() {
                   </thead>
                   <tbody className="divide-y divide-border-default/20">
                     {ordersData.map((order) => {
-                      const timeStr = order.order_timestamp ? order.order_timestamp.split(' ')[1] : '--:--:--';
+                      const timeStr = order.order_timestamp
+                        ? order.order_timestamp.split(' ')[1]
+                        : '--:--:--';
                       const isBuy = order.transaction_type.toUpperCase() === 'BUY';
-                      
+
                       return (
                         <tr key={order.order_id} className="hover:bg-elevated/20 transition-colors">
                           <td className="py-2.5 font-mono text-text-muted flex items-center gap-1.5">
@@ -363,9 +390,13 @@ export default function TerminalDashboard() {
                             <span>{timeStr}</span>
                           </td>
                           <td className="py-2.5">
-                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                              isBuy ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                            }`}>
+                            <span
+                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                                isBuy
+                                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                  : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                              }`}
+                            >
                               {order.transaction_type}
                             </span>
                           </td>
@@ -375,17 +406,23 @@ export default function TerminalDashboard() {
                               {order.product}
                             </span>
                           </td>
-                          <td className="py-2.5 text-right font-mono text-text-primary">{order.quantity}</td>
+                          <td className="py-2.5 text-right font-mono text-text-primary">
+                            {order.quantity}
+                          </td>
                           <td className="py-2.5 text-right font-mono text-text-secondary">
-                            {order.average_price > 0 ? order.average_price.toFixed(2) : order.price.toFixed(2)}
+                            {order.average_price > 0
+                              ? order.average_price.toFixed(2)
+                              : order.price.toFixed(2)}
                           </td>
                           <td className="py-2.5 text-center">
                             {order.status === 'REJECTED' && order.status_message ? (
                               <div className="relative inline-block group cursor-help">
-                                <span className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold ${getOrderStatusClass(order.status)}`}>
+                                <span
+                                  className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold ${getOrderStatusClass(order.status)}`}
+                                >
                                   {order.status}
                                 </span>
-                                
+
                                 {/* Custom Premium Tooltip */}
                                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 hidden group-hover:block z-50 transition-all duration-200">
                                   <div className="bg-[#0f172a] border border-[#f43f5e]/30 text-rose-300 rounded-lg p-2 shadow-2xl text-[10px] text-center font-semibold leading-normal">
@@ -395,7 +432,9 @@ export default function TerminalDashboard() {
                                 </div>
                               </div>
                             ) : (
-                              <span className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold ${getOrderStatusClass(order.status)}`}>
+                              <span
+                                className={`inline-flex rounded-full px-2 py-0.5 text-[9px] font-bold ${getOrderStatusClass(order.status)}`}
+                              >
                                 {order.status}
                               </span>
                             )}
@@ -415,7 +454,6 @@ export default function TerminalDashboard() {
             )}
           </div>
         )}
-
       </div>
     </div>
   );

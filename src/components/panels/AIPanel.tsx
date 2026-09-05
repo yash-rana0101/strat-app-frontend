@@ -30,27 +30,36 @@ export default function AIPanel() {
   // aggregator actually emits them.
 
   const tone = action === 'BUY' ? 'Bullish' : action === 'SELL' ? 'Bearish' : 'Neutral';
-  
+
   // Real-time commentary from live decisions
   const headline = React.useMemo(() => {
     if (!latestDecision) {
       return `Awaiting live quant decisions for ${selectedSymbol} from the Aggregator fusion engine...`;
     }
     const raw = latestDecision.reasoning?.trim() || '';
-    if (raw && raw !== 'Live backend decision' && !raw.includes('without a reasoning string') && raw.length > 5) {
+    if (
+      raw &&
+      raw !== 'Live backend decision' &&
+      !raw.includes('without a reasoning string') &&
+      raw.length > 5
+    ) {
       return raw;
     }
     return `Quant decision: ${action} with ${score}% conviction at ₹${latestDecision.price?.toLocaleString('en-IN', { minimumFractionDigits: 2 }) || '—'}.`;
   }, [latestDecision, selectedSymbol, action, score]);
 
-  const timestamp = latestDecision ? new Date(latestDecision.timestamp_ms).toLocaleTimeString() : '--:--';
+  const timestamp = latestDecision
+    ? new Date(latestDecision.timestamp_ms).toLocaleTimeString()
+    : '--:--';
 
   const insights = latestDecision
     ? [
-      `Conviction ${score}% with ${tone.toLowerCase()} bias.`,
-      `Technical weight ${technicalScore}% and sentiment ${newsScore}%.`,
-      latestDecision.price ? `Last execution price ₹${latestDecision.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}.` : 'Live price pending.',
-    ]
+        `Conviction ${score}% with ${tone.toLowerCase()} bias.`,
+        `Technical weight ${technicalScore}% and sentiment ${newsScore}%.`,
+        latestDecision.price
+          ? `Last execution price ₹${latestDecision.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}.`
+          : 'Live price pending.',
+      ]
     : ['Connect to the live feed for AI insights.'];
 
   // Labelled as WEIGHTS, because that is what they are — how much the fusion
@@ -64,15 +73,23 @@ export default function AIPanel() {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <section className="rounded-lg border border-border-default bg-card p-4 panel-shadow">
-        <div className="text-xs font-semibold uppercase tracking-widest text-text-secondary">Score</div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
+          Score
+        </div>
         <div className="mt-2 flex items-baseline gap-2">
           <div className="text-2xl font-semibold text-text-primary">{score}/100</div>
-          <div className={`text-sm font-semibold ${tone === 'Bullish' ? 'text-[#16A34A]' : tone === 'Bearish' ? 'text-[#DC2626]' : 'text-text-secondary'}`}>- {tone}</div>
+          <div
+            className={`text-sm font-semibold ${tone === 'Bullish' ? 'text-[#16A34A]' : tone === 'Bearish' ? 'text-[#DC2626]' : 'text-text-secondary'}`}
+          >
+            - {tone}
+          </div>
         </div>
       </section>
 
       <section className="rounded-lg border border-border-default bg-card p-4 panel-shadow">
-        <div className="text-xs font-semibold uppercase tracking-widest text-text-secondary">Factor Breakdown</div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
+          Factor Breakdown
+        </div>
         <div className="mt-3 space-y-3">
           {factors.map((factor) => (
             <div key={factor.label} className="space-y-1">
@@ -81,7 +98,10 @@ export default function AIPanel() {
                 <span>{factor.value}%</span>
               </div>
               <div className="h-1.5 w-full rounded-full bg-elevated">
-                <div className={`h-1.5 rounded-full ${factor.value >= 50 ? 'bg-[#16A34A]' : 'bg-[#DC2626]'}`} style={{ width: `${factor.value}%` }} />
+                <div
+                  className={`h-1.5 rounded-full ${factor.value >= 50 ? 'bg-[#16A34A]' : 'bg-[#DC2626]'}`}
+                  style={{ width: `${factor.value}%` }}
+                />
               </div>
             </div>
           ))}
@@ -94,13 +114,19 @@ export default function AIPanel() {
             was told the engine's rationale under a News heading. The sentiment
             headlines live in the left panel's Sentiment block, fed by
             /api/sentiment. */}
-        <div className="text-xs font-semibold uppercase tracking-widest text-text-secondary">Decision Rationale</div>
-        <div className="mt-2 text-sm font-semibold text-text-primary border-b border-border-default pb-2">{headline}</div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
+          Decision Rationale
+        </div>
+        <div className="mt-2 text-sm font-semibold text-text-primary border-b border-border-default pb-2">
+          {headline}
+        </div>
         <div className="mt-2 text-xs text-text-muted">{timestamp}</div>
       </section>
 
       <section className="rounded-lg border border-border-default bg-card p-4 panel-shadow">
-        <div className="text-xs font-semibold uppercase tracking-widest text-text-secondary">Extra Insights</div>
+        <div className="text-xs font-semibold uppercase tracking-widest text-text-secondary">
+          Extra Insights
+        </div>
         <ul className="mt-2 space-y-2 text-sm text-text-secondary">
           {insights.map((item, index) => (
             <li key={`${item}-${index}`} className="flex items-start gap-2">

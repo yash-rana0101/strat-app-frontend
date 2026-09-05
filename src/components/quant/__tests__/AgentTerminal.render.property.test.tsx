@@ -29,7 +29,11 @@ vi.mock('@/lib/bridge', async (importOriginal) => ({
 }));
 
 import AgentTerminal from '../AgentTerminal';
-import { useQuantStore, type StreamEventPayload, type ExecutionLevels } from '@/store/useQuantStore';
+import {
+  useQuantStore,
+  type StreamEventPayload,
+  type ExecutionLevels,
+} from '@/store/useQuantStore';
 import { useTradeStore } from '@/store/useTradeStore';
 
 // jsdom lacks scrollIntoView (AgentTerminal auto-scrolls in an effect).
@@ -77,7 +81,10 @@ function driveNonActionableRun(opts: {
 
   store.handleStreamEvent({ event: 'RUN_STARTED', data: { thread_id: tid } } as StreamEventPayload);
   store.handleStreamEvent({ event: 'DECISION', data: decisionData } as StreamEventPayload);
-  store.handleStreamEvent({ event: 'RUN_FINISHED', data: { thread_id: tid, status: 'completed' } } as StreamEventPayload);
+  store.handleStreamEvent({
+    event: 'RUN_FINISHED',
+    data: { thread_id: tid, status: 'completed' },
+  } as StreamEventPayload);
 
   useTradeStore.setState({
     selectedSymbol: SYMBOL,
@@ -105,7 +112,7 @@ afterEach(() => {
 const arbProse = fc.stringMatching(/^[a-zA-Z0-9 .,:>=x-]{0,60}$/);
 const arbConviction = fc.option(
   fc.double({ min: 0, max: 100, noNaN: true, noDefaultInfinity: true }),
-  { nil: undefined },
+  { nil: undefined }
 );
 // A validity-irrelevant levels object: even a *valid* directional level set must
 // stay gated off when the decision is HOLD / stand_aside.
@@ -115,7 +122,7 @@ const arbMaybeLevels = fc.option(
     stop_loss: fc.double({ min: 1, max: 100000, noNaN: true, noDefaultInfinity: true }),
     take_profit: fc.double({ min: 1, max: 100000, noNaN: true, noDefaultInfinity: true }),
   }),
-  { nil: undefined },
+  { nil: undefined }
 );
 
 describe('Property 8 (render): a committed HOLD / stand_aside never renders an executable trade card', () => {
@@ -129,7 +136,10 @@ describe('Property 8 (render): a committed HOLD / stand_aside never renders an e
         // At least one arm of the bug condition holds: action HOLD OR tier stand_aside.
         fc.oneof(
           fc.record({ action: fc.constant<'HOLD'>('HOLD'), standAside: fc.boolean() }),
-          fc.record({ action: fc.constantFrom<'BUY' | 'SELL'>('BUY', 'SELL'), standAside: fc.constant(true) }),
+          fc.record({
+            action: fc.constantFrom<'BUY' | 'SELL'>('BUY', 'SELL'),
+            standAside: fc.constant(true),
+          })
         ),
         arbConviction,
         arbMaybeLevels,
@@ -152,7 +162,9 @@ describe('Property 8 (render): a committed HOLD / stand_aside never renders an e
           expect(screen.queryByRole('button', { name: /approve\s*&\s*execute/i })).toBeNull();
           // R1.2 — no actionable-plan chrome; a Stand Aside panel instead.
           expect(screen.queryByText(/actionable trade plan ready/i)).toBeNull();
-          expect(screen.queryByText(/stand aside\s*—\s*no trade/i)).not.toBeNull();
+          expect(
+            screen.queryByText(/stand aside\s*—\s*(no trade|risk guard active)/i)
+          ).not.toBeNull();
           // R1.4/R1.8 — no last-close-synthesized level cells.
           expect(screen.queryByText('₹500.00')).toBeNull();
           expect(screen.queryByText('₹490.00')).toBeNull();
@@ -161,9 +173,9 @@ describe('Property 8 (render): a committed HOLD / stand_aside never renders an e
           expect(screen.queryByText(/75%\s*conviction/i)).toBeNull();
 
           cleanup();
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -195,9 +207,9 @@ describe('Property 8 (render): a committed HOLD / stand_aside never renders an e
           expect(screen.queryByText('₹525.00')).toBeNull();
 
           cleanup();
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

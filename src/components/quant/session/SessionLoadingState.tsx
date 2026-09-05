@@ -60,12 +60,8 @@ export default function SessionLoadingState({
         </div>
 
         {/* Title and context */}
-        <h3 className="text-sm font-bold tracking-tight text-text-primary">
-          {title}
-        </h3>
-        <p className="mt-1 text-xs text-text-muted leading-relaxed">
-          {description}
-        </p>
+        <h3 className="text-sm font-bold tracking-tight text-text-primary">{title}</h3>
+        <p className="mt-1 text-xs text-text-muted leading-relaxed">{description}</p>
 
         {symbol && (
           <span className="mt-2.5 inline-flex items-center rounded-sm border border-border-default bg-elevated/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-text-secondary">

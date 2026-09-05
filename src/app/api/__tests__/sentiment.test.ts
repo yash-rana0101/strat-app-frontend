@@ -87,7 +87,7 @@ describe('toSentimentPayload', () => {
   it('falls back to the requested symbol when upstream omits it', () => {
     expect(toSentimentPayload('SBIN', { conviction_score: 50 }).symbol).toBe('SBIN');
     expect(toSentimentPayload('SBIN', { conviction_score: 50, symbol: 'SBIN-EQ' }).symbol).toBe(
-      'SBIN-EQ',
+      'SBIN-EQ'
     );
   });
 
@@ -123,7 +123,7 @@ describe('GET — a missing verdict reports which kind of missing it is', () => 
       new Response(JSON.stringify(body), {
         status,
         headers: { 'Content-Type': 'application/json' },
-      }),
+      })
     );
 
   afterEach(() => {

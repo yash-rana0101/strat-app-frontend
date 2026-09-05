@@ -20,11 +20,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import fc from 'fast-check';
 
-import {
-  useChartUIStore,
-  type ChartPaneState,
-  type PaneId,
-} from '@/store/useChartUIStore';
+import { useChartUIStore, type ChartPaneState, type PaneId } from '@/store/useChartUIStore';
 import { useTradeStore, type ChartTimeframe } from '@/store/useTradeStore';
 import type { ChartType } from '@/charting/engines';
 
@@ -113,7 +109,7 @@ describe('Property 4: split round-trip preserves the active pane', () => {
         expect(after.timeframe).toBe(before.timeframe);
         expect(after.chartType).toBe(before.chartType);
       }),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 
@@ -137,7 +133,7 @@ describe('Property 4: split round-trip preserves the active pane', () => {
         // Every pane survived the toggle untouched.
         expect(store().panes).toEqual(panesBefore);
       }),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 
@@ -163,9 +159,9 @@ describe('Property 4: split round-trip preserves the active pane', () => {
           expect(after.symbol).toBe(before.symbol);
           expect(after.timeframe).toBe(before.timeframe);
           expect(after.chartType).toBe(before.chartType);
-        },
+        }
       ),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 });

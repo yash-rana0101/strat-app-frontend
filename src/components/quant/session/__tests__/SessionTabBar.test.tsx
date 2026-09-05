@@ -83,7 +83,7 @@ function renderBar(props: { onActivate?: (id: string) => void } = {}) {
   return render(
     <QueryClientProvider client={client}>
       <SessionTabBar {...props} />
-    </QueryClientProvider>,
+    </QueryClientProvider>
   );
 }
 
@@ -144,7 +144,9 @@ describe('the list comes from the server', () => {
     renderBar();
 
     await screen.findByRole('tab', { name: /INFY/ });
-    const selected = screen.getAllByRole('tab').filter((t) => t.getAttribute('aria-selected') === 'true');
+    const selected = screen
+      .getAllByRole('tab')
+      .filter((t) => t.getAttribute('aria-selected') === 'true');
     expect(selected).toHaveLength(1);
     expect(selected[0].getAttribute('id')).toBe('fq-tab-b');
   });
@@ -183,7 +185,7 @@ describe('the streaming indicator', () => {
     // represent at all.
     expect(await screen.findByRole('tab', { name: /INFY.*analysis running/ })).toBeTruthy();
     expect(screen.getByRole('tab', { name: /RELIANCE/ }).getAttribute('aria-label')).not.toMatch(
-      /analysis running/,
+      /analysis running/
     );
   });
 });
@@ -346,8 +348,10 @@ describe('closing a tab', () => {
     await clickAsync(close);
 
     await waitFor(() => {
-      const archiveCall = fetchMock.mock.calls.find(([url, init]) =>
-        String(url).includes('/sessions/a') && (init as RequestInit | undefined)?.method === 'PATCH',
+      const archiveCall = fetchMock.mock.calls.find(
+        ([url, init]) =>
+          String(url).includes('/sessions/a') &&
+          (init as RequestInit | undefined)?.method === 'PATCH'
       );
       expect(archiveCall).toBeDefined();
     });
@@ -378,7 +382,7 @@ describe('closing a tab', () => {
     expect(dialog.textContent).toMatch(/still running/);
     // Nothing archived yet.
     expect(
-      fetchMock.mock.calls.some(([, init]) => (init as RequestInit | undefined)?.method === 'PATCH'),
+      fetchMock.mock.calls.some(([, init]) => (init as RequestInit | undefined)?.method === 'PATCH')
     ).toBe(false);
   });
 
@@ -395,7 +399,7 @@ describe('closing a tab', () => {
 
     expect(screen.queryByRole('alertdialog')).toBeNull();
     expect(
-      fetchMock.mock.calls.some(([, init]) => (init as RequestInit | undefined)?.method === 'PATCH'),
+      fetchMock.mock.calls.some(([, init]) => (init as RequestInit | undefined)?.method === 'PATCH')
     ).toBe(false);
   });
 
@@ -411,8 +415,8 @@ describe('closing a tab', () => {
 
     await waitFor(() =>
       expect(
-        fetchMock.mock.calls.some(([, i]) => (i as RequestInit | undefined)?.method === 'PATCH'),
-      ).toBe(true),
+        fetchMock.mock.calls.some(([, i]) => (i as RequestInit | undefined)?.method === 'PATCH')
+      ).toBe(true)
     );
     expect(screen.getByRole('tab', { name: /RELIANCE/ })).toBeTruthy();
   });
@@ -422,7 +426,8 @@ describe('closing a tab', () => {
     // close button does nothing". The rejection also has to be caught: left alone it surfaces as an
     // unhandled promise rejection and takes the process down in CI.
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
-      if (init?.method === 'PATCH') return Promise.resolve(json({ detail: 'archive blew up' }, 500));
+      if (init?.method === 'PATCH')
+        return Promise.resolve(json({ detail: 'archive blew up' }, 500));
       return Promise.resolve(json({ items: [summary({ session_id: 'a' })], next_cursor: null }));
     });
     renderBar();
@@ -446,7 +451,7 @@ describe('closing a tab', () => {
         json({
           items: [summary({ session_id: 'a' }), summary({ session_id: 'b', symbol: 'INFY' })],
           next_cursor: null,
-        }),
+        })
       );
     });
     useSessionStore.getState().setActiveSession('a');
@@ -477,7 +482,7 @@ describe('closing a tab', () => {
 describe('overflow', () => {
   const many = (n: number) =>
     Array.from({ length: n }, (_, i) =>
-      summary({ session_id: `s${i}`, symbol: `SYM${i}`, created_at: OPEN_IST + i * 60 }),
+      summary({ session_id: `s${i}`, symbol: `SYM${i}`, created_at: OPEN_IST + i * 60 })
     );
 
   it('shows every tab up to the threshold', async () => {
@@ -544,7 +549,9 @@ describe('malformed list responses', () => {
       // `items: null` rather than a missing key: a JSON serialiser that emits null for an empty
       // collection is common, and `?? []` has to cover it too.
       return Promise.resolve(
-        call === 1 ? json({ items: null, next_cursor: null }) : json({ items: [summary()], next_cursor: null }),
+        call === 1
+          ? json({ items: null, next_cursor: null })
+          : json({ items: [summary()], next_cursor: null })
       );
     });
 

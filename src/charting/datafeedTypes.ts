@@ -40,7 +40,7 @@ export interface LibrarySymbolInfo {
 
 // ── Bar ───────────────────────────────────────────────────────────────────
 export interface Bar {
-  time: number;   // UTC milliseconds
+  time: number; // UTC milliseconds
   open: number;
   high: number;
   low: number;
@@ -50,8 +50,8 @@ export interface Bar {
 
 // ── Period Params (getBars) ───────────────────────────────────────────────
 export interface PeriodParams {
-  from: number;     // UNIX seconds
-  to: number;       // UNIX seconds
+  from: number; // UNIX seconds
+  to: number; // UNIX seconds
   countBack: number;
   firstDataRequest: boolean;
 }
@@ -91,26 +91,22 @@ export interface IBasicDatafeed {
     userInput: string,
     exchange: string,
     symbolType: string,
-    onResult: SearchSymbolsCallback,
+    onResult: SearchSymbolsCallback
   ) => void;
-  resolveSymbol: (
-    symbolName: string,
-    onResolve: ResolveCallback,
-    onError: ErrorCallback,
-  ) => void;
+  resolveSymbol: (symbolName: string, onResolve: ResolveCallback, onError: ErrorCallback) => void;
   getBars: (
     symbolInfo: LibrarySymbolInfo,
     resolution: ResolutionString,
     periodParams: PeriodParams,
     onResult: HistoryCallback,
-    onError: ErrorCallback,
+    onError: ErrorCallback
   ) => void;
   subscribeBars: (
     symbolInfo: LibrarySymbolInfo,
     resolution: ResolutionString,
     onTick: SubscribeBarsCallback,
     listenerGuid: string,
-    onResetCacheNeededCallback: () => void,
+    onResetCacheNeededCallback: () => void
   ) => void;
   unsubscribeBars: (listenerGuid: string) => void;
 }

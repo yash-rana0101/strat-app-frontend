@@ -52,7 +52,7 @@ function leafArb(): fc.Arbitrary<NaOr<number>> {
         noNaN: true,
         noDefaultInfinity: true,
       }) as fc.Arbitrary<NaOr<number>>,
-    },
+    }
   );
 }
 
@@ -173,7 +173,7 @@ describe('Property 7: market-closed payloads show the most recent snapshot or an
           expect(state.marketStatus).toBe('closed');
         }
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -198,7 +198,7 @@ describe('Property 7: market-closed payloads show the most recent snapshot or an
           expect(state).not.toHaveProperty('marketStatus');
         }
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

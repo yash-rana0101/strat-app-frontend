@@ -76,7 +76,7 @@ export default function DeepQuantAgentDialog({
 
   const { selectedId, setSelectedId, selectedStep, selectedResult } = useAgentStepDetail(
     initialSelectedId,
-    reasoningSteps,
+    reasoningSteps
   );
 
   const handleVerifySubmit = () => {
@@ -153,10 +153,11 @@ export default function DeepQuantAgentDialog({
                   aria-expanded={historyOpen}
                   aria-label="Session history"
                   title="Session history"
-                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${historyOpen
+                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                    historyOpen
                       ? 'bg-elevated border-primary/50 text-text-primary shadow-xs'
                       : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
-                    }`}
+                  }`}
                 >
                   <History size={11} aria-hidden="true" />
                   <span>History</span>
@@ -284,7 +285,10 @@ export default function DeepQuantAgentDialog({
 
           {/* ── Q&A, sticky at the bottom ──────────────────────────────── */}
           {hasRun && (
-            <div className="shrink-0 border-t border-border-default" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+            <div
+              className="shrink-0 border-t border-border-default"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+            >
               <TradeQaPanel />
             </div>
           )}

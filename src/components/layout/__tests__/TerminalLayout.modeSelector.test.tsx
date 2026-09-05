@@ -69,7 +69,11 @@ describe('Mode_Selector — four peer modes render and switch (R1.1, R1.2, R1.4,
   afterEach(() => cleanup());
 
   it('renders all four Workspace_Modes (Intraday, Swing, Investor, F&O)', () => {
-    render(<TerminalLayout leftPanel={<div data-testid="left" />}>{<div data-testid="ws" />}</TerminalLayout>);
+    render(
+      <TerminalLayout leftPanel={<div data-testid="left" />}>
+        {<div data-testid="ws" />}
+      </TerminalLayout>
+    );
 
     for (const { key, label } of ALL_PROFILES) {
       const btn = modeButton(key);
@@ -85,7 +89,7 @@ describe('Mode_Selector — four peer modes render and switch (R1.1, R1.2, R1.4,
 
       fireEvent.click(modeButton(key));
       expect(useTradeStore.getState().activeProfile).toBe(key);
-    },
+    }
   );
 
   it('switching modes is mutually exclusive — exactly one mode is active at a time', () => {
@@ -126,7 +130,7 @@ describe('Mode_Selector — four peer modes render and switch (R1.1, R1.2, R1.4,
 
     // Exactly one mode is ever indicated as active.
     const pressed = ALL_PROFILES.filter(
-      ({ key }) => modeButton(key).getAttribute('aria-pressed') === 'true',
+      ({ key }) => modeButton(key).getAttribute('aria-pressed') === 'true'
     );
     expect(pressed.map((p) => p.key)).toEqual(['FNO']);
   });
@@ -156,12 +160,30 @@ describe('Mode_Selector — F&O is reachable ONLY via the selector (R1.3)', () =
  * REAL `useTradeStore.activeProfile`) with the heavy workspace children mocked.
  * ───────────────────────────────────────────────────────────────────────── */
 
-const IntradayStub = () => <div data-testid="workspace" data-kind="INTRADAY">Intraday</div>;
-const SwingStub = () => <div data-testid="workspace" data-kind="SWING">Swing</div>;
-const InvestorStub = () => <div data-testid="workspace" data-kind="INVESTOR">Investor</div>;
-const FnoStub = () => <div data-testid="workspace" data-kind="FNO">FnoSection</div>;
+const IntradayStub = () => (
+  <div data-testid="workspace" data-kind="INTRADAY">
+    Intraday
+  </div>
+);
+const SwingStub = () => (
+  <div data-testid="workspace" data-kind="SWING">
+    Swing
+  </div>
+);
+const InvestorStub = () => (
+  <div data-testid="workspace" data-kind="INVESTOR">
+    Investor
+  </div>
+);
+const FnoStub = () => (
+  <div data-testid="workspace" data-kind="FNO">
+    FnoSection
+  </div>
+);
 const SplitStub = ({ mode }: { mode: string }) => (
-  <div data-testid="workspace" data-kind="SPLIT" data-mode={mode}>Split</div>
+  <div data-testid="workspace" data-kind="SPLIT" data-mode={mode}>
+    Split
+  </div>
 );
 
 /**
@@ -246,6 +268,6 @@ describe('Property 9 — non-regression of existing profiles across F&O round-tr
       // The profile's rendered structure is byte-for-byte identical to baseline.
       expect(container.innerHTML).toBe(baseline);
       expect(screen.getByTestId('workspace')).toHaveAttribute('data-kind', profile);
-    },
+    }
   );
 });

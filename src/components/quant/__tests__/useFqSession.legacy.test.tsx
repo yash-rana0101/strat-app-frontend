@@ -117,7 +117,7 @@ describe('the composer gate matches the old inline expression', () => {
     (sessionStatus, currentThreadId, qaStatus, expected) => {
       useQuantStore.setState({ sessionStatus, currentThreadId, qaStatus });
       expect(harness(useFqCanAskQuestion).current).toBe(expected);
-    },
+    }
   );
 });
 

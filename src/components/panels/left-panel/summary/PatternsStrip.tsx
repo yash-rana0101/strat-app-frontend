@@ -75,8 +75,7 @@ export default function PatternsStrip({
       detail={
         total > 0 ? (
           <p className="truncate text-[9px] leading-snug text-text-muted">
-            Strongest on{' '}
-            <span className="font-bold text-text-secondary">{bestTf}</span>
+            Strongest on <span className="font-bold text-text-secondary">{bestTf}</span>
             {bestTfCount > 0 && <span> · {bestTfCount} there</span>}
           </p>
         ) : null

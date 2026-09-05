@@ -35,12 +35,7 @@ import type { Drawing, Point } from '../../store/useChartUIStore';
  * toolbar and to drive category-specific behavior.
  */
 export type DrawingCategory =
-  | 'trend-line'
-  | 'channel'
-  | 'fibonacci'
-  | 'shape'
-  | 'text'
-  | 'projection';
+  'trend-line' | 'channel' | 'fibonacci' | 'shape' | 'text' | 'projection';
 
 /**
  * Describes how many anchor points a tool needs before it becomes a complete
@@ -65,8 +60,8 @@ export const MULTI_MIN_ANCHORS = 3;
  */
 export const TOOL_REGISTRY: Record<string, ToolSpec> = {
   // ── Trend lines ──────────────────────────────────────────────────────────
-  'trendline': { tool: 'trendline', anchorCount: 2, category: 'trend-line' },
-  'ray': { tool: 'ray', anchorCount: 2, category: 'trend-line' },
+  trendline: { tool: 'trendline', anchorCount: 2, category: 'trend-line' },
+  ray: { tool: 'ray', anchorCount: 2, category: 'trend-line' },
   'extended-line': { tool: 'extended-line', anchorCount: 2, category: 'trend-line' },
   'horizontal-line': { tool: 'horizontal-line', anchorCount: 1, category: 'trend-line' },
   'horizontal-ray': { tool: 'horizontal-ray', anchorCount: 1, category: 'trend-line' },
@@ -86,16 +81,16 @@ export const TOOL_REGISTRY: Record<string, ToolSpec> = {
   'fib-time-zone': { tool: 'fib-time-zone', anchorCount: 2, category: 'fibonacci' },
 
   // ── Shapes ───────────────────────────────────────────────────────────────
-  'rectangle': { tool: 'rectangle', anchorCount: 2, category: 'shape' },
-  'circle': { tool: 'circle', anchorCount: 2, category: 'shape' },
-  'ellipse': { tool: 'ellipse', anchorCount: 2, category: 'shape' },
+  rectangle: { tool: 'rectangle', anchorCount: 2, category: 'shape' },
+  circle: { tool: 'circle', anchorCount: 2, category: 'shape' },
+  ellipse: { tool: 'ellipse', anchorCount: 2, category: 'shape' },
   'triangle-shape': { tool: 'triangle-shape', anchorCount: 3, category: 'shape' },
-  'path': { tool: 'path', anchorCount: 'multi', category: 'shape' },
-  'polyline': { tool: 'polyline', anchorCount: 'multi', category: 'shape' },
+  path: { tool: 'path', anchorCount: 'multi', category: 'shape' },
+  polyline: { tool: 'polyline', anchorCount: 'multi', category: 'shape' },
 
   // ── Text & notes ─────────────────────────────────────────────────────────
-  'text': { tool: 'text', anchorCount: 1, category: 'text' },
-  'note': { tool: 'note', anchorCount: 1, category: 'text' },
+  text: { tool: 'text', anchorCount: 1, category: 'text' },
+  note: { tool: 'note', anchorCount: 1, category: 'text' },
 
   // ── Projection ───────────────────────────────────────────────────────────
   'long-position': { tool: 'long-position', anchorCount: 2, category: 'projection' },
@@ -170,7 +165,7 @@ export function magnetSnap(
   pointer: Point,
   candle: ChartCandle,
   pxPerPrice: number,
-  thresholdPx = 10,
+  thresholdPx = 10
 ): Point {
   const candidates = [candle.open, candle.high, candle.low, candle.close];
 

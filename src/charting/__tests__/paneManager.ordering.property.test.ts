@@ -128,9 +128,7 @@ describe('Property 7: oscillator panes stack in addition order', () => {
           }
         }
 
-        const expectedPaneOrder = firstAppearanceOrder(calls).map(
-          (id) => instanceToPane.get(id)!,
-        );
+        const expectedPaneOrder = firstAppearanceOrder(calls).map((id) => instanceToPane.get(id)!);
 
         const layout = mgr.layout();
 
@@ -138,17 +136,13 @@ describe('Property 7: oscillator panes stack in addition order', () => {
         expect(layout.length).toBe(expectedPaneOrder.length);
 
         // `order` field is a contiguous 0..n-1 top→bottom sequence.
-        expect(layout.map((l) => l.order)).toEqual(
-          expectedPaneOrder.map((_, i) => i),
-        );
+        expect(layout.map((l) => l.order)).toEqual(expectedPaneOrder.map((_, i) => i));
 
         // The pane ids, read top→bottom, are exactly the addition order.
-        const actualPaneOrder = [...layout]
-          .sort((a, b) => a.order - b.order)
-          .map((l) => l.paneId);
+        const actualPaneOrder = [...layout].sort((a, b) => a.order - b.order).map((l) => l.paneId);
         expect(actualPaneOrder).toEqual(expectedPaneOrder);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -179,9 +173,9 @@ describe('Property 7: oscillator panes stack in addition order', () => {
             .map((l) => l.paneId);
 
           expect(afterPaneIds).toEqual(baselinePaneIds);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

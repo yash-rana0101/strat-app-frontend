@@ -38,7 +38,7 @@ beforeEach(() => {
 });
 
 describe('apiRequest', () => {
-  it("sends credentials so the .stratai.live cookie rides along", async () => {
+  it('sends credentials so the .stratai.live cookie rides along', async () => {
     fetchMock.mockResolvedValue(ok({ id: 'u_1' }));
 
     await apiRequest('/users/me');
@@ -124,7 +124,7 @@ describe('apiRequest', () => {
     ]);
 
     const refreshCalls = fetchMock.mock.calls.filter(([u]) =>
-      String(u).includes('/auth/refresh-token'),
+      String(u).includes('/auth/refresh-token')
     );
     expect(refreshCalls).toHaveLength(1);
   });

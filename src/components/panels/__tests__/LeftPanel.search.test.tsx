@@ -57,7 +57,10 @@ vi.mock('../../../lib/bridge', async (importOriginal) => ({
 // Stub the heavy bottom-section children — unrelated to the search dropdown.
 vi.mock('../left-panel/LiveAssetHUD', () => ({ __esModule: true, default: () => null }));
 vi.mock('../left-panel/SentimentBlock', () => ({ __esModule: true, default: () => null }));
-vi.mock('../../quant/deep-quant/MultiTfPatternsView', () => ({ __esModule: true, default: () => null }));
+vi.mock('../../quant/deep-quant/MultiTfPatternsView', () => ({
+  __esModule: true,
+  default: () => null,
+}));
 
 import LeftPanel from '../LeftPanel';
 import { useTradeStore } from '../../../store/useTradeStore';
@@ -74,7 +77,12 @@ type SearchResult =
       optionType: 'CE' | 'PE' | 'FUT';
     };
 
-const EQ_RESULT: SearchResult = { kind: 'EQ', symbol: 'RELIANCE', name: 'Reliance Industries', exchange: 'NSE' };
+const EQ_RESULT: SearchResult = {
+  kind: 'EQ',
+  symbol: 'RELIANCE',
+  name: 'Reliance Industries',
+  exchange: 'NSE',
+};
 const FNO_RESULT: SearchResult = {
   kind: 'FNO',
   tradingsymbol: 'NIFTY24DEC24000CE',

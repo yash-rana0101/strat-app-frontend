@@ -18,14 +18,13 @@ import type { ChartCandle } from '@/charting/types';
 const RUNS = 100;
 
 /** A single finite OHLC value generator. */
-const price = () =>
-  fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
 
 /** Generate a ChartCandle at a fixed time with arbitrary finite OHLC values. */
 const candleAt = (time: number): fc.Arbitrary<ChartCandle> =>
-  fc.record({ open: price(), high: price(), low: price(), close: price() }).map(
-    (ohlc) => ({ time, ...ohlc }),
-  );
+  fc
+    .record({ open: price(), high: price(), low: price(), close: price() })
+    .map((ohlc) => ({ time, ...ohlc }));
 
 /**
  * Generate a non-empty canonical series: strictly ascending, unique
@@ -47,36 +46,37 @@ const canonicalSeries = (): fc.Arbitrary<ChartCandle[]> =>
 describe('Property 29: live update of the latest candle changes only that candle', () => {
   it('update (time === last.time) replaces only the last candle, keeping earlier candles unchanged', () => {
     fc.assert(
-      fc.property(canonicalSeries(), price(), price(), price(), price(), (
-        series,
-        open,
-        high,
-        low,
-        close,
-      ) => {
-        const lastTime = series[series.length - 1].time;
-        const update: ChartCandle = { time: lastTime, open, high, low, close };
+      fc.property(
+        canonicalSeries(),
+        price(),
+        price(),
+        price(),
+        price(),
+        (series, open, high, low, close) => {
+          const lastTime = series[series.length - 1].time;
+          const update: ChartCandle = { time: lastTime, open, high, low, close };
 
-        const result = applyLatestCandleUpdate(series, update);
+          const result = applyLatestCandleUpdate(series, update);
 
-        // Classification is an in-place update.
-        expect(result.kind).toBe('update');
-        // Same length: no candle added or removed.
-        expect(result.series).toHaveLength(series.length);
+          // Classification is an in-place update.
+          expect(result.kind).toBe('update');
+          // Same length: no candle added or removed.
+          expect(result.series).toHaveLength(series.length);
 
-        // Every earlier candle is unchanged by reference (only the last changes).
-        for (let i = 0; i < series.length - 1; i += 1) {
-          expect(result.series[i]).toBe(series[i]);
+          // Every earlier candle is unchanged by reference (only the last changes).
+          for (let i = 0; i < series.length - 1; i += 1) {
+            expect(result.series[i]).toBe(series[i]);
+          }
+
+          // The last candle is exactly the update.
+          expect(result.series[result.series.length - 1]).toEqual(update);
+          expect(result.candle).toEqual(update);
+
+          // The input series is not mutated.
+          expect(series[series.length - 1].time).toBe(lastTime);
         }
-
-        // The last candle is exactly the update.
-        expect(result.series[result.series.length - 1]).toEqual(update);
-        expect(result.candle).toEqual(update);
-
-        // The input series is not mutated.
-        expect(series[series.length - 1].time).toBe(lastTime);
-      }),
-      { numRuns: RUNS },
+      ),
+      { numRuns: RUNS }
     );
   });
 
@@ -104,9 +104,9 @@ describe('Property 29: live update of the latest candle changes only that candle
           // The appended candle is the new latest.
           expect(result.series[result.series.length - 1]).toEqual(update);
           expect(result.candle).toEqual(update);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -123,13 +123,8 @@ describe('Property 29: live update of the latest candle changes only that candle
         (series, pick, open, high, low, close) => {
           const lastTime = series[series.length - 1].time;
           // Choose an existing earlier timestamp strictly less than the last.
-          const earlierTimes = series
-            .slice(0, series.length - 1)
-            .map((c) => c.time);
-          const idx = Math.min(
-            earlierTimes.length - 1,
-            Math.floor(pick * earlierTimes.length),
-          );
+          const earlierTimes = series.slice(0, series.length - 1).map((c) => c.time);
+          const idx = Math.min(earlierTimes.length - 1, Math.floor(pick * earlierTimes.length));
           const targetTime = earlierTimes[idx];
           const update: ChartCandle = { time: targetTime, open, high, low, close };
 
@@ -146,9 +141,9 @@ describe('Property 29: live update of the latest candle changes only that candle
           const merged = result.series.find((c) => c.time === targetTime);
           expect(merged).toEqual(update);
           expect(result.candle).toEqual(update);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -160,7 +155,7 @@ describe('Property 29: live update of the latest candle changes only that candle
         expect(result.series).toEqual([update]);
         expect(result.candle).toEqual(update);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

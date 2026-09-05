@@ -58,5 +58,4 @@ export interface NumericRange {
  * while the caller retains its last valid state.
  */
 export type ValidationResult<T> =
-  | { ok: true; value: T }
-  | { ok: false; errorParam: string; message: string };
+  { ok: true; value: T } | { ok: false; errorParam: string; message: string };

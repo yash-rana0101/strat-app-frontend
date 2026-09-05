@@ -25,8 +25,7 @@ export function clearAllCancelled(): void {
 
 export function isRunCancelled(sessionId?: string | null, threadId?: string | null): boolean {
   return Boolean(
-    (sessionId && cancelledSessions.has(sessionId)) ||
-    (threadId && cancelledThreads.has(threadId))
+    (sessionId && cancelledSessions.has(sessionId)) || (threadId && cancelledThreads.has(threadId))
   );
 }
 
@@ -40,4 +39,3 @@ export function createCancelReasoningStep(detail?: string | null): ReasoningStep
     timestamp: Date.now(),
   };
 }
-

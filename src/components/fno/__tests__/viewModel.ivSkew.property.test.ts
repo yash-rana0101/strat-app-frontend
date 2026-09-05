@@ -84,7 +84,7 @@ function partitionedChainArb() {
           // For each strike decide whether it carries a finite or non-finite IV.
           fc.array(fc.boolean(), { minLength: strikes.length, maxLength: strikes.length }),
           fc.array(finiteIvArb, { minLength: strikes.length, maxLength: strikes.length }),
-          fc.array(nonFiniteIvArb, { minLength: strikes.length, maxLength: strikes.length }),
+          fc.array(nonFiniteIvArb, { minLength: strikes.length, maxLength: strikes.length })
         )
         .map(([isFiniteFlags, finiteIvs, nullIvs]) => {
           const finite: FnoChainRow[] = [];
@@ -97,7 +97,7 @@ function partitionedChainArb() {
             }
           });
           return { finite, nullish };
-        }),
+        })
     );
 }
 
@@ -132,7 +132,7 @@ describe('Property 2: IV skew excludes null-IV strikes and goes unavailable when
           expect(emittedStrikes.has(r.strike)).toBe(false);
         }
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -145,7 +145,7 @@ describe('Property 2: IV skew excludes null-IV strikes and goes unavailable when
         // Empty <=> no finite-IV strike exists in the chain.
         expect(model.points.length === 0).toBe(finite.length === 0);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -161,7 +161,7 @@ describe('Property 2: IV skew excludes null-IV strikes and goes unavailable when
         expect(withNulls.points).toEqual(baseline.points);
         expect(withNullsAlt.points).toEqual(baseline.points);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

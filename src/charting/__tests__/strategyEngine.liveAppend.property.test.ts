@@ -36,8 +36,7 @@ import type { ChartCandle } from '@/charting/types';
 const RUNS = 100;
 
 /** A single finite price value generator. */
-const price = () =>
-  fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 100_000, noNaN: true, noDefaultInfinity: true });
 
 /** Generate a well-formed OHLC candle at a fixed time. */
 const candleAt = (time: number): fc.Arbitrary<ChartCandle> =>
@@ -95,7 +94,7 @@ describe('Property 6: Live append equals full recompute (strategies)', () => {
           expect(
             fullSettled.length,
             `${id}: settled signal count changed after append: ` +
-              `full(before newest)=${fullSettled.length} prefix=${prefixSignals.length}`,
+              `full(before newest)=${fullSettled.length} prefix=${prefixSignals.length}`
           ).toBe(prefixSignals.length);
 
           for (let i = 0; i < fullSettled.length; i++) {
@@ -103,11 +102,11 @@ describe('Property 6: Live append equals full recompute (strategies)', () => {
               sameSignal(fullSettled[i], prefixSignals[i]),
               `${id}: signal ${i} changed retroactively after append: ` +
                 `full=${JSON.stringify(fullSettled[i])} ` +
-                `prefix=${JSON.stringify(prefixSignals[i])}`,
+                `prefix=${JSON.stringify(prefixSignals[i])}`
             ).toBe(true);
           }
         }),
-        { numRuns: RUNS },
+        { numRuns: RUNS }
       );
     });
   }

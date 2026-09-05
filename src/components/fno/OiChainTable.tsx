@@ -58,55 +58,83 @@ export default function OiChainTable({
                 className={`transition-colors hover:bg-elevated/20 ${
                   isRowHighlighted
                     ? 'bg-emerald-500/5 font-black border-y border-emerald-500/20'
-                    : isMaxPain ? 'bg-amber-500/5' :
-                      isSupport ? 'bg-emerald-500/5' :
-                      isResist ? 'bg-rose-500/5' : ''
+                    : isMaxPain
+                      ? 'bg-amber-500/5'
+                      : isSupport
+                        ? 'bg-emerald-500/5'
+                        : isResist
+                          ? 'bg-rose-500/5'
+                          : ''
                 }`}
               >
                 {/* Call OI bar — right aligned */}
-                <td className={`px-2 py-0.5 text-right transition-colors ${
-                  isRowHighlighted && highlightedSide === 'CE'
-                    ? 'bg-cyan-500/10 border-l border-cyan-500/40'
-                    : ''
-                }`}>
+                <td
+                  className={`px-2 py-0.5 text-right transition-colors ${
+                    isRowHighlighted && highlightedSide === 'CE'
+                      ? 'bg-cyan-500/10 border-l border-cyan-500/40'
+                      : ''
+                  }`}
+                >
                   <div className="flex items-center justify-end gap-1 w-full">
                     {row.callOi !== null && cWidth > 2 && (
-                      <div className="h-1.5 rounded-full bg-cyan-500/60 shrink-0" style={{ width: `${cWidth}px` }} />
+                      <div
+                        className="h-1.5 rounded-full bg-cyan-500/60 shrink-0"
+                        style={{ width: `${cWidth}px` }}
+                      />
                     )}
-                    <span className={`tabular-nums w-16 text-right shrink-0 ${
-                      isRowHighlighted && highlightedSide === 'CE' ? 'text-cyan-300 font-bold' : 'text-cyan-400'
-                    }`}>
+                    <span
+                      className={`tabular-nums w-16 text-right shrink-0 ${
+                        isRowHighlighted && highlightedSide === 'CE'
+                          ? 'text-cyan-300 font-bold'
+                          : 'text-cyan-400'
+                      }`}
+                    >
                       {row.callOi !== null ? (row.callOi / 1000).toFixed(0) + 'K' : '—'}
                     </span>
                   </div>
                 </td>
                 {/* Strike */}
-                <td className={`px-2 py-0.5 text-center font-bold ${
-                  isRowHighlighted
-                    ? 'text-emerald-400 scale-[1.02]'
-                    : isMaxPain ? 'text-amber-400' :
-                      isSupport ? 'text-emerald-400' :
-                      isResist ? 'text-rose-400' : 'text-text-primary'
-                }`}>
+                <td
+                  className={`px-2 py-0.5 text-center font-bold ${
+                    isRowHighlighted
+                      ? 'text-emerald-400 scale-[1.02]'
+                      : isMaxPain
+                        ? 'text-amber-400'
+                        : isSupport
+                          ? 'text-emerald-400'
+                          : isResist
+                            ? 'text-rose-400'
+                            : 'text-text-primary'
+                  }`}
+                >
                   {row.strike.toLocaleString('en-IN')}
                   {isMaxPain && <span className="ml-0.5 text-[7px] text-amber-400">●</span>}
                   {isSupport && <span className="ml-0.5 text-[7px] text-emerald-400">▲</span>}
                   {isResist && <span className="ml-0.5 text-[7px] text-rose-400">▼</span>}
                 </td>
                 {/* Put OI bar — left aligned */}
-                <td className={`px-2 py-0.5 text-left transition-colors ${
-                  isRowHighlighted && highlightedSide === 'PE'
-                    ? 'bg-rose-500/10 border-r border-rose-500/40'
-                    : ''
-                }`}>
+                <td
+                  className={`px-2 py-0.5 text-left transition-colors ${
+                    isRowHighlighted && highlightedSide === 'PE'
+                      ? 'bg-rose-500/10 border-r border-rose-500/40'
+                      : ''
+                  }`}
+                >
                   <div className="flex items-center justify-start gap-1 w-full">
-                    <span className={`tabular-nums w-16 text-left shrink-0 ${
-                      isRowHighlighted && highlightedSide === 'PE' ? 'text-rose-300 font-bold' : 'text-rose-400'
-                    }`}>
+                    <span
+                      className={`tabular-nums w-16 text-left shrink-0 ${
+                        isRowHighlighted && highlightedSide === 'PE'
+                          ? 'text-rose-300 font-bold'
+                          : 'text-rose-400'
+                      }`}
+                    >
                       {row.putOi !== null ? (row.putOi / 1000).toFixed(0) + 'K' : '—'}
                     </span>
                     {row.putOi !== null && pWidth > 2 && (
-                      <div className="h-1.5 rounded-full bg-rose-500/60 shrink-0" style={{ width: `${pWidth}px` }} />
+                      <div
+                        className="h-1.5 rounded-full bg-rose-500/60 shrink-0"
+                        style={{ width: `${pWidth}px` }}
+                      />
                     )}
                   </div>
                 </td>
@@ -116,9 +144,15 @@ export default function OiChainTable({
         </tbody>
       </table>
       <div className="flex gap-4 px-3 py-1 text-[8px] text-text-muted">
-        <span><span className="text-amber-400">●</span> Max Pain</span>
-        <span><span className="text-emerald-400">▲</span> Support</span>
-        <span><span className="text-rose-400">▼</span> Resistance</span>
+        <span>
+          <span className="text-amber-400">●</span> Max Pain
+        </span>
+        <span>
+          <span className="text-emerald-400">▲</span> Support
+        </span>
+        <span>
+          <span className="text-rose-400">▼</span> Resistance
+        </span>
       </div>
     </div>
   );

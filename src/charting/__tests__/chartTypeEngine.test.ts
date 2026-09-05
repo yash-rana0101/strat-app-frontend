@@ -40,10 +40,7 @@ const REQUIRED_CHART_TYPES: ChartType[] = [
 ];
 
 /** Which native series kind and index-mode each chart type should resolve to. */
-const EXPECTED_SHAPE: Record<
-  ChartType,
-  { kind: RenderableSeries['kind']; indexBased: boolean }
-> = {
+const EXPECTED_SHAPE: Record<ChartType, { kind: RenderableSeries['kind']; indexBased: boolean }> = {
   candlestick: { kind: 'candlestick', indexBased: false },
   'hollow-candle': { kind: 'candlestick', indexBased: false },
   'ohlc-bar': { kind: 'bar', indexBased: false },
@@ -135,20 +132,14 @@ describe('fetch failure retains the prior rendered series (Requirement 1.9)', ()
   // The engine is pure; the "retain prior output on fetch failure" behavior
   // lives in the data-flow layer that feeds it. We model that documented
   // contract here: a fetch result drives what the renderer should display.
-  type FetchResult =
-    | { status: 'ok'; candles: ChartCandle[] }
-    | { status: 'error' };
+  type FetchResult = { status: 'ok'; candles: ChartCandle[] } | { status: 'error' };
 
   interface RenderState {
     series: RenderableSeries;
     error: string | null;
   }
 
-  function reduceOnFetch(
-    prev: RenderState,
-    result: FetchResult,
-    type: ChartType,
-  ): RenderState {
+  function reduceOnFetch(prev: RenderState, result: FetchResult, type: ChartType): RenderState {
     if (result.status === 'error') {
       // Requirement 1.9: keep the previously rendered chart, surface an error.
       return { series: prev.series, error: 'data retrieval failed' };

@@ -73,7 +73,7 @@ export async function seedCandles(page: Page) {
   const seeded = await page.evaluate(() =>
     // RELIANCE / 10m is what `DeepQuantPanel` defaults to (`selectedSymbol || 'RELIANCE'`), and the
     // cache key must be `SYMBOL::TIMEFRAME` for `symbolCandleCount` to find it.
-    window.__stratai_test__!.seedCandles({ symbol: 'RELIANCE', timeframe: '10m' }),
+    window.__stratai_test__!.seedCandles({ symbol: 'RELIANCE', timeframe: '10m' })
   );
   expect(seeded, 'seedCandles wrote no candles').toBeGreaterThan(0);
 }

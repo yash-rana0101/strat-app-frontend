@@ -96,9 +96,7 @@ export default function PatternCard({
 
       {/* ── Pattern Description Note ── */}
       {p.description && (
-        <p className="text-[11px] text-text-secondary leading-relaxed font-sans">
-          {p.description}
-        </p>
+        <p className="text-[11px] text-text-secondary leading-relaxed font-sans">{p.description}</p>
       )}
 
       {/* ── Metrics Grid: Formation & Confidence Meters ── */}
@@ -134,9 +132,7 @@ export default function PatternCard({
             <span className="font-semibold uppercase tracking-wider text-text-muted">
               Confidence
             </span>
-            <span className="font-mono font-bold tabular-nums text-text-primary">
-              {confPct}%
-            </span>
+            <span className="font-mono font-bold tabular-nums text-text-primary">{confPct}%</span>
           </div>
           <div
             role="progressbar"
@@ -156,17 +152,18 @@ export default function PatternCard({
 
       {/* ── Bottom Tags: Volume, Breakout & Bias ── */}
       <div className="flex items-center gap-1.5 pt-0.5 flex-wrap">
-        {p.volume_validation && (() => {
-          const vol = volumeTag(p.volume_validation);
-          return (
-            <span
-              title={`Volume: ${p.volume_validation}`}
-              className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-wider ${vol.badge}`}
-            >
-              {vol.glyph} Vol
-            </span>
-          );
-        })()}
+        {p.volume_validation &&
+          (() => {
+            const vol = volumeTag(p.volume_validation);
+            return (
+              <span
+                title={`Volume: ${p.volume_validation}`}
+                className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-wider ${vol.badge}`}
+              >
+                {vol.glyph} Vol
+              </span>
+            );
+          })()}
         {p.breakout_status && (
           <span
             className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[8.5px] font-semibold tracking-wider ${breakoutTag(

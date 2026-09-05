@@ -230,7 +230,7 @@ export function buildOiProfile(payload: FnoPayload): OiProfileModel {
   const points: OiProfilePoint[] = chain
     .filter(
       (row): row is FnoChainRow =>
-        row != null && typeof row.strike === 'number' && Number.isFinite(row.strike),
+        row != null && typeof row.strike === 'number' && Number.isFinite(row.strike)
     )
     .map((row) => ({
       strike: row.strike,
@@ -313,7 +313,7 @@ export function buildIvSkew(payload: FnoPayload): IvSkewModel {
 
   const validStrikes = chain.filter(
     (row): row is FnoChainRow =>
-      row != null && typeof row.strike === 'number' && Number.isFinite(row.strike),
+      row != null && typeof row.strike === 'number' && Number.isFinite(row.strike)
   );
 
   const points: IvSkewPoint[] = validStrikes

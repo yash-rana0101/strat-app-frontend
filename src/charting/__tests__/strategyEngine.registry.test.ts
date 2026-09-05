@@ -18,11 +18,7 @@
 
 import { describe, it, expect } from 'vitest';
 
-import {
-  STRATEGY_REGISTRY,
-  listStrategies,
-  getStrategy,
-} from '@/charting/engines';
+import { STRATEGY_REGISTRY, listStrategies, getStrategy } from '@/charting/engines';
 import type { StrategyDef } from '@/charting/engines';
 import type { ChartCandle } from '@/charting/types';
 
@@ -88,7 +84,7 @@ describe('insufficient data yields no signals (Requirement 8.3)', () => {
 
       // An empty series is also insufficient → no signals.
       expect(def.evaluate([], def.defaults)).toEqual([]);
-    },
+    }
   );
 
   it('a series exactly at requiredLookback is no longer rejected for being too short', () => {

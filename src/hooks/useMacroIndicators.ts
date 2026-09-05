@@ -24,14 +24,12 @@ export interface MacroIndex {
 }
 
 export const MACRO_INDICES: MacroIndex[] = [
-  { kiteKey: 'NSE:NIFTY 50',           label: 'NIFTY 50',       category: 'Benchmark' },
-  { kiteKey: 'NSE:NIFTY BANK',         label: 'BANK NIFTY',     category: 'Benchmark' },
-  { kiteKey: 'NSE:INDIA VIX',          label: 'INDIA VIX',      category: 'Volatility' },
-  { kiteKey: 'NSE:NIFTY IT',           label: 'NIFTY IT',       category: 'Sectoral' },
-  { kiteKey: 'NSE:NIFTY FIN SERVICE',  label: 'NIFTY FIN SVC',  category: 'Sectoral' },
+  { kiteKey: 'NSE:NIFTY 50', label: 'NIFTY 50', category: 'Benchmark' },
+  { kiteKey: 'NSE:NIFTY BANK', label: 'BANK NIFTY', category: 'Benchmark' },
+  { kiteKey: 'NSE:INDIA VIX', label: 'INDIA VIX', category: 'Volatility' },
+  { kiteKey: 'NSE:NIFTY IT', label: 'NIFTY IT', category: 'Sectoral' },
+  { kiteKey: 'NSE:NIFTY FIN SERVICE', label: 'NIFTY FIN SVC', category: 'Sectoral' },
 ];
-
-
 
 // ── Quote Data (mirrors WatchlistPanel's QuoteData) ──────────────────────────
 
@@ -143,8 +141,6 @@ export function useMacroIndicators(): UseMacroIndicatorsReturn {
     };
   }, [fetchMacroQuotes]);
 
-
-
   // ── Build enriched indicators ──────────────────────────────────────────
   const indicators: MacroIndicator[] = MACRO_INDICES.map((idx) => {
     // Extract the symbol portion from kiteKey (e.g. "NSE:NIFTY 50" → "NIFTY 50")
@@ -165,16 +161,20 @@ export function useMacroIndicators(): UseMacroIndicatorsReturn {
     // No reported change → 'flat' as a NEUTRAL PRESENTATION choice (no arrow, no
     // colour), and the change string below reads '—' rather than '+0.00%'.
     const direction: 'up' | 'down' | 'flat' =
-      quote.change === null ? 'flat' : quote.change > 0.01 ? 'up' : quote.change < -0.01 ? 'down' : 'flat';
+      quote.change === null
+        ? 'flat'
+        : quote.change > 0.01
+          ? 'up'
+          : quote.change < -0.01
+            ? 'down'
+            : 'flat';
 
     return {
       label: idx.label,
       category: idx.category,
       value: formatIndexPrice(quote.last_price, idx.label),
       change:
-        quote.change === null
-          ? '—'
-          : `${quote.change >= 0 ? '+' : ''}${quote.change.toFixed(2)}%`,
+        quote.change === null ? '—' : `${quote.change >= 0 ? '+' : ''}${quote.change.toFixed(2)}%`,
       direction,
       raw: quote,
     };
@@ -220,12 +220,10 @@ export function useMacroIndicators(): UseMacroIndicatorsReturn {
 // Exported for the compliance test suite: P6 requires proof that no performance
 // figure is emitted and that an unmeasured metric renders "—" rather than 0.
 export function computeDisciplineMetrics(stats: DisciplineStats): PortfolioMetric[] {
-  const { setupsAudited, setupsRejected, forcedHolds, plansFollowed, plansDeviated } =
-    stats;
+  const { setupsAudited, setupsRejected, forcedHolds, plansFollowed, plansDeviated } = stats;
 
   const plansResolved = plansFollowed + plansDeviated;
-  const adherence =
-    plansResolved > 0 ? Math.round((plansFollowed / plansResolved) * 100) : null;
+  const adherence = plansResolved > 0 ? Math.round((plansFollowed / plansResolved) * 100) : null;
 
   return [
     {

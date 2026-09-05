@@ -80,7 +80,7 @@ export function parseCachedBook(raw: string | null): OrderBookState | null {
           typeof (l as OrderBookLevel).price === 'number' &&
           Number.isFinite((l as OrderBookLevel).price) &&
           typeof (l as OrderBookLevel).size === 'number' &&
-          Number.isFinite((l as OrderBookLevel).size),
+          Number.isFinite((l as OrderBookLevel).size)
       )
       // A level flagged `synthetic` came from the retired padding scheme and was
       // never a real quote — drop it rather than restore it. The versioned cache
@@ -158,7 +158,7 @@ export function buildBookFromKiteDepth(depth: KiteDepth | null | undefined): Ord
         Number.isFinite(l.price) &&
         l.price > 0 &&
         typeof l.quantity === 'number' &&
-        Number.isFinite(l.quantity),
+        Number.isFinite(l.quantity)
     );
 
   const buy = clean(depth.buy);
@@ -169,7 +169,7 @@ export function buildBookFromKiteDepth(depth: KiteDepth | null | undefined): Ord
     buy.map((l) => l.price),
     buy.map((l) => l.quantity),
     sell.map((l) => l.price),
-    sell.map((l) => l.quantity),
+    sell.map((l) => l.quantity)
   );
 }
 
@@ -177,7 +177,7 @@ export function buildBookFromDepth(
   bidPrices: number[],
   bidSizes: number[],
   askPrices: number[],
-  askSizes: number[],
+  askSizes: number[]
 ): OrderBookState {
   const asks: OrderBookLevel[] = [];
   const bids: OrderBookLevel[] = [];
@@ -204,7 +204,8 @@ export function buildBookFromDepth(
   const bestBid = bids.length > 0 ? bids[0].price : 0;
   const spread = bestAsk > 0 && bestBid > 0 ? parseFloat((bestAsk - bestBid).toFixed(2)) : 0;
   const spreadPct = bestAsk > 0 ? ((spread / bestAsk) * 100).toFixed(3) : '0.000';
-  const midPrice = bestAsk > 0 && bestBid > 0 ? parseFloat(((bestAsk + bestBid) / 2).toFixed(2)) : 0;
+  const midPrice =
+    bestAsk > 0 && bestBid > 0 ? parseFloat(((bestAsk + bestBid) / 2).toFixed(2)) : 0;
 
   // NO synthetic padding.
   //

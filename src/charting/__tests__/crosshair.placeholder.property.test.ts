@@ -16,11 +16,7 @@
 import { describe, it, expect } from 'vitest';
 import fc from 'fast-check';
 
-import {
-  buildCrosshairReadout,
-  NO_VALUE,
-  type IndicatorReadoutInput,
-} from '@/charting/crosshair';
+import { buildCrosshairReadout, NO_VALUE, type IndicatorReadoutInput } from '@/charting/crosshair';
 import type { ChartCandle, LinePoint, LineStyleSpec } from '@/charting/types';
 
 const RUNS = 100;
@@ -41,35 +37,40 @@ const candlesArb = fc
   .chain((times) => {
     const sorted = [...times].sort((a, b) => a - b);
     return fc
-      .array(
-        fc.tuple(finite, finite, finite, finite),
-        { minLength: sorted.length, maxLength: sorted.length },
-      )
+      .array(fc.tuple(finite, finite, finite, finite), {
+        minLength: sorted.length,
+        maxLength: sorted.length,
+      })
       .map((vals) =>
         sorted.map((t, i) => {
           const [o, h, l, c] = vals[i];
           return candleAt(t, o, h, l, c);
-        }),
+        })
       );
   });
 
 describe('Property 32: out-of-range / warm-up positions yield a no-value placeholder', () => {
   it('OHLC is all-placeholder and hasCandle=false when no candle exists at time (Req 10.8)', () => {
     fc.assert(
-      fc.property(candlesArb, fc.integer({ min: -10000, max: 20000 }), fc.integer({ min: 0, max: 8 }), (candles, time, precision) => {
-        const times = new Set(candles.map((k) => k.time));
-        // Only exercise the out-of-range case.
-        fc.pre(!times.has(time));
+      fc.property(
+        candlesArb,
+        fc.integer({ min: -10000, max: 20000 }),
+        fc.integer({ min: 0, max: 8 }),
+        (candles, time, precision) => {
+          const times = new Set(candles.map((k) => k.time));
+          // Only exercise the out-of-range case.
+          fc.pre(!times.has(time));
 
-        const readout = buildCrosshairReadout({ time, candles, indicators: [], precision });
+          const readout = buildCrosshairReadout({ time, candles, indicators: [], precision });
 
-        expect(readout.hasCandle).toBe(false);
-        expect(readout.ohlc.open).toBe(NO_VALUE);
-        expect(readout.ohlc.high).toBe(NO_VALUE);
-        expect(readout.ohlc.low).toBe(NO_VALUE);
-        expect(readout.ohlc.close).toBe(NO_VALUE);
-      }),
-      { numRuns: RUNS },
+          expect(readout.hasCandle).toBe(false);
+          expect(readout.ohlc.open).toBe(NO_VALUE);
+          expect(readout.ohlc.high).toBe(NO_VALUE);
+          expect(readout.ohlc.low).toBe(NO_VALUE);
+          expect(readout.ohlc.close).toBe(NO_VALUE);
+        }
+      ),
+      { numRuns: RUNS }
     );
   });
 
@@ -93,22 +94,36 @@ describe('Property 32: out-of-range / warm-up positions yield a no-value placeho
             instanceId: 'i1',
             indicatorId: 'sma',
             label: 'SMA',
-            plot: { lines: [{ id: 'line', points, style: STYLE }], warmupBars: k, insufficientData: false },
+            plot: {
+              lines: [{ id: 'line', points, style: STYLE }],
+              warmupBars: k,
+              insufficientData: false,
+            },
           };
 
           // Crosshair on a warm-up bar (one without a plotted point).
           if (k > 0) {
             const warmTime = candles[0].time;
-            const r = buildCrosshairReadout({ time: warmTime, candles, indicators: [indicator], precision });
+            const r = buildCrosshairReadout({
+              time: warmTime,
+              candles,
+              indicators: [indicator],
+              precision,
+            });
             expect(r.indicators[0].lines[0].value).toBe(NO_VALUE);
           }
           // Crosshair on a defined bar yields a real numeric string.
           const definedTime = candles[k].time;
-          const r2 = buildCrosshairReadout({ time: definedTime, candles, indicators: [indicator], precision });
+          const r2 = buildCrosshairReadout({
+            time: definedTime,
+            candles,
+            indicators: [indicator],
+            precision,
+          });
           expect(r2.indicators[0].lines[0].value).not.toBe(NO_VALUE);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -121,16 +136,25 @@ describe('Property 32: out-of-range / warm-up positions yield a no-value placeho
           instanceId: 'i1',
           indicatorId: 'sma',
           label: 'SMA',
-          plot: { lines: [{ id: 'line', points, style: STYLE }], warmupBars: 0, insufficientData: true },
+          plot: {
+            lines: [{ id: 'line', points, style: STYLE }],
+            warmupBars: 0,
+            insufficientData: true,
+          },
         };
 
         const target = candles[0].time;
-        const r = buildCrosshairReadout({ time: target, candles, indicators: [indicator], precision });
+        const r = buildCrosshairReadout({
+          time: target,
+          candles,
+          indicators: [indicator],
+          precision,
+        });
         for (const line of r.indicators[0].lines) {
           expect(line.value).toBe(NO_VALUE);
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -144,10 +168,19 @@ describe('Property 32: out-of-range / warm-up positions yield a no-value placeho
           instanceId: 'i1',
           indicatorId: 'sma',
           label: 'SMA',
-          plot: { lines: [{ id: 'line', points, style: STYLE }], warmupBars: 0, insufficientData: false },
+          plot: {
+            lines: [{ id: 'line', points, style: STYLE }],
+            warmupBars: 0,
+            insufficientData: false,
+          },
         };
 
-        const r = buildCrosshairReadout({ time: target, candles, indicators: [indicator], precision });
+        const r = buildCrosshairReadout({
+          time: target,
+          candles,
+          indicators: [indicator],
+          precision,
+        });
 
         expect(r.hasCandle).toBe(true);
         expect(r.ohlc.open).not.toBe(NO_VALUE);
@@ -156,7 +189,7 @@ describe('Property 32: out-of-range / warm-up positions yield a no-value placeho
         expect(r.ohlc.close).not.toBe(NO_VALUE);
         expect(r.indicators[0].lines[0].value).not.toBe(NO_VALUE);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

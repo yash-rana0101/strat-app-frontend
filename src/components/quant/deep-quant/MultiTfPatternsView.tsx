@@ -176,7 +176,9 @@ export default function MultiTfPatternsView({ variant = 'panel' }: MultiTfPatter
           >
             <Activity size={inSheet ? 18 : 14} className="text-text-muted mb-1 opacity-60" />
             <span className="text-xs font-semibold text-text-secondary">No patterns forming</span>
-            <span className="text-[10px] text-text-muted mt-0.5 font-mono">Timeframe: {selectedTf}</span>
+            <span className="text-[10px] text-text-muted mt-0.5 font-mono">
+              Timeframe: {selectedTf}
+            </span>
           </div>
         ) : (
           patterns.map((p, idx) => (

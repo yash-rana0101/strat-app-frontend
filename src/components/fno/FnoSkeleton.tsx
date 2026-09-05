@@ -11,9 +11,11 @@ export default function FnoSkeleton({ rows = 8 }: FnoSkeletonProps) {
     <div className="flex flex-col">
       {/* Header row */}
       <div className="grid grid-cols-7 gap-1 px-3 py-2 border-b border-border-default bg-elevated/30">
-        {['Call LTP', 'Call OI', 'Call Chg', 'Strike', 'Put Chg', 'Put OI', 'Put LTP'].map((col) => (
-          <Skeleton key={col} width="100%" height="8px" />
-        ))}
+        {['Call LTP', 'Call OI', 'Call Chg', 'Strike', 'Put Chg', 'Put OI', 'Put LTP'].map(
+          (col) => (
+            <Skeleton key={col} width="100%" height="8px" />
+          )
+        )}
       </div>
       {/* Data rows */}
       {Array.from({ length: rows }).map((_, i) => (

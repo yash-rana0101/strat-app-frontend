@@ -40,13 +40,13 @@ const NUM_RUNS = 200;
  */
 const underlyingNameArb = fc.oneof(
   { weight: 3, arbitrary: fc.constantFrom('NIFTY 50', 'BANKNIFTY', 'FINNIFTY', 'MIDCPNIFTY') },
-  { weight: 1, arbitrary: fc.string({ minLength: 1, maxLength: 12 }) },
+  { weight: 1, arbitrary: fc.string({ minLength: 1, maxLength: 12 }) }
 );
 
 /** An expiry string in the documented `YYYY-MM-DD` shape (plus a few arbitrary). */
 const expiryArb = fc.oneof(
   { weight: 3, arbitrary: fc.constantFrom('2024-12-26', '2025-01-30', '2025-02-27', '2025-03-27') },
-  { weight: 1, arbitrary: fc.string({ minLength: 1, maxLength: 10 }) },
+  { weight: 1, arbitrary: fc.string({ minLength: 1, maxLength: 10 }) }
 );
 
 /**
@@ -58,94 +58,74 @@ const fnoChainsArb: fc.Arbitrary<FnoChains> = fc
   .uniqueArray(underlyingNameArb, { minLength: 1, maxLength: 5 })
   .chain((underlyings) =>
     fc
-      .tuple(
-        ...underlyings.map(() =>
-          fc.uniqueArray(expiryArb, { minLength: 0, maxLength: 6 }),
-        ),
-      )
+      .tuple(...underlyings.map(() => fc.uniqueArray(expiryArb, { minLength: 0, maxLength: 6 })))
       .map((expiryLists) => {
         const expiries_by_underlying: Record<string, string[]> = {};
         underlyings.forEach((u, i) => {
           expiries_by_underlying[u] = expiryLists[i];
         });
         return { underlyings, expiries_by_underlying } satisfies FnoChains;
-      }),
+      })
   );
 
 describe('Property 11: the underlying selector is bounded to configured underlyings', () => {
   it('underlying options are a subset of the configured underlyings (no unconfigured underlying offered)', () => {
     fc.assert(
-      fc.property(
-        fnoChainsArb,
-        fc.nat(),
-        (chains, pick) => {
-          // Store invariant: the active selection is one of the configured
-          // underlyings (default NIFTY 50, only ever set from this list).
-          const selected = chains.underlyings[pick % chains.underlyings.length];
+      fc.property(fnoChainsArb, fc.nat(), (chains, pick) => {
+        // Store invariant: the active selection is one of the configured
+        // underlyings (default NIFTY 50, only ever set from this list).
+        const selected = chains.underlyings[pick % chains.underlyings.length];
 
-          const options = deriveUnderlyingOptions(chains, selected);
-          const configured = new Set(chains.underlyings);
+        const options = deriveUnderlyingOptions(chains, selected);
+        const configured = new Set(chains.underlyings);
 
-          // Every offered option is a configured index underlying.
-          for (const option of options) {
-            expect(configured.has(option)).toBe(true);
-          }
-        },
-      ),
-      { numRuns: NUM_RUNS },
+        // Every offered option is a configured index underlying.
+        for (const option of options) {
+          expect(configured.has(option)).toBe(true);
+        }
+      }),
+      { numRuns: NUM_RUNS }
     );
   });
 
   it('offers exactly the configured underlyings when the selection is configured (complete, no drops, no dupes)', () => {
     fc.assert(
-      fc.property(
-        fnoChainsArb,
-        fc.nat(),
-        (chains, pick) => {
-          const selected = chains.underlyings[pick % chains.underlyings.length];
+      fc.property(fnoChainsArb, fc.nat(), (chains, pick) => {
+        const selected = chains.underlyings[pick % chains.underlyings.length];
 
-          const options = deriveUnderlyingOptions(chains, selected);
+        const options = deriveUnderlyingOptions(chains, selected);
 
-          // Exactly the configured set, in the published order (no synthesized
-          // entries, no dropped entries, no duplicates).
-          expect(options).toEqual(chains.underlyings);
-        },
-      ),
-      { numRuns: NUM_RUNS },
+        // Exactly the configured set, in the published order (no synthesized
+        // entries, no dropped entries, no duplicates).
+        expect(options).toEqual(chains.underlyings);
+      }),
+      { numRuns: NUM_RUNS }
     );
   });
 
   it('expiry options are exactly the available expiries for the selected underlying', () => {
     fc.assert(
-      fc.property(
-        fnoChainsArb,
-        fc.nat(),
-        (chains, pick) => {
-          const selected = chains.underlyings[pick % chains.underlyings.length];
+      fc.property(fnoChainsArb, fc.nat(), (chains, pick) => {
+        const selected = chains.underlyings[pick % chains.underlyings.length];
 
-          const options = deriveExpiryOptions(chains, selected);
+        const options = deriveExpiryOptions(chains, selected);
 
-          // Exactly the bridge-published expiry list for that underlying —
-          // never synthesized, never dropped.
-          expect(options).toEqual(chains.expiries_by_underlying[selected]);
-        },
-      ),
-      { numRuns: NUM_RUNS },
+        // Exactly the bridge-published expiry list for that underlying —
+        // never synthesized, never dropped.
+        expect(options).toEqual(chains.expiries_by_underlying[selected]);
+      }),
+      { numRuns: NUM_RUNS }
     );
   });
 
   it('an unselected/unknown underlying yields an empty expiry list (never synthesized)', () => {
     fc.assert(
-      fc.property(
-        fnoChainsArb,
-        fc.string({ minLength: 1, maxLength: 12 }),
-        (chains, candidate) => {
-          // A candidate that is not a configured underlying has no expiries.
-          fc.pre(!chains.underlyings.includes(candidate));
-          expect(deriveExpiryOptions(chains, candidate)).toEqual([]);
-        },
-      ),
-      { numRuns: NUM_RUNS },
+      fc.property(fnoChainsArb, fc.string({ minLength: 1, maxLength: 12 }), (chains, candidate) => {
+        // A candidate that is not a configured underlying has no expiries.
+        fc.pre(!chains.underlyings.includes(candidate));
+        expect(deriveExpiryOptions(chains, candidate)).toEqual([]);
+      }),
+      { numRuns: NUM_RUNS }
     );
   });
 
@@ -176,9 +156,9 @@ describe('Property 11: the underlying selector is bounded to configured underlyi
           if (selected) {
             expect(options).toContain(selected);
           }
-        },
+        }
       ),
-      { numRuns: NUM_RUNS },
+      { numRuns: NUM_RUNS }
     );
   });
 });

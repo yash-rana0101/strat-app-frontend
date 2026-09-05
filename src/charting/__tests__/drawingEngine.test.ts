@@ -26,7 +26,7 @@ describe('TOOL_REGISTRY', () => {
   it('covers every drawing category from Requirement 5.1', () => {
     const categories = new Set(Object.values(TOOL_REGISTRY).map((s) => s.category));
     expect(categories).toEqual(
-      new Set(['trend-line', 'channel', 'fibonacci', 'shape', 'text', 'projection']),
+      new Set(['trend-line', 'channel', 'fibonacci', 'shape', 'text', 'projection'])
     );
   });
 

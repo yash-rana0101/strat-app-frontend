@@ -28,7 +28,7 @@ import { getTvWidgetOptions } from '../tvWidgetOptions';
 const FRONTEND = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const LIB_DTS = path.join(
   FRONTEND,
-  'public/static/charting_library/charting_library/charting_library.d.ts',
+  'public/static/charting_library/charting_library/charting_library.d.ts'
 );
 
 /** Every quoted name inside one `export type X = "a" | "b" | …;` union. */
@@ -106,12 +106,10 @@ describe.skipIf(UNRUNNABLE_IN_CI)('the charting library featuresets we pass', ()
 
   it('introduces no new name the library does not declare', () => {
     const declared = union('ChartingLibraryFeatureset');
-    const unknown = passedFeaturesets().filter(
-      (f) => !declared.has(f) && !KNOWN_UNDECLARED.has(f),
-    );
+    const unknown = passedFeaturesets().filter((f) => !declared.has(f) && !KNOWN_UNDECLARED.has(f));
     expect(
       unknown,
-      'ignored silently by TradingView, so whatever it was meant to enable never appears',
+      'ignored silently by TradingView, so whatever it was meant to enable never appears'
     ).toEqual([]);
   });
 
@@ -147,7 +145,10 @@ describe.skipIf(UNRUNNABLE_IN_CI)('the charting library featuresets we pass', ()
     const src = readFileSync(LIB_DTS, 'utf8');
     expect(src).toContain('chartsCount(): number');
     expect(src).toContain('setLayout(layout: LayoutType): void');
-    const multi = src.slice(src.indexOf('export type MultipleChartsLayoutType'), 1000 + src.indexOf('export type MultipleChartsLayoutType'));
+    const multi = src.slice(
+      src.indexOf('export type MultipleChartsLayoutType'),
+      1000 + src.indexOf('export type MultipleChartsLayoutType')
+    );
     for (const layout of ['"2h"', '"2v"', '"3s"', '"2-2"', '"4s"', '"5h"', '"6c"', '"8v"']) {
       expect(multi, `layout ${layout} missing`).toContain(layout);
     }

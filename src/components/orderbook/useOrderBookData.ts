@@ -25,8 +25,7 @@ const CACHE_WRITE_MIN_INTERVAL_MS = 10_000;
 const cacheKey = (symbol: string) =>
   `ai-trader-orderbook-${BOOK_CACHE_VERSION}-${symbol.toUpperCase()}`;
 
-const statsCacheKey = (symbol: string) =>
-  `ai-trader-orderbook-stats-${symbol.toUpperCase()}`;
+const statsCacheKey = (symbol: string) => `ai-trader-orderbook-stats-${symbol.toUpperCase()}`;
 
 export function useOrderBookData(selectedSymbol: string) {
   const [book, setBook] = useState<OrderBookState>(() => createEmptyBook());
@@ -130,7 +129,7 @@ export function useOrderBookData(selectedSymbol: string) {
         const data = await res.json();
         const quote =
           (data?.quotes ?? []).find(
-            (q: { symbol?: string }) => q?.symbol?.toUpperCase() === symbol.toUpperCase(),
+            (q: { symbol?: string }) => q?.symbol?.toUpperCase() === symbol.toUpperCase()
           ) ?? (data?.quotes ?? [])[0];
 
         if (quote) {
@@ -164,7 +163,10 @@ export function useOrderBookData(selectedSymbol: string) {
           setIsLive(true);
 
           const now = Date.now();
-          if (typeof window !== 'undefined' && now - lastCacheWrite >= CACHE_WRITE_MIN_INTERVAL_MS) {
+          if (
+            typeof window !== 'undefined' &&
+            now - lastCacheWrite >= CACHE_WRITE_MIN_INTERVAL_MS
+          ) {
             lastCacheWrite = now;
             try {
               localStorage.setItem(cacheKey(symbol), JSON.stringify(next));
@@ -190,4 +192,3 @@ export function useOrderBookData(selectedSymbol: string) {
 
   return { book, isLive, stats };
 }
-

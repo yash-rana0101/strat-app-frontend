@@ -93,7 +93,7 @@ describe('F4 scope boundary — source discovery', () => {
         'OptionsHud.tsx',
         'FnoUnavailableState.tsx',
         'viewModel.ts',
-      ]),
+      ])
     );
   });
 });
@@ -113,7 +113,8 @@ describe('F4 scope boundary — computes no options analytic (R6.3, R9.1)', () =
   // A module path is suspect if it looks like it pulls in analytics computation.
   // (The fno dir is "fno", not "options"/"analytics", so any such import would
   // be reaching into a compute layer.)
-  const ANALYTICS_IMPORT_RE = /(options[-_]?analytics|analytics[-_]?engine|compute[-_]?\w*analytic|options[_-]?bias|black[-_]?scholes|greeks|\bmaxpain\b)/i;
+  const ANALYTICS_IMPORT_RE =
+    /(options[-_]?analytics|analytics[-_]?engine|compute[-_]?\w*analytic|options[_-]?bias|black[-_]?scholes|greeks|\bmaxpain\b)/i;
 
   it('imports no options-analytics module or recompute helper', () => {
     const offenders: Array<{ file: string; specifier: string }> = [];
@@ -167,22 +168,19 @@ describe('F4 scope boundary — computes no options analytic (R6.3, R9.1)', () =
     },
   ];
 
-  it.each(COMPUTATION_SIGNATURES)(
-    'contains no computation signature: $label',
-    ({ re }) => {
-      const offenders: Array<{ file: string; match: string }> = [];
-      for (const src of SOURCES) {
-        const m = src.code.match(re);
-        if (m) {
-          offenders.push({ file: src.name, match: m[0] });
-        }
+  it.each(COMPUTATION_SIGNATURES)('contains no computation signature: $label', ({ re }) => {
+    const offenders: Array<{ file: string; match: string }> = [];
+    for (const src of SOURCES) {
+      const m = src.code.match(re);
+      if (m) {
+        offenders.push({ file: src.name, match: m[0] });
       }
-      expect(
-        offenders,
-        `Found in-frontend analytics computation: ${JSON.stringify(offenders)}`,
-      ).toEqual([]);
-    },
-  );
+    }
+    expect(
+      offenders,
+      `Found in-frontend analytics computation: ${JSON.stringify(offenders)}`
+    ).toEqual([]);
+  });
 
   // Positive control: the comment-stripping + passthrough shape must NOT trip
   // the scans. `buildOiProfile`/`buildIvSkew` legitimately reference the metric
@@ -245,8 +243,8 @@ describe('F4 scope boundary — invokes no trade-execution command (R9.2)', () =
     expect(
       disallowed,
       `Disallowed invoke() targets (only F&O bridge commands are permitted): ${JSON.stringify(
-        disallowed,
-      )}`,
+        disallowed
+      )}`
     ).toEqual([]);
   });
 
@@ -274,8 +272,8 @@ describe('F4 scope boundary — invokes no trade-execution command (R9.2)', () =
       const offenders = SOURCES.filter((src) => src.raw.includes(command)).map((s) => s.name);
       expect(
         offenders,
-        `Trade-execution command "${command}" must not appear in the F&O frontend module`,
+        `Trade-execution command "${command}" must not appear in the F&O frontend module`
       ).toEqual([]);
-    },
+    }
   );
 });

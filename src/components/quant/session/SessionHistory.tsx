@@ -46,7 +46,7 @@ export default function SessionHistory({
   const [openingId, setOpeningId] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [internalStatus, setInternalStatus] = React.useState<'active' | 'archived'>(
-    controlledStatus ?? defaultStatus,
+    controlledStatus ?? defaultStatus
   );
   const status = controlledStatus ?? internalStatus;
 
@@ -65,7 +65,7 @@ export default function SessionHistory({
 
   const sessions = React.useMemo(
     () => (list.data?.pages ?? []).flatMap((page) => page.items),
-    [list.data],
+    [list.data]
   );
 
   const [everPaged, setEverPaged] = React.useState(false);
@@ -94,7 +94,9 @@ export default function SessionHistory({
       await op();
     } catch (err) {
       setActionError(
-        err instanceof Error && err.message ? `Could not ${verb}: ${err.message}` : `Could not ${verb}.`,
+        err instanceof Error && err.message
+          ? `Could not ${verb}: ${err.message}`
+          : `Could not ${verb}.`
       );
     } finally {
       setBusyId(null);
@@ -159,13 +161,24 @@ export default function SessionHistory({
           <div className="p-2" role="status" aria-live="polite">
             <span className="sr-only">Loading session history…</span>
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="mb-2 h-8 animate-pulse rounded bg-elevated" aria-hidden="true" />
+              <div
+                key={i}
+                className="mb-2 h-8 animate-pulse rounded bg-elevated"
+                aria-hidden="true"
+              />
             ))}
           </div>
         ) : list.isError ? (
-          <div role="alert" className="flex flex-col items-start gap-2 p-3 text-xs text-text-secondary">
+          <div
+            role="alert"
+            className="flex flex-col items-start gap-2 p-3 text-xs text-text-secondary"
+          >
             <span className="flex items-start gap-1.5">
-              <AlertTriangle size={13} className="mt-0.5 shrink-0 text-status-error" aria-hidden="true" />
+              <AlertTriangle
+                size={13}
+                className="mt-0.5 shrink-0 text-status-error"
+                aria-hidden="true"
+              />
               <span>
                 Could not load your history
                 {list.error instanceof Error && list.error.message ? `: ${list.error.message}` : ''}
@@ -177,7 +190,11 @@ export default function SessionHistory({
               disabled={list.isFetching}
               className="flex items-center gap-1 rounded border border-border-default/60 px-2 py-0.5 hover:bg-elevated focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60 disabled:opacity-50"
             >
-              <RefreshCw size={11} className={list.isFetching ? 'animate-spin' : ''} aria-hidden="true" />
+              <RefreshCw
+                size={11}
+                className={list.isFetching ? 'animate-spin' : ''}
+                aria-hidden="true"
+              />
               Retry
             </button>
           </div>
@@ -198,7 +215,10 @@ export default function SessionHistory({
                   session={session}
                   isActive={session.session_id === activeSessionId}
                   isBusy={busyId === session.session_id}
-                  isOpening={openingId === session.session_id || Boolean(activatingSessionIds?.[session.session_id])}
+                  isOpening={
+                    openingId === session.session_id ||
+                    Boolean(activatingSessionIds?.[session.session_id])
+                  }
                   onOpen={handleOpenRow}
                   onRename={handleRename}
                   onArchive={handleArchive}

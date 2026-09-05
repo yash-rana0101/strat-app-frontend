@@ -41,8 +41,7 @@ const STEPS: Step[] = [
   {
     icon: <Search size={13} />,
     title: 'Pick an instrument',
-    body:
-      'Use the search icon at the top of the navigation rail (or press Ctrl+K) to look up any NSE, BSE or F&O instrument. Selecting a result charts it and adds it to your watchlist.',
+    body: 'Use the search icon at the top of the navigation rail (or press Ctrl+K) to look up any NSE, BSE or F&O instrument. Selecting a result charts it and adds it to your watchlist.',
   },
   {
     icon: <LayoutGrid size={13} />,
@@ -54,32 +53,27 @@ const STEPS: Step[] = [
   {
     icon: <TrendingUp size={13} />,
     title: 'Read the chart',
-    body:
-      'The toolbar inside the chart carries drawing tools, indicators, chart mode (standard, volume profile, footprint) and the projection engine that draws the ghost line. Timeframe is set from the chart header.',
+    body: 'The toolbar inside the chart carries drawing tools, indicators, chart mode (standard, volume profile, footprint) and the projection engine that draws the ghost line. Timeframe is set from the chart header.',
   },
   {
     icon: <Zap size={13} />,
     title: 'Run an analysis',
-    body:
-      'In the right sidebar, "Find a Trade Setup" asks the quant agent to scan the current symbol and propose a setup; "Verify My Setup" checks a trade you already have in mind. The transcript streams live, and you can stop a run at any time.',
+    body: 'In the right sidebar, "Find a Trade Setup" asks the quant agent to scan the current symbol and propose a setup; "Verify My Setup" checks a trade you already have in mind. The transcript streams live, and you can stop a run at any time.',
   },
   {
     icon: <Radar size={13} />,
     title: 'Track several symbols at once',
-    body:
-      'The Radar in the header watches a list of symbols on a chosen timeframe and badges how many candlestick patterns and strategies it has found. Click any detection to mark it on the chart.',
+    body: 'The Radar in the header watches a list of symbols on a chosen timeframe and badges how many candlestick patterns and strategies it has found. Click any detection to mark it on the chart.',
   },
   {
     icon: <Bell size={13} />,
     title: 'Keep an eye on the feed',
-    body:
-      'The bell shows warnings and errors from this session — a dropped data feed or a failed request shows up there, so an empty panel is never a mystery.',
+    body: 'The bell shows warnings and errors from this session — a dropped data feed or a failed request shows up there, so an empty panel is never a mystery.',
   },
   {
     icon: <SunMoon size={13} />,
     title: 'Make it yours',
-    body:
-      'The sun/moon icon toggles light and dark, and your choice is remembered across reloads. Side panels can be dragged to resize or collapsed out of the way.',
+    body: 'The sun/moon icon toggles light and dark, and your choice is remembered across reloads. Side panels can be dragged to resize or collapsed out of the way.',
   },
 ];
 
@@ -112,7 +106,10 @@ export default function QuickStartGuide({ open, onClose }: QuickStartGuideProps)
         <div className="flex shrink-0 items-center justify-between border-b border-border-default px-4 py-3">
           <div className="flex items-center gap-2">
             <BookOpen size={15} className="text-primary" />
-            <h2 id="quick-start-title" className="text-sm font-black tracking-tight text-text-primary">
+            <h2
+              id="quick-start-title"
+              className="text-sm font-black tracking-tight text-text-primary"
+            >
               Quick Start Guide
             </h2>
           </div>
@@ -129,8 +126,8 @@ export default function QuickStartGuide({ open, onClose }: QuickStartGuideProps)
         {/* Steps */}
         <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin px-4 py-3">
           <p className="mb-3 text-xs leading-relaxed text-text-secondary">
-            A market analysis and charting terminal for NSE and NFO. Seven things
-            worth knowing before you start.
+            A market analysis and charting terminal for NSE and NFO. Seven things worth knowing
+            before you start.
           </p>
           <ol className="flex flex-col gap-3">
             {STEPS.map((step, i) => (

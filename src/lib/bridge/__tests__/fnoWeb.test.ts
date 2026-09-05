@@ -125,9 +125,7 @@ describe('liveExpiryClause', () => {
   });
 
   it('quotes the date so it cannot escape the literal', () => {
-    expect(liveExpiryClause("2026-08-30' OR '1'='1")).toBe(
-      "expiry >= '2026-08-30'' OR ''1''=''1'",
-    );
+    expect(liveExpiryClause("2026-08-30' OR '1'='1")).toBe("expiry >= '2026-08-30'' OR ''1''=''1'");
   });
 });
 

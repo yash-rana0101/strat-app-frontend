@@ -44,7 +44,7 @@ describe('charting module foundation', () => {
         const point: LinePoint = { time: a, value: b };
         return point.time === a && point.value === b;
       }),
-      { numRuns: 100 },
+      { numRuns: 100 }
     );
   });
 });

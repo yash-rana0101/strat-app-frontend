@@ -47,7 +47,9 @@ export default function VerificationForm({
   return (
     <div className="mx-3 mt-3 p-3 rounded-lg border border-border-default bg-surface flex flex-col gap-3">
       <div className="flex items-center justify-between border-b border-border-default pb-1.5">
-        <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Configure Setup</span>
+        <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">
+          Configure Setup
+        </span>
         <span className="text-[9px] text-text-muted">Auto-filled via NSE LTP</span>
       </div>
 
@@ -80,7 +82,9 @@ export default function VerificationForm({
       {/* Input fields */}
       <div className="grid grid-cols-3 gap-2">
         <div className="flex flex-col gap-1">
-          <label className="text-[8px] font-semibold text-text-secondary uppercase">Entry Price</label>
+          <label className="text-[8px] font-semibold text-text-secondary uppercase">
+            Entry Price
+          </label>
           <input
             type="number"
             step="any"
@@ -94,7 +98,9 @@ export default function VerificationForm({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-[8px] font-semibold text-text-secondary uppercase">Stop Loss</label>
+          <label className="text-[8px] font-semibold text-text-secondary uppercase">
+            Stop Loss
+          </label>
           <input
             type="number"
             step="any"
@@ -121,7 +127,9 @@ export default function VerificationForm({
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-[8px] font-semibold text-text-secondary uppercase">Take Profit</label>
+          <label className="text-[8px] font-semibold text-text-secondary uppercase">
+            Take Profit
+          </label>
           <input
             type="number"
             step="any"
@@ -153,9 +161,7 @@ export default function VerificationForm({
       {riskToReward && (
         <div className="flex justify-between items-center rounded-md bg-muted p-2 border border-border-default text-[10px]">
           <span className="text-text-secondary font-semibold">Risk:Reward Ratio</span>
-          <span
-            className="font-black font-mono px-2 py-0.5 rounded bg-elevated text-text-primary border border-border-default"
-          >
+          <span className="font-black font-mono px-2 py-0.5 rounded bg-elevated text-text-primary border border-border-default">
             1 : {riskToReward}
           </span>
         </div>
@@ -163,7 +169,9 @@ export default function VerificationForm({
 
       {/* User Analysis Notes */}
       <div className="flex flex-col gap-1">
-        <label className="text-[8px] font-semibold text-text-secondary uppercase">My Analysis Notes / Setup Rationale</label>
+        <label className="text-[8px] font-semibold text-text-secondary uppercase">
+          My Analysis Notes / Setup Rationale
+        </label>
         <textarea
           rows={3}
           value={userAnalysis}
@@ -180,9 +188,10 @@ export default function VerificationForm({
         onClick={onSubmit}
         className={`
           w-full flex h-8 items-center justify-center gap-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-300 shadow-sm
-          ${(isAnalyzing || !dataReady)
-            ? 'bg-elevated text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
-            : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-600 hover:border-emerald-500 active:scale-[0.98]'
+          ${
+            isAnalyzing || !dataReady
+              ? 'bg-elevated text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
+              : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-600 hover:border-emerald-500 active:scale-[0.98]'
           }
         `}
       >

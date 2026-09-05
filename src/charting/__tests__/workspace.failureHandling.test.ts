@@ -51,7 +51,11 @@ function makeState(overrides: Partial<WorkspaceState> = {}): WorkspaceState {
     activeIndicators: [],
     drawings: [
       // A representative drawing; shape is opaque to the persistence layer.
-      { id: 'd1', type: 'trendline', locked: false } as unknown as WorkspaceState['drawings'][number],
+      {
+        id: 'd1',
+        type: 'trendline',
+        locked: false,
+      } as unknown as WorkspaceState['drawings'][number],
     ],
     paneLayout: [],
     ...overrides,

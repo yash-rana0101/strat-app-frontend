@@ -78,7 +78,7 @@ describe('deriveProgress — rows come from the stream, never from a script', ()
     const done = deriveProgress(
       [start, step({ type: 'tool_end', toolName: 'get_candles' })],
       'running',
-      null,
+      null
     );
     expect(done[0].status).toBe('done');
   });
@@ -136,7 +136,7 @@ describe('progressMeta — one short line, only from what arrived', () => {
 
   it('joins the allowlisted keys in display order', () => {
     expect(progressMeta({ timeframe: '10m', symbol: 'CANBK', direction: 'SELL' })).toBe(
-      'CANBK · 10m · SELL',
+      'CANBK · 10m · SELL'
     );
   });
 

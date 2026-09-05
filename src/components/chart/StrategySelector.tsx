@@ -3,11 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Activity, ChevronDown, Settings2 } from 'lucide-react';
 import { useOutsideClose } from '../../hooks/useOutsideClose';
-import {
-  listStrategies,
-  getStrategy,
-  type StrategyDef,
-} from '../../charting/engines';
+import { listStrategies, getStrategy, type StrategyDef } from '../../charting/engines';
 
 interface StrategySelectorProps {
   activeStrategyId: string | null;
@@ -25,8 +21,11 @@ export default function StrategySelector({
   const [open, setOpen] = useState(false);
   const ref = useOutsideClose<HTMLDivElement>(() => setOpen(false));
   const strategies = useMemo<StrategyDef[]>(
-    () => listStrategies().map((id) => getStrategy(id)).filter((d): d is StrategyDef => !!d),
-    [],
+    () =>
+      listStrategies()
+        .map((id) => getStrategy(id))
+        .filter((d): d is StrategyDef => !!d),
+    []
   );
   const active = activeStrategyId ? getStrategy(activeStrategyId) : undefined;
 
@@ -52,24 +51,35 @@ export default function StrategySelector({
                 }`
           }
         >
-          <Activity size={noText ? 14 : 13} className={active ? 'text-primary' : 'text-text-muted'} />
+          <Activity
+            size={noText ? 14 : 13}
+            className={active ? 'text-primary' : 'text-text-muted'}
+          />
           {!noText && <span>{active ? active.name : 'Strategy'}</span>}
-          {!noText && <ChevronDown size={11} className={open ? 'rotate-180 transition-transform' : 'transition-transform'} />}
+          {!noText && (
+            <ChevronDown
+              size={11}
+              className={open ? 'rotate-180 transition-transform' : 'transition-transform'}
+            />
+          )}
         </button>
         {open && (
-          <div className={`absolute right-0 z-50 mt-px w-48 rounded-none border border-border-default bg-surface/95 p-1 shadow-2xl backdrop-blur-xl ${
-            noText ? 'top-[32px]' : 'top-full'
-          }`}>
+          <div
+            className={`absolute right-0 z-50 mt-px w-48 rounded-none border border-border-default bg-surface/95 p-1 shadow-2xl backdrop-blur-xl ${
+              noText ? 'top-[32px]' : 'top-full'
+            }`}
+          >
             <button
               type="button"
               onClick={() => {
                 onSelect(null);
                 setOpen(false);
               }}
-              className={`flex w-full items-center rounded-none px-2.5 py-1.5 text-left text-[11px] transition-colors ${!activeStrategyId
+              className={`flex w-full items-center rounded-none px-2.5 py-1.5 text-left text-[11px] transition-colors ${
+                !activeStrategyId
                   ? 'bg-primary/10 font-semibold text-primary'
                   : 'text-text-secondary hover:bg-elevated hover:text-text-primary'
-                }`}
+              }`}
             >
               None
             </button>
@@ -81,10 +91,11 @@ export default function StrategySelector({
                   onSelect(s.id);
                   setOpen(false);
                 }}
-                className={`flex w-full items-center justify-between rounded-none px-2.5 py-1.5 text-left text-[11px] transition-colors ${s.id === activeStrategyId
+                className={`flex w-full items-center justify-between rounded-none px-2.5 py-1.5 text-left text-[11px] transition-colors ${
+                  s.id === activeStrategyId
                     ? 'bg-primary/10 font-semibold text-primary'
                     : 'text-text-secondary hover:bg-elevated hover:text-text-primary'
-                  }`}
+                }`}
               >
                 <span>{s.name}</span>
                 {s.id === activeStrategyId && (
@@ -104,8 +115,8 @@ export default function StrategySelector({
           title="Strategy Settings"
           className={
             noText
-              ? "flex h-7 w-7 items-center justify-center rounded-sm text-text-secondary hover:bg-elevated hover:text-text-primary transition-colors cursor-pointer"
-              : "flex h-full w-9 items-center justify-center border-r border-border-default bg-surface text-text-secondary transition-colors hover:bg-elevated hover:text-text-primary"
+              ? 'flex h-7 w-7 items-center justify-center rounded-sm text-text-secondary hover:bg-elevated hover:text-text-primary transition-colors cursor-pointer'
+              : 'flex h-full w-9 items-center justify-center border-r border-border-default bg-surface text-text-secondary transition-colors hover:bg-elevated hover:text-text-primary'
           }
         >
           <Settings2 size={13} />

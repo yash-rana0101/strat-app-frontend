@@ -51,7 +51,6 @@ export default function TerminalLayout({ children, leftPanel, rightPanel }: Term
     document.addEventListener('mouseup', stopDrag);
   };
 
-
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -76,7 +75,13 @@ export default function TerminalLayout({ children, leftPanel, rightPanel }: Term
       }
 
       // Start typing directly: printable character triggers (a-z, A-Z, 0-9)
-      if (!e.ctrlKey && !e.altKey && !e.metaKey && e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
+      if (
+        !e.ctrlKey &&
+        !e.altKey &&
+        !e.metaKey &&
+        e.key.length === 1 &&
+        /[a-zA-Z0-9]/.test(e.key)
+      ) {
         e.preventDefault();
         setInitialQuery(e.key);
         setIsSearchOpen(true);
@@ -91,7 +96,10 @@ export default function TerminalLayout({ children, leftPanel, rightPanel }: Term
     <div className="flex h-screen bg-background font-sans text-text-primary">
       {/* ── Primary Navigation Rail ─────────────────────────── */}
       <NavRail
-        onOpenSearch={() => { setInitialQuery(''); setIsSearchOpen(true); }}
+        onOpenSearch={() => {
+          setInitialQuery('');
+          setIsSearchOpen(true);
+        }}
         onOpenGuide={() => setGuideOpen(true)}
         onOpenProfile={() => setProfileOpen(true)}
         leftPanelOpen={leftPanelOpen}
@@ -125,9 +133,7 @@ export default function TerminalLayout({ children, leftPanel, rightPanel }: Term
                 even once the column is hidden, which it was not before.
                 `WatchlistBlock` brings its own header, so the panel still starts
                 with a titled row. */}
-            <div className="flex-1 min-h-0 w-full overflow-hidden">
-              {leftPanel}
-            </div>
+            <div className="flex-1 min-h-0 w-full overflow-hidden">{leftPanel}</div>
           </div>
 
           {/* Resize Handle */}
@@ -142,10 +148,12 @@ export default function TerminalLayout({ children, leftPanel, rightPanel }: Term
               title="Drag to resize panel"
             >
               {/* Visual handle bar */}
-              <div className={`
+              <div
+                className={`
                 w-0.5 h-6 bg-border-default rounded-[1px] group-hover:bg-emerald-400 transition-colors
                 ${isResizing ? 'bg-emerald-400' : ''}
-              `} />
+              `}
+              />
             </div>
           )}
         </aside>

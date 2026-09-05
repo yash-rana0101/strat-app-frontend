@@ -38,7 +38,17 @@ export default function Home() {
   const { data: creditData } = useCredit();
 
   // ── Store selectors ───────────────────────────────────────────────
-  const { connectWebSocket, connectAlphaWebSocket, connectPredictiveWebSocket, connectInsightWebSocket, connectOrderFlowWebSocket, activeDecision, liveDecisions, activeProfile, selectedSymbol } = useTradeStore();
+  const {
+    connectWebSocket,
+    connectAlphaWebSocket,
+    connectPredictiveWebSocket,
+    connectInsightWebSocket,
+    connectOrderFlowWebSocket,
+    activeDecision,
+    liveDecisions,
+    activeProfile,
+    selectedSymbol,
+  } = useTradeStore();
   const isFullscreen = useChartUIStore((s) => s.isFullscreen);
   const setIsFullscreen = useChartUIStore((s) => s.setIsFullscreen);
   const splitView = useChartUIStore((s) => s.splitView);
@@ -50,12 +60,16 @@ export default function Home() {
 
   // ── Mounted guard ─────────────────────────────────────────────────
   const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Test-mode-only affordance. Inert unless the server was started with `ALPHA_TEST_MODE=1`, which is what
   // makes `layout.tsx` inject `window.__ALPHA_TEST_MODE__`. See `lib/testAffordance.ts` for why the e2e needs
   // it: the FIND button is gated on candles the fixture has no way to fetch.
-  useEffect(() => { installTestAffordance(); }, []);
+  useEffect(() => {
+    installTestAffordance();
+  }, []);
 
   // ── Session check ─────────────────────────────────────────────────
   // The session is an httpOnly `.stratai.live` cookie, so whether we have one is
@@ -152,16 +166,27 @@ export default function Home() {
         const u = await bridgeListen<ConsensusReport>('quant-consensus', (event) => {
           if (!cancelled) setConsensusData(event.payload);
         });
-        if (cancelled) { u(); } else { unlisten = u; }
-      } catch (err) { console.warn('[page] consensus listener unavailable:', err); }
+        if (cancelled) {
+          u();
+        } else {
+          unlisten = u;
+        }
+      } catch (err) {
+        console.warn('[page] consensus listener unavailable:', err);
+      }
     })();
-    return () => { cancelled = true; unlisten?.(); };
+    return () => {
+      cancelled = true;
+      unlisten?.();
+    };
   }, [setConsensusData]);
 
   // ── Fullscreen keyboard / cleanup ─────────────────────────────────
   useEffect(() => {
     if (!isFullscreen) return;
-    const handleKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsFullscreen(false); };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsFullscreen(false);
+    };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen, setIsFullscreen]);
@@ -198,7 +223,8 @@ export default function Home() {
   }, [activeProfile, splitView]);
 
   // ── Early returns ─────────────────────────────────────────────────
-  if (!mounted) return <div className="flex h-screen w-screen items-center justify-center bg-background" />;
+  if (!mounted)
+    return <div className="flex h-screen w-screen items-center justify-center bg-background" />;
   // Auth comes FIRST, before the feed health gate.
   //
   // `showConnectionLost` tracks the aggregator WebSocket, which is unauthenticated
@@ -228,10 +254,25 @@ export default function Home() {
       <div className="min-h-0 flex-1">
         <TerminalLayout
           leftPanel={<LeftPanel />}
-          rightPanel={<RightSidebar activeProfile={activeProfile} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} sidebarWidth={sidebarWidth} isResizingSidebar={isResizingSidebar} startResizingSidebar={startResizingSidebar} />}
+          rightPanel={
+            <RightSidebar
+              activeProfile={activeProfile}
+              sidebarOpen={sidebarOpen}
+              setSidebarOpen={setSidebarOpen}
+              sidebarWidth={sidebarWidth}
+              isResizingSidebar={isResizingSidebar}
+              startResizingSidebar={startResizingSidebar}
+            />
+          }
         >
           {/* ── Chart + Order Execution column ───────────── */}
-          <div className={isFullscreen ? "fixed inset-0 z-150 flex flex-col bg-background p-2" : "relative flex h-full min-h-0 min-w-0 flex-col rounded-none bg-surface"}>
+          <div
+            className={
+              isFullscreen
+                ? 'fixed inset-0 z-150 flex flex-col bg-background p-2'
+                : 'relative flex h-full min-h-0 min-w-0 flex-col rounded-none bg-surface'
+            }
+          >
             <div className="flex flex-1 min-h-0 w-full overflow-hidden">
               <div className="min-h-0 flex-1 bg-surface relative flex flex-col p-0 overflow-hidden">
                 {renderProfileContent()}
@@ -248,7 +289,9 @@ export default function Home() {
       </div>
 
       <ToastContainer toasts={toasts} />
-      {isResizingSidebar && <div className="fixed inset-0 z-9999 cursor-col-resize select-none pointer-events-auto bg-white/0" />}
+      {isResizingSidebar && (
+        <div className="fixed inset-0 z-9999 cursor-col-resize select-none pointer-events-auto bg-white/0" />
+      )}
     </div>
   );
 }

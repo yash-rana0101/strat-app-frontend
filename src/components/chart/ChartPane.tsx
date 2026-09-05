@@ -31,11 +31,7 @@ import { AlertTriangle } from 'lucide-react';
 import MainTerminalChart from '../MainTerminalChart';
 import { type Timeframe } from '../../utils/chartTypes';
 import { useTradeStore } from '../../store/useTradeStore';
-import {
-  useChartUIStore,
-  type ChartPaneState,
-  type PaneId,
-} from '../../store/useChartUIStore';
+import { useChartUIStore, type ChartPaneState, type PaneId } from '../../store/useChartUIStore';
 
 interface ChartPaneProps {
   /** The independent state for this pane (symbol/timeframe/chartType). */
@@ -59,10 +55,7 @@ interface PaneErrorBoundaryState {
   hasError: boolean;
 }
 
-class PaneErrorBoundary extends React.Component<
-  PaneErrorBoundaryProps,
-  PaneErrorBoundaryState
-> {
+class PaneErrorBoundary extends React.Component<PaneErrorBoundaryProps, PaneErrorBoundaryState> {
   constructor(props: PaneErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };

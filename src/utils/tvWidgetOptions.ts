@@ -21,7 +21,8 @@ export function getTvWidgetOptions({
   theme,
 }: WidgetOptionsInput): ChartingLibraryWidgetOptions {
   const sym = activeSymbol.toUpperCase();
-  const isFno = sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
+  const isFno =
+    sym.endsWith('FUT') || ((sym.endsWith('CE') || sym.endsWith('PE')) && /\d/.test(sym));
   const exchange = isFno ? 'NFO' : 'NSE';
 
   return {

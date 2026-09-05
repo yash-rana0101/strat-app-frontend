@@ -118,7 +118,7 @@ export interface LatestCandleUpdateResult {
  */
 export function applyLatestCandleUpdate(
   series: ChartCandle[],
-  update: ChartCandle,
+  update: ChartCandle
 ): LatestCandleUpdateResult {
   if (series.length === 0) {
     return { kind: 'append', series: [update], candle: update };

@@ -40,24 +40,35 @@ function trendGlow(score: number) {
 
 function stateColor(state: string) {
   switch (state) {
-    case 'OVERBOUGHT': return 'text-rose-400 bg-rose-500/10 border-rose-500/30';
-    case 'OVERSOLD': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
-    case 'SQUEEZING': return 'text-amber-400 bg-amber-500/10 border-amber-500/30';
-    case 'EXPANDING': return 'text-violet-400 bg-violet-500/10 border-violet-500/30';
-    case 'ACCUMULATION': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
-    case 'DISTRIBUTION': return 'text-rose-400 bg-rose-500/10 border-rose-500/30';
+    case 'OVERBOUGHT':
+      return 'text-rose-400 bg-rose-500/10 border-rose-500/30';
+    case 'OVERSOLD':
+      return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
+    case 'SQUEEZING':
+      return 'text-amber-400 bg-amber-500/10 border-amber-500/30';
+    case 'EXPANDING':
+      return 'text-violet-400 bg-violet-500/10 border-violet-500/30';
+    case 'ACCUMULATION':
+      return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
+    case 'DISTRIBUTION':
+      return 'text-rose-400 bg-rose-500/10 border-rose-500/30';
     case 'NORMAL':
     case 'NEUTRAL':
-    default: return 'text-slate-400 bg-slate-500/10 border-slate-500/30';
+    default:
+      return 'text-slate-400 bg-slate-500/10 border-slate-500/30';
   }
 }
 
 function stateIcon(category: string) {
   switch (category) {
-    case 'momentum': return <Gauge size={12} />;
-    case 'volatility': return <Waves size={12} />;
-    case 'volume': return <BarChart3 size={12} />;
-    default: return <Activity size={12} />;
+    case 'momentum':
+      return <Gauge size={12} />;
+    case 'volatility':
+      return <Waves size={12} />;
+    case 'volume':
+      return <BarChart3 size={12} />;
+    default:
+      return <Activity size={12} />;
   }
 }
 
@@ -80,14 +91,23 @@ export default function ConsensusBoard({ consensusData }: Props) {
         <div className="text-center">
           <p className="text-[11px] font-semibold text-text-muted">Awaiting Tick Data...</p>
           <p className="text-[9px] text-text-muted/50 mt-1">
-            Consensus engine activates on<br />first candle ingestion
+            Consensus engine activates on
+            <br />
+            first candle ingestion
           </p>
         </div>
       </div>
     );
   }
 
-  const { trend_score, momentum_state, volatility_state, volume_flow_state, active_patterns, active_strategies } = consensusData;
+  const {
+    trend_score,
+    momentum_state,
+    volatility_state,
+    volume_flow_state,
+    active_patterns,
+    active_strategies,
+  } = consensusData;
 
   // Normalize trend for gauge (0–100 where 50 is neutral)
   const gaugePercent = Math.round(((trend_score + 100) / 200) * 100);
@@ -111,19 +131,30 @@ export default function ConsensusBoard({ consensusData }: Props) {
 
         <div className="flex items-center gap-3">
           {/* Big number */}
-          <div className={`text-3xl font-black tabular-nums tracking-tight ${trendColor(trend_score)} ${trendGlow(trend_score)}`}>
-            {trend_score > 0 ? '+' : ''}{trend_score}
+          <div
+            className={`text-3xl font-black tabular-nums tracking-tight ${trendColor(trend_score)} ${trendGlow(trend_score)}`}
+          >
+            {trend_score > 0 ? '+' : ''}
+            {trend_score}
           </div>
 
           <div className="flex-1 flex flex-col gap-1">
             {/* Label */}
             <div className="flex items-center justify-between">
-              <span className={`text-[10px] font-bold uppercase tracking-wider ${trendColor(trend_score)}`}>
-                {trend_score > 50 ? 'STRONG BULL' : trend_score > 0 ? 'BULLISH' : trend_score < -50 ? 'STRONG BEAR' : trend_score < 0 ? 'BEARISH' : 'NEUTRAL'}
+              <span
+                className={`text-[10px] font-bold uppercase tracking-wider ${trendColor(trend_score)}`}
+              >
+                {trend_score > 50
+                  ? 'STRONG BULL'
+                  : trend_score > 0
+                    ? 'BULLISH'
+                    : trend_score < -50
+                      ? 'STRONG BEAR'
+                      : trend_score < 0
+                        ? 'BEARISH'
+                        : 'NEUTRAL'}
               </span>
-              <span className="text-[9px] text-text-muted tabular-nums">
-                {gaugePercent}%
-              </span>
+              <span className="text-[9px] text-text-muted tabular-nums">{gaugePercent}%</span>
             </div>
 
             {/* Gauge bar */}
@@ -161,7 +192,9 @@ export default function ConsensusBoard({ consensusData }: Props) {
                 {stateIcon(category)}
                 <span className="font-medium">{label}</span>
               </div>
-              <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold border ${stateColor(value)}`}>
+              <span
+                className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold border ${stateColor(value)}`}
+              >
                 {value}
               </span>
             </div>
@@ -190,7 +223,13 @@ export default function ConsensusBoard({ consensusData }: Props) {
                 key={p}
                 className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold bg-slate-500/8 text-slate-400 border border-slate-500/20"
               >
-                {p.includes('Bullish') || p === 'Hammer' ? <TrendingUp size={9} /> : p.includes('Bearish') || p === 'Shooting Star' ? <TrendingDown size={9} /> : <Minus size={9} />}
+                {p.includes('Bullish') || p === 'Hammer' ? (
+                  <TrendingUp size={9} />
+                ) : p.includes('Bearish') || p === 'Shooting Star' ? (
+                  <TrendingDown size={9} />
+                ) : (
+                  <Minus size={9} />
+                )}
                 {p}
               </span>
             ))}

@@ -48,15 +48,15 @@ const candleCount = () =>
       0,
       Number.NaN,
       Number.POSITIVE_INFINITY,
-      Number.NEGATIVE_INFINITY,
-    ),
+      Number.NEGATIVE_INFINITY
+    )
   );
 
 /** A finite-ish logical-range edge (occasionally non-finite). */
 const edge = () =>
   fc.oneof(
     fc.double({ min: -50_000, max: 50_000, noNaN: true }),
-    fc.constantFrom(Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY),
+    fc.constantFrom(Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY)
   );
 
 describe('Property 30: wheel zoom keeps the visible candle count within bounds', () => {
@@ -68,7 +68,7 @@ describe('Property 30: wheel zoom keeps the visible candle count within bounds',
         expect(clamped).toBeGreaterThanOrEqual(MIN_VISIBLE_CANDLES);
         expect(clamped).toBeLessThanOrEqual(MAX_VISIBLE_CANDLES);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -78,9 +78,9 @@ describe('Property 30: wheel zoom keeps the visible candle count within bounds',
         fc.double({ min: MIN_VISIBLE_CANDLES, max: MAX_VISIBLE_CANDLES, noNaN: true }),
         (count) => {
           expect(clampVisibleCandleCount(count)).toBe(count);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -97,7 +97,7 @@ describe('Property 30: wheel zoom keeps the visible candle count within bounds',
         expect(span).toBeGreaterThanOrEqual(MIN_VISIBLE_CANDLES - EPS);
         expect(span).toBeLessThanOrEqual(MAX_VISIBLE_CANDLES + EPS);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -120,12 +120,10 @@ describe('Property 30: wheel zoom keeps the visible candle count within bounds',
 
           // Whether or not clamping occurred, the midpoint is preserved so the
           // cursor-centered zoom behavior is retained.
-          expect(Math.abs(resultCenter - center)).toBeLessThanOrEqual(
-            EPS + Math.abs(center) * EPS,
-          );
-        },
+          expect(Math.abs(resultCenter - center)).toBeLessThanOrEqual(EPS + Math.abs(center) * EPS);
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -142,9 +140,9 @@ describe('Property 30: wheel zoom keeps the visible candle count within bounds',
           const result = clampVisibleRange(from, to);
           expect(result.from).toBe(from);
           expect(result.to).toBe(to);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

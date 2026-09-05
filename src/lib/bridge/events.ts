@@ -55,7 +55,7 @@ export function hasBridgeListeners(name: string): boolean {
  */
 export async function bridgeListen<T>(
   name: string,
-  cb: (event: BridgeEvent<T>) => void,
+  cb: (event: BridgeEvent<T>) => void
 ): Promise<UnlistenFn> {
   const handler = cb as Handler;
   let set = handlers.get(name);
@@ -112,7 +112,7 @@ const SSE_LINE_END = /\r\n|\r|\n/g;
 export async function relaySse(
   body: ReadableStream<Uint8Array>,
   onFrame: (frame: SseFrame) => void,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<void> {
   const reader = body.getReader();
   const decoder = new TextDecoder();

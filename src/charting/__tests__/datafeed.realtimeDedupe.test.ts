@@ -35,7 +35,9 @@ import type { LibrarySymbolInfo, ResolutionString } from '@/charting/datafeedTyp
 const GUID = 'test-listener';
 const BAR_MS = 1_772_000_000_000; // an arbitrary 10-minute bucket
 
-function bar(overrides: Partial<{ close: number; high: number; low: number; volume: number }> = {}) {
+function bar(
+  overrides: Partial<{ close: number; high: number; low: number; volume: number }> = {}
+) {
   return {
     symbol: 'HDFCBANK',
     start_timestamp_ms: BAR_MS,
@@ -56,7 +58,7 @@ function subscribe() {
     '10' as ResolutionString,
     onTick,
     GUID,
-    () => {},
+    () => {}
   );
   return onTick;
 }
@@ -81,7 +83,7 @@ describe('subscribeBars — redundant bars are not pushed into the widget', () =
 
     expect(onTick).toHaveBeenCalledTimes(1);
     expect(onTick).toHaveBeenCalledWith(
-      expect.objectContaining({ time: BAR_MS, open: 730, close: 730.5 }),
+      expect.objectContaining({ time: BAR_MS, open: 730, close: 730.5 })
     );
   });
 

@@ -43,7 +43,7 @@ export function FqQueryProvider({ children }: { children: ReactNode }) {
             retry: 0,
           },
         },
-      }),
+      })
   );
 
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>;

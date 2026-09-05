@@ -10,7 +10,13 @@
 
 import { test, expect, type Page } from '@playwright/test';
 
-import { closeFullAnalysis, expandAllThinking, openFullAnalysis, seedCandles, tokenForTest } from './support/e2e';
+import {
+  closeFullAnalysis,
+  expandAllThinking,
+  openFullAnalysis,
+  seedCandles,
+  tokenForTest,
+} from './support/e2e';
 
 async function signIn(page: Page, token: string) {
   await page.context().addCookies([
@@ -55,7 +61,7 @@ test.describe('the workspace at 360 px', () => {
     const find = page.locator('#btn-run-deep-quant');
     await expect(
       find,
-      'the FIND button never enabled: no candles in historicalCache, so `dataReady` is false',
+      'the FIND button never enabled: no candles in historicalCache, so `dataReady` is false'
     ).toBeEnabled({ timeout: 20_000 });
     await find.click();
     // The reasoning lives in the Agent View now, which at 360 px is a FULL-SCREEN sheet rather
@@ -86,7 +92,7 @@ test.describe('the workspace at 360 px', () => {
     // Horizontal overflow at 360 px is the classic symptom of a fixed-width child, and it makes the
     // whole page pan sideways.
     const overflows = await page.evaluate(
-      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
     );
     expect(overflows).toBe(false);
   });

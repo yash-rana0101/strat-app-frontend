@@ -84,7 +84,7 @@ function makeRawCandles(
   n: number,
   startSec = 1_600_000_000,
   stepSec = 60,
-  seed = 1,
+  seed = 1
 ): OhlcCandle[] {
   const rng = makeRng(seed);
   const out: OhlcCandle[] = [];
@@ -386,9 +386,7 @@ describe('workspace persistence round-trip (Requirements 11.1, 11.2)', () => {
           symbol: 'NIFTY',
         },
       ] as unknown as WorkspaceState['drawings'],
-      paneLayout: [
-        { paneId: 'indicator-pane-0', heightFraction: 1, order: 0 },
-      ],
+      paneLayout: [{ paneId: 'indicator-pane-0', heightFraction: 1, order: 0 }],
     };
   }
 
@@ -463,7 +461,10 @@ describe('latency & frame-budget targets (Requirements 9.1, 9.2)', () => {
   });
 
   it('a live single-candle update touches only the latest candle and is sub-frame-budget (Req 9.2/9.3)', () => {
-    const candles = canonicalCandles(makeRawCandles('NIFTY', 5_000, 1_600_000_000, 60, 13), 'NIFTY');
+    const candles = canonicalCandles(
+      makeRawCandles('NIFTY', 5_000, 1_600_000_000, 60, 13),
+      'NIFTY'
+    );
     const last = candles[candles.length - 1];
     const update: ChartCandle = { ...last, close: last.close + 1, high: last.high + 1 };
 

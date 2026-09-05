@@ -222,7 +222,15 @@ describe('each mode keeps its own instrument', () => {
     t().setActiveProfile('INTRADAY');
     useTradeStore.setState({
       ohlcCandles: [
-        { symbol: 'RELIANCE', start_timestamp_ms: 1, open: 1, high: 1, low: 1, close: 1, volume: 1 },
+        {
+          symbol: 'RELIANCE',
+          start_timestamp_ms: 1,
+          open: 1,
+          high: 1,
+          low: 1,
+          close: 1,
+          volume: 1,
+        },
       ],
     });
 
@@ -329,7 +337,15 @@ describe('selections are written back as the user makes them', () => {
     for (let i = 0; i < 50; i += 1) {
       useTradeStore.setState({
         ohlcCandles: [
-          { symbol: 'RELIANCE', start_timestamp_ms: i, open: 1, high: 1, low: 1, close: 1, volume: 1 },
+          {
+            symbol: 'RELIANCE',
+            start_timestamp_ms: i,
+            open: 1,
+            high: 1,
+            low: 1,
+            close: 1,
+            volume: 1,
+          },
         ],
         latencyMs: i,
       });

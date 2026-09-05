@@ -22,7 +22,9 @@ describe('MarkdownRenderer and parseInlineMarkdown', () => {
   });
 
   it('parses inline code spans with proper styling', () => {
-    const { container } = render(<div>{parseInlineMarkdown('Execute `get_options_analytics` tool', true)}</div>);
+    const { container } = render(
+      <div>{parseInlineMarkdown('Execute `get_options_analytics` tool', true)}</div>
+    );
     const code = container.querySelector('code');
     expect(code).not.toBeNull();
     expect(code?.textContent).toBe('get_options_analytics');
@@ -30,7 +32,9 @@ describe('MarkdownRenderer and parseInlineMarkdown', () => {
   });
 
   it('parses hyperlinks correctly', () => {
-    const { container } = render(<div>{parseInlineMarkdown('[Strat AI](https://stratai.com)', true)}</div>);
+    const { container } = render(
+      <div>{parseInlineMarkdown('[Strat AI](https://stratai.com)', true)}</div>
+    );
     const link = container.querySelector('a');
     expect(link).not.toBeNull();
     expect(link?.textContent).toBe('Strat AI');
@@ -73,4 +77,3 @@ describe('MarkdownRenderer and parseInlineMarkdown', () => {
     expect(container.textContent).toContain('Success');
   });
 });
-

@@ -54,15 +54,18 @@ import { buildBookFromKiteDepth, BOOK_CACHE_VERSION } from '../orderBookHelpers'
  */
 function seedBook() {
   const buy = Array.from({ length: 5 }, (_, i) => ({ price: 1308.6 - i * 0.1, quantity: 100 + i }));
-  const sell = Array.from({ length: 5 }, (_, i) => ({ price: 1308.7 + i * 0.1, quantity: 100 + i }));
+  const sell = Array.from({ length: 5 }, (_, i) => ({
+    price: 1308.7 + i * 0.1,
+    quantity: 100 + i,
+  }));
   return buildBookFromKiteDepth({ buy, sell })!;
 }
 
 /** The two ladder scroll containers, in DOM order: [asks, bids]. */
 function ladders(container: HTMLElement): HTMLElement[] {
-  return Array.from(
-    container.querySelectorAll<HTMLElement>('div.overflow-y-auto'),
-  ).filter((el) => el.className.includes('flex-col'));
+  return Array.from(container.querySelectorAll<HTMLElement>('div.overflow-y-auto')).filter((el) =>
+    el.className.includes('flex-col')
+  );
 }
 
 describe('OrderBook — ask ladder scrollability', () => {
@@ -74,7 +77,7 @@ describe('OrderBook — ask ladder scrollability', () => {
     // rather than a hardcoded string that would silently stop matching.
     localStorage.setItem(
       `ai-trader-orderbook-${BOOK_CACHE_VERSION}-RELIANCE`,
-      JSON.stringify(seedBook()),
+      JSON.stringify(seedBook())
     );
   });
 

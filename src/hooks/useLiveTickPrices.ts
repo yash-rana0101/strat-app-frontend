@@ -62,4 +62,3 @@ export function useLiveTickPrices(): Map<string, LiveTick> {
     return next;
   }, [candles]);
 }
-

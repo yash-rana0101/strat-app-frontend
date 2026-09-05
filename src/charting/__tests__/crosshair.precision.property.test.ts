@@ -74,12 +74,10 @@ describe('Property 31: values formatted to configured precision', () => {
           const tol = 0.5 * Math.pow(10, -clamped);
           // Allow generous slack for floating-point scale of large magnitudes.
           const scale = Math.max(1, Math.abs(value));
-          expect(Math.abs(parsed - value)).toBeLessThanOrEqual(
-            tol + 1e-9 * scale,
-          );
-        },
+          expect(Math.abs(parsed - value)).toBeLessThanOrEqual(tol + 1e-9 * scale);
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

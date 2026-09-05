@@ -15,14 +15,14 @@ export const DEFAULT_PATTERN_TIMEFRAME = '10m';
 /** How many patterns a given timeframe is carrying. */
 export function patternCountFor(
   multiTfPatterns: MultiTfChartPatterns[] | null | undefined,
-  timeframe: string,
+  timeframe: string
 ): number {
   return multiTfPatterns?.find((p) => p.timeframe === timeframe)?.patterns.length ?? 0;
 }
 
 /** Total patterns across every timeframe. Drives the strip's headline count. */
 export function totalPatternCount(
-  multiTfPatterns: MultiTfChartPatterns[] | null | undefined,
+  multiTfPatterns: MultiTfChartPatterns[] | null | undefined
 ): number {
   return (multiTfPatterns ?? []).reduce((n, p) => n + p.patterns.length, 0);
 }
@@ -35,13 +35,14 @@ export function totalPatternCount(
  * never opens on an arbitrary empty tab.
  */
 export function bestPatternTimeframe(
-  multiTfPatterns: MultiTfChartPatterns[] | null | undefined,
+  multiTfPatterns: MultiTfChartPatterns[] | null | undefined
 ): string {
   if (!multiTfPatterns) return DEFAULT_PATTERN_TIMEFRAME;
 
   const best = multiTfPatterns.reduce<{ tf: string; count: number }>(
-    (acc, p) => (p.patterns.length > acc.count ? { tf: p.timeframe, count: p.patterns.length } : acc),
-    { tf: DEFAULT_PATTERN_TIMEFRAME, count: -1 },
+    (acc, p) =>
+      p.patterns.length > acc.count ? { tf: p.timeframe, count: p.patterns.length } : acc,
+    { tf: DEFAULT_PATTERN_TIMEFRAME, count: -1 }
   );
 
   return best.count > 0 ? best.tf : DEFAULT_PATTERN_TIMEFRAME;
@@ -49,10 +50,10 @@ export function bestPatternTimeframe(
 
 /** How many of the counted patterns are still forming rather than complete. */
 export function formingPatternCount(
-  multiTfPatterns: MultiTfChartPatterns[] | null | undefined,
+  multiTfPatterns: MultiTfChartPatterns[] | null | undefined
 ): number {
   return (multiTfPatterns ?? []).reduce(
     (n, tf) => n + tf.patterns.filter((p) => p.is_forming).length,
-    0,
+    0
   );
 }

@@ -37,16 +37,26 @@ export default function ReasoningBlock({
         ? ` (${liveQuote.change >= 0 ? '+' : ''}${liveQuote.change.toFixed(2)}%)`
         : '';
     const priceStr = liveQuote ? ` [LTP: ₹${liveQuote.last_price.toFixed(2)}${changeStr}]` : '';
-    if (raw && raw !== 'Live backend decision' && !raw.includes('without a reasoning string') && raw.length > 5) {
+    if (
+      raw &&
+      raw !== 'Live backend decision' &&
+      !raw.includes('without a reasoning string') &&
+      raw.length > 5
+    ) {
       return raw + priceStr;
     }
-    return `Quant signal: ${matchedDecision.action_type} with ${Math.round(matchedDecision.final_conviction_score)}% conviction.` + priceStr;
+    return (
+      `Quant signal: ${matchedDecision.action_type} with ${Math.round(matchedDecision.final_conviction_score)}% conviction.` +
+      priceStr
+    );
   }, [matchedDecision, liveQuote]);
 
   if (hasDecision) {
     return (
       <div className="flex min-w-48 flex-1 items-start gap-2 rounded-md border border-border-default/50 bg-elevated/40 px-3 py-1.5 text-xs text-text-secondary">
-        <span className="shrink-0 font-bold uppercase tracking-wider text-[9px] text-text-muted pt-0.5">Reasoning</span>
+        <span className="shrink-0 font-bold uppercase tracking-wider text-[9px] text-text-muted pt-0.5">
+          Reasoning
+        </span>
         <span className="text-text-secondary">{reasoning}</span>
       </div>
     );

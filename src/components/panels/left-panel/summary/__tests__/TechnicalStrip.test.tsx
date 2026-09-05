@@ -49,7 +49,7 @@ describe('TechnicalStrip', () => {
         computedAt={NOW - 30_000}
         now={NOW}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('+61')).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe('TechnicalStrip', () => {
         computedAt={null}
         now={NOW}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('Run Deep Quant')).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('TechnicalStrip', () => {
         computedAt={NOW - 30_000}
         now={NOW}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.queryByText('+61')).not.toBeInTheDocument();
@@ -95,7 +95,7 @@ describe('TechnicalStrip', () => {
         computedAt={NOW - 30_000}
         now={NOW}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('-20')).toBeInTheDocument();
@@ -110,12 +110,10 @@ describe('TechnicalStrip', () => {
         computedAt={NOW - (CONSENSUS_STALE_AFTER_MS - 1_000)}
         now={NOW}
         onClick={() => {}}
-      />,
+      />
     );
 
-    expect(
-      screen.getByRole('button', { name: /measured 4m ago/ }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /measured 4m ago/ })).toBeInTheDocument();
     expect(screen.queryByText(/previous reading/)).not.toBeInTheDocument();
   });
 
@@ -127,14 +125,14 @@ describe('TechnicalStrip', () => {
         computedAt={NOW - 3 * 60 * 60 * 1000}
         now={NOW}
         onClick={() => {}}
-      />,
+      />
     );
 
     // Visible age badge, so the staleness is not conveyed by the accessible name
     // alone — the number next to it is what the user would otherwise trust.
     expect(screen.getByText('3h ago')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /previous reading from 3h ago/ }),
+      screen.getByRole('button', { name: /previous reading from 3h ago/ })
     ).toBeInTheDocument();
   });
 
@@ -146,7 +144,7 @@ describe('TechnicalStrip', () => {
         computedAt={null}
         now={NOW}
         onClick={() => {}}
-      />,
+      />
     );
 
     expect(screen.getByText('0')).toBeInTheDocument();

@@ -61,10 +61,10 @@ export default function SessionTabBarConnected() {
           ? 'That session no longer exists. It may have been deleted.'
           : result.error?.unauthenticated
             ? 'Your session expired. Sign in again to open it.'
-            : (result.error?.message ?? 'Could not open this session.'),
+            : (result.error?.message ?? 'Could not open this session.')
       );
     },
-    [activate],
+    [activate]
   );
 
   const onOpen = React.useCallback((sessionId: string) => void open(sessionId), [open]);
@@ -92,7 +92,11 @@ export default function SessionTabBarConnected() {
           role="alert"
           className="flex items-start gap-1.5 border-b border-border-default/40 bg-elevated p-2 text-xs text-text-secondary"
         >
-          <AlertTriangle size={12} className="mt-0.5 shrink-0 text-status-error" aria-hidden="true" />
+          <AlertTriangle
+            size={12}
+            className="mt-0.5 shrink-0 text-status-error"
+            aria-hidden="true"
+          />
           <span className="min-w-0 flex-1">{openError}</span>
           <button
             type="button"

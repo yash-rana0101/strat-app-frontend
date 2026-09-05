@@ -17,21 +17,37 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import fc from 'fast-check';
 
-import {
-  useChartUIStore,
-  type ChartPaneState,
-  type PaneId,
-} from '@/store/useChartUIStore';
+import { useChartUIStore, type ChartPaneState, type PaneId } from '@/store/useChartUIStore';
 import type { ChartTimeframe } from '@/store/useTradeStore';
 import type { ChartType } from '@/charting/engines';
 
 const SYMBOLS = ['RELIANCE', 'TCS', 'INFY', 'NIFTY 50', 'BANKNIFTY', 'HDFCBANK'] as const;
 const TIMEFRAMES: ChartTimeframe[] = [
-  '1m', '2m', '5m', '10m', '15m', '30m', '1h', '1H', '4h', '1D', '1W', '1M',
+  '1m',
+  '2m',
+  '5m',
+  '10m',
+  '15m',
+  '30m',
+  '1h',
+  '1H',
+  '4h',
+  '1D',
+  '1W',
+  '1M',
 ];
 const CHART_TYPES: ChartType[] = [
-  'candlestick', 'hollow-candle', 'ohlc-bar', 'line', 'area', 'baseline',
-  'heikin-ashi', 'renko', 'kagi', 'point-figure', 'line-break',
+  'candlestick',
+  'hollow-candle',
+  'ohlc-bar',
+  'line',
+  'area',
+  'baseline',
+  'heikin-ashi',
+  'renko',
+  'kagi',
+  'point-figure',
+  'line-break',
 ];
 const PANE_IDS: PaneId[] = ['A', 'B'];
 
@@ -81,7 +97,7 @@ function updateArb() {
       kind: fc.constant('chartType' as const),
       id: fc.constantFrom(...PANE_IDS),
       value: fc.constantFrom(...CHART_TYPES),
-    }),
+    })
   );
 }
 
@@ -129,7 +145,7 @@ describe('Property 5: panes are independent', () => {
         // Pane B is byte-for-byte unchanged.
         expect(paneById('B')).toEqual(bBefore);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -145,7 +161,7 @@ describe('Property 5: panes are independent', () => {
 
         expect(paneById('A')).toEqual(aBefore);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -175,9 +191,9 @@ describe('Property 5: panes are independent', () => {
             if (op.kind === 'timeframe') expect(target.timeframe).toBe(op.value);
             if (op.kind === 'chartType') expect(target.chartType).toBe(op.value);
           }
-        },
+        }
       ),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

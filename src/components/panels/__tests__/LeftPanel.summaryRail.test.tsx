@@ -136,7 +136,9 @@ describe('LeftPanel summary rail', () => {
 
     render(<LeftPanel />);
 
-    await waitFor(() => expect(screen.getByRole('button', { name: /Patterns/ })).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /Patterns/ })).toBeInTheDocument()
+    );
     expect(fetchMultiTfPatterns).not.toHaveBeenCalled();
 
     // 30 candles is the documented threshold in the panel's guard.

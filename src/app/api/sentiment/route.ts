@@ -95,26 +95,37 @@ export function toSentimentPayload(symbol: string, verdict: StrategicVerdict): S
   const headlines = Array.isArray(verdict.headlines)
     ? verdict.headlines.filter((h): h is string => typeof h === 'string' && h.trim().length > 0)
     : [];
-  const driverHeadline = verdict.drivers?.find((d) => typeof d?.headline === 'string' && d.headline.trim())?.headline;
+  const driverHeadline = verdict.drivers?.find(
+    (d) => typeof d?.headline === 'string' && d.headline.trim()
+  )?.headline;
   const topHeadline =
     driverHeadline?.trim() || headlines[0] || `No notable headline for ${symbol}.`;
 
   const articles: SentimentArticle[] = Array.isArray(verdict.articles)
     ? verdict.articles
-      .filter((a): a is NonNullable<typeof a> => !!a && (typeof a.title === 'string' || typeof a.url === 'string'))
-      .map((a) => ({
-        title: typeof a.title === 'string' ? a.title.trim() : '',
-        url: typeof a.url === 'string' && a.url.trim() ? a.url.trim() : undefined,
-        source: typeof a.source === 'string' && a.source.trim() ? a.source.trim() : undefined,
-        published_at: typeof a.published_at === 'string' && a.published_at.trim() ? a.published_at.trim() : undefined,
-      }))
-      .filter((a) => a.title.length > 0 || !!a.url)
+        .filter(
+          (a): a is NonNullable<typeof a> =>
+            !!a && (typeof a.title === 'string' || typeof a.url === 'string')
+        )
+        .map((a) => ({
+          title: typeof a.title === 'string' ? a.title.trim() : '',
+          url: typeof a.url === 'string' && a.url.trim() ? a.url.trim() : undefined,
+          source: typeof a.source === 'string' && a.source.trim() ? a.source.trim() : undefined,
+          published_at:
+            typeof a.published_at === 'string' && a.published_at.trim()
+              ? a.published_at.trim()
+              : undefined,
+        }))
+        .filter((a) => a.title.length > 0 || !!a.url)
     : [];
 
   return {
     symbol: typeof verdict.symbol === 'string' && verdict.symbol.trim() ? verdict.symbol : symbol,
     score,
-    label: typeof verdict.label === 'string' && verdict.label.trim() ? verdict.label : scoreToLabel(score),
+    label:
+      typeof verdict.label === 'string' && verdict.label.trim()
+        ? verdict.label
+        : scoreToLabel(score),
     top_headline: topHeadline,
     impact: scoreToImpact(score),
     headlines,
@@ -156,16 +167,17 @@ export async function GET(req: Request): Promise<Response> {
     // only the first justifies telling the user to wait. Reporting a 429'd LLM as
     // work-in-progress kept the panel promising a verdict that was never going to
     // arrive, so pass the real cause through when there is one.
-    const detail = (await upstream
-      .json()
-      .catch(() => null)) as { still_running?: boolean; reason?: string } | null;
+    const detail = (await upstream.json().catch(() => null)) as {
+      still_running?: boolean;
+      reason?: string;
+    } | null;
     const reason = typeof detail?.reason === 'string' ? detail.reason.trim() : '';
     if (reason && detail?.still_running !== true) {
       return proxyError(503, `Sentiment unavailable for ${symbol}: ${reason}`);
     }
     return proxyError(
       503,
-      `No sentiment computed yet for ${symbol}. Classification is running in the background — try again shortly.`,
+      `No sentiment computed yet for ${symbol}. Classification is running in the background — try again shortly.`
     );
   }
 
@@ -179,7 +191,7 @@ export async function GET(req: Request): Promise<Response> {
   } catch (err) {
     return proxyError(
       502,
-      `sentiment upstream returned a non-JSON body: ${err instanceof Error ? err.message : String(err)}`,
+      `sentiment upstream returned a non-JSON body: ${err instanceof Error ? err.message : String(err)}`
     );
   }
 

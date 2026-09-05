@@ -30,14 +30,11 @@ const approxEqual = (a: number, b: number): boolean =>
  * synthetic-cell fallback (which spans high..low at tickSize granularity)
  * never allocates excessively — range / tickSize stays small.
  */
-const price = () =>
-  fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
 
-const volume = () =>
-  fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
+const volume = () => fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
 
-const tickSize = () =>
-  fc.double({ min: 5, max: 100, noNaN: true, noDefaultInfinity: true });
+const tickSize = () => fc.double({ min: 5, max: 100, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Generate a well-formed candle series with strictly ascending unique
@@ -56,8 +53,8 @@ const candleSeries = (): fc.Arbitrary<ChartCandle[]> =>
             close: b,
             high: Math.max(a, b, c, d),
             low: Math.min(a, b, c, d),
-          })),
-        ),
+          }))
+        )
       );
     })
     .map((arr) => arr as ChartCandle[]);
@@ -71,8 +68,7 @@ const tickRecord = () =>
     delta: fc.double({ min: -10_000, max: 10_000, noNaN: true, noDefaultInfinity: true }),
   });
 
-const tickArray = (): fc.Arbitrary<OrderFlowTick[]> =>
-  fc.array(tickRecord(), { maxLength: 60 });
+const tickArray = (): fc.Arbitrary<OrderFlowTick[]> => fc.array(tickRecord(), { maxLength: 60 });
 
 /** A single candle paired with at least one tick, forcing a live cluster. */
 const singleCandleWithTicks = (): fc.Arbitrary<{
@@ -83,7 +79,7 @@ const singleCandleWithTicks = (): fc.Arbitrary<{
     .tuple(
       fc.integer({ min: 0, max: 1_000_000 }),
       fc.record({ a: price(), b: price(), c: price(), d: price() }),
-      fc.array(tickRecord(), { minLength: 1, maxLength: 60 }),
+      fc.array(tickRecord(), { minLength: 1, maxLength: 60 })
     )
     .map(([t, { a, b, c, d }, ticks]) => ({
       candle: {
@@ -109,7 +105,7 @@ describe('Property 19: Footprint clustering groups by tick size and conserves vo
           }
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -130,7 +126,7 @@ describe('Property 19: Footprint clustering groups by tick size and conserves vo
         expect(approxEqual(cellVolume, tickVolume)).toBe(true);
         expect(approxEqual(fp.totalVolume, tickVolume)).toBe(true);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -149,9 +145,9 @@ describe('Property 19: Footprint clustering groups by tick size and conserves vo
           expect(a.hasOrderFlow).toBe(true);
           expect(b.hasOrderFlow).toBe(true);
           expect(approxEqual(a.totalVolume, b.totalVolume)).toBe(true);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

@@ -155,7 +155,9 @@ export default function WatchlistPanel() {
     setShowDropdown(true);
 
     try {
-      const results = await bridgeInvoke<TauriSearchResult[]>('search_instruments', { query: normalized });
+      const results = await bridgeInvoke<TauriSearchResult[]>('search_instruments', {
+        query: normalized,
+      });
       // The command returns EQ + Index + FNO rows in a single flat list — one
       // global search across NSE / BSE / NFO. Map each row to the flat
       // `SearchInstrument` shape this panel already renders.
@@ -211,7 +213,9 @@ export default function WatchlistPanel() {
   // standing in a zero, which would read as a real reading of 0.
   const formatPrice = (price: number | null) => {
     if (!price) return '—';
-    return '₹' + price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return (
+      '₹' + price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    );
   };
   const formatChange = (change: number | null) => {
     if (change === null) return '—';
@@ -223,14 +227,18 @@ export default function WatchlistPanel() {
     <div className="flex h-full flex-col">
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="shrink-0 border-b border-border-default px-3 py-2">
-
         {/* Search input with dropdown */}
         <div className="relative mt-1.5" ref={dropdownRef}>
-          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+          <Search
+            size={14}
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+          />
           <input
             value={query}
             onChange={(e) => handleInputChange(e.target.value)}
-            onFocus={() => { if (searchResults.length > 0) setShowDropdown(true); }}
+            onFocus={() => {
+              if (searchResults.length > 0) setShowDropdown(true);
+            }}
             placeholder="Search any symbol (NSE / BSE / F&O)..."
             aria-label="Search symbols"
             className="h-9 w-full rounded-md border border-border-default bg-surface pl-8 pr-8 text-xs text-text-primary placeholder:text-text-muted transition-colors focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -284,9 +292,7 @@ export default function WatchlistPanel() {
                         <span className="text-xs font-semibold text-text-primary truncate">
                           {inst.tradingsymbol}
                         </span>
-                        <span className="text-[10px] text-text-muted truncate">
-                          {inst.name}
-                        </span>
+                        <span className="text-[10px] text-text-muted truncate">{inst.name}</span>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <span className="rounded px-1 py-px text-[8px] font-semibold uppercase tracking-wider bg-elevated text-text-muted">
@@ -309,60 +315,69 @@ export default function WatchlistPanel() {
           <WatchlistSkeleton rows={10} />
         ) : (
           <motion.div variants={staggerContainer} initial="hidden" animate="show">
-          {TOP_WATCHLIST.map((stock) => {
-            const quote = quotes[stock.symbol];
-            const sectorColor = SECTOR_COLORS[stock.sector] ?? 'bg-elevated text-text-muted';
-            const isPositive = quote ? quote.change !== null && quote.change >= 0 : false;
-            const isActive = selectedSymbol === stock.symbol;
+            {TOP_WATCHLIST.map((stock) => {
+              const quote = quotes[stock.symbol];
+              const sectorColor = SECTOR_COLORS[stock.sector] ?? 'bg-elevated text-text-muted';
+              const isPositive = quote ? quote.change !== null && quote.change >= 0 : false;
+              const isActive = selectedSymbol === stock.symbol;
 
-            return (
-              <motion.button
-                key={stock.symbol}
-                variants={fadeInUp}
-                type="button"
-                onClick={() => setSelectedSymbol(stock.symbol)}
-                className={`group flex w-full items-center justify-between gap-1 px-3 py-2 text-xs text-left transition-colors cursor-pointer border-l-2 ${
-                  isActive
-                    ? 'bg-primary/10 border-primary text-text-primary'
-                    : 'hover:bg-elevated/70 border-transparent hover:border-primary/50'
-                }`}
-              >
-                {/* Left: Symbol + Name */}
-                <div className="flex flex-col min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[13px] font-semibold text-text-primary truncate">
-                      {stock.symbol}
-                    </span>
-                    <span className={`rounded px-1 py-px text-[7px] font-semibold uppercase tracking-wider ${sectorColor}`}>
-                      {stock.sector}
+              return (
+                <motion.button
+                  key={stock.symbol}
+                  variants={fadeInUp}
+                  type="button"
+                  onClick={() => setSelectedSymbol(stock.symbol)}
+                  className={`group flex w-full items-center justify-between gap-1 px-3 py-2 text-xs text-left transition-colors cursor-pointer border-l-2 ${
+                    isActive
+                      ? 'bg-primary/10 border-primary text-text-primary'
+                      : 'hover:bg-elevated/70 border-transparent hover:border-primary/50'
+                  }`}
+                >
+                  {/* Left: Symbol + Name */}
+                  <div className="flex flex-col min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[13px] font-semibold text-text-primary truncate">
+                        {stock.symbol}
+                      </span>
+                      <span
+                        className={`rounded px-1 py-px text-[7px] font-semibold uppercase tracking-wider ${sectorColor}`}
+                      >
+                        {stock.sector}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-text-muted truncate mt-0.5">
+                      {stock.name}
                     </span>
                   </div>
-                  <span className="text-[10px] text-text-muted truncate mt-0.5">
-                    {stock.name}
-                  </span>
-                </div>
 
-                {/* Right: Price + Change */}
-                <div className="flex flex-col items-end shrink-0">
-                  {quote ? (
-                    <>
-                      <span className="text-[12px] font-semibold text-text-primary tabular-nums">
-                        {formatPrice(quote.last_price)}
-                      </span>
-                      <div className={`flex items-center gap-0.5 ${quote.change === null ? 'text-text-muted' : isPositive ? 'text-bull' : 'text-bear'}`}>
-                        {quote.change !== null && (isPositive ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />)}
-                        <span className="text-[10px] font-medium tabular-nums">
-                          {formatChange(quote.change)}
+                  {/* Right: Price + Change */}
+                  <div className="flex flex-col items-end shrink-0">
+                    {quote ? (
+                      <>
+                        <span className="text-[12px] font-semibold text-text-primary tabular-nums">
+                          {formatPrice(quote.last_price)}
                         </span>
-                      </div>
-                    </>
-                  ) : (
-                    <span className="text-[10px] text-text-muted/50">—</span>
-                  )}
-                </div>
-              </motion.button>
-            );
-          })}
+                        <div
+                          className={`flex items-center gap-0.5 ${quote.change === null ? 'text-text-muted' : isPositive ? 'text-bull' : 'text-bear'}`}
+                        >
+                          {quote.change !== null &&
+                            (isPositive ? (
+                              <ArrowUpRight size={10} />
+                            ) : (
+                              <ArrowDownRight size={10} />
+                            ))}
+                          <span className="text-[10px] font-medium tabular-nums">
+                            {formatChange(quote.change)}
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <span className="text-[10px] text-text-muted/50">—</span>
+                    )}
+                  </div>
+                </motion.button>
+              );
+            })}
           </motion.div>
         )}
       </div>

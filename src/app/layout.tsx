@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import { Inter, Geist } from "next/font/google";
-import "./globals.css";
-import { cn } from "@/lib/utils";
+import type { Metadata } from 'next';
+import { Inter, Geist } from 'next/font/google';
+import './globals.css';
+import { cn } from '@/lib/utils';
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 // Startup fast path. The chart cannot mount before the session is confirmed,
 // but nothing stops the browser from doing the slow network work meanwhile:
@@ -24,21 +24,21 @@ const PRECONNECT_ORIGINS = Array.from(
       } catch {
         return [];
       }
-    }),
-  ),
+    })
+  )
 );
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
+  variable: '--font-inter',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
   // Compliance: user-facing copy. "AI Trader" / "AI-powered trading" claimed the
   // product trades — it has no order path at all (providers::BrokerProvider has no
   // order method). See docs/compliance/BRAND_GUIDELINES.md §1.1 rule 11.
-  title: "Strat Ai — Market Analysis Terminal",
-  description: "Market analysis and charting terminal for NSE and NFO.",
+  title: 'Strat Ai — Market Analysis Terminal',
+  description: 'Market analysis and charting terminal for NSE and NFO.',
 };
 
 export default function RootLayout({
@@ -46,14 +46,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isTestMode =
-    process.env.ALPHA_TEST_MODE === "1" ||
-    process.env.ALPHA_TEST_MODE === "true";
+  const isTestMode = process.env.ALPHA_TEST_MODE === '1' || process.env.ALPHA_TEST_MODE === 'true';
 
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", inter.variable, "font-sans", geist.variable)}
+      className={cn('h-full', 'antialiased', inter.variable, 'font-sans', geist.variable)}
       suppressHydrationWarning
     >
       <head>

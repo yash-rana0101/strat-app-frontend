@@ -27,8 +27,10 @@ import { useOutsideClose } from '../../hooks/useOutsideClose';
 const NOTIFY_LEVELS: SystemLog['level'][] = ['WARN', 'ERROR'];
 
 function levelIcon(level: SystemLog['level']) {
-  if (level === 'ERROR') return <XCircle size={10} className="shrink-0 text-rose-500 dark:text-rose-400" />;
-  if (level === 'WARN') return <AlertTriangle size={10} className="shrink-0 text-amber-500 dark:text-amber-400" />;
+  if (level === 'ERROR')
+    return <XCircle size={10} className="shrink-0 text-rose-500 dark:text-rose-400" />;
+  if (level === 'WARN')
+    return <AlertTriangle size={10} className="shrink-0 text-amber-500 dark:text-amber-400" />;
   return <Info size={10} className="shrink-0 text-text-muted" />;
 }
 
@@ -76,12 +78,12 @@ export default function NotificationBell({ align = 'header', label }: Notificati
         .filter((l) => NOTIFY_LEVELS.includes(l.level))
         .slice(-50)
         .reverse(),
-    [systemLogs],
+    [systemLogs]
   );
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => n.timestamp > seenUpTo).length,
-    [notifications, seenUpTo],
+    [notifications, seenUpTo]
   );
 
   const markAllRead = () => {
@@ -100,20 +102,24 @@ export default function NotificationBell({ align = 'header', label }: Notificati
       <button
         type="button"
         onClick={handleToggle}
-        aria-label={
+        aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+        aria-expanded={isOpen}
+        title={
           unreadCount > 0
-            ? `Notifications, ${unreadCount} unread`
+            ? `${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`
             : 'Notifications'
         }
-        aria-expanded={isOpen}
-        title={unreadCount > 0 ? `${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}` : 'Notifications'}
         className={
           isRail
             ? `flex h-11 w-full cursor-pointer items-center transition-colors ${
-                isOpen ? 'text-emerald-500 dark:text-emerald-400' : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'
+                isOpen
+                  ? 'text-emerald-500 dark:text-emerald-400'
+                  : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'
               }`
             : `relative rounded p-1 transition-colors hover:bg-elevated/20 ${
-                isOpen ? 'text-text-primary bg-elevated/20' : 'text-text-secondary hover:text-text-primary'
+                isOpen
+                  ? 'text-text-primary bg-elevated/20'
+                  : 'text-text-secondary hover:text-text-primary'
               }`
         }
       >
@@ -147,9 +153,11 @@ export default function NotificationBell({ align = 'header', label }: Notificati
       </button>
 
       {isOpen && (
-        <div className={`absolute z-[999] flex w-80 flex-col rounded-xl overflow-hidden border border-border-default bg-surface/95 shadow-2xl backdrop-blur-xl ${
-          isRail ? 'left-14 bottom-0 ml-1' : 'right-0 top-full mt-2'
-        }`}>
+        <div
+          className={`absolute z-[999] flex w-80 flex-col rounded-xl overflow-hidden border border-border-default bg-surface/95 shadow-2xl backdrop-blur-xl ${
+            isRail ? 'left-14 bottom-0 ml-1' : 'right-0 top-full mt-2'
+          }`}
+        >
           <div className="flex items-center justify-between border-b border-border-default px-3 py-2">
             <div className="flex items-center gap-2">
               <Bell size={13} className="text-text-secondary" />
@@ -192,7 +200,9 @@ export default function NotificationBell({ align = 'header', label }: Notificati
                   <span className="mt-0.5">{levelIcon(n.level)}</span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className={`text-[9px] font-black uppercase tracking-wider ${levelTone(n.level)}`}>
+                      <span
+                        className={`text-[9px] font-black uppercase tracking-wider ${levelTone(n.level)}`}
+                      >
                         {n.level}
                       </span>
                       <span className="shrink-0 text-[9px] text-text-muted/70 tabular-nums">

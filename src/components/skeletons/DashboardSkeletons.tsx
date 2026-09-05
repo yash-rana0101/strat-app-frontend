@@ -19,7 +19,10 @@ export function RiskMarginsSkeleton() {
       {/* 2×2 metric grid */}
       <div className="md:col-span-2 grid grid-cols-2 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="border border-border-default rounded-xl bg-surface/40 p-3 flex flex-col gap-2">
+          <div
+            key={i}
+            className="border border-border-default rounded-xl bg-surface/40 p-3 flex flex-col gap-2"
+          >
             <Skeleton width="80px" height="8px" />
             <Skeleton width="100px" height="16px" />
             <div className="flex items-center gap-1 mt-1">
@@ -46,7 +49,10 @@ export function PositionsSkeleton() {
       </div>
       {/* Position rows */}
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-border-default/30 bg-surface/20">
+        <div
+          key={i}
+          className="flex items-center justify-between px-3 py-2.5 rounded-lg border border-border-default/30 bg-surface/20"
+        >
           <div className="flex items-center gap-3">
             <Skeleton width="14px" height="14px" className="rounded-sm" />
             <div className="flex flex-col gap-1">
@@ -84,12 +90,24 @@ export function OrdersSkeleton() {
         <tbody className="divide-y divide-border-default/20">
           {Array.from({ length: 5 }).map((_, i) => (
             <tr key={i}>
-              <td className="py-2.5"><Skeleton width="52px" height="10px" /></td>
-              <td className="py-2.5"><Skeleton width="32px" height="14px" className="rounded-sm" /></td>
-              <td className="py-2.5"><Skeleton width="64px" height="10px" /></td>
-              <td className="py-2.5 text-right"><Skeleton width="28px" height="10px" className="ml-auto" /></td>
-              <td className="py-2.5 text-right"><Skeleton width="48px" height="10px" className="ml-auto" /></td>
-              <td className="py-2.5 text-center"><Skeleton width="56px" height="16px" className="rounded-sm mx-auto" /></td>
+              <td className="py-2.5">
+                <Skeleton width="52px" height="10px" />
+              </td>
+              <td className="py-2.5">
+                <Skeleton width="32px" height="14px" className="rounded-sm" />
+              </td>
+              <td className="py-2.5">
+                <Skeleton width="64px" height="10px" />
+              </td>
+              <td className="py-2.5 text-right">
+                <Skeleton width="28px" height="10px" className="ml-auto" />
+              </td>
+              <td className="py-2.5 text-right">
+                <Skeleton width="48px" height="10px" className="ml-auto" />
+              </td>
+              <td className="py-2.5 text-center">
+                <Skeleton width="56px" height="16px" className="rounded-sm mx-auto" />
+              </td>
             </tr>
           ))}
         </tbody>

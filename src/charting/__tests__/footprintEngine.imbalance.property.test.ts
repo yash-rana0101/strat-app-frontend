@@ -63,9 +63,9 @@ const cluster = (): fc.Arbitrary<FootprintCell[]> =>
             price: idx, // tick row index used directly as a price
             bid,
             ask,
-          })),
-        ),
-      ),
+          }))
+        )
+      )
     )
     .map((arr) => arr as FootprintCell[]);
 
@@ -88,7 +88,7 @@ describe('Property 21: Imbalance flags exactly the levels meeting the configured
         // detectImbalances returns prices in ascending price order.
         expect(actual).toEqual(expected);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -101,7 +101,7 @@ describe('Property 21: Imbalance flags exactly the levels meeting the configured
 
         expect(fromShuffled).toEqual(fromSorted);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

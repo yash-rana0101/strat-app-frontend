@@ -8,12 +8,7 @@ interface SkeletonProps {
 
 /** Base skeleton bar — uses the `.skeleton-shimmer` CSS class (theme-adaptive). */
 export function Skeleton({ className = '', width, height }: SkeletonProps) {
-  return (
-    <div
-      className={`skeleton-shimmer rounded ${className}`}
-      style={{ width, height }}
-    />
-  );
+  return <div className={`skeleton-shimmer rounded ${className}`} style={{ width, height }} />;
 }
 
 interface SkeletonTextProps {

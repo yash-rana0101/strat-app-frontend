@@ -167,7 +167,7 @@ describe('The shared workspace renders one chart and no split surface (R4.7)', (
       expect(document.querySelector('[data-pane-id]')).toBeNull();
       expect(document.querySelector('[data-testid="split-chart-container"]')).toBeNull();
       expect(screen.queryByRole('button', { name: /split/i })).toBeNull();
-    },
+    }
   );
 });
 
@@ -189,7 +189,7 @@ describe('Property 9 — an F&O round-trip leaves the workspace unchanged (R7.1)
 
       rerender(<Harness profile={profile} />);
       expect(container.innerHTML).toBe(baseline);
-    },
+    }
   );
 
   it('does not subscribe to activeProfile, so a store-only mode change is inert', () => {

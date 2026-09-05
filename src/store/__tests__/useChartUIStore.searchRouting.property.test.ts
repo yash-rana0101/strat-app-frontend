@@ -20,11 +20,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import fc from 'fast-check';
 
-import {
-  useChartUIStore,
-  type ChartPaneState,
-  type PaneId,
-} from '@/store/useChartUIStore';
+import { useChartUIStore, type ChartPaneState, type PaneId } from '@/store/useChartUIStore';
 import type { ChartTimeframe } from '@/store/useTradeStore';
 import type { ChartType } from '@/charting/engines';
 
@@ -41,8 +37,7 @@ type SearchResult =
     };
 
 /** The instrument symbol used for charting regardless of result kind (R3.3). */
-const symbolOf = (r: SearchResult): string =>
-  r.kind === 'EQ' ? r.symbol : r.tradingsymbol;
+const symbolOf = (r: SearchResult): string => (r.kind === 'EQ' ? r.symbol : r.tradingsymbol);
 
 const PANE_IDS: PaneId[] = ['A', 'B'];
 const EQ_SYMBOLS = ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY', 'NIFTY 50', 'BANKNIFTY'];
@@ -51,8 +46,17 @@ const EXPIRIES = ['2024-01-25', '2024-02-29', '2024-03-28'];
 const OPTION_TYPES: ('CE' | 'PE' | 'FUT')[] = ['CE', 'PE', 'FUT'];
 const TIMEFRAMES: ChartTimeframe[] = ['1m', '5m', '10m', '15m', '1h', '1D', '1W'];
 const CHART_TYPES: ChartType[] = [
-  'candlestick', 'hollow-candle', 'ohlc-bar', 'line', 'area', 'baseline',
-  'heikin-ashi', 'renko', 'kagi', 'point-figure', 'line-break',
+  'candlestick',
+  'hollow-candle',
+  'ohlc-bar',
+  'line',
+  'area',
+  'baseline',
+  'heikin-ashi',
+  'renko',
+  'kagi',
+  'point-figure',
+  'line-break',
 ];
 
 function store() {
@@ -83,10 +87,7 @@ const fnoResultArb: fc.Arbitrary<SearchResult> = fc
     underlying: fc.constantFrom(...UNDERLYINGS),
     expiry: fc.constantFrom(...EXPIRIES),
     optionType: fc.constantFrom(...OPTION_TYPES),
-    strike: fc.oneof(
-      fc.integer({ min: 10000, max: 50000 }),
-      fc.constant(null),
-    ),
+    strike: fc.oneof(fc.integer({ min: 10000, max: 50000 }), fc.constant(null)),
   })
   .map(({ underlying, expiry, optionType, strike }) => {
     const effectiveStrike = optionType === 'FUT' ? null : strike;
@@ -156,9 +157,9 @@ describe('Property 6: search routes to the active pane', () => {
 
           // No other pane's symbol (or any field) changed.
           expect(paneById(other)).toEqual(siblingBefore);
-        },
+        }
       ),
-      { numRuns: 300 },
+      { numRuns: 300 }
     );
   });
 
@@ -171,7 +172,7 @@ describe('Property 6: search routes to the active pane', () => {
         const expected = result.kind === 'EQ' ? result.symbol : result.tradingsymbol;
         expect(paneById(activePaneId).symbol).toBe(expected);
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -182,7 +183,7 @@ describe('Property 6: search routes to the active pane', () => {
         paneArb('B'),
         fc.array(
           fc.record({ active: fc.constantFrom<PaneId>(...PANE_IDS), result: searchResultArb }),
-          { minLength: 1, maxLength: 25 },
+          { minLength: 1, maxLength: 25 }
         ),
         (a, b, ops) => {
           useChartUIStore.setState({ activePaneId: 'A', panes: [a, b] });
@@ -197,9 +198,9 @@ describe('Property 6: search routes to the active pane', () => {
             expect(paneById(active).symbol).toBe(symbolOf(result));
             expect(paneById(other)).toEqual(siblingBefore);
           }
-        },
+        }
       ),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 });

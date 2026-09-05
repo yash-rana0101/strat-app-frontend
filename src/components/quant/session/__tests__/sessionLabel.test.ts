@@ -102,7 +102,7 @@ describe('sessionTabTooltip', () => {
     // Renaming a session must not hide which symbol and timeframe it analyses — that is the one
     // thing the user cannot re-derive from a custom title.
     expect(sessionTabTooltip(summary({ title: 'Gap-up thesis' }))).toBe(
-      'Gap-up thesis — RELIANCE · 10m · INTRADAY · 12 Mar 9:15 AM',
+      'Gap-up thesis — RELIANCE · 10m · INTRADAY · 12 Mar 9:15 AM'
     );
   });
 });

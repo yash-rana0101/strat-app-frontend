@@ -34,26 +34,26 @@ import { markOnce } from '../lib/perfMarks';
 // Maps TV resolution strings to Kite Historical API interval strings.
 
 const RESOLUTION_TO_KITE_INTERVAL: Record<string, string> = {
-  '1':    'minute',
-  '2':    'minute',
-  '3':    '3minute',
-  '4':    'minute',
-  '5':    '5minute',
-  '10':   '10minute',
-  '15':   '15minute',
-  '30':   '30minute',
-  '60':   '60minute',
-  '75':   '15minute',
-  '120':  '60minute',
-  '125':  '15minute',
-  '180':  '60minute',
-  '240':  '60minute',
-  '1D':   'day',
-  'D':    'day',
-  '1W':   'day',
-  'W':    'day',
-  '1M':   'day',
-  'M':    'day',
+  '1': 'minute',
+  '2': 'minute',
+  '3': '3minute',
+  '4': 'minute',
+  '5': '5minute',
+  '10': '10minute',
+  '15': '15minute',
+  '30': '30minute',
+  '60': '60minute',
+  '75': '15minute',
+  '120': '60minute',
+  '125': '15minute',
+  '180': '60minute',
+  '240': '60minute',
+  '1D': 'day',
+  D: 'day',
+  '1W': 'day',
+  W: 'day',
+  '1M': 'day',
+  M: 'day',
 };
 
 /**
@@ -74,13 +74,26 @@ const KITE_INTERVAL_MAX_DAYS: Record<string, number> = {
 
 /** Convert TV resolution to a UI timeframe string for the Tauri IPC. */
 export const RESOLUTION_TO_TIMEFRAME: Record<string, string> = {
-  '1':   '1m',  '2':   '2m',  '3':   '3m',  '4':   '4m',
-  '5':   '5m',  '10':  '10m', '15':  '15m', '30':  '30m',
-  '60':  '1h',  '75':  '75m', '120': '2h',  '125': '125m',
-  '180': '3h',  '240': '4h',
-  '1D':  '1D',  'D':   '1D',
-  '1W':  '1W',  'W':   '1W',
-  '1M':  '1M',  'M':   '1M',
+  '1': '1m',
+  '2': '2m',
+  '3': '3m',
+  '4': '4m',
+  '5': '5m',
+  '10': '10m',
+  '15': '15m',
+  '30': '30m',
+  '60': '1h',
+  '75': '75m',
+  '120': '2h',
+  '125': '125m',
+  '180': '3h',
+  '240': '4h',
+  '1D': '1D',
+  D: '1D',
+  '1W': '1W',
+  W: '1W',
+  '1M': '1M',
+  M: '1M',
 };
 
 /**
@@ -94,11 +107,24 @@ const KITE_PAGE_CONCURRENCY = 3;
 
 /** All supported resolutions for the symbol info. */
 const SUPPORTED_RESOLUTIONS: ResolutionString[] = [
-  '1', '2', '3', '4', '5', '10', '15', '30',
-  '60', '75', '120', '125', '180', '240',
-  '1D', '1W', '1M',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '10',
+  '15',
+  '30',
+  '60',
+  '75',
+  '120',
+  '125',
+  '180',
+  '240',
+  '1D',
+  '1W',
+  '1M',
 ];
-
 
 // ── In-memory scroll-back cache (per symbol + timeframe) ───────────────────
 //
@@ -138,7 +164,8 @@ function storeFor(key: string): Map<number, Bar> {
   if (!hydrated.has(key)) {
     hydrated.add(key);
     try {
-      const raw = typeof localStorage === 'undefined' ? null : localStorage.getItem(PERSIST_PREFIX + key);
+      const raw =
+        typeof localStorage === 'undefined' ? null : localStorage.getItem(PERSIST_PREFIX + key);
       if (raw) {
         for (const [time, open, high, low, close, volume] of JSON.parse(raw) as number[][]) {
           if (!store.has(time)) store.set(time, { time, open, high, low, close, volume });
@@ -166,7 +193,9 @@ function schedulePersist(key: string): void {
         .map((b) => [b.time, b.open, b.high, b.low, b.close, b.volume ?? 0]);
       try {
         localStorage.setItem(PERSIST_PREFIX + key, JSON.stringify(rows));
-        const index = (JSON.parse(localStorage.getItem(PERSIST_INDEX) ?? '[]') as string[]).filter((k) => k !== key);
+        const index = (JSON.parse(localStorage.getItem(PERSIST_INDEX) ?? '[]') as string[]).filter(
+          (k) => k !== key
+        );
         index.push(key);
         for (const old of index.splice(0, Math.max(0, index.length - PERSIST_KEYS))) {
           localStorage.removeItem(PERSIST_PREFIX + old);
@@ -175,7 +204,7 @@ function schedulePersist(key: string): void {
       } catch {
         // Quota / private mode: the in-memory cache still works.
       }
-    }, 1000),
+    }, 1000)
   );
 }
 
@@ -183,7 +212,12 @@ function scrollBackKey(symbol: string, timeframe: string): string {
   return `${symbol.toUpperCase()}::${timeframe}`;
 }
 
-function readScrollBackCache(symbol: string, timeframe: string, fromMs: number, toMs: number): Bar[] {
+function readScrollBackCache(
+  symbol: string,
+  timeframe: string,
+  fromMs: number,
+  toMs: number
+): Bar[] {
   const store = storeFor(scrollBackKey(symbol, timeframe));
   const out: Bar[] = [];
   for (const bar of store.values()) {
@@ -266,7 +300,10 @@ const tokenCache = new Map<string, number>();
  * ₹80 while the index itself sits near 77,000. A near-miss is not a match, and a
  * chart labelled with one instrument showing another is worse than an empty one.
  */
-async function resolveInstrumentToken(symbol: string, exchange: string = 'NSE'): Promise<number | null> {
+async function resolveInstrumentToken(
+  symbol: string,
+  exchange: string = 'NSE'
+): Promise<number | null> {
   const cacheKey = `${exchange}:${symbol}`.toUpperCase();
   const cached = tokenCache.get(cacheKey);
   if (cached) return cached;
@@ -283,11 +320,16 @@ async function resolveInstrumentToken(symbol: string, exchange: string = 'NSE'):
       }
     }
 
-    const resInst = await kiteFetch(`/instruments?q=${encodeURIComponent(symbol)}&exchange=${encodeURIComponent(exchange)}`);
+    const resInst = await kiteFetch(
+      `/instruments?q=${encodeURIComponent(symbol)}&exchange=${encodeURIComponent(exchange)}`
+    );
     if (resInst.ok) {
       const data = await resInst.json();
-      const results = data.results as { tradingsymbol: string; instrument_token: number }[] | undefined;
-      const token = results?.find((r) => r.tradingsymbol?.toUpperCase() === wanted)?.instrument_token;
+      const results = data.results as
+        { tradingsymbol: string; instrument_token: number }[] | undefined;
+      const token = results?.find(
+        (r) => r.tradingsymbol?.toUpperCase() === wanted
+      )?.instrument_token;
       if (token) {
         tokenCache.set(cacheKey, token);
         return token;
@@ -330,7 +372,7 @@ export async function fetchKiteBatch(
   from: Date,
   to: Date,
   exchange: string = 'NSE',
-  timeframe?: string,
+  timeframe?: string
 ): Promise<Bar[]> {
   const fmt = (d: Date) => d.toISOString().slice(0, 10);
   const parseCandles = (data: { candles?: KiteCandleRaw[] }): Bar[] =>
@@ -449,7 +491,8 @@ export async function fetchKiteBatch(
 // never race the same page.
 const pendingFetch = new Map<string, Promise<void>>();
 
-/** Start fetching the most recent Kite page for symbolName at esolution into the cache. */
+/** Start fetching the most recent Kite page for symbolName at 
+esolution into the cache. */
 export function prefetchHistory(symbolName: string, resolution: string): void {
   const [exchange, symbol] = symbolName.includes(':')
     ? symbolName.split(':', 2)
@@ -467,7 +510,14 @@ export function prefetchHistory(symbolName: string, resolution: string): void {
   // full Kite page ending now. Either way this is exactly one request.
   const days = KITE_INTERVAL_MAX_DAYS[interval] ?? 60;
   const from = new Date(newest ?? now - (days - 1) * 86_400_000);
-  const run = fetchKiteBatch(symbol.toUpperCase(), interval, from, new Date(now), exchange, timeframe)
+  const run = fetchKiteBatch(
+    symbol.toUpperCase(),
+    interval,
+    from,
+    new Date(now),
+    exchange,
+    timeframe
+  )
     .then((bars) => mergeScrollBackCache(symbol, timeframe, bars))
     .catch((err) => console.warn('[Datafeed] prefetch failed:', err))
     .finally(() => pendingFetch.delete(key));
@@ -510,7 +560,7 @@ function startLiveSubscription(
   resolution: string,
   onTick: SubscribeBarsCallback,
   listenerGuid: string,
-  onResetCacheNeeded?: () => void,
+  onResetCacheNeeded?: () => void
 ): void {
   const symbolUpper = symbol.toUpperCase();
   let lastBarTime = 0;
@@ -519,7 +569,15 @@ function startLiveSubscription(
   /** Fingerprint of the last bar handed to TradingView — see the dedupe below. */
   let lastForwarded = '';
 
-  const forwardCandle = (candle: { symbol: string; start_timestamp_ms: number; open: number; high: number; low: number; close: number; volume?: number }) => {
+  const forwardCandle = (candle: {
+    symbol: string;
+    start_timestamp_ms: number;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume?: number;
+  }) => {
     if (candle.symbol.toUpperCase() !== symbolUpper) return;
     const barTimeMs = candle.start_timestamp_ms;
 
@@ -553,7 +611,7 @@ function startLiveSubscription(
       if (droppedOutOfOrder <= 3) {
         console.warn(
           `[Datafeed] Dropping out-of-order bar for ${symbolUpper}: ` +
-          `${new Date(barTimeMs).toISOString()} arrived after ${new Date(lastBarTime).toISOString()}`,
+            `${new Date(barTimeMs).toISOString()} arrived after ${new Date(lastBarTime).toISOString()}`
         );
       }
       return;
@@ -563,7 +621,9 @@ function startLiveSubscription(
     tickCount++;
     markOnce('first-live-bar');
     if (tickCount <= 5) {
-      debugLog(`[Datafeed] Live tick #${tickCount} for ${symbolUpper}: time=${barTimeMs} O=${candle.open} H=${candle.high} L=${candle.low} C=${candle.close}`);
+      debugLog(
+        `[Datafeed] Live tick #${tickCount} for ${symbolUpper}: time=${barTimeMs} O=${candle.open} H=${candle.high} L=${candle.low} C=${candle.close}`
+      );
     }
     onTick({
       time: barTimeMs,
@@ -605,11 +665,14 @@ function startLiveSubscription(
   });
 
   debugLog(
-    `[Datafeed] subscribeBars: ${symbolUpper} (resolution=${resolution}, guid=${listenerGuid.slice(0, 8)}…)`,
+    `[Datafeed] subscribeBars: ${symbolUpper} (resolution=${resolution}, guid=${listenerGuid.slice(0, 8)}…)`
   );
 
   activeSubscriptions.set(listenerGuid, {
-    symbol, resolution, onTick, onResetCacheNeeded,
+    symbol,
+    resolution,
+    onTick,
+    onResetCacheNeeded,
     unsubscribe: unsub,
   });
 }
@@ -620,7 +683,7 @@ function startLiveSubscription(
 async function fallbackRestSearch(
   userInput: string,
   exchange: string,
-  onResult: SearchSymbolsCallback,
+  onResult: SearchSymbolsCallback
 ): Promise<void> {
   if (!userInput || userInput.length < 1) {
     onResult([]);
@@ -629,7 +692,9 @@ async function fallbackRestSearch(
 
   const ex = exchange || 'NSE';
   try {
-    const res = await kiteFetch(`/instruments?q=${encodeURIComponent(userInput)}&exchange=${encodeURIComponent(ex)}`);
+    const res = await kiteFetch(
+      `/instruments?q=${encodeURIComponent(userInput)}&exchange=${encodeURIComponent(ex)}`
+    );
     if (!res.ok) {
       onResult([]);
       return;
@@ -654,7 +719,7 @@ async function fallbackRestSearch(
         // `EQ` — so the old `instrument_type === 'INDEX'` test matched nothing
         // and every index was labelled a stock.
         type: (inst.segment ?? '').toUpperCase() === 'INDICES' ? 'index' : 'stock',
-      })),
+      }))
     );
   } catch {
     onResult([]);
@@ -672,14 +737,10 @@ export function createDatafeed(): IBasicDatafeed {
           // Single "ALL" exchange entry so TradingView's exchange filter does
           // NOT pre-filter the results — the user picks any symbol across
           // NSE / BSE / NFO from one flat, global result list.
-          exchanges: [
-            { value: 'ALL', name: 'All', desc: 'All Exchanges (NSE / BSE / NFO)' },
-          ],
+          exchanges: [{ value: 'ALL', name: 'All', desc: 'All Exchanges (NSE / BSE / NFO)' }],
           // Single "All" symbol type so the type filter doesn't narrow by
           // stock / index / fno either — one global search across everything.
-          symbols_types: [
-            { name: 'All', value: 'all' },
-          ],
+          symbols_types: [{ name: 'All', value: 'all' }],
           supported_resolutions: SUPPORTED_RESOLUTIONS,
           supports_marks: false,
           supports_timescale_marks: false,
@@ -693,7 +754,7 @@ export function createDatafeed(): IBasicDatafeed {
       userInput: string,
       _exchange: string,
       _symbolType: string,
-      onResult: SearchSymbolsCallback,
+      onResult: SearchSymbolsCallback
     ): void {
       if (!userInput || userInput.length < 1) {
         onResult([]);
@@ -722,73 +783,65 @@ export function createDatafeed(): IBasicDatafeed {
             }
         >
       >('search_instruments', { query })
-          .then((results) => {
-            const items = (results || []).map((r) => {
-              if (r.kind === 'EQ') {
-                const upper = r.symbol.toUpperCase();
-                // Kite's `INDICES` segment is the authoritative answer, and it
-                // covers all 209 index rows the NSE and BSE masters publish. The
-                // seven names hardcoded here before meant every other index —
-                // NIFTY IT, NIFTY MIDCAP 100, BANKEX, the lot — was labelled a
-                // stock in TradingView's own search list.
-                const isIndex = r.segment
-                  ? r.segment.toUpperCase() === 'INDICES'
-                  : upper === 'NIFTY' ||
-                    upper === 'NIFTY 50' ||
-                    upper === 'BANKNIFTY' ||
-                    upper === 'NIFTY BANK' ||
-                    upper === 'FINNIFTY' ||
-                    upper === 'MIDCPNIFTY' ||
-                    upper === 'SENSEX';
-                return {
-                  symbol: r.symbol,
-                  full_name: `${r.exchange}:${r.symbol}`,
-                  description: r.name,
-                  exchange: r.exchange,
-                  ticker: `${r.exchange}:${r.symbol}`,
-                  type: isIndex ? 'index' : 'stock',
-                };
-              }
-              const desc =
-                r.optionType === 'FUT'
-                  ? `${r.underlying} FUT (${r.expiry})`
-                  : `${r.underlying} ${r.strike ?? ''} ${r.optionType} (${r.expiry})`;
+        .then((results) => {
+          const items = (results || []).map((r) => {
+            if (r.kind === 'EQ') {
+              const upper = r.symbol.toUpperCase();
+              // Kite's `INDICES` segment is the authoritative answer, and it
+              // covers all 209 index rows the NSE and BSE masters publish. The
+              // seven names hardcoded here before meant every other index —
+              // NIFTY IT, NIFTY MIDCAP 100, BANKEX, the lot — was labelled a
+              // stock in TradingView's own search list.
+              const isIndex = r.segment
+                ? r.segment.toUpperCase() === 'INDICES'
+                : upper === 'NIFTY' ||
+                  upper === 'NIFTY 50' ||
+                  upper === 'BANKNIFTY' ||
+                  upper === 'NIFTY BANK' ||
+                  upper === 'FINNIFTY' ||
+                  upper === 'MIDCPNIFTY' ||
+                  upper === 'SENSEX';
               return {
-                symbol: r.tradingsymbol,
-                full_name: `NFO:${r.tradingsymbol}`,
-                description: desc,
-                exchange: 'NFO',
-                ticker: `NFO:${r.tradingsymbol}`,
-                type: 'fno',
+                symbol: r.symbol,
+                full_name: `${r.exchange}:${r.symbol}`,
+                description: r.name,
+                exchange: r.exchange,
+                ticker: `${r.exchange}:${r.symbol}`,
+                type: isIndex ? 'index' : 'stock',
               };
-            });
-            // An empty result is not necessarily "no such symbol": on the web
-            // the NFO leg of the adapter depends on the Kite instrument proxy,
-            // so fall through to the REST search rather than showing nothing.
-            if (items.length === 0) {
-              void fallbackRestSearch(userInput, '', onResult);
-              return;
             }
-            onResult(items);
-          })
-          .catch((err) => {
-            console.warn('[Datafeed] search_instruments failed:', err);
-            void fallbackRestSearch(userInput, '', onResult);
+            const desc =
+              r.optionType === 'FUT'
+                ? `${r.underlying} FUT (${r.expiry})`
+                : `${r.underlying} ${r.strike ?? ''} ${r.optionType} (${r.expiry})`;
+            return {
+              symbol: r.tradingsymbol,
+              full_name: `NFO:${r.tradingsymbol}`,
+              description: desc,
+              exchange: 'NFO',
+              ticker: `NFO:${r.tradingsymbol}`,
+              type: 'fno',
+            };
           });
+          // An empty result is not necessarily "no such symbol": on the web
+          // the NFO leg of the adapter depends on the Kite instrument proxy,
+          // so fall through to the REST search rather than showing nothing.
+          if (items.length === 0) {
+            void fallbackRestSearch(userInput, '', onResult);
+            return;
+          }
+          onResult(items);
+        })
+        .catch((err) => {
+          console.warn('[Datafeed] search_instruments failed:', err);
+          void fallbackRestSearch(userInput, '', onResult);
+        });
     },
 
-    resolveSymbol(
-      symbolName: string,
-      onResolve: ResolveCallback,
-      onError: ErrorCallback,
-    ): void {
+    resolveSymbol(symbolName: string, onResolve: ResolveCallback, onError: ErrorCallback): void {
       // Strip exchange prefix if present (e.g. "NSE:RELIANCE" → "RELIANCE")
-      const cleanSymbol = symbolName.includes(':')
-        ? symbolName.split(':')[1]
-        : symbolName;
-      const exchange = symbolName.includes(':')
-        ? symbolName.split(':')[0]
-        : 'NSE';
+      const cleanSymbol = symbolName.includes(':') ? symbolName.split(':')[1] : symbolName;
+      const exchange = symbolName.includes(':') ? symbolName.split(':')[0] : 'NSE';
 
       setTimeout(() => {
         const symbolInfo: LibrarySymbolInfo = {
@@ -808,7 +861,22 @@ export function createDatafeed(): IBasicDatafeed {
           has_daily: true,
           has_weekly_and_monthly: true,
           supported_resolutions: SUPPORTED_RESOLUTIONS,
-          intraday_multipliers: ['1', '2', '3', '4', '5', '10', '15', '30', '60', '75', '120', '125', '180', '240'],
+          intraday_multipliers: [
+            '1',
+            '2',
+            '3',
+            '4',
+            '5',
+            '10',
+            '15',
+            '30',
+            '60',
+            '75',
+            '120',
+            '125',
+            '180',
+            '240',
+          ],
           daily_multipliers: ['1'],
           weekly_multipliers: ['1'],
           monthly_multipliers: ['1'],
@@ -841,7 +909,7 @@ export function createDatafeed(): IBasicDatafeed {
       resolution: ResolutionString,
       periodParams: PeriodParams,
       onResult: HistoryCallback,
-      onError: ErrorCallback,
+      onError: ErrorCallback
     ): Promise<void> {
       const symbol = symbolInfo.name;
       const exchange = symbolInfo.exchange || 'NSE';
@@ -890,13 +958,13 @@ export function createDatafeed(): IBasicDatafeed {
         }
 
         // 3. Fetch the missing slice (or the whole window on a cold cache).
-        let fetched = await fetchKiteBatch(
+        const fetched = await fetchKiteBatch(
           symbol,
           kiteInterval,
           fetchFrom,
           fetchTo,
           exchange,
-          timeframe,
+          timeframe
         );
 
         // 4. Merge the freshly fetched bars into the persistent cache so the
@@ -987,7 +1055,7 @@ export function createDatafeed(): IBasicDatafeed {
             });
           }
           const merged = Array.from(mergedByTime.values()).sort(
-            (a, b) => a.start_timestamp_ms - b.start_timestamp_ms,
+            (a, b) => a.start_timestamp_ms - b.start_timestamp_ms
           );
           store.setHistoricalCache(cacheKey, merged);
         } catch (cacheErr) {
@@ -1007,7 +1075,7 @@ export function createDatafeed(): IBasicDatafeed {
       resolution: ResolutionString,
       onTick: SubscribeBarsCallback,
       listenerGuid: string,
-      onResetCacheNeededCallback: () => void,
+      onResetCacheNeededCallback: () => void
     ): void {
       // The reset callback is retained (it used to be ignored) so a background
       // Kite backfill can trigger a repaint — see `requestChartReset`.
@@ -1016,7 +1084,7 @@ export function createDatafeed(): IBasicDatafeed {
         resolution,
         onTick,
         listenerGuid,
-        onResetCacheNeededCallback,
+        onResetCacheNeededCallback
       );
     },
 

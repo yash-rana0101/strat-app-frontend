@@ -24,8 +24,14 @@ export function useConnectionMonitor(mounted: boolean): boolean {
 
     const checkConnection = () => {
       isOnline = navigator.onLine;
-      if (!isOnline) { setShowConnectionLost(true); return; }
-      if (wsStatus === 'error') { setShowConnectionLost(true); return; }
+      if (!isOnline) {
+        setShowConnectionLost(true);
+        return;
+      }
+      if (wsStatus === 'error') {
+        setShowConnectionLost(true);
+        return;
+      }
       if (wsStatus === 'connected') setShowConnectionLost(false);
     };
 

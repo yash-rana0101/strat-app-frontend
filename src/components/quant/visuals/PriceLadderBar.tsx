@@ -77,15 +77,21 @@ export default function PriceLadderBar({
         {/* 3 Price milestones */}
         <div className="flex items-center justify-between text-[9.5px] font-mono font-bold">
           <div className="flex flex-col text-left">
-            <span className="text-[7.5px] font-bold uppercase tracking-wider text-text-muted">SL (-{riskPct}%)</span>
+            <span className="text-[7.5px] font-bold uppercase tracking-wider text-text-muted">
+              SL (-{riskPct}%)
+            </span>
             <span className="text-rose-400">₹{stopLoss.toFixed(2)}</span>
           </div>
           <div className="flex flex-col text-center">
-            <span className="text-[7.5px] font-bold uppercase tracking-wider text-text-muted">Entry</span>
+            <span className="text-[7.5px] font-bold uppercase tracking-wider text-text-muted">
+              Entry
+            </span>
             <span className="text-text-primary">₹{entry.toFixed(2)}</span>
           </div>
           <div className="flex flex-col text-right">
-            <span className="text-[7.5px] font-bold uppercase tracking-wider text-text-muted">Target (+{rewardPct}%)</span>
+            <span className="text-[7.5px] font-bold uppercase tracking-wider text-text-muted">
+              Target (+{rewardPct}%)
+            </span>
             <span className="text-emerald-400">₹{target.toFixed(2)}</span>
           </div>
         </div>
@@ -95,13 +101,17 @@ export default function PriceLadderBar({
 
   // Full / Expanded Variant (for Agent Detail & Actionable Trade Plan)
   return (
-    <div className={`rounded-xl border border-border-default/60 bg-elevated/20 p-3.5 shadow-sm font-sans ${className}`}>
+    <div
+      className={`rounded-xl border border-border-default/60 bg-elevated/20 p-3.5 shadow-sm font-sans ${className}`}
+    >
       {/* Top Level Bar Header */}
       <div className="flex items-center justify-between border-b border-border-default/40 pb-2.5 mb-3">
         <div className="flex items-center gap-2">
-          <div className={`flex h-6 w-6 items-center justify-center rounded-md ${
-            isBuy ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
-          }`}>
+          <div
+            className={`flex h-6 w-6 items-center justify-center rounded-md ${
+              isBuy ? 'bg-emerald-500/15 text-emerald-400' : 'bg-rose-500/15 text-rose-400'
+            }`}
+          >
             {isBuy ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
           </div>
           <div>
@@ -116,7 +126,9 @@ export default function PriceLadderBar({
 
         <div className="flex items-center gap-2">
           <div className="flex flex-col items-end">
-            <span className="text-[8px] font-bold uppercase tracking-widest text-text-muted">Risk/Reward</span>
+            <span className="text-[8px] font-bold uppercase tracking-widest text-text-muted">
+              Risk/Reward
+            </span>
             <span
               className={`font-mono text-xs font-black px-2 py-0.5 rounded border ${
                 isHealthyRr
@@ -167,9 +179,7 @@ export default function PriceLadderBar({
           <span className="font-mono text-sm font-extrabold text-rose-400">
             ₹{stopLoss.toFixed(2)}
           </span>
-          <span className="font-mono text-[8.5px] text-rose-400/70">
-            -{riskPct}% risk
-          </span>
+          <span className="font-mono text-[8.5px] text-rose-400/70">-{riskPct}% risk</span>
         </div>
 
         {/* Entry Card */}
@@ -193,9 +203,7 @@ export default function PriceLadderBar({
           <span className="font-mono text-sm font-extrabold text-emerald-400">
             ₹{target.toFixed(2)}
           </span>
-          <span className="font-mono text-[8.5px] text-emerald-400/70">
-            +{rewardPct}% upside
-          </span>
+          <span className="font-mono text-[8.5px] text-emerald-400/70">+{rewardPct}% upside</span>
         </div>
       </div>
     </div>

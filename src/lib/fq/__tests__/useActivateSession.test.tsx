@@ -72,7 +72,7 @@ function serveRehydration(over: { events?: unknown[]; last_seq?: number } = {}) 
     const u = String(url);
     if (u.includes('/events')) {
       return Promise.resolve(
-        json({ items: over.events ?? [], last_seq: over.last_seq ?? run.last_seq }),
+        json({ items: over.events ?? [], last_seq: over.last_seq ?? run.last_seq })
       );
     }
     if (u.includes('/runs')) return Promise.resolve(json({ items: [run] }));
@@ -127,7 +127,10 @@ describe('opening a session the client has never seen', () => {
     // Rebuilt by replaying stored frames through the SAME reducer the live stream uses, which is what
     // makes a restored transcript identical to the one that was streamed.
     expect(
-      session.reasoningSteps.filter((s) => s.type === 'message').map((s) => s.content).join(''),
+      session.reasoningSteps
+        .filter((s) => s.type === 'message')
+        .map((s) => s.content)
+        .join('')
     ).toBe('stored reasoning');
   });
 
@@ -221,7 +224,7 @@ describe('switching to a session already held', () => {
         .getState()
         .sessions[SESSION].reasoningSteps.filter((s) => s.type === 'message')
         .map((s) => s.content)
-        .join(''),
+        .join('')
     ).toMatch(/live-tail/);
   });
 

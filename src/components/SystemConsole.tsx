@@ -14,7 +14,11 @@ interface SystemLog {
 
 // ── Status Indicator ───────────────────────────────────────────────────
 
-function StatusDot({ status }: { status: 'connected' | 'connecting' | 'disconnected' | 'error' | 'standby' }) {
+function StatusDot({
+  status,
+}: {
+  status: 'connected' | 'connecting' | 'disconnected' | 'error' | 'standby';
+}) {
   const colorMap = {
     connected: 'bg-emerald-500',
     connecting: 'bg-amber-500 animate-pulse',
@@ -34,7 +38,11 @@ function StatusLabel({ status }: { status: string }) {
     error: 'Error',
     standby: 'Standby',
   };
-  return <span className="text-[10px] font-semibold uppercase tracking-wide">{labelMap[status] ?? status}</span>;
+  return (
+    <span className="text-[10px] font-semibold uppercase tracking-wide">
+      {labelMap[status] ?? status}
+    </span>
+  );
 }
 
 // ── Console Component ──────────────────────────────────────────────────
@@ -52,10 +60,17 @@ export default function SystemConsole() {
   const systemLogs = useTradeStore((s) => s.systemLogs);
 
   // ── Derive connection states ─────────────────────────────────────────
-  const kafkaStatus = wsStatus === 'connected' ? 'connected' : wsStatus === 'connecting' ? 'connecting' : 'disconnected';
+  const kafkaStatus =
+    wsStatus === 'connected'
+      ? 'connected'
+      : wsStatus === 'connecting'
+        ? 'connecting'
+        : 'disconnected';
   const zerodhaStatus = ohlcCandles.length > 0 ? 'connected' : 'disconnected';
   const deepseekStatus = latestInsight
-    ? latestInsight.headline === 'LLM API Failure' ? 'error' : 'connected'
+    ? latestInsight.headline === 'LLM API Failure'
+      ? 'error'
+      : 'connected'
     : 'standby';
 
   // ── Auto-scroll log to bottom ────────────────────────────────────────
@@ -68,15 +83,24 @@ export default function SystemConsole() {
   // ── Format timestamp ─────────────────────────────────────────────────
   const formatTime = (ts: number) => {
     const d = new Date(ts);
-    return d.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return d.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+    });
   };
 
   const levelColor = (level: string) => {
     switch (level) {
-      case 'ERROR': return 'text-red-400';
-      case 'WARN': return 'text-amber-400';
-      case 'INFO': return 'text-emerald-400';
-      default: return 'text-slate-400';
+      case 'ERROR':
+        return 'text-red-400';
+      case 'WARN':
+        return 'text-amber-400';
+      case 'INFO':
+        return 'text-emerald-400';
+      default:
+        return 'text-slate-400';
     }
   };
 
@@ -123,9 +147,15 @@ export default function SystemConsole() {
           <div className="flex items-center gap-1.5">
             <Gauge size={11} className="text-slate-500" />
             <span className="text-slate-400">Latency:</span>
-            <span className={`text-[10px] font-bold tabular-nums ${
-              latencyMs < 50 ? 'text-emerald-400' : latencyMs < 200 ? 'text-amber-400' : 'text-red-400'
-            }`}>
+            <span
+              className={`text-[10px] font-bold tabular-nums ${
+                latencyMs < 50
+                  ? 'text-emerald-400'
+                  : latencyMs < 200
+                    ? 'text-amber-400'
+                    : 'text-red-400'
+              }`}
+            >
               {latencyMs}ms
             </span>
           </div>
@@ -134,9 +164,7 @@ export default function SystemConsole() {
         {/* Right: Console toggle */}
         <div className="flex items-center gap-2 text-slate-500">
           <Terminal size={12} />
-          <span className="text-[9px] font-semibold uppercase tracking-wider">
-            System Console
-          </span>
+          <span className="text-[9px] font-semibold uppercase tracking-wider">System Console</span>
           {isExpanded ? <ChevronDown size={12} /> : <ChevronUp size={12} />}
         </div>
       </button>
@@ -146,7 +174,9 @@ export default function SystemConsole() {
         <div className="flex-1 min-h-0 overflow-y-auto px-4 py-2 font-mono text-[11px] leading-relaxed scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
           {systemLogs.length === 0 ? (
             <div className="flex h-full items-center justify-center text-slate-600">
-              <span>No system events recorded yet. Events will appear as backend services connect.</span>
+              <span>
+                No system events recorded yet. Events will appear as backend services connect.
+              </span>
             </div>
           ) : (
             systemLogs.map((log, i) => (
@@ -157,9 +187,7 @@ export default function SystemConsole() {
                 <span className={`font-bold shrink-0 w-12 ${levelColor(log.level)}`}>
                   {log.level}:
                 </span>
-                <span className="text-slate-300 break-all">
-                  {log.message}
-                </span>
+                <span className="text-slate-300 break-all">{log.message}</span>
               </div>
             ))
           )}

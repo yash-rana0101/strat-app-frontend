@@ -25,12 +25,10 @@ const approxEqual = (a: number, b: number): boolean =>
   Math.abs(a - b) <= EPS * Math.max(1, Math.abs(a), Math.abs(b));
 
 /** A single finite, non-negative price value generator. */
-const price = () =>
-  fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
 
 /** A finite, non-negative volume value generator. */
-const volume = () =>
-  fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
+const volume = () => fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Generate a well-formed candle series with strictly ascending unique
@@ -49,8 +47,8 @@ const candleSeries = (): fc.Arbitrary<ChartCandle[]> =>
             close: b,
             high: Math.max(a, b, c, d),
             low: Math.min(a, b, c, d),
-          })),
-        ),
+          }))
+        )
       );
     })
     .map((arr) => arr as ChartCandle[]);
@@ -69,7 +67,7 @@ const tickArray = (): fc.Arbitrary<OrderFlowTick[]> =>
       ask_volume: volume(),
       delta: fc.double({ min: -10_000, max: 10_000, noNaN: true, noDefaultInfinity: true }),
     }),
-    { maxLength: 80 },
+    { maxLength: 80 }
   );
 
 describe('Property 18: Footprint delta and cumulative delta are correct sums', () => {
@@ -91,9 +89,9 @@ describe('Property 18: Footprint delta and cumulative delta are correct sums', (
             expect(approxEqual(fp.delta, askSum - bidSum)).toBe(true);
             expect(approxEqual(fp.totalVolume, bidSum + askSum)).toBe(true);
           }
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -119,9 +117,9 @@ describe('Property 18: Footprint delta and cumulative delta are correct sums', (
             const totalDelta = fps.reduce((acc, fp) => acc + fp.delta, 0);
             expect(approxEqual(cum[cum.length - 1], totalDelta)).toBe(true);
           }
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

@@ -71,9 +71,7 @@ const EXPECTED: Record<string, PlotExpectation> = {
  * The largest default lookback across all registered indicators. A series
  * comfortably longer than this guarantees every indicator has sufficient data.
  */
-const MAX_LOOKBACK = Math.max(
-  ...listIndicators().map((def) => def.minLookback(def.defaults)),
-);
+const MAX_LOOKBACK = Math.max(...listIndicators().map((def) => def.minLookback(def.defaults)));
 
 /**
  * A random-walk OHLC candle series of at least `minLen` candles, with strictly
@@ -88,7 +86,7 @@ const candleSeries = (minLen: number): fc.Arbitrary<ChartCandle[]> =>
         spread: fc.double({ min: 0.1, max: 5, noNaN: true, noDefaultInfinity: true }),
         vol: fc.double({ min: 1, max: 10_000, noNaN: true, noDefaultInfinity: true }),
       }),
-      { minLength: minLen, maxLength: minLen + 40 },
+      { minLength: minLen, maxLength: minLen + 40 }
     )
     .map((moves) => {
       const out: ChartCandle[] = [];
@@ -119,7 +117,7 @@ function assertWellFormedLine(points: { time: number; value: number }[], label: 
     expect(Number.isFinite(points[i].time), `${label} time finite`).toBe(true);
     if (i > 0) {
       expect(points[i].time, `${label} time strictly ascending`).toBeGreaterThan(
-        points[i - 1].time,
+        points[i - 1].time
       );
     }
   }
@@ -146,7 +144,7 @@ describe('Property 5: indicator plots contain every defined line, band, and refe
 
           // Sufficient data -> not flagged insufficient.
           expect(plot.insufficientData ?? false, `${def.id} should have sufficient data`).toBe(
-            false,
+            false
           );
 
           // Every defined line is present, non-empty, and time-anchored.
@@ -161,7 +159,7 @@ describe('Property 5: indicator plots contain every defined line, band, and refe
               for (const pt of points) {
                 expect(
                   candleTimes.has(pt.time),
-                  `${def.id}.${lineId} point time ${pt.time} not anchored to a candle`,
+                  `${def.id}.${lineId} point time ${pt.time} not anchored to a candle`
                 ).toBe(true);
               }
             } else {
@@ -187,20 +185,17 @@ describe('Property 5: indicator plots contain every defined line, band, and refe
 
           // Every defined reference level is present in the plot.
           if (expectation.referenceLevels.length > 0) {
-            expect(
-              plot.referenceLevels,
-              `${def.id} should expose reference levels`,
-            ).toBeDefined();
+            expect(plot.referenceLevels, `${def.id} should expose reference levels`).toBeDefined();
             for (const level of expectation.referenceLevels) {
               expect(
                 plot.referenceLevels!.includes(level),
-                `${def.id} missing reference level ${level}`,
+                `${def.id} missing reference level ${level}`
               ).toBe(true);
             }
           }
         }
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

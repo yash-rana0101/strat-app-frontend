@@ -29,12 +29,10 @@ import type { ChartCandle, VolumeBar } from '@/charting/types';
 const RUNS = 100;
 
 /** Finite, positive price value generator (bounded to avoid heap blowups). */
-const price = () =>
-  fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
+const price = () => fc.double({ min: 0.0001, max: 5_000, noNaN: true, noDefaultInfinity: true });
 
 /** Finite, non-negative volume value generator. */
-const volumeVal = () =>
-  fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
+const volumeVal = () => fc.double({ min: 0, max: 10_000, noNaN: true, noDefaultInfinity: true });
 
 /**
  * Generate a matched candle series + per-candle volume bars. Candles have
@@ -63,8 +61,8 @@ const candlesAndVolumes = (): fc.Arbitrary<{
                 low: Math.min(a, b, c, d),
               } as ChartCandle,
               volume: { time: t, value: v, color: '#000' } as VolumeBar,
-            })),
-        ),
+            }))
+        )
       );
     })
     .map((arr) => ({
@@ -76,8 +74,7 @@ const candlesAndVolumes = (): fc.Arbitrary<{
 const rowCount = () => fc.integer({ min: 1, max: 60 });
 
 /** Value-area percentage generator covering the accepted 1..100 range. */
-const valuePercentArb = () =>
-  fc.double({ min: 1, max: 100, noNaN: true, noDefaultInfinity: true });
+const valuePercentArb = () => fc.double({ min: 1, max: 100, noNaN: true, noDefaultInfinity: true });
 
 /** Indices of the rows flagged as part of the value area, in ascending order. */
 function valueAreaIndices(profile: VolumeProfile): number[] {
@@ -114,7 +111,7 @@ describe('Property 24: Volume profile POC and value area are correct', () => {
           expect(profile.poc).not.toBeNull();
           const maxVol = profile.rows.reduce((m, r) => Math.max(m, r.volume), -Infinity);
           const pocIndex = profile.rows.findIndex(
-            (r) => (r.priceLow + r.priceHigh) / 2 === profile.poc,
+            (r) => (r.priceLow + r.priceHigh) / 2 === profile.poc
           );
           expect(pocIndex).toBeGreaterThanOrEqual(0);
           expect(profile.rows[pocIndex].volume).toBe(maxVol);
@@ -145,9 +142,9 @@ describe('Property 24: Volume profile POC and value area are correct', () => {
           // Either the accumulated volume meets the target, or the value area
           // already spans every row (target unreachable with fewer rows).
           expect(cumVA >= target - tol || spansAllRows).toBe(true);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -168,7 +165,7 @@ describe('Property 24: Volume profile POC and value area are correct', () => {
         expect(profile.val).toBeNull();
         expect(profile.rows.every((r) => !r.inValueArea)).toBe(true);
       }),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 
@@ -204,9 +201,9 @@ describe('Property 24: Volume profile POC and value area are correct', () => {
           const spansAllRows = loIndex === 0 && hiIndex === n - 1;
           const tol = Math.abs(target) * 1e-9 + 1e-9;
           expect(cum >= target - tol || spansAllRows).toBe(true);
-        },
+        }
       ),
-      { numRuns: RUNS },
+      { numRuns: RUNS }
     );
   });
 });

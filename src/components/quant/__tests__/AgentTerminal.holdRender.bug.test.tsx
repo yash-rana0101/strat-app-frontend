@@ -85,7 +85,10 @@ function driveHoldRunToComplete() {
       thread_id: 't-hold',
     },
   };
-  const finished: StreamEventPayload = { event: 'RUN_FINISHED', data: { thread_id: 't-hold', status: 'completed' } };
+  const finished: StreamEventPayload = {
+    event: 'RUN_FINISHED',
+    data: { thread_id: 't-hold', status: 'completed' },
+  };
 
   store.handleStreamEvent(started);
   store.handleStreamEvent(decision);

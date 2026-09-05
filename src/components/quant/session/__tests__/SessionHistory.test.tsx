@@ -64,7 +64,7 @@ function renderHistory(props: Partial<React.ComponentProps<typeof SessionHistory
   const result = render(
     <QueryClientProvider client={client}>
       <SessionHistory {...props} onOpen={onOpen} />
-    </QueryClientProvider>,
+    </QueryClientProvider>
   );
   return { ...result, onOpen };
 }
@@ -100,7 +100,7 @@ describe('the list', () => {
       json({
         items: [summary({ session_id: 'a', symbol: 'RELIANCE', timeframe: '10m' })],
         next_cursor: null,
-      }),
+      })
     );
     renderHistory();
 
@@ -116,11 +116,17 @@ describe('the list', () => {
       json({
         items: [
           summary({
-            last_run: { run_id: 'r1', kind: 'find', status: 'complete', started_at: 1, ended_at: 2 },
+            last_run: {
+              run_id: 'r1',
+              kind: 'find',
+              status: 'complete',
+              started_at: 1,
+              ended_at: 2,
+            },
           }),
         ],
         next_cursor: null,
-      }),
+      })
     );
     renderHistory();
 
@@ -191,9 +197,7 @@ describe('pagination', () => {
   });
 
   it('passes the server cursor and does not duplicate rows', async () => {
-    fetchMock
-      .mockResolvedValueOnce(json(page1))
-      .mockResolvedValueOnce(json(page2));
+    fetchMock.mockResolvedValueOnce(json(page1)).mockResolvedValueOnce(json(page2));
     renderHistory();
     await screen.findByRole('button', { name: 'Load more' });
 
@@ -322,14 +326,18 @@ describe('rename', () => {
     client.setQueryData(['fq', 'sessions', 'a'], summary({ session_id: 'a' }));
     renderHistory();
 
-    await clickAsync(await screen.findByRole('button', { name: 'Rename RELIANCE · 10m · 9:15 AM' }));
+    await clickAsync(
+      await screen.findByRole('button', { name: 'Rename RELIANCE · 10m · 9:15 AM' })
+    );
     const input = screen.getByRole('textbox', { name: /^Rename/ });
     fireEvent.change(input, { target: { value: 'Gap-up thesis' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     await settle();
 
     // A rename is direct manipulation of a label the user is looking at; a round trip reads as lag.
-    expect(client.getQueryData<SessionSummary>(['fq', 'sessions', 'a'])?.title).toBe('Gap-up thesis');
+    expect(client.getQueryData<SessionSummary>(['fq', 'sessions', 'a'])?.title).toBe(
+      'Gap-up thesis'
+    );
     resolvePatch(json(summary({ session_id: 'a', title: 'Gap-up thesis' })));
     await settle();
   });
@@ -350,7 +358,7 @@ describe('rename', () => {
     // Rolled back from the snapshot rather than by refetching: a refetch during a streaming run could
     // arrive with a newer `updated_at` and reorder the list as a side effect of a failed rename.
     await waitFor(() =>
-      expect(client.getQueryData<SessionSummary>(['fq', 'sessions', 'a'])?.title).toBe('Original'),
+      expect(client.getQueryData<SessionSummary>(['fq', 'sessions', 'a'])?.title).toBe('Original')
     );
     expect((await screen.findByRole('alert')).textContent).toMatch(/Could not rename/);
   });
@@ -368,7 +376,7 @@ describe('rename', () => {
     // Without this the only way out of a half-typed rename is to save it.
     expect(screen.queryByRole('textbox', { name: /^Rename/ })).toBeNull();
     expect(
-      fetchMock.mock.calls.some(([, i]) => (i as RequestInit | undefined)?.method === 'PATCH'),
+      fetchMock.mock.calls.some(([, i]) => (i as RequestInit | undefined)?.method === 'PATCH')
     ).toBe(false);
   });
 
@@ -397,7 +405,7 @@ describe('rename', () => {
 
     await waitFor(() => {
       const patch = fetchMock.mock.calls.find(
-        ([, i]) => (i as RequestInit | undefined)?.method === 'PATCH',
+        ([, i]) => (i as RequestInit | undefined)?.method === 'PATCH'
       );
       expect(JSON.parse(String((patch![1] as RequestInit).body))).toEqual({ title: null });
     });
@@ -412,7 +420,7 @@ describe('rename', () => {
     await settle();
 
     expect(
-      fetchMock.mock.calls.some(([, i]) => (i as RequestInit | undefined)?.method === 'PATCH'),
+      fetchMock.mock.calls.some(([, i]) => (i as RequestInit | undefined)?.method === 'PATCH')
     ).toBe(false);
   });
 });
@@ -453,7 +461,7 @@ describe('archive and reopen', () => {
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
       if (init?.method === 'PATCH') return Promise.resolve(json(summary({ session_id: 'a' })));
       return Promise.resolve(
-        json({ items: [summary({ session_id: 'a', status: 'archived' })], next_cursor: null }),
+        json({ items: [summary({ session_id: 'a', status: 'archived' })], next_cursor: null })
       );
     });
     const onOpen = vi.fn();
@@ -470,7 +478,7 @@ describe('archive and reopen', () => {
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
       if (init?.method === 'PATCH') return Promise.resolve(json({ detail: 'gone' }, 404));
       return Promise.resolve(
-        json({ items: [summary({ session_id: 'a', status: 'archived' })], next_cursor: null }),
+        json({ items: [summary({ session_id: 'a', status: 'archived' })], next_cursor: null })
       );
     });
     const onOpen = vi.fn();
@@ -501,7 +509,9 @@ describe('delete', () => {
     await clickAsync(confirmBtn);
 
     await waitFor(() => {
-      const call = fetchMock.mock.calls.find(([, i]) => (i as RequestInit | undefined)?.method === 'DELETE');
+      const call = fetchMock.mock.calls.find(
+        ([, i]) => (i as RequestInit | undefined)?.method === 'DELETE'
+      );
       expect(call).toBeTruthy();
       expect(String(call![0])).toMatch(/\/sessions\/a/);
     });
@@ -517,7 +527,8 @@ describe('delete', () => {
     await clickAsync(cancelBtn);
 
     expect(screen.queryByRole('button', { name: /^Confirm delete/ })).toBeNull();
-    expect(fetchMock.mock.calls.some(([, i]) => (i as RequestInit | undefined)?.method === 'DELETE')).toBe(false);
+    expect(
+      fetchMock.mock.calls.some(([, i]) => (i as RequestInit | undefined)?.method === 'DELETE')
+    ).toBe(false);
   });
 });
-

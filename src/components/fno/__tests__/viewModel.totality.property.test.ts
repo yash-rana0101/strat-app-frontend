@@ -89,7 +89,7 @@ const garbageLeafArb = fc.oneof(
   fc.double(),
   fc.boolean(),
   fc.array(fc.anything()),
-  fc.object(),
+  fc.object()
 );
 
 /** A "chain" that may be a real array of garbage rows, or not an array at all. */
@@ -103,11 +103,11 @@ const garbageChainArb = fc.oneof(
         pe_oi: garbageLeafArb,
         iv: garbageLeafArb,
       },
-      { requiredKeys: [] },
+      { requiredKeys: [] }
     ),
-    { maxLength: 8 },
+    { maxLength: 8 }
   ),
-  garbageLeafArb, // not even an array
+  garbageLeafArb // not even an array
 );
 
 /** An object with a partial/garbage subset of the documented keys. */
@@ -124,7 +124,7 @@ const adversarialObjectArb = fc.record(
     analytics: fc.oneof(garbageLeafArb, fc.object()),
     bias: fc.oneof(garbageLeafArb, fc.object()),
   },
-  { requiredKeys: [] }, // every key independently present or omitted
+  { requiredKeys: [] } // every key independently present or omitted
 );
 
 // ---------------------------------------------------------------------------
@@ -149,7 +149,7 @@ const wellFormedPayloadArb = fc.record({
       pe_price: numOrNull,
       iv: numOrNull,
     }),
-    { minLength: 1, maxLength: 20 },
+    { minLength: 1, maxLength: 20 }
   ),
   analytics: fc.record({
     spot: numOrNull,
@@ -170,7 +170,7 @@ const wellFormedPayloadArb = fc.record({
       chain_context: fc.constantFrom('own-chain', 'broad-market'),
       signals: fc.object(),
     },
-    { requiredKeys: [] },
+    { requiredKeys: [] }
   ),
 });
 
@@ -180,9 +180,12 @@ const markerArb = fc.record(
     expiry: fc.constantFrom('', '2024-12-26'),
     unavailable: fc.constant(true),
     reason: fc.oneof(fc.string(), fc.constant('')),
-    last_snapshot_ts: fc.oneof(fc.integer({ min: 1, max: 2_000_000_000_000 }), fc.constant(undefined)),
+    last_snapshot_ts: fc.oneof(
+      fc.integer({ min: 1, max: 2_000_000_000_000 }),
+      fc.constant(undefined)
+    ),
   },
-  { requiredKeys: ['unavailable'] },
+  { requiredKeys: ['unavailable'] }
 );
 
 /** A real snapshot whose analytics + bias are entirely absent => `partial`. */
@@ -198,7 +201,7 @@ const partialPayloadArb = fc.record({
       pe_oi: numOrNull,
       iv: numOrNull,
     }),
-    { minLength: 1, maxLength: 12 },
+    { minLength: 1, maxLength: 12 }
   ),
 });
 
@@ -209,7 +212,7 @@ const anyInputArb = fc.oneof(
   { weight: 3, arbitrary: adversarialObjectArb },
   { weight: 2, arbitrary: wellFormedPayloadArb },
   { weight: 1, arbitrary: markerArb },
-  { weight: 1, arbitrary: partialPayloadArb },
+  { weight: 1, arbitrary: partialPayloadArb }
 );
 
 describe('Property 8: The view-model layer is total and never throws', () => {
@@ -227,7 +230,7 @@ describe('Property 8: The view-model layer is total and never throws', () => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         assertValidViewState(state!);
       }),
-      { numRuns: NUM_RUNS },
+      { numRuns: NUM_RUNS }
     );
   });
 
@@ -238,21 +241,18 @@ describe('Property 8: The view-model layer is total and never throws', () => {
         const state = toFnoViewState(input as any);
         assertValidViewState(state);
       }),
-      { numRuns: NUM_RUNS },
+      { numRuns: NUM_RUNS }
     );
   });
 
   it('handles well-formed payloads, markers, and partial payloads as valid states', () => {
     fc.assert(
-      fc.property(
-        fc.oneof(wellFormedPayloadArb, markerArb, partialPayloadArb),
-        (input) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const state = toFnoViewState(input as any);
-          assertValidViewState(state);
-        },
-      ),
-      { numRuns: NUM_RUNS },
+      fc.property(fc.oneof(wellFormedPayloadArb, markerArb, partialPayloadArb), (input) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const state = toFnoViewState(input as any);
+        assertValidViewState(state);
+      }),
+      { numRuns: NUM_RUNS }
     );
   });
 
@@ -268,7 +268,7 @@ describe('Property 8: The view-model layer is total and never throws', () => {
         has() {
           return true;
         },
-      },
+      }
     );
 
     let state: FnoViewState;

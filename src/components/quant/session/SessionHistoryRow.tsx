@@ -83,8 +83,9 @@ export default function SessionHistoryRow({
 
   return (
     <li
-      className={`group flex items-center gap-2 border-b border-border-default/30 px-3 py-2 text-xs last:border-b-0 ${isActive ? 'bg-elevated' : 'hover:bg-elevated/40'
-        }`}
+      className={`group flex items-center gap-2 border-b border-border-default/30 px-3 py-2 text-xs last:border-b-0 ${
+        isActive ? 'bg-elevated' : 'hover:bg-elevated/40'
+      }`}
       data-session-id={session.session_id}
     >
       <div className="min-w-0 flex-1">
@@ -127,7 +128,9 @@ export default function SessionHistoryRow({
             aria-label={archived ? `Open archived ${label}` : `Open ${label}`}
             className="block w-full truncate text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60 cursor-pointer disabled:opacity-60"
           >
-            <span className={`truncate font-medium ${isActive ? 'text-text-primary' : 'text-text-secondary'}`}>
+            <span
+              className={`truncate font-medium ${isActive ? 'text-text-primary' : 'text-text-secondary'}`}
+            >
               {label}
             </span>
             <span className="mt-0.5 flex items-center gap-1.5 text-[11px] text-text-muted">
@@ -161,7 +164,9 @@ export default function SessionHistoryRow({
               <span>Opening…</span>
             </span>
           )}
-          {isBusy && !isOpening && <Loader2 size={12} className="animate-spin text-text-muted" aria-hidden="true" />}
+          {isBusy && !isOpening && (
+            <Loader2 size={12} className="animate-spin text-text-muted" aria-hidden="true" />
+          )}
           {confirmDelete ? (
             <div className="flex items-center gap-1">
               <button

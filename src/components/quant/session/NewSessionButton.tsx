@@ -70,7 +70,11 @@ export default function NewSessionButton({ onCreated }: NewSessionButtonProps) {
           role="alert"
           className="absolute right-0 top-full z-30 mt-1 flex w-64 items-start gap-1.5 rounded-md border border-border-default/60 bg-elevated p-2 text-xs text-text-secondary shadow-lg"
         >
-          <AlertTriangle size={12} className="mt-0.5 shrink-0 text-status-error" aria-hidden="true" />
+          <AlertTriangle
+            size={12}
+            className="mt-0.5 shrink-0 text-status-error"
+            aria-hidden="true"
+          />
           <span className="min-w-0 flex-1">{failure}</span>
           <button
             type="button"

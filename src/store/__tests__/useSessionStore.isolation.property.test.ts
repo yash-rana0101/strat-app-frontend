@@ -34,7 +34,9 @@ const frameArb = fc.oneof(
   }),
   fc.record({
     event: fc.constant('TOOL_CALL_START'),
-    data: fc.record({ tool: fc.constantFrom('get_candles', 'get_consensus', 'watch_price_condition') }),
+    data: fc.record({
+      tool: fc.constantFrom('get_candles', 'get_consensus', 'watch_price_condition'),
+    }),
   }),
   fc.record({
     event: fc.constant('TOOL_CALL_END'),
@@ -51,7 +53,10 @@ const frameArb = fc.oneof(
     event: fc.constant('RUN_FINISHED'),
     data: fc.record({ status: fc.constantFrom('completed', 'paused') }),
   }),
-  fc.record({ event: fc.constant('ERROR'), data: fc.record({ error: fc.string({ maxLength: 8 }) }) }),
+  fc.record({
+    event: fc.constant('ERROR'),
+    data: fc.record({ error: fc.string({ maxLength: 8 }) }),
+  })
 );
 
 /** A frame tagged with the session it belongs to. */
@@ -130,7 +135,7 @@ describe('session isolation under arbitrary interleaving', () => {
           expect(normalise(actual[sessionId] ?? blankSession())).toEqual(expected.get(sessionId));
         }
       }),
-      { numRuns: 200 },
+      { numRuns: 200 }
     );
   });
 
@@ -148,7 +153,7 @@ describe('session isolation under arbitrary interleaving', () => {
             for (const s of SESSION_IDS) store.bindThread(threadFor(s), s);
             for (const item of items) send(store, item);
             return SESSION_IDS.map((s) =>
-              normalise(useSessionStore.getState().sessions[s] ?? blankSession()),
+              normalise(useSessionStore.getState().sessions[s] ?? blankSession())
             );
           })();
 
@@ -162,14 +167,14 @@ describe('session isolation under arbitrary interleaving', () => {
               send(store, item);
             });
             return SESSION_IDS.map((s) =>
-              normalise(useSessionStore.getState().sessions[s] ?? blankSession()),
+              normalise(useSessionStore.getState().sessions[s] ?? blankSession())
             );
           })();
 
           expect(withSwitching).toEqual(withoutSwitching);
-        },
+        }
       ),
-      { numRuns: 150 },
+      { numRuns: 150 }
     );
   });
 
@@ -185,23 +190,26 @@ describe('session isolation under arbitrary interleaving', () => {
           store.setActiveSession(active);
 
           const before = SESSION_IDS.map((s) =>
-            normalise(useSessionStore.getState().sessions[s] ?? blankSession()),
+            normalise(useSessionStore.getState().sessions[s] ?? blankSession())
           );
 
           for (const frame of frames) {
-            store.applyFrame({ event: frame.event, data: { ...frame.data, thread_id: 'thread_ORPHAN' } });
+            store.applyFrame({
+              event: frame.event,
+              data: { ...frame.data, thread_id: 'thread_ORPHAN' },
+            });
           }
 
           const after = SESSION_IDS.map((s) =>
-            normalise(useSessionStore.getState().sessions[s] ?? blankSession()),
+            normalise(useSessionStore.getState().sessions[s] ?? blankSession())
           );
           expect(after).toEqual(before);
           // Dropped AND counted: silently swallowing them would hide a real bug, and
           // routing them is what the old fallback did.
           expect(useSessionStore.getState().unroutableFrames).toBe(frames.length);
-        },
+        }
       ),
-      { numRuns: 100 },
+      { numRuns: 100 }
     );
   });
 
@@ -215,7 +223,7 @@ describe('session isolation under arbitrary interleaving', () => {
             mode: fc.constantFrom('FIND' as const, 'VERIFY' as const),
             entry: fc.string({ maxLength: 8 }),
           }),
-          { minLength: 1, maxLength: 30 },
+          { minLength: 1, maxLength: 30 }
         ),
         (writes) => {
           useSessionStore.getState().reset();
@@ -239,9 +247,9 @@ describe('session isolation under arbitrary interleaving', () => {
             expect(state.ui[sessionId].mode).toBe(last.mode);
             expect(state.ui[sessionId].verification.entry).toBe(last.entry);
           }
-        },
+        }
       ),
-      { numRuns: 150 },
+      { numRuns: 150 }
     );
   });
 });
