@@ -26,6 +26,7 @@
 interface ReadyableWidget {
   chartReady?: () => Promise<void>;
   onChartReady?: (cb: () => void) => void;
+  headerReady?: () => Promise<void>;
   activeChart?: unknown;
 }
 
@@ -82,5 +83,58 @@ export function whenChartReady(
     // `remove()` already ran: the internal API is gone. Not an error worth
     // surfacing to the user, but do not let it escape as a TypeError.
     console.warn(`[${label}] widget was torn down before chart-ready:`, err);
+  }
+}
+
+/**
+ * Run `fn` once the widget's header toolbar is ready.
+ *
+ * In TradingView Advanced Charts, `createButton()` requires waiting for
+ * `headerReady()` to resolve. Calling `createButton()` before `headerReady()`
+ * throws:
+ * "Cannot create button: header widget is not ready or is not loaded - use `headerReady` to wait until header is ready".
+ *
+ * @param widget      The TradingView widget.
+ * @param fn          Work to run once the header toolbar is ready.
+ * @param isCancelled Optional staleness probe.
+ * @param label       Log prefix.
+ */
+export function whenHeaderReady(
+  widget: unknown,
+  fn: () => void | Promise<void>,
+  isCancelled: () => boolean = () => false,
+  label = 'Header'
+): void {
+  if (!widget) return;
+  const w = widget as ReadyableWidget;
+
+  const run = () => {
+    if (isCancelled()) return;
+    if (!w.activeChart) return;
+    try {
+      const result = fn();
+      if (result && typeof (result as Promise<void>).catch === 'function') {
+        (result as Promise<void>).catch((err) => {
+          console.warn(`[${label}] header-ready task failed:`, err);
+        });
+      }
+    } catch (err) {
+      console.warn(`[${label}] header-ready task threw:`, err);
+    }
+  };
+
+  try {
+    if (typeof w.headerReady === 'function') {
+      w.headerReady()
+        .then(run)
+        .catch(() => {
+          // Widget removed before header was ready
+        });
+      return;
+    }
+    // Fall back to chartReady if headerReady is not implemented on this build
+    whenChartReady(widget, run, isCancelled, label);
+  } catch (err) {
+    console.warn(`[${label}] widget was torn down before header-ready:`, err);
   }
 }

@@ -27,6 +27,7 @@ import { Group, Panel, Separator } from 'react-resizable-panels';
 
 import ChartPane from './ChartPane';
 import { useChartUIStore } from '../../store/useChartUIStore';
+import { useIsMobile } from '../../hooks/useIsMobile';
 import type { TradeProfile } from '../../store/useTradeStore';
 
 /** The workspace profiles in which the Split_Chart_View is available (R4.7). */
@@ -44,6 +45,7 @@ interface SplitChartContainerProps {
  */
 export default function SplitChartContainer({ mode }: SplitChartContainerProps) {
   const panes = useChartUIStore((s) => s.panes);
+  const isMobile = useIsMobile();
 
   // Exactly two panes this phase (R4.2, R7.5): index 0 = 'A' (left),
   // index 1 = 'B' (right). Destructure to make the two-pane contract explicit.
@@ -51,12 +53,18 @@ export default function SplitChartContainer({ mode }: SplitChartContainerProps) 
 
   return (
     <div data-split-mode={mode} className="flex h-full w-full min-h-0 flex-col bg-background">
-      <Group orientation="horizontal" className="h-full w-full min-h-0">
+      <Group orientation={isMobile ? 'vertical' : 'horizontal'} className="h-full w-full min-h-0">
         <Panel defaultSize={50} minSize={20}>
           {/* Stable key = pane id so React keeps each chart instance isolated. */}
           <ChartPane key={paneA.id} pane={paneA} />
         </Panel>
-        <Separator className="w-px cursor-col-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:w-1" />
+        <Separator
+          className={
+            isMobile
+              ? 'h-px cursor-row-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:h-1'
+              : 'w-px cursor-col-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:w-1'
+          }
+        />
         <Panel defaultSize={50} minSize={20}>
           <ChartPane key={paneB.id} pane={paneB} />
         </Panel>
@@ -64,3 +72,4 @@ export default function SplitChartContainer({ mode }: SplitChartContainerProps) 
     </div>
   );
 }
+

@@ -110,7 +110,8 @@ export function useMacroIndicators(): UseMacroIndicatorsReturn {
       const res = await kiteFetch(`/quote?${params}`);
 
       if (!res.ok) {
-        throw new Error(`Kite quote API returned ${res.status}`);
+        setError(`Kite quote API returned ${res.status}`);
+        return;
       }
 
       const data = await res.json();
@@ -124,8 +125,8 @@ export function useMacroIndicators(): UseMacroIndicatorsReturn {
         setLastUpdated(Date.now());
         setError(null);
       }
-    } catch (err: any) {
-      console.error('[MacroIndicators] Quote fetch failed:', err);
+    } catch (err: unknown) {
+      console.warn('[MacroIndicators] Quote fetch failed:', err instanceof Error ? err.message : String(err));
       // Fail silently and let the simulation run
     } finally {
       setLoading(false);

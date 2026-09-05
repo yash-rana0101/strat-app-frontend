@@ -1041,3 +1041,12 @@ html[data-theme-changing] * {
     @apply font-sans;
   }
 }
+
+/* ── Mobile safe area utilities ────────────────────────────────────────── */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+

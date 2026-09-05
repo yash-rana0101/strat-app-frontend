@@ -29,7 +29,7 @@ export function useSymbolQuote(symbol: string): SymbolQuote | null {
       } catch (err) {
         // Silence AbortError — expected on unmount
         if (err instanceof DOMException && err.name === 'AbortError') return;
-        console.error('[Header] Quote fetch failed:', err);
+        console.warn('[Header] Quote fetch failed:', err instanceof Error ? err.message : String(err));
       }
     },
     [symbol]

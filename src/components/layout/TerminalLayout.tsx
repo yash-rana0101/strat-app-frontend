@@ -6,6 +6,7 @@ import QuickStartGuide from './QuickStartGuide';
 import MarketTickerStrip from './MarketTickerStrip';
 import NavRail from './NavRail';
 import UserProfileModal from '../profile/UserProfileModal';
+import { useMobileNavStore } from '../../store/useMobileNavStore';
 
 interface TerminalLayoutProps {
   children: React.ReactNode;
@@ -16,9 +17,16 @@ interface TerminalLayoutProps {
    * instead of being pushed down below the market ticker strip.
    */
   rightPanel?: React.ReactNode;
+  /** Mobile bottom navigation bar rendered fixed at the bottom on mobile. */
+  mobileBottomNav?: React.ReactNode;
 }
 
-export default function TerminalLayout({ children, leftPanel, rightPanel }: TerminalLayoutProps) {
+export default function TerminalLayout({
+  children,
+  leftPanel,
+  rightPanel,
+  mobileBottomNav,
+}: TerminalLayoutProps) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
 
@@ -27,6 +35,10 @@ export default function TerminalLayout({ children, leftPanel, rightPanel }: Term
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [initialQuery, setInitialQuery] = useState('');
+
+  const mobileSearchOpen = useMobileNavStore((s) => s.isSearchOpen);
+  const mobileSearchInitialQuery = useMobileNavStore((s) => s.searchInitialQuery);
+  const closeMobileSearch = useMobileNavStore((s) => s.closeSearch);
 
   const startResizing = (mouseDownEvent: React.MouseEvent) => {
     mouseDownEvent.preventDefault();
@@ -111,7 +123,7 @@ export default function TerminalLayout({ children, leftPanel, rightPanel }: Term
         {/* Watchlist / Left Panel */}
         <aside
           className={`
-            relative flex shrink-0 min-h-0 flex-col border-r border-border-default rounded-none bg-surface overflow-hidden
+            relative hidden md:flex shrink-0 min-h-0 flex-col border-r border-border-default rounded-none bg-surface overflow-hidden
             ${isResizing ? '' : 'transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]'}
             ${leftPanelOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}
           `}
@@ -170,7 +182,7 @@ export default function TerminalLayout({ children, leftPanel, rightPanel }: Term
               edge of the chart here, as the only way to bring the Market Watch
               column back. It is gone: the rail's toggle is always in the same
               place, is visible in both states, and does not overlap the chart. */}
-          <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-visible">
+          <main className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-visible pb-14 md:pb-0">
             {children}
           </main>
         </div>
@@ -178,6 +190,9 @@ export default function TerminalLayout({ children, leftPanel, rightPanel }: Term
 
       {/* ── Right sidebar — full height, outside the ticker strip's column ── */}
       {rightPanel}
+
+      {/* ── Mobile Bottom Navigation (fixed at bottom, hidden on md+) ── */}
+      {mobileBottomNav}
 
       {/* User Profile Modal Overlay */}
       <UserProfileModal isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
@@ -187,12 +202,13 @@ export default function TerminalLayout({ children, leftPanel, rightPanel }: Term
 
       {/* Symbol Search Modal */}
       <SymbolSearchModal
-        isOpen={isSearchOpen}
+        isOpen={isSearchOpen || mobileSearchOpen}
         onClose={() => {
           setIsSearchOpen(false);
           setInitialQuery('');
+          closeMobileSearch();
         }}
-        initialQuery={initialQuery}
+        initialQuery={mobileSearchInitialQuery || initialQuery}
       />
       {isResizing && (
         <div className="fixed inset-0 z-9999 cursor-col-resize select-none pointer-events-auto bg-white/0" />

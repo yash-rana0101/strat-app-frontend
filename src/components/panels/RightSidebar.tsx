@@ -73,9 +73,9 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
     label: string;
     Icon: typeof BrainAiIcon;
   }[] = [
-    { key: 'profile', label: sidebarCfg.badge, Icon: LibraryBooksIcon },
-    { key: 'deepquant', label: 'AI Agent', Icon: BrainAiIcon },
-  ];
+      { key: 'profile', label: sidebarCfg.badge, Icon: LibraryBooksIcon },
+      { key: 'deepquant', label: 'AI Agent', Icon: BrainAiIcon },
+    ];
 
   /**
    * Pressing a rail icon: open it, switch to it, or close it.
@@ -93,7 +93,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   };
 
   return (
-    <div className="flex h-full shrink-0">
+    <div className="hidden md:flex h-full shrink-0">
       {/* ── The open panel, to the LEFT of the rail ───────────────────────
           Only one is ever mounted: `renderSidebarContent` returns the AI agent
           or the active workspace's panel, never both. */}
@@ -152,18 +152,16 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
                 relative flex h-11 w-full shrink-0 cursor-pointer items-center justify-center
                 rounded-none transition-colors duration-150
                 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500/50
-                ${
-                  isShowing
-                    ? 'text-emerald-500 dark:text-emerald-400'
-                    : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'
+                ${isShowing
+                  ? 'text-emerald-500 dark:text-emerald-400'
+                  : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'
                 }
               `}
             >
               {/* Active accent bar (thin, non-boxy) — mirrors NavRail's */}
               <span
-                className={`absolute right-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-l-full bg-emerald-500 transition-opacity duration-150 ${
-                  isShowing ? 'opacity-100' : 'opacity-0'
-                }`}
+                className={`absolute right-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-l-full bg-emerald-500 transition-opacity duration-150 ${isShowing ? 'opacity-100' : 'opacity-0'
+                  }`}
               />
               <Icon size={22} />
             </button>

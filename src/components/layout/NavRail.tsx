@@ -131,7 +131,7 @@ export default function NavRail({
     // Fixed-width spacer reserves the collapsed rail's footprint in the flex
     // flow; the real <nav> is absolutely positioned on top of it so expanding
     // overlaps the content instead of pushing it.
-    <div className="relative shrink-0" style={{ width: COLLAPSED_W }}>
+    <div className="relative shrink-0 hidden md:block" style={{ width: COLLAPSED_W }}>
       <nav
         aria-label="Primary navigation"
         style={{ ['--rail-w' as string]: `${EXPANDED_W}px` }}
@@ -207,9 +207,8 @@ export default function NavRail({
               >
                 {/* Active accent bar (thin, non-boxy) */}
                 <span
-                  className={`absolute left-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-r-full bg-emerald-500 transition-opacity duration-150 ${
-                    isActive ? 'opacity-100' : 'opacity-0'
-                  }`}
+                  className={`absolute left-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-r-full bg-emerald-500 transition-opacity duration-150 ${isActive ? 'opacity-100' : 'opacity-0'
+                    }`}
                 />
                 <span className="flex w-14 shrink-0 items-center justify-center">
                   <Icon size={22} strokeWidth={isActive ? 2.4 : 2} />

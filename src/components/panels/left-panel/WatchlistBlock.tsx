@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useTradeStore, hydrateWatchlist } from '../../../store/useTradeStore';
 import { useChartUIStore } from '../../../store/useChartUIStore';
+import { useMobileNavStore } from '../../../store/useMobileNavStore';
 import { isFnoSymbol } from '../../../charting/symbolUtils';
 import WatchlistSkeleton from './WatchlistSkeleton';
 import { kiteFetch } from '../../../lib/kiteFetch';
@@ -126,6 +127,10 @@ export default function WatchlistBlock() {
       } else {
         setSelectedSymbol(symbol);
       }
+
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        useMobileNavStore.getState().setActiveView('chart');
+      }
     },
     [activeProfile, splitView, setPaneSymbol, setSelectedSymbol, setFnoUnderlying]
   );
@@ -195,7 +200,7 @@ export default function WatchlistBlock() {
         : err instanceof Error
           ? err.message
           : String(err);
-      console.error('[WatchlistBlock] Quote fetch failed:', err);
+      console.warn('[WatchlistBlock] Quote fetch failed:', err instanceof Error ? err.message : String(err));
       setQuotesError(message);
     } finally {
       setQuotesLoading(false);
@@ -241,9 +246,8 @@ export default function WatchlistBlock() {
        now one-line strips pinned at the bottom, so the watchlist gets the height
        that was being rationed. */
     <div
-      className={`flex min-h-0 flex-col gap-0 border-b border-border-default ${
-        watchlistCollapsed ? 'shrink-0' : 'flex-1'
-      }`}
+      className={`flex min-h-0 flex-col gap-0 border-b border-border-default ${watchlistCollapsed ? 'shrink-0' : 'flex-1'
+        }`}
     >
       {/* Watchlist toggle header */}
       <div className="flex shrink-0 items-center justify-between px-3 py-1.5 bg-surface/50 border-b border-border-subtle">
@@ -270,11 +274,10 @@ export default function WatchlistBlock() {
           disabled={quotesLoading}
           aria-label="Refresh watchlist quotes"
           title={quotesError ?? 'Refresh quotes'}
-          className={`ml-1 shrink-0 rounded p-0.5 transition-colors disabled:opacity-40 ${
-            quotesError
-              ? 'text-amber-500 hover:bg-amber-500/10 dark:text-amber-400'
-              : 'text-text-muted hover:bg-elevated hover:text-text-primary'
-          }`}
+          className={`ml-1 shrink-0 rounded p-0.5 transition-colors disabled:opacity-40 ${quotesError
+            ? 'text-amber-500 hover:bg-amber-500/10 dark:text-amber-400'
+            : 'text-text-muted hover:bg-elevated hover:text-text-primary'
+            }`}
         >
           <RefreshCw size={11} className={quotesLoading ? 'animate-spin' : ''} />
         </button>
@@ -300,11 +303,10 @@ export default function WatchlistBlock() {
 
       {/* Watchlist content with smooth CSS Grid expand/collapse animation */}
       <div
-        className={`grid min-h-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] border-b border-border-default ${
-          watchlistCollapsed
-            ? 'grid-rows-[0fr] opacity-0 pointer-events-none'
-            : 'flex-1 grid-rows-[1fr] opacity-100'
-        }`}
+        className={`grid min-h-0 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] border-b border-border-default ${watchlistCollapsed
+          ? 'grid-rows-[0fr] opacity-0 pointer-events-none'
+          : 'flex-1 grid-rows-[1fr] opacity-100'
+          }`}
       >
         <div className="overflow-hidden min-h-0">
           <div className="h-full overflow-y-auto scrollbar-thin">
@@ -388,13 +390,11 @@ export default function WatchlistBlock() {
                         setDragOverIndex(null);
                       }}
                       onClick={() => routeSymbolToChart(item.symbol)}
-                      className={`group flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left cursor-pointer transition-all border-l-2 ${
-                        isDragging ? 'opacity-40 scale-95' : ''
-                      } ${isDragOver ? 'bg-primary/5 border-t-2 border-t-primary/40' : ''} ${
-                        isActive
+                      className={`group flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left cursor-pointer transition-all border-l-2 ${isDragging ? 'opacity-40 scale-95' : ''
+                        } ${isDragOver ? 'bg-primary/5 border-t-2 border-t-primary/40' : ''} ${isActive
                           ? 'bg-primary/10 border-primary text-text-primary'
                           : 'hover:bg-elevated/70 border-transparent hover:border-primary/50'
-                      }`}
+                        }`}
                     >
                       {/* Reorder Grip Handle — hidden by default, expands on hover without overlapping text */}
                       <div className="w-0 group-hover:w-4 opacity-0 group-hover:opacity-75 transition-all overflow-hidden shrink-0 flex items-center justify-center cursor-grab active:cursor-grabbing -ml-1 group-hover:mr-1">

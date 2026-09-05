@@ -17,7 +17,7 @@ import { useTradingViewScript } from '../../hooks/useTradingViewScript';
 import { getTvWidgetOptions } from '../../utils/tvWidgetOptions';
 import { AlertTriangle } from 'lucide-react';
 import { showIframeDropdown, injectIframeDropdownStyles } from '../../utils/iframeDropdown';
-import { whenChartReady } from '../../charting/widgetReady';
+import { whenChartReady, whenHeaderReady } from '../../charting/widgetReady';
 import { SVGS } from './toolbarIcons';
 import { openExternalUrl, dashboardUrl } from '../../lib/redirect';
 
@@ -170,7 +170,7 @@ export default function TradingViewWidget({
             doc.defaultView.addEventListener('focus', handlePaneActivate, true);
           }
         }
-      } catch {}
+      } catch { }
     };
 
     attachIframeListeners();
@@ -196,7 +196,7 @@ export default function TradingViewWidget({
             doc.removeEventListener('pointerdown', handlePaneActivate, true);
             doc.removeEventListener('click', handlePaneActivate, true);
           }
-        } catch {}
+        } catch { }
       }
     };
   }, [scriptReady, scriptError]);
@@ -267,102 +267,94 @@ export default function TradingViewWidget({
           console.warn('[TradingViewWidget] Failed to subscribe to onSymbolChanged:', err);
         }
 
-        const iframe = containerRef.current?.querySelector('iframe');
-        const doc = iframe?.contentDocument;
-        if (!doc) return;
+        whenHeaderReady(
+          tvWidget,
+          () => {
+            const iframe = containerRef.current?.querySelector('iframe');
+            const doc = iframe?.contentDocument;
+            if (!doc) return;
 
-        try {
-          // ── Chart-mode selector: REMOVED for now ────────────────────────────
-          // The custom toolbar button offering Standard / Vol Profile / Footprint
-          // used to be created here. It was already vestigial: ChartSurface stopped
-          // branching on `chartMode` once TradingView Advanced Charts v31 began
-          // handling Volume Footprint, TPO, SVP and Volume Candle natively through
-          // its OWN chart-type selector, and `FootprintChart.tsx` is no longer
-          // mounted by anything. So the button wrote a store value that changed
-          // nothing on screen except its own icon — two selectors, only one of
-          // which worked.
-          //
-          // `chartMode`, `setChartMode` and the ChartMode type are deliberately
-          // LEFT IN PLACE (store, persistence and their tests are untouched), so
-          // restoring this is re-adding the button, not unpicking a data model.
-          // Use TradingView's built-in chart-type control in the meantime.
+            try {
+              const ghostLineBtn = (tvWidget as any).createButton();
+              ghostLineBtn.id = 'tv-btn-ghost-line';
+              ghostLineBtn.className = 'tv-custom-toolbar-btn';
+              ghostLineBtn.title = ghostlineEnabled
+                ? 'Projection Engine'
+                : 'Ghostline requires a subscription';
+              ghostLineBtn.addEventListener('click', () => {
+                if (!useFeatureStore.getState().access.ghostline) {
+                  openExternalUrl(dashboardUrl());
+                  return;
+                }
+                const currentMode = useChartUIStore.getState().ghostLineMode;
+                showIframeDropdown(
+                  ghostLineBtn,
+                  [
+                    {
+                      value: 'linear' as const,
+                      label: 'OLS',
+                      description: 'Linear regression baseline',
+                    },
+                    {
+                      value: 'volume' as const,
+                      label: 'VWLR',
+                      description: 'Volume-weighted linear regression',
+                    },
+                    {
+                      value: 'curved' as const,
+                      label: 'VWEPR',
+                      description: 'Volume-weighted polynomial',
+                    },
+                    {
+                      value: 'forecast' as const,
+                      label: 'FCST',
+                      description: 'Volatility-aware forecaster',
+                    },
+                  ],
+                  currentMode,
+                  (v) => {
+                    useChartUIStore.getState().setGhostLineMode(v);
+                    syncButtonStates(doc);
+                  },
+                  doc
+                );
+              });
 
-          const ghostLineBtn = (tvWidget as any).createButton();
-          ghostLineBtn.id = 'tv-btn-ghost-line';
-          ghostLineBtn.className = 'tv-custom-toolbar-btn';
-          ghostLineBtn.title = ghostlineEnabled
-            ? 'Projection Engine'
-            : 'Ghostline requires a subscription';
-          ghostLineBtn.addEventListener('click', () => {
-            if (!useFeatureStore.getState().access.ghostline) {
-              openExternalUrl(dashboardUrl());
-              return;
+              let splitViewBtn: HTMLElement | undefined;
+              const activeProfile = useTradeStore.getState().activeProfile;
+              if (activeProfile === 'INTRADAY' || activeProfile === 'FNO') {
+                const btn = (tvWidget as any).createButton();
+                btn.id = 'tv-btn-split-view';
+                btn.className = 'tv-custom-toolbar-btn';
+                btn.title = 'Chart Layout';
+                btn.addEventListener('click', () => {
+                  const currentVal = useChartUIStore.getState().splitView;
+                  showIframeDropdown(
+                    btn,
+                    [
+                      { value: false, label: 'Single Pane' },
+                      { value: true, label: 'Split Pane' },
+                    ],
+                    currentVal,
+                    (v) => {
+                      useChartUIStore.getState().setSplitView(v);
+                      syncButtonStates(doc);
+                    },
+                    doc
+                  );
+                });
+                splitViewBtn = btn;
+              }
+
+              setButtonsCreated(true);
+              syncButtonStates(doc);
+            } catch (err) {
+              console.error('[TradingViewWidget] Custom button registration failed:', err);
             }
-            const currentMode = useChartUIStore.getState().ghostLineMode;
-            showIframeDropdown(
-              ghostLineBtn,
-              [
-                {
-                  value: 'linear' as const,
-                  label: 'OLS',
-                  description: 'Linear regression baseline',
-                },
-                {
-                  value: 'volume' as const,
-                  label: 'VWLR',
-                  description: 'Volume-weighted linear regression',
-                },
-                {
-                  value: 'curved' as const,
-                  label: 'VWEPR',
-                  description: 'Volume-weighted polynomial',
-                },
-                {
-                  value: 'forecast' as const,
-                  label: 'FCST',
-                  description: 'Volatility-aware forecaster',
-                },
-              ],
-              currentMode,
-              (v) => {
-                useChartUIStore.getState().setGhostLineMode(v);
-                syncButtonStates(doc);
-              },
-              doc
-            );
-          });
-
-          let splitViewBtn: HTMLElement | undefined;
-          const activeProfile = useTradeStore.getState().activeProfile;
-          if (activeProfile === 'INTRADAY' || activeProfile === 'FNO') {
-            const btn = (tvWidget as any).createButton();
-            btn.id = 'tv-btn-split-view';
-            btn.className = 'tv-custom-toolbar-btn';
-            btn.title = 'Chart Layout';
-            btn.addEventListener('click', () => {
-              const currentVal = useChartUIStore.getState().splitView;
-              showIframeDropdown(
-                btn,
-                [
-                  { value: false, label: 'Single Pane' },
-                  { value: true, label: 'Split Pane' },
-                ],
-                currentVal,
-                (v) => {
-                  useChartUIStore.getState().setSplitView(v);
-                  syncButtonStates(doc);
-                },
-                doc
-              );
-            });
-            splitViewBtn = btn;
-          }
-
-          setButtonsCreated(true);
-          syncButtonStates(doc);
-        } catch (err) {
-          console.error('[TradingViewWidget] Custom button registration failed:', err);
-        }
+          },
+          () => !widgetRef.current,
+          'ToolbarButtons'
+        );
       });
     } catch (err) {
       console.error('[TradingViewWidget] Widget creation failed:', err);
@@ -373,7 +365,7 @@ export default function TradingViewWidget({
       if (widgetRef.current) {
         try {
           widgetRef.current.remove();
-        } catch {}
+        } catch { }
         widgetRef.current = null;
         setWidgetState(null);
         setButtonsCreated(false);

@@ -3,6 +3,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import TerminalLayout from '../components/layout/TerminalLayout';
 import LeftPanel from '../components/panels/LeftPanel';
+import TerminalContent from '../components/layout/TerminalContent';
+import MobileBottomNav from '../components/mobile/MobileBottomNav';
 
 import TerminalChartPane from '../components/layouts/TerminalChartPane';
 import SplitChartContainer from '../components/chart/SplitChartContainer';
@@ -254,6 +256,7 @@ export default function Home() {
       <div className="min-h-0 flex-1">
         <TerminalLayout
           leftPanel={<LeftPanel />}
+          mobileBottomNav={<MobileBottomNav />}
           rightPanel={
             <RightSidebar
               activeProfile={activeProfile}
@@ -265,26 +268,11 @@ export default function Home() {
             />
           }
         >
-          {/* ── Chart + Order Execution column ───────────── */}
-          <div
-            className={
-              isFullscreen
-                ? 'fixed inset-0 z-150 flex flex-col bg-background p-2'
-                : 'relative flex h-full min-h-0 min-w-0 flex-col rounded-none bg-surface'
-            }
-          >
-            <div className="flex flex-1 min-h-0 w-full overflow-hidden">
-              <div className="min-h-0 flex-1 bg-surface relative flex flex-col p-0 overflow-hidden">
-                {renderProfileContent()}
-              </div>
-            </div>
-
-            {/* The Trade / Live Strip that sat here is no longer rendered.
-                FRONTEND ONLY — nothing behind it was touched. The decision feed,
-                conviction scoring, ATR and the target/stop derivation all still run
-                and are still stored; `OrderExecutionPanel` is kept intact in
-                `components/panels/` so putting it back is this one element again. */}
-          </div>
+          <TerminalContent
+            renderProfileContent={renderProfileContent}
+            activeProfile={activeProfile}
+            isFullscreen={isFullscreen}
+          />
         </TerminalLayout>
       </div>
 
