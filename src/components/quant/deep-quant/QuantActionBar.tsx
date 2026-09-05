@@ -62,6 +62,7 @@ export default function QuantActionBar({
       : mode === 'VERIFY'
         ? 'VERIFY MY SETUP'
         : 'FIND QUANT TRADE';
+        : 'FIND TRADE';
 
   return (
     <div className="relative">
