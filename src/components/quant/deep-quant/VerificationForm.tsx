@@ -1,7 +1,7 @@
 import React from 'react';
 import { Shield, Loader2 } from 'lucide-react';
 
-interface VerificationFormProps {
+export interface VerificationFormProps {
   side: 'BUY' | 'SELL';
   setSide: (side: 'BUY' | 'SELL') => void;
   entry: string;
