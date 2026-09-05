@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Brain, Check } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { ReasoningStep } from '../../../store/useQuantStore';
 import MarkdownRenderer from './MarkdownRenderer';
 
@@ -13,56 +13,44 @@ export default function ThinkingGroupRenderer({
   sessionStatus,
 }: ThinkingGroupRendererProps) {
   const isRunning = sessionStatus === 'running';
-  // Keep collapsed by default to keep the interface ultra-clean and easy to scan
   const [isExpanded, setIsExpanded] = useState(false);
 
   if (steps.length === 0) return null;
 
   return (
-    <div className="w-full animate-fade-in font-sans">
+    <div className="w-full animate-fade-in font-sans my-1">
+      {/* Dropdown toggle labeled simply as "Thinking" — simple, unboxed like Antigravity */}
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
         aria-expanded={isExpanded}
-        aria-label={isRunning ? 'Thinking (Analyzing market structure…)' : 'Thinking (Analysis Complete)'}
-        className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md border transition-all duration-200 select-none focus:outline-none ${
-          isRunning
-            ? 'bg-emerald-500/10 border-emerald-500/25 text-emerald-400 shadow-sm'
-            : 'bg-elevated/40 border-border-default/50 text-text-muted hover:text-text-primary hover:bg-elevated/70'
-        }`}
+        aria-label="Thinking"
+        className="inline-flex items-center gap-1.5 text-[11px] font-medium text-text-muted hover:text-text-primary transition-colors duration-150 select-none focus:outline-none cursor-pointer group py-0.5"
       >
-        <div className="flex items-center gap-2">
-          {isRunning ? (
-            <div className="relative flex items-center justify-center">
-              <Brain size={12} className="text-emerald-400 animate-pulse" />
-              <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-            </div>
-          ) : (
-            <div className="flex items-center justify-center text-emerald-500/80">
-              <Check size={12} strokeWidth={2.5} />
-            </div>
-          )}
+        {isExpanded ? (
+          <ChevronDown
+            size={12}
+            className="shrink-0 text-text-muted group-hover:text-text-primary transition-transform"
+            aria-hidden="true"
+          />
+        ) : (
+          <ChevronRight
+            size={12}
+            className="shrink-0 text-text-muted group-hover:text-text-primary transition-transform"
+            aria-hidden="true"
+          />
+        )}
 
-          <span className="text-[10px] font-semibold tracking-wide">
-            {isRunning ? 'Analyzing market structure…' : 'Analysis Complete'}
-          </span>
+        <span className="tracking-wide">{isRunning ? 'Thinking…' : 'Thinking'}</span>
 
-          <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-black/20 text-text-muted border border-border-default/40">
-            {steps.length} {steps.length === 1 ? 'step' : 'steps'}
-          </span>
-        </div>
-
-        <div className="text-text-muted">
-          {isExpanded ? (
-            <ChevronDown size={12} aria-hidden="true" />
-          ) : (
-            <ChevronRight size={12} aria-hidden="true" />
-          )}
-        </div>
+        {isRunning && (
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping ml-0.5" />
+        )}
       </button>
 
+      {/* Unboxed thinking trace — simple, elegant left accent line like Antigravity */}
       {isExpanded && (
-        <div className="mt-2 text-text-secondary text-[10.5px] leading-relaxed w-full p-2.5 rounded-md bg-surface border border-border-default/60 max-h-60 overflow-y-auto scrollbar-thin space-y-2">
+        <div className="mt-1.5 mb-2 pl-3 border-l-2 border-border-default/40 text-text-secondary text-[11px] leading-relaxed w-full max-h-72 overflow-y-auto scrollbar-thin space-y-2 select-text">
           {steps.map((step) => {
             const cleanContent = step.content.replace(/\{[\s\S]*\}/g, '').trim();
             if (!cleanContent) return null;

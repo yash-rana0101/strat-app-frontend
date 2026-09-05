@@ -67,7 +67,7 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
 
   return (
     <div className="w-full my-2.5 animate-fade-in font-sans flex flex-col gap-1.5">
-      {/* Header: AI Avatar with sharp vector Strat AI logo + Title */}
+      {/* Header: AI Avatar with sharp vector Strat AI logo (word 'Strat AI' removed) */}
       <div className="flex items-center gap-2">
         <div
           className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border select-none ${
@@ -78,21 +78,16 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
         >
           <StratAiLogo size={12} className={msg.streaming ? 'animate-pulse' : ''} />
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-semibold tracking-wide text-text-primary">
-            Strat AI
+        {msg.streaming && (
+          <span className="text-[10px] font-normal text-text-muted animate-pulse">
+            Thinking…
           </span>
-          {msg.streaming && (
-            <span className="text-[9px] font-normal text-text-muted animate-pulse">
-              Generating...
-            </span>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Body: Full Canvas, Unboxed */}
       <div
-        className={`w-full pl-7 pr-1 text-[11px] leading-relaxed ${
+        className={`w-full text-[11px] leading-relaxed ${
           msg.error ? 'text-rose-400' : 'text-text-primary'
         }`}
       >
@@ -176,7 +171,9 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
             <button
               type="button"
               onClick={() => {
-                navigator.clipboard?.writeText(`Quant AI Response:\n${msg.content}`);
+                navigator.clipboard?.writeText(`Quant AI Response:
+${msg.content}`);
+                navigator.clipboard?.writeText('Quant AI Response:\n' + msg.content);
               }}
               className="p-1 hover:bg-elevated rounded hover:text-text-primary transition-all cursor-pointer flex items-center justify-center"
               title="Share response"
@@ -197,7 +194,7 @@ export default function QaMessages() {
   if (!qaMessages || qaMessages.length === 0) return null;
 
   return (
-    <div className="space-y-3.5 mt-2">
+    <div className="space-y-4 mt-2 px-3 sm:px-4 pb-2">
       {qaMessages.map((msg) =>
         msg.role === 'user' ? (
           <div
