@@ -54,6 +54,7 @@ export function useActivateSession() {
 
       if (isHydrated(sessionId)) return { ok: true };
 
+      store.setActivating(sessionId, true);
       try {
         // Through the query cache, not a bare call: a double-click, or a tab bar and a history row
         // racing each other, would otherwise fire two full rehydrations. `fetchQuery` dedupes them
@@ -91,6 +92,8 @@ export function useActivateSession() {
             message: err instanceof Error && err.message ? err.message : 'Could not open this session.',
           },
         };
+      } finally {
+        useSessionStore.getState().setActivating(sessionId, false);
       }
     },
     [client],

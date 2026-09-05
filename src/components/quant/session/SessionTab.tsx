@@ -16,6 +16,8 @@ export interface SessionTabProps {
   isActive: boolean;
   /** A run is streaming into this session — possibly one the user is not looking at. */
   isStreaming: boolean;
+  /** True while this session is actively activating/rehydrating from the server. */
+  isLoading?: boolean;
   /** True while this tab's archive request is in flight. */
   isClosing?: boolean;
   onActivate: (sessionId: string) => void;
@@ -29,6 +31,7 @@ export default function SessionTab({
   session,
   isActive,
   isStreaming,
+  isLoading = false,
   isClosing = false,
   onActivate,
   onClose,
@@ -57,6 +60,7 @@ export default function SessionTab({
         role="tab"
         id={`fq-tab-${session.session_id}`}
         aria-selected={isActive}
+        aria-busy={isLoading || undefined}
         aria-controls="fq-session-workspace"
         // Roving tabindex: only the active tab is in the tab order, and the arrow keys move
         // between the rest. Leaving every tab focusable would mean eight tab presses to get past
@@ -66,9 +70,11 @@ export default function SessionTab({
         title={tooltip}
         aria-label={sessionTabAriaLabel(session, isStreaming)}
         onClick={() => onActivate(session.session_id)}
-        className="flex max-w-[14rem] items-center gap-2 py-2 text-xs font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60 focus-visible:ring-offset-0"
+        className="flex max-w-[14rem] items-center gap-2 py-2 text-xs font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60 focus-visible:ring-offset-0 cursor-pointer"
       >
-        {isStreaming && (
+        {isLoading ? (
+          <Loader2 size={11} className="shrink-0 animate-spin text-primary" aria-hidden="true" />
+        ) : isStreaming ? (
           // Communicates that a BACKGROUND session is working. Under the old single-session store
           // this state could not exist, because a second run overwrote the first.
           <span
@@ -77,7 +83,7 @@ export default function SessionTab({
             // would be noise.
             aria-hidden="true"
           />
-        )}
+        ) : null}
         <span className="truncate">{label}</span>
       </button>
 

@@ -29,11 +29,13 @@ import { FQ_MULTI_SESSION } from '../../lib/env';
 import { FqQueryProvider } from '../../lib/fq/FqQueryProvider';
 import SessionTabBarConnected from './session/SessionTabBarConnected';
 import { useFqStreamListeners } from './useFqStreamListeners';
+import SessionLoadingState from './session/SessionLoadingState';
 import {
   useFqAiPlan,
   useFqAnalysisError,
   useFqFinalTrade,
   useFqIsAnalyzing,
+  useFqIsSessionHydrating,
   useFqMode,
   useFqReasoningSteps,
   useFqSessionStatus,
@@ -78,6 +80,7 @@ export default function DeepQuantPanel() {
   const selectedModel = useQuantStore((s) => s.selectedModel);
   const setSelectedModel = useQuantStore((s) => s.setSelectedModel);
   const isAnalyzing = useFqIsAnalyzing();
+  const isSessionLoading = useFqIsSessionHydrating();
   const analysisError = useFqAnalysisError();
   const reasoningSteps = useFqReasoningSteps();
   const sessionStatus = useFqSessionStatus();
@@ -351,7 +354,9 @@ export default function DeepQuantPanel() {
           fixed footer so the input never scrolls away. */}
       <div className="flex-grow flex-shrink min-h-0 flex flex-col overflow-hidden">
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin flex flex-col">
-          {hasRun ? (
+          {isSessionLoading ? (
+            <SessionLoadingState variant="compact" symbol={symbol} />
+          ) : hasRun ? (
             <>
               {/* Condensed progress — one row per tool the agent actually called. The full tool
                   output and the reasoning prose are in the dialog, not here. */}

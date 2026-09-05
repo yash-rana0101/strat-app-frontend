@@ -35,6 +35,7 @@ export interface AgentDialogMetaBarProps {
   onRun: () => void;
   onStop: () => void;
   hasRun?: boolean;
+  isSessionLoading?: boolean;
   isConfiguringSetup?: boolean;
   onToggleConfigureSetup?: () => void;
 }
@@ -53,6 +54,7 @@ export default function AgentDialogMetaBar({
   onRun,
   onStop,
   hasRun = false,
+  isSessionLoading = false,
   isConfiguringSetup = false,
   onToggleConfigureSetup,
 }: AgentDialogMetaBarProps) {
@@ -135,19 +137,24 @@ export default function AgentDialogMetaBar({
 
         <button
           type="button"
-          disabled={!isAnalyzing && !dataReady}
+          disabled={isSessionLoading || (!isAnalyzing && !dataReady)}
           onClick={() => {
             if (isAnalyzing) onStop();
             else onRun();
           }}
-          className={`flex h-7 items-center justify-center gap-1.5 rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${!dataReady && !isAnalyzing
-              ? 'bg-elevated/40 text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
-              : isAnalyzing
-                ? 'bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white'
-                : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white'
-            }`}
+          className={`flex h-7 items-center justify-center gap-1.5 rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            isSessionLoading
+              ? 'bg-elevated/40 text-text-muted border border-border-default opacity-70 cursor-not-allowed'
+              : !dataReady && !isAnalyzing
+                ? 'bg-elevated/40 text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
+                : isAnalyzing
+                  ? 'bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white'
+                  : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white'
+          }`}
         >
-          {!dataReady && !isAnalyzing ? (
+          {isSessionLoading ? (
+            <Loader2 size={11} className="animate-spin text-primary" />
+          ) : !dataReady && !isAnalyzing ? (
             <Loader2 size={11} className="animate-spin text-text-muted" />
           ) : isAnalyzing ? (
             <Square size={11} />
@@ -156,13 +163,15 @@ export default function AgentDialogMetaBar({
           ) : (
             <Zap size={11} />
           )}
-          {!dataReady && !isAnalyzing
-            ? 'Awaiting data…'
-            : isAnalyzing
-              ? 'Stop analysis'
-              : mode === 'VERIFY'
-                ? 'Verify my setup'
-                : 'Find Trade'}
+          {isSessionLoading
+            ? 'Restoring session…'
+            : !dataReady && !isAnalyzing
+              ? 'Awaiting data…'
+              : isAnalyzing
+                ? 'Stop analysis'
+                : mode === 'VERIFY'
+                  ? 'Verify my setup'
+                  : 'Find Trade'}
         </button>
       </div>
     </div>

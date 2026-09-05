@@ -15,6 +15,8 @@ export interface SessionHistoryRowProps {
   isActive: boolean;
   /** A mutation for this row is in flight. */
   isBusy?: boolean;
+  /** This session is currently being opened/activated. */
+  isOpening?: boolean;
   onOpen: (sessionId: string) => void;
   onRename: (sessionId: string, title: string | null) => void;
   onArchive: (sessionId: string) => void;
@@ -46,6 +48,7 @@ export default function SessionHistoryRow({
   session,
   isActive,
   isBusy = false,
+  isOpening = false,
   onOpen,
   onRename,
   onArchive,
@@ -119,9 +122,11 @@ export default function SessionHistoryRow({
         ) : (
           <button
             type="button"
+            disabled={isBusy || isOpening}
+            aria-busy={isOpening || undefined}
             onClick={() => (archived ? onReopen(session.session_id) : onOpen(session.session_id))}
             aria-label={archived ? `Open archived ${label}` : `Open ${label}`}
-            className="block w-full truncate text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60 cursor-pointer"
+            className="block w-full truncate text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-text-primary/60 cursor-pointer disabled:opacity-60"
           >
             <span className={`truncate font-medium ${isActive ? 'text-text-primary' : 'text-text-secondary'}`}>
               {label}
@@ -150,8 +155,14 @@ export default function SessionHistoryRow({
       </div>
 
       {!editing && (
-        <div className="flex shrink-0 items-center gap-0.5">
-          {isBusy && <Loader2 size={12} className="animate-spin text-text-muted" aria-hidden="true" />}
+        <div className="flex shrink-0 items-center gap-1">
+          {isOpening && (
+            <span className="inline-flex items-center gap-1 rounded bg-primary/15 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
+              <Loader2 size={10} className="animate-spin" aria-hidden="true" />
+              <span>Opening…</span>
+            </span>
+          )}
+          {isBusy && !isOpening && <Loader2 size={12} className="animate-spin text-text-muted" aria-hidden="true" />}
           {confirmDelete ? (
             <div className="flex items-center gap-1">
               <button

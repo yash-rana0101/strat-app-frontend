@@ -21,9 +21,10 @@ import { useActivateSession } from '../../../lib/fq/useActivateSession';
 import { useSessionStore } from '../../../store/useSessionStore';
 import AgentTerminal from '../AgentTerminal';
 import TradeQaPanel from '../TradeQaPanel';
-import { useFqSessionStatus } from '../useFqSession';
+import { useFqIsSessionHydrating, useFqSessionStatus } from '../useFqSession';
 import { useFqStreamListeners } from '../useFqStreamListeners';
 import SessionHistory from './SessionHistory';
+import SessionLoadingState from './SessionLoadingState';
 import SessionTabBar from './SessionTabBar';
 import { sessionTabLabel } from './sessionLabel';
 
@@ -51,6 +52,7 @@ export default function SessionWorkspace({ sessionId }: { sessionId: string }) {
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const summaryQuery = useSession(activeSessionId);
   const sessionStatus = useFqSessionStatus();
+  const isSessionLoading = useFqIsSessionHydrating();
 
   const open = React.useCallback(
     async (id: string) => {
@@ -149,14 +151,17 @@ export default function SessionWorkspace({ sessionId }: { sessionId: string }) {
               {summary.symbol} · {summary.timeframe} · {summary.profile}
             </span>
             <span className="ml-auto shrink-0 text-[11px] text-text-secondary" aria-live="polite">
-              {sessionStatus === 'running' && (
-                <Loader2 size={11} className="mr-1 inline animate-spin" aria-hidden="true" />
+              {(sessionStatus === 'running' || isSessionLoading) && (
+                <Loader2 size={11} className="mr-1 inline animate-spin text-primary" aria-hidden="true" />
               )}
-              {STATUS_TEXT[sessionStatus] ?? sessionStatus}
+              {isSessionLoading ? 'Loading session…' : (STATUS_TEXT[sessionStatus] ?? sessionStatus)}
             </span>
           </>
         ) : (
-          <span className="h-4 w-40 animate-pulse rounded bg-elevated" aria-hidden="true" />
+          <div className="flex items-center gap-1.5 text-xs text-text-muted">
+            <Loader2 size={11} className="animate-spin text-primary" aria-hidden="true" />
+            <span>Loading session…</span>
+          </div>
         )}
       </header>
 
@@ -180,11 +185,8 @@ export default function SessionWorkspace({ sessionId }: { sessionId: string }) {
       {/* The conversation. `min-h-0` is load-bearing in a flex column: without it the scroll container
           grows to its content instead of scrolling, and the composer is pushed off screen. */}
       <div className="min-h-0 flex-1 overflow-hidden">
-        {state === 'loading' ? (
-          <div className="flex h-full items-center justify-center" role="status">
-            <Loader2 size={18} className="animate-spin text-text-muted" aria-hidden="true" />
-            <span className="sr-only">Opening session…</span>
-          </div>
+        {state === 'loading' || isSessionLoading ? (
+          <SessionLoadingState variant="full" symbol={summary?.symbol} />
         ) : (
           <AgentTerminal />
         )}

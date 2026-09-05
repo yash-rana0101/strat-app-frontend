@@ -8,7 +8,7 @@ import React from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { History, Minimize2, Square, X } from 'lucide-react';
 
-import { useQuantStore, type ReasoningStep } from '../../store/useQuantStore';
+import { useQuantStore } from '../../store/useQuantStore';
 import { useTradeStore } from '../../store/useTradeStore';
 import { useCredit } from '../../hooks/useApi';
 import { formatSessionTime } from './session/sessionLabel';
@@ -18,15 +18,18 @@ import AgentDetailPanel from './deep-quant/AgentDetailPanel';
 import AgentProgressTimeline from './deep-quant/AgentProgressTimeline';
 import AgentDialogMetaBar from './deep-quant/AgentDialogMetaBar';
 import AgentHistoryPanel from './deep-quant/AgentHistoryPanel';
+import { useAgentStepDetail } from './deep-quant/useAgentStepDetail';
 import VerificationForm, { type VerificationFormProps } from './deep-quant/VerificationForm';
 import ErrorState from './deep-quant/ErrorState';
 import EmptyState from './deep-quant/EmptyState';
 import type { QuantMode } from './deep-quant/QuantActionBar';
 import QuantStatusPill from './deep-quant/QuantStatusPill';
 import { FQ_MULTI_SESSION } from '../../lib/env';
+import SessionLoadingState from './session/SessionLoadingState';
 import {
   useFqAnalysisError,
   useFqFinalTrade,
+  useFqIsSessionHydrating,
   useFqQaMessages,
   useFqReasoningSteps,
   useFqSessionStatus,
@@ -60,6 +63,7 @@ export default function DeepQuantAgentDialog({
   const sessionStatus = useFqSessionStatus();
   const finalTrade = useFqFinalTrade();
   const analysisError = useFqAnalysisError();
+  const isSessionLoading = useFqIsSessionHydrating();
   const activeProfile = useTradeStore((s) => s.activeProfile);
   const { data: credit } = useCredit();
   const selectedModel = useQuantStore((s) => s.selectedModel);
@@ -67,35 +71,18 @@ export default function DeepQuantAgentDialog({
   const qaMessages = useFqQaMessages();
   const sessionTime = React.useMemo(() => formatSessionTime(Math.floor(Date.now() / 1000)), []);
 
-  const [selectedId, setSelectedId] = React.useState<string | null>(initialSelectedId);
   const [historyOpen, setHistoryOpen] = React.useState(false);
   const [isConfiguringSetup, setIsConfiguringSetup] = React.useState(false);
+
+  const { selectedId, setSelectedId, selectedStep, selectedResult } = useAgentStepDetail(
+    initialSelectedId,
+    reasoningSteps,
+  );
 
   const handleVerifySubmit = () => {
     setIsConfiguringSetup(false);
     verificationForm?.onSubmit();
   };
-
-  const [syncedInitial, setSyncedInitial] = React.useState(initialSelectedId);
-  if (initialSelectedId !== syncedInitial) {
-    setSyncedInitial(initialSelectedId);
-    setSelectedId(initialSelectedId);
-  }
-
-  const selectedStep: ReasoningStep | null = React.useMemo(() => {
-    if (!selectedId || selectedId === 'decision') return null;
-    return reasoningSteps.find((s) => s.id === selectedId) ?? null;
-  }, [selectedId, reasoningSteps]);
-
-  const selectedResult: string | null = React.useMemo(() => {
-    if (!selectedStep) return null;
-    const startIdx = reasoningSteps.indexOf(selectedStep);
-    if (startIdx < 0) return null;
-    const end = reasoningSteps
-      .slice(startIdx + 1)
-      .find((s) => s.type === 'tool_end' && s.toolName === selectedStep.toolName);
-    return end?.content ?? null;
-  }, [selectedStep, reasoningSteps]);
 
   const hasRun = reasoningSteps.length > 0 || sessionStatus !== 'idle';
 
@@ -224,6 +211,7 @@ export default function DeepQuantAgentDialog({
             }}
             onStop={run.cancelAnalysis}
             hasRun={hasRun}
+            isSessionLoading={isSessionLoading}
             isConfiguringSetup={isConfiguringSetup}
             onToggleConfigureSetup={() => setIsConfiguringSetup((v) => !v)}
           />
@@ -240,7 +228,9 @@ export default function DeepQuantAgentDialog({
           <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
             {/* Reasoning timeline / Verification setup form */}
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:border-r lg:border-border-default/40">
-              {mode === 'VERIFY' && (!hasRun || isConfiguringSetup) && verificationForm ? (
+              {isSessionLoading ? (
+                <SessionLoadingState variant="full" symbol={run.symbol} />
+              ) : mode === 'VERIFY' && (!hasRun || isConfiguringSetup) && verificationForm ? (
                 <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin">
                   <div className="mx-auto max-w-xl">
                     <VerificationForm

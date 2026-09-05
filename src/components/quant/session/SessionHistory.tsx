@@ -43,6 +43,7 @@ export default function SessionHistory({
   const [rawQuery, setRawQuery] = React.useState('');
   const [query, setQuery] = React.useState('');
   const [busyId, setBusyId] = React.useState<string | null>(null);
+  const [openingId, setOpeningId] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [internalStatus, setInternalStatus] = React.useState<'active' | 'archived'>(
     controlledStatus ?? defaultStatus,
@@ -56,6 +57,7 @@ export default function SessionHistory({
 
   const list = useSessions({ status, q: query || undefined });
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
+  const activatingSessionIds = useSessionStore((s) => s.activatingSessionIds);
   const rename = useRenameSession();
   const archive = useArchiveSession();
   const reopen = useReopenSession();
@@ -111,10 +113,20 @@ export default function SessionHistory({
       useSessionStore.getState().dropSession(sessionId);
     });
 
+  const handleOpenRow = async (sessionId: string) => {
+    setOpeningId(sessionId);
+    try {
+      await onOpen(sessionId);
+    } finally {
+      setOpeningId(null);
+    }
+  };
+
   const handleReopen = (sessionId: string) =>
     void run(sessionId, 'reopen this session', async () => {
       await reopen.mutateAsync(sessionId);
       onOpen(sessionId);
+      await handleOpenRow(sessionId);
     });
 
   const handleDelete = (sessionId: string) =>
@@ -186,7 +198,8 @@ export default function SessionHistory({
                   session={session}
                   isActive={session.session_id === activeSessionId}
                   isBusy={busyId === session.session_id}
-                  onOpen={onOpen}
+                  isOpening={openingId === session.session_id || Boolean(activatingSessionIds?.[session.session_id])}
+                  onOpen={handleOpenRow}
                   onRename={handleRename}
                   onArchive={handleArchive}
                   onReopen={handleReopen}

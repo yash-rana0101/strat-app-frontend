@@ -7,6 +7,7 @@ import ModelSelector from './deep-quant/ModelSelector';
 import {
   useFqAskQuestion,
   useFqDraft,
+  useFqIsSessionHydrating,
   useFqQaStatus,
   useFqSessionStatus,
   useFqThreadId,
@@ -22,6 +23,7 @@ import {
 // watching for the price trigger. Includes a model-provider selector so the
 // user can pick which LLM answers.
 export default function TradeQaPanel() {
+  const isSessionLoading = useFqIsSessionHydrating();
   const qaStatus = useFqQaStatus();
   const currentThreadId = useFqThreadId();
   const sessionStatus = useFqSessionStatus();
@@ -41,7 +43,7 @@ export default function TradeQaPanel() {
   // answer in this session's analysis.
   const isWatching = sessionStatus === 'watching';
   const isComplete = sessionStatus === 'complete';
-  const canInteract = (isWatching || isComplete) && !!currentThreadId;
+  const canInteract = !isSessionLoading && (isWatching || isComplete) && !!currentThreadId;
   const canSend = canInteract && !isStreaming && draft.trim().length > 0;
 
   const handleSend = () => {
@@ -59,15 +61,17 @@ export default function TradeQaPanel() {
     }
   };
 
-  const placeholder = isStreaming
-    ? 'Answering…'
-    : isWatching
-      ? 'Ask while the AI watches for your price trigger…'
-      : isComplete
-        ? 'Ask anything, @ to mention, / for actions'
-        : sessionStatus === 'running'
-          ? 'Agent is analyzing — chat unlocks once it starts watching…'
-          : 'Run an analysis first…';
+  const placeholder = isSessionLoading
+    ? 'Restoring conversation history…'
+    : isStreaming
+      ? 'Answering…'
+      : isWatching
+        ? 'Ask while the AI watches for your price trigger…'
+        : isComplete
+          ? 'Ask anything, @ to mention, / for actions'
+          : sessionStatus === 'running'
+            ? 'Agent is analyzing — chat unlocks once it starts watching…'
+            : 'Run an analysis first…';
 
   return (
     <div className="flex flex-col font-sans bg-surface p-3 shrink-0 border-t border-border-default/40">
@@ -96,7 +100,13 @@ export default function TradeQaPanel() {
               disabled={!canInteract}
             />
 
-            {isWatching && (
+            {isSessionLoading && (
+              <span className="flex items-center gap-1 text-[9px] font-sans text-text-muted ml-1.5">
+                <Loader2 size={10} className="animate-spin text-primary" />
+                Restoring session…
+              </span>
+            )}
+            {isWatching && !isSessionLoading && (
               <span className="flex items-center gap-1 text-[8px] font-mono font-bold uppercase tracking-wide text-amber-500 ml-2">
                 <Eye size={9} className="animate-pulse" />
                 Watching

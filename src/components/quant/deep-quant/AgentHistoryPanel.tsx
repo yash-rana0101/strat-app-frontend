@@ -7,7 +7,7 @@
 // rename, archive/reopen, delete, and switch active session with instant rehydration.
 
 import React from 'react';
-import { AlertTriangle, History, X } from 'lucide-react';
+import { AlertTriangle, History, Loader2, X } from 'lucide-react';
 import { FqQueryProvider } from '../../../lib/fq/FqQueryProvider';
 import { useActivateSession } from '../../../lib/fq/useActivateSession';
 import SessionHistory from '../session/SessionHistory';
@@ -20,22 +20,28 @@ export interface AgentHistoryPanelProps {
 function AgentHistoryPanelContent({ onClose, onSessionSelect }: AgentHistoryPanelProps) {
   const activate = useActivateSession();
   const [openError, setOpenError] = React.useState<string | null>(null);
+  const [isOpening, setIsOpening] = React.useState(false);
 
   const handleOpen = React.useCallback(
     async (sessionId: string) => {
       setOpenError(null);
-      const result = await activate(sessionId);
-      if (result.ok) {
-        onSessionSelect?.(sessionId);
-        return;
+      setIsOpening(true);
+      try {
+        const result = await activate(sessionId);
+        if (result.ok) {
+          onSessionSelect?.(sessionId);
+          return;
+        }
+        setOpenError(
+          result.error?.notFound
+            ? 'That session no longer exists. It may have been deleted.'
+            : result.error?.unauthenticated
+              ? 'Your session expired. Sign in again to open it.'
+              : (result.error?.message ?? 'Could not open this session.'),
+        );
+      } finally {
+        setIsOpening(false);
       }
-      setOpenError(
-        result.error?.notFound
-          ? 'That session no longer exists. It may have been deleted.'
-          : result.error?.unauthenticated
-            ? 'Your session expired. Sign in again to open it.'
-            : (result.error?.message ?? 'Could not open this session.'),
-      );
     },
     [activate, onSessionSelect],
   );
@@ -47,9 +53,15 @@ function AgentHistoryPanelContent({ onClose, onSessionSelect }: AgentHistoryPane
     >
       {/* ── Panel Header ─────────────────────────────────────── */}
       <div className="flex shrink-0 items-center justify-between border-b border-border-default px-3.5 py-2.5 bg-elevated/20">
-        <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-text-primary">
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-text-primary">
           <History size={13} className="text-primary shrink-0" aria-hidden="true" />
           <span>Session History</span>
+          {isOpening && (
+            <span className="flex items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary lowercase tracking-normal">
+              <Loader2 size={10} className="animate-spin" aria-hidden="true" />
+              <span>opening…</span>
+            </span>
+          )}
         </div>
         <button
           type="button"

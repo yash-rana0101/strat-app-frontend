@@ -277,6 +277,9 @@ interface SessionStore {
   applyFrame: (payload: StreamEventPayload) => SessionId | null;
   setUi: (sessionId: SessionId, patch: Partial<SessionUiState>) => void;
   setVerification: (sessionId: SessionId, patch: Partial<VerificationDraft>) => void;
+  /** In-flight session activations/rehydrations. */
+  activatingSessionIds: Record<SessionId, boolean>;
+  setActivating: (sessionId: SessionId, isActivating: boolean) => void;
   dropSession: (sessionId: SessionId) => void;
   reset: () => void;
 }
@@ -287,6 +290,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
   ui: {},
   threadToSession: {},
   activeSessionId: null,
+  activatingSessionIds: {},
   unroutableFrames: 0,
 
   /**
@@ -504,6 +508,8 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       delete sessions[sessionId];
       delete streams[sessionId];
       delete ui[sessionId];
+      const activatingSessionIds = { ...state.activatingSessionIds };
+      delete activatingSessionIds[sessionId];
       const threadToSession = Object.fromEntries(
         Object.entries(state.threadToSession).filter(([, sid]) => sid !== sessionId),
       );
@@ -511,9 +517,20 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         sessions,
         streams,
         ui,
+        activatingSessionIds,
         threadToSession,
         activeSessionId: state.activeSessionId === sessionId ? null : state.activeSessionId,
       };
+    });
+  },
+
+  setActivating: (sessionId, isActivating) => {
+    if (!sessionId) return;
+    set((state) => {
+      const next = { ...state.activatingSessionIds };
+      if (isActivating) next[sessionId] = true;
+      else delete next[sessionId];
+      return { activatingSessionIds: next };
     });
   },
 
@@ -525,6 +542,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       ui: {},
       threadToSession: {},
       activeSessionId: null,
+      activatingSessionIds: {},
       unroutableFrames: 0,
     }),
 }));

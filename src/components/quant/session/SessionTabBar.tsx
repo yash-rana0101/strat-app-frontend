@@ -11,7 +11,7 @@
 // browser tab is unrepresentable here.
 
 import React from 'react';
-import { AlertTriangle, MoreHorizontal, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Loader2, MoreHorizontal, RefreshCw } from 'lucide-react';
 
 import type { SessionSummary } from '../../../lib/fq/api';
 import { useArchiveSession, useSessions } from '../../../lib/fq/queries';
@@ -43,6 +43,7 @@ export interface SessionTabBarProps {
 export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
   const { data, isLoading, isError, error, refetch, isFetching } = useSessions({ status: 'active' });
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
+  const activatingSessionIds = useSessionStore((s) => s.activatingSessionIds);
   const setActiveSession = useSessionStore((s) => s.setActiveSession);
   const streamingIds = useSessionStore(selectStreamingSessionIds);
   const archive = useArchiveSession();
@@ -240,6 +241,7 @@ export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
               session={session}
               isActive={session.session_id === activeSessionId}
               isStreaming={streamingIds.includes(session.session_id)}
+              isLoading={Boolean(activatingSessionIds?.[session.session_id])}
               isClosing={closingId === session.session_id}
               onActivate={activate}
               onClose={requestClose}
@@ -281,12 +283,14 @@ export default function SessionTabBar({ onActivate }: SessionTabBarProps) {
                     onClick={() => activate(session.session_id)}
                     className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-text-secondary hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:bg-surface"
                   >
-                    {streamingIds.includes(session.session_id) && (
+                    {activatingSessionIds?.[session.session_id] ? (
+                      <Loader2 size={11} className="shrink-0 animate-spin text-primary" aria-hidden="true" />
+                    ) : streamingIds.includes(session.session_id) ? (
                       <span
                         className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-primary"
                         aria-hidden="true"
                       />
-                    )}
+                    ) : null}
                     <span className="truncate">{sessionTabLabel(session)}</span>
                   </button>
                 ))}
