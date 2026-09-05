@@ -150,15 +150,21 @@ export default function ToolExecutionStep({
         </div>
 
         {step.args && Object.keys(step.args).length > 0 && (
-          <div className="mt-2 ml-[18px] pl-2 border-l border-border-default/30 text-[8.5px] text-text-secondary leading-normal font-sans space-y-0.5">
-            {Object.entries(step.args).map(([k, v]) => (
-              <div key={k} className="flex gap-1.5 items-start">
-                <span className="text-text-muted font-semibold shrink-0">{k}:</span>
-                <span className="text-text-secondary font-sans break-all">
-                  {highlightNumbers(JSON.stringify(v))}
+          <div className="mt-2 ml-[18px] flex flex-wrap gap-1.5 select-none">
+            {Object.entries(step.args).map(([k, v]) => {
+              const valDisplay = typeof v === 'string' ? v : typeof v === 'number' || typeof v === 'boolean' ? String(v) : JSON.stringify(v);
+              return (
+                <span
+                  key={k}
+                  className="inline-flex items-center gap-1 rounded bg-elevated/60 border border-border-default/40 px-1.5 py-0.5 text-[8.5px] font-mono text-text-secondary"
+                >
+                  <span className="text-text-muted">{k}:</span>
+                  <span className="font-bold text-text-primary truncate max-w-[160px]">
+                    {valDisplay}
+                  </span>
                 </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

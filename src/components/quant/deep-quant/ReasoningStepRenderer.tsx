@@ -1,16 +1,13 @@
 import React from 'react';
 import { Target } from 'lucide-react';
 import { ReasoningStep } from '../../../store/useQuantStore';
-import { highlightNumbers } from './textHighlighter';
+import ConvictionGauge from '../visuals/ConvictionGauge';
+import StructuredAnalysisCards from '../visuals/StructuredAnalysisCards';
 
 interface ReasoningStepRendererProps {
   step: ReasoningStep;
 }
 
-// Parses the step content for a trailing decision-shaped JSON blob. Kept
-// outside the component and free of JSX so parse failures (an expected,
-// non-exceptional case for free-form model text) never risk building JSX
-// inside a try/catch, which React can't attribute to an error boundary.
 function parseDecision(content: string): { conviction?: unknown; validation?: unknown; plan?: unknown } | null {
   try {
     const jsonMatch = content.match(/\{[\s\S]*\}/);
@@ -33,29 +30,28 @@ export default function ReasoningStepRenderer({ step }: ReasoningStepRendererPro
   if (!decision) return null;
 
   const { conviction, validation, plan } = decision;
+  const numConviction = typeof conviction === 'number' ? conviction : undefined;
 
   return (
-    <div className="flex justify-start animate-fade-in font-sans w-full select-text my-2">
-      <div className="bg-gradient-to-r from-emerald-500/5 via-elevated/40 to-elevated/10 text-text-primary border border-emerald-500/15 rounded px-3 py-2.5 text-[11px] leading-relaxed shadow-md w-full">
-        <div className="flex items-center gap-1.5 text-[9px] text-emerald-500 font-bold uppercase tracking-wider mb-2 select-none">
-          <Target size={11} className="text-emerald-500 shrink-0" />
-          <span>Final Trade Decision</span>
-          {conviction !== undefined && (
-            <span className="ml-auto rounded-sm px-1.5 py-0.5 text-[8px] font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-              {String(conviction)}% CONVICTION
-            </span>
-          )}
+    <div className="flex justify-start animate-fade-in font-sans w-full select-text my-3">
+      <div className="bg-gradient-to-b from-emerald-500/10 via-elevated/40 to-elevated/15 text-text-primary border border-emerald-500/20 rounded-2xl p-3.5 shadow-lg w-full space-y-3">
+        <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2 select-none">
+          <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
+            <Target size={12} className="text-emerald-400 shrink-0" />
+            <span>Final Trade Decision</span>
+          </div>
+
+          <ConvictionGauge
+            score={numConviction}
+            size="sm"
+            showLabel={true}
+          />
         </div>
-        {validation ? (
-          <p className="text-text-primary mb-1">
-            {highlightNumbers(String(validation))}
-          </p>
-        ) : null}
-        {plan ? (
-          <p className="text-text-secondary text-[10px] font-sans mt-2 border-t border-border-default/40 pt-2">
-            {highlightNumbers(String(plan))}
-          </p>
-        ) : null}
+
+        <StructuredAnalysisCards
+          setupValidation={validation ? String(validation) : undefined}
+          executionPlan={plan ? String(plan) : undefined}
+        />
       </div>
     </div>
   );
