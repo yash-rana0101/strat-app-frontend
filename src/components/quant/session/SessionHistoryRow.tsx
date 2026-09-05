@@ -83,9 +83,8 @@ export default function SessionHistoryRow({
 
   return (
     <li
-      className={`group flex items-center gap-2 border-b border-border-default/30 px-3 py-2 text-xs last:border-b-0 ${
-        isActive ? 'bg-elevated' : 'hover:bg-elevated/40'
-      }`}
+      className={`group flex items-center gap-2 border-b border-border-default/30 px-3 py-2 text-xs last:border-b-0 ${isActive ? 'bg-elevated' : 'hover:bg-elevated/40'
+        }`}
       data-session-id={session.session_id}
     >
       <div className="min-w-0 flex-1">

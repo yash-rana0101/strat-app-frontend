@@ -164,6 +164,7 @@ export default function ConfluenceMatrix({
             >
               <CheckCircle2 size={9} className="text-emerald-400 shrink-0" />
               {p.pattern_type.replace(/_/g, ' ')}
+              {(typeof p === 'string' ? p : (p as { pattern_type?: string }).pattern_type || '').replace(/_/g, ' ')}
             </span>
           ))}
           {active_strategies.map((s, idx) => (

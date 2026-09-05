@@ -16,6 +16,12 @@ import { getUnderlyingFromSymbol } from '../components/fno/symbolParser';
 // because the two stores are peers in the same feature — a dynamic import inside
 // `handleStreamEvent` would put an await on the hot path of every streamed frame.
 import { useSessionStore } from './useSessionStore';
+import {
+  clearRunCancelled,
+  createCancelReasoningStep,
+  isRunCancelled,
+  markRunCancelled,
+} from './sessionCancellation';
 
 /**
  * The session this run belongs to, CREATING one when nothing is active.
@@ -1539,10 +1545,15 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     const data = payload.data;
 
     // Drop events for cancelled runs; clean up the guard on terminal events.
-    const incomingThreadId = data?.thread_id;
-    if (incomingThreadId && cancelledThreads.has(incomingThreadId)) {
+    const incomingThreadId = typeof data?.thread_id === 'string' ? data.thread_id : undefined;
+    const incomingSessionId = typeof data?.session_id === 'string' ? data.session_id : undefined;
+    if (
+      isRunCancelled(incomingSessionId, incomingThreadId) ||
+      (incomingThreadId && cancelledThreads.has(incomingThreadId))
+    ) {
       if (event === 'RUN_FINISHED' || event === 'ERROR') {
-        cancelledThreads.delete(incomingThreadId);
+        if (incomingThreadId) cancelledThreads.delete(incomingThreadId);
+        clearRunCancelled(incomingSessionId, incomingThreadId);
       }
       return;
     }
@@ -1659,51 +1670,69 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
   cancelAnalysis: async () => {
     const st = get();
     const runKey = st._streamingKey || st.activeViewKey;
-    if (!runKey) return;
-    const sess = st.sessionsByKey[runKey];
-    const threadId = sess?.currentThreadId;
-
-    clearStreamWatchdog(runKey);
-
-    // Did the server actually accept the stop? Reported to the user below,
-    // because a failed cancel means the run is still consuming LLM credits even
-    // though the panel looks idle.
-    let cancelDetail: string | null = null;
-    if (threadId) {
-      cancelledThreads.add(threadId);
-      try {
-        await bridgeInvoke('cancel_deep_quant_agent', { thread_id: threadId });
-      } catch (err) {
-        cancelDetail = err instanceof Error ? err.message : String(err);
-        console.error(`[QuantStore] Cancel request failed for ${threadId}: ${cancelDetail}`);
-      }
+    if (runKey) {
+      clearStreamWatchdog(runKey);
     }
 
-    const cancelStep = {
-      id: `cancel-${Date.now()}`,
-      type: 'message' as const,
-      content: cancelDetail
-        ? `Analysis stopped locally, but the server did not confirm the cancellation (${cancelDetail}). ` +
-        `It may still be running — reload if it reappears.`
-        : 'Analysis cancelled by user.',
-      timestamp: Date.now(),
-    };
+    const legacySess = runKey ? st.sessionsByKey[runKey] : undefined;
+    const legacyThreadId = legacySess?.currentThreadId;
+
+    const sessionState = useSessionStore.getState();
+    const activeSessionId = sessionState.activeSessionId;
+    const stream = activeSessionId ? sessionState.streams[activeSessionId] : undefined;
+    const sessionThreadId = stream?.threadId;
+    const sessionRunId = stream?.runId;
+
+    const threadId = sessionThreadId || legacyThreadId;
+    const runId = sessionRunId;
+    const sessionId = activeSessionId;
+
+    // 1. Mark cancelled in shared registry and legacy set immediately
+    markRunCancelled(sessionId, threadId);
+    if (threadId) {
+      cancelledThreads.add(threadId);
+    }
+
+    // 2. Synchronously stop multi-session run if active
+    if (activeSessionId) {
+      sessionState.cancelRun(activeSessionId);
+    }
+
+    // 3. Synchronously stop legacy run in quant store
+    const cancelStep = createCancelReasoningStep();
     set((s) => {
-      const existing = s.sessionsByKey[runKey] ?? blankSession();
+      const existing = runKey ? s.sessionsByKey[runKey] ?? blankSession() : blankSession();
       const cancelled: QuantSession = {
         ...existing,
         isAnalyzing: false,
         sessionStatus: 'idle',
         reasoningSteps: [...existing.reasoningSteps, cancelStep],
         _runFinishedProcessed: true,
+        _pendingToolCalls: 0,
         updatedAt: Date.now(),
       };
       return {
-        _streamingKey: s._streamingKey === runKey ? null : s._streamingKey,
-        sessionsByKey: { ...s.sessionsByKey, [runKey]: cancelled },
-        ...(s.activeViewKey === runKey ? projectSession(cancelled) : {}),
+        _streamingKey: null,
+        isAnalyzing: false,
+        sessionStatus: 'idle',
+        reasoningSteps: [...s.reasoningSteps, cancelStep],
+        ...(runKey ? { sessionsByKey: { ...s.sessionsByKey, [runKey]: cancelled } } : {}),
+        ...(runKey && s.activeViewKey === runKey ? projectSession(cancelled) : {}),
       };
     });
+
+    // 4. Fire-and-forget bridge cancellation with session_id, run_id, and thread_id.
+    // This aborts the local active relay immediately (0ms) and notifies the backend.
+    try {
+      await bridgeInvoke('cancel_deep_quant_agent', {
+        session_id: sessionId || undefined,
+        run_id: runId || undefined,
+        thread_id: threadId || undefined,
+      });
+    } catch (err) {
+      const cancelDetail = err instanceof Error ? err.message : String(err);
+      console.error(`[QuantStore] Cancel request failed for ${sessionId || threadId}: ${cancelDetail}`);
+    }
   },
 
   clearQa: () => set({

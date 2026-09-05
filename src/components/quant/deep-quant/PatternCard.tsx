@@ -31,10 +31,14 @@ export default function PatternCard({
   const isBullish = sentiment === 'bullish';
   const isBearish = sentiment === 'bearish';
   const isForming = p.is_forming ?? false;
-  const progress = p.formation_progress ?? 0;
-  const progressPct = Math.round(progress * 100);
-  const confPct = Math.round((p.confidence ?? 0) * 100);
-  const confOpacity = CONFIDENCE_BAND_OPACITY[confidenceBand(p.confidence ?? 0)];
+  const rawProgress = p.formation_progress ?? 0;
+  const progress = rawProgress > 1 ? rawProgress / 100 : rawProgress;
+  const progressPct = Math.min(100, Math.max(0, Math.round(progress * 100)));
+
+  const rawConf = p.confidence ?? 0;
+  const conf = rawConf > 1 ? rawConf / 100 : rawConf;
+  const confPct = Math.min(100, Math.max(0, Math.round(conf * 100)));
+  const confOpacity = CONFIDENCE_BAND_OPACITY[confidenceBand(conf)];
 
   const key = `${p.pattern_type}-${p.start_idx}-${p.end_idx}-${idx}`;
 
@@ -118,7 +122,7 @@ export default function PatternCard({
             className="relative h-1.5 w-full bg-surface border border-border-default/50 rounded-full overflow-hidden"
           >
             <div
-              className={`h-full rounded-full transition-all duration-300 ${tone.bar}`}
+              className={`h-full rounded-full transition-all duration-300 bg-gradient-to-r ${tone.bar}`}
               style={{ width: `${isForming ? progressPct : 100}%` }}
             />
           </div>
@@ -143,7 +147,7 @@ export default function PatternCard({
             className="relative h-1.5 w-full bg-surface border border-border-default/50 rounded-full overflow-hidden"
           >
             <div
-              className={`h-full rounded-full transition-all duration-300 ${tone.bar} ${confOpacity}`}
+              className={`h-full rounded-full transition-all duration-300 bg-gradient-to-r ${tone.bar} ${confOpacity}`}
               style={{ width: `${confPct}%` }}
             />
           </div>

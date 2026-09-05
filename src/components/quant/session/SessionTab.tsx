@@ -46,11 +46,10 @@ export default function SessionTab({
     // button: nesting an interactive element inside a `role="tab"` button is invalid markup and
     // makes the close control unreachable for keyboard and screen-reader users.
     <div
-      className={`group relative flex shrink-0 items-center gap-1.5 rounded-t-md border-b-2 pl-3 pr-1 transition-colors ${
-        isActive
+      className={`group relative flex shrink-0 items-center gap-1.5 rounded-t-md border-b-2 pl-3 pr-1 transition-colors ${isActive
           ? 'border-primary bg-elevated text-text-primary'
           : 'border-transparent text-text-secondary hover:bg-elevated/40 hover:text-text-primary'
-      }`}
+        }`}
       style={{ scrollSnapAlign: 'start' }}
       data-session-id={session.session_id}
       data-active={isActive || undefined}
@@ -109,7 +108,7 @@ export default function SessionTab({
           isActive
             ? 'opacity-100'
             : 'pointer-events-none opacity-0 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100'
-        }`}
+          }`}
       >
         {isClosing ? (
           <Loader2 size={11} className="animate-spin" aria-hidden="true" />

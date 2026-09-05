@@ -133,6 +133,7 @@ export default function AgentTerminal({
                 decision steps. This usually means the Python agent (:8086) returned
                 an empty response or the stream ended early. Press
                 {' '}<span className="font-bold text-amber-500 dark:text-amber-200">Find Quant Trade</span>{' '}
+                {' '}<span className="font-bold text-amber-500 dark:text-amber-200">Find Trade</span>{' '}
                 again to retry.
               </span>
               {analysisError && (
@@ -149,6 +150,7 @@ export default function AgentTerminal({
           <div className="flex items-center gap-2 pl-3 py-2 text-[10px] text-text-muted/60 animate-pulse">
             <Loader2 size={11} className="animate-spin text-text-muted" />
             <span>Agent evaluating microstructure signals...</span>
+            <span>working.....</span>
           </div>
         )}
 

@@ -43,6 +43,13 @@ import {
   type QuantSession,
   type StreamEventPayload,
 } from './useQuantStore';
+import {
+  clearAllCancelled,
+  clearRunCancelled,
+  createCancelReasoningStep,
+  isRunCancelled,
+  markRunCancelled,
+} from './sessionCancellation';
 
 /** Opaque, server-minted session id (`sess_…`). Never composed from symbol/profile. */
 export type SessionId = string;
@@ -281,6 +288,7 @@ interface SessionStore {
   activatingSessionIds: Record<SessionId, boolean>;
   setActivating: (sessionId: SessionId, isActivating: boolean) => void;
   dropSession: (sessionId: SessionId) => void;
+  cancelRun: (sessionId?: SessionId) => void;
   reset: () => void;
 }
 
@@ -352,6 +360,7 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
    */
   bindThread: (threadId, sessionId, runId) => {
     if (!threadId || !sessionId) return;
+    clearRunCancelled(sessionId, threadId);
     set((state) => ({
       threadToSession: { ...state.threadToSession, [threadId]: sessionId },
       streams: {
@@ -438,6 +447,17 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       return null;
     }
 
+    if (isRunCancelled(sessionId, threadId)) {
+      if (payload.event === 'RUN_FINISHED' || payload.event === 'ERROR') {
+        clearRunCancelled(sessionId, threadId);
+      }
+      return null;
+    }
+
+    if (payload.event === 'RUN_STARTED') {
+      clearRunCancelled(sessionId, threadId);
+    }
+
     const current = state.sessions[sessionId] ?? blankSession();
     // A Q&A turn is a CHAT turn, not glass-box reasoning.
     //
@@ -461,12 +481,12 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       streams: seq === null
         ? s.streams
         : {
-            ...s.streams,
-            [sessionId as SessionId]: {
-              ...(s.streams[sessionId as SessionId] ?? blankStream()),
-              lastSeq: Math.max(s.streams[sessionId as SessionId]?.lastSeq ?? 0, seq),
-            },
+          ...s.streams,
+          [sessionId as SessionId]: {
+            ...(s.streams[sessionId as SessionId] ?? blankStream()),
+            lastSeq: Math.max(s.streams[sessionId as SessionId]?.lastSeq ?? 0, seq),
           },
+        },
     }));
 
     return sessionId;
@@ -534,8 +554,41 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
     });
   },
 
+  /** Immediately stop an in-flight analysis run on the specified (or active) session. */
+  cancelRun: (targetSessionId) => {
+    const sessionId = targetSessionId ?? get().activeSessionId;
+    if (!sessionId) return;
+    const current = get().sessions[sessionId];
+    if (!current) return;
+
+    const stream = get().streams[sessionId];
+    markRunCancelled(sessionId, stream?.threadId);
+
+    const cancelStep = createCancelReasoningStep();
+
+    set((state) => {
+      const sess = state.sessions[sessionId];
+      if (!sess) return state;
+      return {
+        sessions: {
+          ...state.sessions,
+          [sessionId]: {
+            ...sess,
+            isAnalyzing: false,
+            sessionStatus: 'idle',
+            reasoningSteps: [...sess.reasoningSteps, cancelStep],
+            _runFinishedProcessed: true,
+            _pendingToolCalls: 0,
+            updatedAt: Date.now(),
+          },
+        },
+      };
+    });
+  },
+
   /** Test-only, and used on logout: a new user must not inherit the previous one's tabs. */
-  reset: () =>
+  reset: () => {
+    clearAllCancelled();
     set({
       sessions: {},
       streams: {},
@@ -544,5 +597,6 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
       activeSessionId: null,
       activatingSessionIds: {},
       unroutableFrames: 0,
-    }),
+    });
+  },
 }));
