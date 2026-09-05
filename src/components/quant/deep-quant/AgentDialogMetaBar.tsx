@@ -34,6 +34,9 @@ export interface AgentDialogMetaBarProps {
   onModeChange: (mode: QuantMode) => void;
   onRun: () => void;
   onStop: () => void;
+  hasRun?: boolean;
+  isConfiguringSetup?: boolean;
+  onToggleConfigureSetup?: () => void;
 }
 
 export default function AgentDialogMetaBar({
@@ -54,6 +57,9 @@ export default function AgentDialogMetaBar({
   onModeChange,
   onRun,
   onStop,
+  hasRun = false,
+  isConfiguringSetup = false,
+  onToggleConfigureSetup,
 }: AgentDialogMetaBarProps) {
   const symbolLabel = `${symbol} · ${activeTimeframe}`;
 
@@ -127,6 +133,20 @@ export default function AgentDialogMetaBar({
             Verify Setup
           </button>
         </div>
+
+        {mode === 'VERIFY' && hasRun && !isAnalyzing && onToggleConfigureSetup && (
+          <button
+            type="button"
+            onClick={onToggleConfigureSetup}
+            className={`rounded px-2.5 py-1 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
+              isConfiguringSetup
+                ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-400'
+                : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
+            }`}
+          >
+            {isConfiguringSetup ? 'View Analysis' : 'Edit Setup'}
+          </button>
+        )}
 
         <button
           type="button"

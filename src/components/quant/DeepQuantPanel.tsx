@@ -452,6 +452,25 @@ export default function DeepQuantPanel() {
           onModeChange={setActiveMode}
           run={run}
           onRetry={handleRun}
+          verificationForm={{
+            side,
+            setSide,
+            entry,
+            setEntry,
+            setHasManuallySetEntry,
+            stopLoss,
+            setStopLoss,
+            setHasManuallySetSL,
+            takeProfit,
+            setTakeProfit,
+            setHasManuallySetTP,
+            userAnalysis,
+            setUserAnalysis,
+            slPercent,
+            tpPercent,
+            riskToReward,
+            onSubmit: handleVerifyAnalysis,
+          }}
         />
       )}
     </div>

@@ -18,6 +18,7 @@ import AgentDetailPanel from './deep-quant/AgentDetailPanel';
 import AgentProgressTimeline from './deep-quant/AgentProgressTimeline';
 import AgentDialogMetaBar from './deep-quant/AgentDialogMetaBar';
 import AgentHistoryPanel from './deep-quant/AgentHistoryPanel';
+import VerificationForm, { type VerificationFormProps } from './deep-quant/VerificationForm';
 import ErrorState from './deep-quant/ErrorState';
 import EmptyState from './deep-quant/EmptyState';
 import type { QuantMode } from './deep-quant/QuantActionBar';
@@ -42,6 +43,7 @@ interface DeepQuantAgentDialogProps {
   run: QuantRunActions;
   /** Same handlers the sidebar's ErrorState uses, so Retry behaves identically in both. */
   onRetry: () => void;
+  verificationForm?: Omit<VerificationFormProps, 'isAnalyzing' | 'dataReady'>;
 }
 
 export default function DeepQuantAgentDialog({
@@ -52,6 +54,7 @@ export default function DeepQuantAgentDialog({
   onModeChange,
   run,
   onRetry,
+  verificationForm,
 }: DeepQuantAgentDialogProps) {
   const reasoningSteps = useFqReasoningSteps();
   const sessionStatus = useFqSessionStatus();
@@ -66,6 +69,12 @@ export default function DeepQuantAgentDialog({
 
   const [selectedId, setSelectedId] = React.useState<string | null>(initialSelectedId);
   const [historyOpen, setHistoryOpen] = React.useState(false);
+  const [isConfiguringSetup, setIsConfiguringSetup] = React.useState(false);
+
+  const handleVerifySubmit = () => {
+    setIsConfiguringSetup(false);
+    verificationForm?.onSubmit();
+  };
 
   const [syncedInitial, setSyncedInitial] = React.useState(initialSelectedId);
   if (initialSelectedId !== syncedInitial) {
@@ -203,9 +212,20 @@ export default function DeepQuantAgentDialog({
             isAnalyzing={run.isAnalyzing}
             credit={credit}
             mode={mode}
-            onModeChange={onModeChange}
-            onRun={onRetry}
+            onModeChange={(newMode) => {
+              if (newMode === 'VERIFY') {
+                setIsConfiguringSetup(true);
+              }
+              onModeChange(newMode);
+            }}
+            onRun={() => {
+              setIsConfiguringSetup(false);
+              onRetry();
+            }}
             onStop={run.cancelAnalysis}
+            hasRun={hasRun}
+            isConfiguringSetup={isConfiguringSetup}
+            onToggleConfigureSetup={() => setIsConfiguringSetup((v) => !v)}
           />
 
           <AgentProgressTimeline
@@ -218,9 +238,20 @@ export default function DeepQuantAgentDialog({
 
           {/* ── Body ───────────────────────────────────────────────────── */}
           <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden lg:flex-row">
-            {/* Reasoning timeline */}
+            {/* Reasoning timeline / Verification setup form */}
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden lg:border-r lg:border-border-default/40">
-              {!hasRun ? (
+              {mode === 'VERIFY' && (!hasRun || isConfiguringSetup) && verificationForm ? (
+                <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 scrollbar-thin">
+                  <div className="mx-auto max-w-xl">
+                    <VerificationForm
+                      {...verificationForm}
+                      onSubmit={handleVerifySubmit}
+                      isAnalyzing={run.isAnalyzing}
+                      dataReady={run.dataReady}
+                    />
+                  </div>
+                </div>
+              ) : !hasRun ? (
                 <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin">
                   {analysisError ? (
                     <ErrorState
@@ -244,7 +275,7 @@ export default function DeepQuantAgentDialog({
             </div>
 
             {/* Detail column */}
-            {hasRun && (
+            {hasRun && (!isConfiguringSetup || mode !== 'VERIFY') && (
               <aside className="min-h-0 shrink-0 overflow-y-auto border-t border-border-default/40 scrollbar-thin lg:w-[380px] lg:border-t-0 xl:w-[420px] max-lg:max-h-[45%]">
                 <AgentDetailPanel
                   step={selectedStep}
