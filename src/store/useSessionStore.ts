@@ -154,33 +154,25 @@ function applyQaFrame(session: QuantSession, payload: StreamEventPayload): Quant
   const messages = [...session.qaMessages];
   let index = messages.findIndex((m) => m.id === id);
   if (index === -1) {
-    // The assistant turn is created on demand. A client that missed the optimistic insert —
-    // a reattach, or a resumed Q&A — still renders the answer rather than dropping it.
-    messages.push({ id, role: 'assistant', content: '', activity: [], streaming: true });
-    index = messages.length - 1;
+    // If an in-flight streaming assistant turn already exists (e.g. from RUN_STARTED before
+    // run_id was known, or with a fallback threadId), adopt and re-key that existing turn
+    // instead of creating a duplicate orphan turn that stays stuck in "Thinking...".
+    const activeStreamingIndex = messages.findLastIndex(
+      (m) => m.role === 'assistant' && m.streaming
+    );
+    if (activeStreamingIndex !== -1) {
+      messages[activeStreamingIndex] = { ...messages[activeStreamingIndex], id };
+      index = activeStreamingIndex;
+    } else {
+      messages.push({ id, role: 'assistant', content: '', activity: [], streaming: true });
+      index = messages.length - 1;
+    }
   }
   const turn = messages[index];
 
   switch (payload.event) {
     case 'RUN_STARTED': {
       // COMMIT the turn created above instead of discarding it.
-      //
-      // This case used to `return session`, which threw away the freshly-pushed turn along
-      // with the rest of `messages`. That is why nothing appeared between pressing send and
-      // the first content-bearing frame: `QaMessages` renders "Thinking…" for an assistant
-      // turn that is `streaming` with empty `content`, and no such turn existed. The user
-      // saw their question, then a still transcript for as long as the model took to reach
-      // its first token — which, with tool calls, is tens of seconds.
-      //
-      // `useFqSession` deliberately does not insert the placeholder optimistically, because
-      // the id has to be `qa-<run_id>` and the run id does not exist until the server
-      // answers. RUN_STARTED is the first frame that carries one, so it is the earliest
-      // point at which the turn CAN be created — which makes it the right place.
-      //
-      // Guarded on `turn.streaming` for the same reason RUN_FINISHED is idempotent: a
-      // reattach replays the whole frame sequence, and resurrecting a finished turn would
-      // set `qaStatus` back to 'streaming' and lock the composer with no later frame able
-      // to unlock it.
       if (!turn.streaming) return session;
       messages[index] = turn;
       return { ...session, qaMessages: messages, qaStatus: 'streaming', updatedAt: Date.now() };
@@ -204,11 +196,24 @@ function applyQaFrame(session: QuantSession, payload: StreamEventPayload): Quant
       messages[index] = { ...turn, activity: [...(turn.activity ?? []), tool] };
       break;
     }
-    case 'RUN_FINISHED':
+    case 'RUN_FINISHED': {
       // Idempotent: a reattach can replay this, and flipping `streaming` back on would leave
       // the composer locked forever.
       messages[index] = { ...turn, streaming: false };
-      return { ...session, qaMessages: messages, qaStatus: 'idle', updatedAt: Date.now() };
+      // Prune any empty orphaned streaming assistant turns and finalize all assistant turns
+      const cleaned = messages
+        .filter(
+          (m) =>
+            !(
+              m.role === 'assistant' &&
+              m.streaming &&
+              !m.content &&
+              (!m.activity || m.activity.length === 0)
+            )
+        )
+        .map((m) => (m.role === 'assistant' && m.streaming ? { ...m, streaming: false } : m));
+      return { ...session, qaMessages: cleaned, qaStatus: 'idle', updatedAt: Date.now() };
+    }
     case 'ERROR': {
       const error = typeof data?.error === 'string' ? data.error : 'Unknown Q&A error';
       messages[index] = {
@@ -219,7 +224,18 @@ function applyQaFrame(session: QuantSession, payload: StreamEventPayload): Quant
         error: true,
         streaming: false,
       };
-      return { ...session, qaMessages: messages, qaStatus: 'idle', updatedAt: Date.now() };
+      const cleaned = messages
+        .filter(
+          (m) =>
+            !(
+              m.role === 'assistant' &&
+              m.streaming &&
+              !m.content &&
+              (!m.activity || m.activity.length === 0)
+            )
+        )
+        .map((m) => (m.role === 'assistant' && m.streaming ? { ...m, streaming: false } : m));
+      return { ...session, qaMessages: cleaned, qaStatus: 'idle', updatedAt: Date.now() };
     }
     default:
       return session;

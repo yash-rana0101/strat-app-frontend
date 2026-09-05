@@ -2,45 +2,30 @@
 
 import React from 'react';
 import { Target, Cpu } from 'lucide-react';
+import { parseInlineMarkdown } from './markdownUtils';
 
-// Premium Markdown inline bold parser helper
-export function parseInlineMarkdown(text: string, simple?: boolean) {
-  const parts = text.split(/\*\*([\s\S]*?)\*\*/g);
-  return parts.map((part, i) => {
-    if (i % 2 === 1) {
-      if (simple) {
-        return (
-          <span key={i} className="font-normal text-text-secondary">
-            {part}
-          </span>
-        );
-      }
-      return (
-        <strong key={i} className="font-bold text-reasoning-green-300">
-          {part}
-        </strong>
-      );
-    }
-    return part;
-  });
-}
+// Re-export parseInlineMarkdown for backward compatibility with other components
+export { parseInlineMarkdown } from './markdownUtils';
 
 interface MarkdownRendererProps {
   content: string;
   simple?: boolean;
 }
 
-// Custom-styled beautiful markdown renderer for agent terminal
+// Custom-styled beautiful markdown renderer for agent terminal and chat answers
 export default function MarkdownRenderer({ content, simple }: MarkdownRendererProps) {
+  if (!content) return null;
+
   const lines = content.split('\n');
   const out: React.ReactNode[] = [];
 
-  // Detect whether a line is a markdown table row (| a | b |).
+  // Table row detection (| col1 | col2 |)
   const isTableRow = (l: string) => {
     const t = l.trim();
     return t.startsWith('|') && t.endsWith('|') && t.length > 1;
   };
-  // Detect the header/body separator row (|---|:--:|---|).
+
+  // Table divider detection (|---|:--:|---|)
   const isTableDivider = (l: string) =>
     isTableRow(l) && /^\|?[\s:|-]+\|?$/.test(l.trim()) && l.includes('-');
 
@@ -56,7 +41,40 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
     const line = lines[idx];
     const trimmed = line.trim();
 
-    // ── Markdown table (header row + divider + body rows) ──────────────
+    // ── 1. Fenced Code Block (```lang ... ```) ────────────────────────
+    if (trimmed.startsWith('```')) {
+      const lang = trimmed.slice(3).trim();
+      const codeLines: string[] = [];
+      let j = idx + 1;
+      while (j < lines.length && !lines[j].trim().startsWith('```')) {
+        codeLines.push(lines[j]);
+        j++;
+      }
+      if (j < lines.length && lines[j].trim().startsWith('```')) {
+        idx = j;
+      } else {
+        idx = j - 1;
+      }
+      const codeText = codeLines.join('\n');
+      out.push(
+        <div
+          key={`code-${idx}`}
+          className="my-2.5 overflow-hidden rounded border border-border-default/50 bg-elevated/40 font-mono text-[10px]"
+        >
+          {lang && (
+            <div className="border-b border-border-default/30 bg-elevated/60 px-2.5 py-1 text-[9px] uppercase tracking-wider text-text-muted select-none">
+              <span>{lang}</span>
+            </div>
+          )}
+          <pre className="overflow-x-auto p-2.5 leading-normal text-text-secondary select-text">
+            <code>{codeText}</code>
+          </pre>
+        </div>,
+      );
+      continue;
+    }
+
+    // ── 2. Markdown Table (header + divider + rows) ───────────────────
     if (isTableRow(line) && idx + 1 < lines.length && isTableDivider(lines[idx + 1])) {
       const header = splitCells(line);
       const rows: string[][] = [];
@@ -101,71 +119,78 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
       continue;
     }
 
+    // ── 3. Empty line spacing ─────────────────────────────────────────
     if (!trimmed) {
-      out.push(<div key={idx} className="h-1" />);
+      out.push(<div key={`sp-${idx}`} className="h-1" />);
       continue;
     }
 
-    // Horizontal rule (--- or ***)
+    // ── 4. Horizontal Rule (--- or ***) ───────────────────────────────
     if (/^([-*_])\1{2,}$/.test(trimmed)) {
       out.push(<hr key={idx} className="my-2 border-t border-border-default/40" />);
       continue;
     }
 
-    // Header 3 (### Header)
-    if (line.startsWith('### ')) {
-      out.push(
-        <h3
-          key={idx}
-          className={`text-[11px] font-black border-b border-border-default/40 pb-1 mt-3 mb-1.5 uppercase tracking-widest flex items-center gap-1.5 select-none ${
-            simple ? 'text-text-primary' : 'text-reasoning-green-400'
-          }`}
-        >
-          <Target size={11} className={simple ? 'text-text-muted' : 'text-reasoning-green-400'} />
-          {line.replace('### ', '')}
-        </h3>,
-      );
-      continue;
+    // ── 5. Headers (# through ####) ──────────────────────────────────
+    if (trimmed.startsWith('#')) {
+      const h4 = trimmed.startsWith('#### ');
+      const h3 = trimmed.startsWith('### ');
+      const h2 = trimmed.startsWith('## ');
+      const h1 = trimmed.startsWith('# ');
+
+      if (h1 || h2 || h3 || h4) {
+        const title = trimmed.replace(/^#{1,4}\s+/, '');
+
+        if (simple) {
+          if (h1) {
+            out.push(
+              <h1 key={idx} className="border-b border-border-default/40 pb-1 mt-3 mb-1.5 text-xs font-bold text-text-primary">
+                {parseInlineMarkdown(title, simple)}
+              </h1>,
+            );
+          } else if (h2) {
+            out.push(
+              <h2 key={idx} className="border-b border-border-default/30 pb-0.5 mt-2.5 mb-1 text-xs font-bold text-text-primary">
+                {parseInlineMarkdown(title, simple)}
+              </h2>,
+            );
+          } else if (h3) {
+            out.push(
+              <h3 key={idx} className="mt-2 mb-1 text-[11px] font-semibold text-text-primary">
+                {parseInlineMarkdown(title, simple)}
+              </h3>,
+            );
+          } else {
+            out.push(
+              <h4 key={idx} className="mt-1.5 mb-0.5 text-[10.5px] font-semibold text-text-secondary">
+                {parseInlineMarkdown(title, simple)}
+              </h4>,
+            );
+          }
+        } else {
+          // Terminal reasoning view style with icon
+          out.push(
+            <h3
+              key={idx}
+              className="border-b border-green-500/10 pb-1 mt-3 mb-1.5 flex items-center gap-1.5 text-[11px] font-black uppercase tracking-widest text-reasoning-green-300 select-none"
+            >
+              {h3 ? <Target size={11} className="text-reasoning-green-400" /> : <Cpu size={12} className="text-reasoning-green-400" />}
+              <span>{title}</span>
+            </h3>,
+          );
+        }
+        continue;
+      }
     }
 
-    // Header 2 (## Header)
-    if (line.startsWith('## ')) {
-      out.push(
-        <h2
-          key={idx}
-          className={`text-xs font-black border-b pb-1 mt-4 mb-2 tracking-widest uppercase flex items-center gap-1.5 select-none ${
-            simple ? 'text-text-primary border-border-default/40' : 'text-reasoning-green-300 border-green-500/10'
-          }`}
-        >
-          <Cpu size={12} className={simple ? 'text-text-muted' : 'text-reasoning-green-400'} />
-          {line.replace('## ', '')}
-        </h2>,
-      );
-      continue;
-    }
-
-    // Header 1 (# Header) — treat like H2 styling
-    if (line.startsWith('# ')) {
-      out.push(
-        <h2
-          key={idx}
-          className={`text-xs font-black border-b pb-1 mt-4 mb-2 tracking-widest uppercase flex items-center gap-1.5 select-none ${
-            simple ? 'text-text-primary border-border-default/40' : 'text-reasoning-green-300 border-green-500/10'
-          }`}
-        >
-          <Cpu size={12} className={simple ? 'text-text-muted' : 'text-reasoning-green-400'} />
-          {line.replace('# ', '')}
-        </h2>,
-      );
-      continue;
-    }
-
-    // Blockquote (> quote)
+    // ── 6. Blockquote (> quote) ───────────────────────────────────────
     if (trimmed.startsWith('> ')) {
       out.push(
         <blockquote
           key={idx}
-          className="border-l-2 border-reasoning-green-500/50 pl-2.5 my-1 italic text-text-secondary"
+          className={`my-1 border-l-2 pl-2.5 italic ${
+            simple ? 'border-border-default text-text-secondary' : 'border-reasoning-green-500/50 text-text-secondary'
+          }`}
         >
           {parseInlineMarkdown(trimmed.substring(2), simple)}
         </blockquote>,
@@ -173,48 +198,63 @@ export default function MarkdownRenderer({ content, simple }: MarkdownRendererPr
       continue;
     }
 
-    // Bullet lists (- item or * item)
-    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      const listContent = trimmed.substring(2);
+    // ── 7. Bullet list (- item, * item, + item) ──────────────────────
+    const bulletMatch = line.match(/^(\s*)[-*+]\s+(.*)$/);
+    if (bulletMatch) {
+      const isNested = bulletMatch[1].length >= 2;
+      const listContent = bulletMatch[2];
       out.push(
-        <div key={idx} className="flex items-start gap-2 pl-2 my-0.5 text-inherit">
-          <span className={`font-bold select-none mt-0.5 ${simple ? 'text-text-muted' : 'text-reasoning-green-500/80'}`}>•</span>
-          <span className="flex-1">{parseInlineMarkdown(listContent, simple)}</span>
+        <div key={idx} className={`my-0.5 flex items-start gap-2 ${isNested ? 'pl-4' : 'pl-1'}`}>
+          <span
+            className={`select-none font-bold mt-0.5 text-[9px] ${
+              simple ? 'text-text-muted' : 'text-reasoning-green-500/80'
+            }`}
+          >
+            •
+          </span>
+          <span className="flex-1 leading-relaxed text-text-secondary">
+            {parseInlineMarkdown(listContent, simple)}
+          </span>
         </div>,
       );
       continue;
     }
 
-    // Numbered lists (1. item, etc.)
-    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+    // ── 8. Numbered list (1. item, etc.) ──────────────────────────────
+    const numMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
     if (numMatch) {
-      const num = numMatch[1];
-      const listContent = numMatch[2];
+      const isNested = numMatch[1].length >= 2;
+      const num = numMatch[2];
+      const listContent = numMatch[3];
       out.push(
-        <div key={idx} className="flex items-start gap-2.5 pl-2 my-1.5 text-inherit">
-          <span className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded text-[8.5px] font-black font-mono border mt-0.5 select-none ${
-            simple
-              ? 'bg-elevated text-text-secondary border-border-default'
-              : 'bg-reasoning-green-500/15 text-reasoning-green-400 border-reasoning-green-500/20'
-          }`}>
+        <div key={idx} className={`my-1 flex items-start gap-2 ${isNested ? 'pl-4' : 'pl-1'}`}>
+          <span
+            className={`flex h-3.5 w-3.5 shrink-0 select-none items-center justify-center rounded border font-mono text-[8.5px] font-bold mt-0.5 ${
+              simple
+                ? 'border-border-default/60 bg-elevated text-text-secondary'
+                : 'border-reasoning-green-500/20 bg-reasoning-green-500/15 text-reasoning-green-400'
+            }`}
+          >
             {num}
           </span>
-          <span className="flex-1">{parseInlineMarkdown(listContent, simple)}</span>
+          <span className="flex-1 leading-relaxed text-text-secondary">
+            {parseInlineMarkdown(listContent, simple)}
+          </span>
         </div>,
       );
       continue;
     }
 
-    // Standard line
+    // ── 9. Standard paragraph ─────────────────────────────────────────
     out.push(
-      <p key={idx} className="text-inherit opacity-80">
+      <p key={idx} className="leading-relaxed text-text-secondary select-text">
         {parseInlineMarkdown(line, simple)}
       </p>,
     );
   }
 
   return (
-    <div className="space-y-1.5 text-[10.5px] font-sans leading-relaxed tracking-wide text-inherit">
+    <div className="space-y-1.5 text-[11px] font-sans leading-relaxed tracking-normal text-inherit">
       {out}
     </div>
   );

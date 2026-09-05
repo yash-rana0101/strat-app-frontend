@@ -96,7 +96,7 @@ describe('LeftPanel summary rail', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('loads sentiment and consensus for the selected symbol with no sheet open', async () => {
+  it('loads consensus for the selected symbol with no sheet open (sentiment deferred to find trade)', async () => {
     const loadSentimentForSymbol = vi.fn();
     const loadConsensusForSymbol = vi.fn();
     useQuantStore.setState({ loadSentimentForSymbol, loadConsensusForSymbol });
@@ -104,26 +104,26 @@ describe('LeftPanel summary rail', () => {
     render(<LeftPanel />);
 
     await waitFor(() => {
-      expect(loadSentimentForSymbol).toHaveBeenCalledWith('RELIANCE');
       expect(loadConsensusForSymbol).toHaveBeenCalledWith('RELIANCE');
     });
+    expect(loadSentimentForSymbol).not.toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('refetches when the charted symbol changes', async () => {
+  it('refetches consensus when the charted symbol changes', async () => {
     const loadSentimentForSymbol = vi.fn();
     const loadConsensusForSymbol = vi.fn();
     useQuantStore.setState({ loadSentimentForSymbol, loadConsensusForSymbol });
 
     render(<LeftPanel />);
-    await waitFor(() => expect(loadSentimentForSymbol).toHaveBeenCalledWith('RELIANCE'));
+    await waitFor(() => expect(loadConsensusForSymbol).toHaveBeenCalledWith('RELIANCE'));
 
     useTradeStore.setState({ selectedSymbol: 'TCS' });
 
     await waitFor(() => {
-      expect(loadSentimentForSymbol).toHaveBeenCalledWith('TCS');
       expect(loadConsensusForSymbol).toHaveBeenCalledWith('TCS');
     });
+    expect(loadSentimentForSymbol).not.toHaveBeenCalled();
   });
 
   it('holds the pattern scan until the chart cache has enough candles', async () => {

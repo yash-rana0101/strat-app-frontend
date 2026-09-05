@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Loader2, User, Cpu, Wrench, Copy, Check, ThumbsUp, ThumbsDown, Share2 } from 'lucide-react';
+import { Loader2, User, Wrench, Copy, Check, ThumbsUp, ThumbsDown, Share2 } from 'lucide-react';
 import { QaChatMessage } from '../../../store/useQuantStore';
 import { useFqQaMessages } from '../useFqSession';
 import MarkdownRenderer from './MarkdownRenderer';
@@ -48,66 +48,26 @@ function CopyButton({ text, label, className }: { text: string; label: string; c
   );
 }
 
-// Inline bold (**text**) parser — mirrors AgentTerminal's helper so Q&A
-// answers render with the same emphasis treatment as the agent console.
-function parseInlineMarkdown(text: string) {
-  const parts = text.split(/\*\*([\s\S]*?)\*\*/g);
-  return parts.map((part, i) => {
-    if (i % 2 === 1) {
-      return (
-        <strong key={i} className="font-bold text-text-primary">
-          {part}
-        </strong>
-      );
-    }
-    return part;
-  });
-}
-
-// Lightweight multi-line renderer for streamed assistant answers.
-const AnswerText = ({ content }: { content: string }) => {
-  const lines = content.split('\n');
-  return (
-    <div className="space-y-1 text-[10.5px] font-sans leading-relaxed tracking-wide text-text-primary/95">
-      {lines.map((line, idx) => {
-        const trimmed = line.trim();
-        if (!trimmed) return <div key={idx} className="h-1" />;
-
-        if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-          return (
-            <div key={idx} className="flex items-start gap-2 pl-1 my-0.5 text-text-primary">
-              <span className="text-text-secondary font-bold select-none mt-0.5">•</span>
-              <span className="flex-1">{parseInlineMarkdown(trimmed.substring(2))}</span>
-            </div>
-          );
-        }
-
-        return (
-          <p key={idx} className="text-text-secondary">
-            {parseInlineMarkdown(line)}
-          </p>
-        );
-      })}
-    </div>
-  );
-};
-
 // Renders individual Assistant message rows, managing its own Like/Dislike state.
 function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
-  // `askQuestion` and `qaMessages` were subscribed here and never read. Every assistant row
-  // therefore re-rendered on every frame of a streaming answer, for nothing.
 
   return (
     <div className="flex justify-start items-start gap-2.5 animate-fade-in font-sans w-full my-2">
-      {/* AI Avatar */}
-      <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border select-none ${
-        msg.error 
-          ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' 
-          : 'bg-elevated text-text-primary border-border-default/60'
-      }`}>
-        <Cpu size={13} className={`shrink-0 ${msg.streaming ? 'animate-pulse' : ''}`} />
+      {/* AI Avatar with official Strat AI logo */}
+      <div
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border select-none overflow-hidden ${
+          msg.error
+            ? 'bg-rose-500/10 border-rose-500/20'
+            : 'bg-elevated border-border-default/60'
+        }`}
+      >
+        <img
+          src="/strat.svg"
+          alt="Strat AI"
+          className={`h-4 w-4 shrink-0 object-contain ${msg.streaming ? 'animate-pulse' : ''}`}
+        />
       </div>
 
       {/* Bubble */}
@@ -155,7 +115,7 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
               label="Copy AI response"
               className="p-1 hover:bg-elevated rounded transition-all cursor-pointer flex items-center justify-center"
             />
-            
+
             <button
               type="button"
               onClick={() => {

@@ -124,6 +124,57 @@ describe('reads resolve the ACTIVE session', () => {
     expect(qa.current.map((m) => m.content)).toEqual(['because IV']);
     expect(steps.current).toEqual([]);
   });
+
+  it('adopts streaming turn when run_id becomes available without creating duplicate thinking turns', () => {
+    const qa = harness(useFqQaMessages);
+
+    // Frame 1: RUN_STARTED arrives with thread_id only (no run_id)
+    act(() => {
+      useSessionStore.getState().applyFrame({
+        event: 'RUN_STARTED',
+        data: { thread_id: THREAD_A, turn: 'qa' },
+      });
+    });
+
+    expect(qa.current.length).toBe(1);
+    expect(qa.current[0].streaming).toBe(true);
+    expect(qa.current[0].content).toBe('');
+
+    // Frame 2: TOOL_CALL_START arrives with run_id
+    act(() => {
+      useSessionStore.getState().applyFrame({
+        event: 'TOOL_CALL_START',
+        data: { thread_id: THREAD_A, run_id: 'run_qa_1', turn: 'qa', tool: 'get_quote' },
+      });
+    });
+
+    // Must NOT create a second assistant turn!
+    expect(qa.current.length).toBe(1);
+    expect(qa.current[0].activity).toContain('> get_quote…');
+
+    // Frame 3: REASONING arrives
+    act(() => {
+      useSessionStore.getState().applyFrame({
+        event: 'REASONING',
+        data: { thread_id: THREAD_A, run_id: 'run_qa_1', turn: 'qa', content: 'Quote analyzed' },
+      });
+    });
+
+    expect(qa.current.length).toBe(1);
+    expect(qa.current[0].content).toBe('Quote analyzed');
+
+    // Frame 4: RUN_FINISHED arrives
+    act(() => {
+      useSessionStore.getState().applyFrame({
+        event: 'RUN_FINISHED',
+        data: { thread_id: THREAD_A, run_id: 'run_qa_1', turn: 'qa' },
+      });
+    });
+
+    expect(qa.current.length).toBe(1);
+    expect(qa.current[0].streaming).toBe(false);
+    expect(qa.current[0].content).toBe('Quote analyzed');
+  });
 });
 
 describe('per-session UI state', () => {
