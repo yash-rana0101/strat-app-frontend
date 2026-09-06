@@ -8,6 +8,9 @@
  *   · 'curved'   → VWEPR (volume-weighted polynomial / curvature)
  *   · 'forecast' → volatility-aware, regime-conditioned EWMA-drift forecaster
  *
+ * Lookback bars come from the TradingView chart itself (`exportData`) so the
+ * anchor is the last DISPLAYED bar at its live close on every resolution; the
+ * Zustand store / Kite REST are fallbacks for a chart that has no series yet.
  * Projected timestamps are aligned to contiguous future NSE trading slots via
  * nextSessionSlots() so the curve continues smoothly off the last candle
  * instead of detaching across the overnight/weekend gap. All projections are
@@ -153,6 +156,36 @@ export function path1SignalApplies(opts: {
   return Boolean(ok && Number.isFinite(targetSec) && targetSec > last.time - intervalSec * 10);
 }
 
+/**
+ * Path 1 geometry (pure). The slope comes from the signal's REAL horizon, not
+ * from how many bars happen to be visible.
+ *
+ * `agents/predictive` predicts the close of the next 10-minute candle and
+ * stamps `target_timestamp_ms` with that candle's close time, so the horizon
+ * is measured close-to-close: from the anchor bar's close
+ * (`last.time + intervalSec`) to the target, floored at one bar. The line is
+ * still drawn on the uniform display grid for `projBars` steps (it may run
+ * past the target — that is the same slope extended, not a second forecast).
+ *
+ * Previously `predicted - last.close` was spread over `projBars` (3–20,
+ * zoom-scaled), so the same signal drew a different slope at every zoom level,
+ * and on a 1m chart a 10-minute move was flattened over 20 minutes.
+ */
+export function path1Points(
+  last: { time: number; close: number },
+  predicted: number,
+  targetSec: number,
+  intervalSec: number,
+  projBars: number
+): { time: number; price: number }[] {
+  const horizonSec = Math.max(targetSec - (last.time + intervalSec), intervalSec);
+  const perSec = (predicted - last.close) / horizonSec;
+  return Array.from({ length: projBars + 1 }, (_, i) => ({
+    time: last.time + i * intervalSec,
+    price: last.close + perSec * i * intervalSec,
+  }));
+}
+
 /** Compute how many bars to project from how many bars are visible. Counting
  *  ACTUAL bars (not raw seconds) makes this immune to overnight/weekend gaps. */
 function dynamicProjectionBars(lookback: { time: number }[], visibleFromSec: number): number {
@@ -228,22 +261,32 @@ function inferBarIntervalSec(bars: { time: number }[]): number {
 /**
  * Resolve the projection step interval (seconds) for a given display timeframe.
  *
- * The display timeframe map is authoritative: it is the grid the user sees on
- * the chart, so the ghost line must step on that grid to land on displayed bar
- * boundaries. The inferred bar gap is only a fallback for timeframes missing
- * from the map, because stored bars are at the Kite *base* interval (e.g. `2m`
- * stores 1-minute bars, `75m` stores 15-minute bars) — see the note in
- * `computeGhostPoints` for why the inferred gap is wrong for aggregated
- * timeframes.
+ * Two cases, decided by where the lookback came from:
+ *
+ *   · `fromChart` — the bars are TradingView's own displayed series (see
+ *     `readChartBars`), already on the display grid. Their median gap IS the
+ *     display interval, and it beats the map for calendar resolutions where the
+ *     map can only approximate (`1M` = 30 days in the map; the chart's real
+ *     month-to-month gap is 28–31 days). The map is the fallback.
+ *
+ *   · store bars — these are at the Kite *base* interval (`2m` stores 1-minute
+ *     bars, `75m` stores 15-minute bars), so the inferred gap would be wrong for
+ *     every aggregated timeframe. The display-timeframe map is authoritative and
+ *     the inferred gap is only a fallback for timeframes missing from the map.
  *
  * Exported (pure) so the resolution precedence is unit-testable without driving
  * stores/IPC.
  */
 export function resolveIntervalSec(
   effectiveTimeframe: string,
-  lookback: { time: number }[]
+  lookback: { time: number }[],
+  fromChart = false
 ): number {
   const mapInterval = Math.floor((TIMEFRAME_MS[effectiveTimeframe as Timeframe] ?? 0) / 1000);
+  if (fromChart) {
+    const barInterval = inferBarIntervalSec(lookback);
+    if (barInterval > 0) return barInterval;
+  }
   if (mapInterval > 0) return mapInterval;
   const barInterval = inferBarIntervalSec(lookback);
   if (barInterval > 0) {
@@ -298,11 +341,99 @@ function nextSessionSlots(lastBarSec: number, intervalSec: number, count: number
   return slots;
 }
 
-// ── Store-synced lookback ──────────────────────────────────────────────────
+// ── Chart-sourced lookback (authoritative) ─────────────────────────────────
+
+/** The slice of the TradingView chart API the lookback reader needs. */
+export type ExportableChart = {
+  exportData: (options: {
+    includeTime: boolean;
+    includeSeries: boolean;
+    includedStudies: readonly string[] | 'all';
+  }) => Promise<{
+    schema: Array<{ type: string; plotTitle?: string; sourceType?: string }>;
+    data: ArrayLike<number>[];
+  }>;
+};
+
+/**
+ * Read the bars TradingView is actually displaying, straight from the chart.
+ *
+ * `exportData` returns the main series AFTER TradingView's own resolution
+ * handling — for an aggregated resolution (2m, 75m, 2h, 1W…) these are the
+ * aggregated bars the user sees, session-aligned to 0915-1530, and the last row
+ * is the forming bar with its live close. That makes it the only lookback
+ * source that is correct by construction: the store path below has to guess
+ * which of the base-interval bars belong on the display grid, and the live
+ * `ohlcCandles` feed is a fixed 10-minute bucket regardless of what the chart
+ * shows, so on every non-10m timeframe the store-derived anchor sat on the
+ * wrong candle (1m/2m/5m: the 10m bucket overwrote the real last bar; 15m/1h:
+ * the anchor froze between :00/:30 boundaries; 125m/1D: session-aligned bars
+ * never matched the epoch-aligned `% intervalMs` test, so the anchor was never
+ * live at all).
+ *
+ * `includedStudies: 'all'` picks up the Volume study when it is on the chart
+ * (the VWLR/VWEPR engines weight by volume); without it every bar weighs 1 and
+ * those engines degrade to plain OLS, which is still a valid projection.
+ *
+ * Returns `[]` on any failure so the caller can fall back to the store.
+ */
+export async function readChartBars(chart: ExportableChart | null | undefined): Promise<LookbackCandle[]> {
+  if (!chart || typeof chart.exportData !== 'function') return [];
+  try {
+    const ex = await chart.exportData({ includeTime: true, includeSeries: true, includedStudies: 'all' });
+    return exportedDataToBars(ex);
+  } catch (err) {
+    console.warn('[GhostLine] chart.exportData failed — falling back to store bars:', err);
+    return [];
+  }
+}
+
+/** Pure: map an `ExportedData` payload onto lookback bars (UNIX seconds). */
+export function exportedDataToBars(ex: {
+  schema: Array<{ type: string; plotTitle?: string; sourceType?: string }>;
+  data: ArrayLike<number>[];
+}): LookbackCandle[] {
+  const col = (pred: (f: { type: string; plotTitle?: string; sourceType?: string }) => boolean) =>
+    ex.schema.findIndex(pred);
+  const tIdx = col((f) => f.type === 'time');
+  const series = (title: string) =>
+    col((f) => f.type === 'value' && f.sourceType === 'series' && f.plotTitle === title);
+  const oIdx = series('open');
+  const hIdx = series('high');
+  const lIdx = series('low');
+  const cIdx = series('close');
+  // Study plot titles are localised display names; match the default Volume
+  // study loosely and take the first plot (the volume bars themselves).
+  const vIdx = col(
+    (f) => f.type === 'value' && f.sourceType === 'study' && /volume/i.test(f.plotTitle ?? '')
+  );
+  if (tIdx < 0 || cIdx < 0) return [];
+
+  const out: LookbackCandle[] = [];
+  for (const row of ex.data) {
+    const time = row[tIdx];
+    const close = row[cIdx];
+    if (!Number.isFinite(time) || !Number.isFinite(close)) continue;
+    const high = hIdx >= 0 ? row[hIdx] : close;
+    const low = lIdx >= 0 ? row[lIdx] : close;
+    const open = oIdx >= 0 ? row[oIdx] : close;
+    const volume = vIdx >= 0 && Number.isFinite(row[vIdx]) ? row[vIdx] : 1;
+    out.push({
+      time: Math.floor(time),
+      close,
+      volume: volume || 1,
+      high: Number.isFinite(high) ? high : Math.max(open, close),
+      low: Number.isFinite(low) ? low : Math.min(open, close),
+    });
+  }
+  return out;
+}
+
+// ── Store-synced lookback (fallback) ──────────────────────────────────────
 
 /** Read the bars the TradingView datafeed rendered (historicalCache + live
- *  ohlcCandles). Keeps the ghost anchored to exactly what the chart shows.
- *  Timestamps in UNIX seconds. */
+ *  ohlcCandles). Fallback for when the chart itself cannot be read (widget not
+ *  ready, `exportData` unavailable). Timestamps in UNIX seconds. */
 function readStoreCandles(symbol: string, timeframe: string): LookbackCandle[] {
   const store = useTradeStore.getState();
   const sym = symbol.toUpperCase();
@@ -396,14 +527,27 @@ function latestStorePrice(symbol: string, intervalMs: number): number | null {
   return Number.isFinite(close) && close > 0 ? close : null;
 }
 
-async function fetchLookbackCandles(symbol: string, timeframe: string): Promise<LookbackCandle[]> {
+async function fetchLookbackCandles(
+  symbol: string,
+  timeframe: string,
+  chart?: ExportableChart | null
+): Promise<{ bars: LookbackCandle[]; fromChart: boolean }> {
   const kiteInterval = KITE_INTERVAL_MAP[timeframe as Timeframe] ?? 'minute';
 
-  // Path 0: in-memory store — authoritative, matches the chart.
+  // Path -1: the chart's own displayed series — see `readChartBars` for why this
+  // is the only source that is correct on every timeframe.
+  const chartBars = await readChartBars(chart);
+  if (chartBars.length >= 20) {
+    debugLog(`[GhostLine] Chart bars (exportData): ${chartBars.length} for ${symbol}`);
+    return { bars: chartBars, fromChart: true };
+  }
+
+  // Path 0: in-memory store — what the datafeed handed the chart, at the Kite
+  // base interval. Used while the chart has no series yet.
   const storeBars = readStoreCandles(symbol, timeframe);
   if (storeBars.length >= 20) {
     debugLog(`[GhostLine] Store bars (chart-synced): ${storeBars.length} for ${symbol}`);
-    return storeBars;
+    return { bars: storeBars, fromChart: false };
   }
 
   // Kite REST via the gateway, through `kiteFetch` so the `/kite` prefix (and the
@@ -428,13 +572,13 @@ async function fetchLookbackCandles(symbol: string, timeframe: string): Promise<
         low: typeof c.low === 'number' ? c.low : c.close,
       }));
       debugLog(`[GhostLine] API candles: ${candles.length} bars`);
-      return candles;
+      return { bars: candles, fromChart: false };
     }
     console.warn('[GhostLine] API non-OK:', res.status);
   } catch (err) {
     console.warn('[GhostLine] kite/historical failed:', err);
   }
-  return [];
+  return { bars: [], fromChart: false };
 }
 
 // ── OLS linear regression ──────────────────────────────────────────────────
@@ -766,13 +910,18 @@ export async function computeGhostPoints(
   effectiveTimeframe: string,
   ghostLineMode: string,
   predictiveSignals: any[],
-  visibleFromSec: number = 0
+  visibleFromSec: number = 0,
+  chart?: ExportableChart | null
 ): Promise<{ time: number; price: number }[]> {
   debugLog(
     `[GhostLine] computeGhostPoints — symbol=${activeSymbol} tf=${effectiveTimeframe} mode=${ghostLineMode}`
   );
 
-  const rawLookback = await fetchLookbackCandles(activeSymbol, effectiveTimeframe);
+  const { bars: rawLookback, fromChart } = await fetchLookbackCandles(
+    activeSymbol,
+    effectiveTimeframe,
+    chart
+  );
   const lookback = sanitizeLookback(rawLookback);
   if (lookback.length < 20) {
     console.warn(`[GhostLine] Not enough candles (${lookback.length})`);
@@ -780,24 +929,11 @@ export async function computeGhostPoints(
   }
 
   const last = lookback[lookback.length - 1];
-  // Resolution of the forward projection step.
-  //
-  // The display timeframe (e.g. `2m`, `75m`, `2h`) is the grid the user sees on
-  // the chart, and the ghost line must step on that same grid so it lands on
-  // displayed bar boundaries. The TIMEFRAME_MS map gives us exactly that.
-  //
-  // `inferBarIntervalSec` measures the median gap of the *stored* bars, but the
-  // stored bars are at the Kite *base* interval, NOT the display interval: a
-  // `2m` chart stores 1-minute bars, `75m` stores 15-minute bars, `2h` stores
-  // 1-hour bars, etc. For aggregated timeframes (`2m`/`4m`/`75m`/`125m`/`2h`/
-  // `3h`/`4h`/`1W`/`1M`) the inferred gap is the base interval, so the
-  // projection steps at the base interval → 2–5× too many points, off the
-  // displayed bar grid → visible jitter/"unstable" ghost line.
-  //
-  // Therefore the display-timeframe map wins; `barInterval` is kept only as a
-  // fallback when the map has no entry for this timeframe.
-  const intervalSec = resolveIntervalSec(effectiveTimeframe, lookback);
-  debugLog(`[GhostLine] intervalSec=${intervalSec}`);
+  // Resolution of the forward projection step — see `resolveIntervalSec` for
+  // why chart-sourced bars infer it from their own spacing while store bars
+  // (Kite base interval) must use the display-timeframe map.
+  const intervalSec = resolveIntervalSec(effectiveTimeframe, lookback, fromChart);
+  debugLog(`[GhostLine] intervalSec=${intervalSec} fromChart=${fromChart}`);
   if (!Number.isFinite(last.close) || last.close <= 0) return [];
 
   // Length scales with the current zoom (fraction of visible bars).
@@ -826,13 +962,13 @@ export async function computeGhostPoints(
       (s) => s.symbol?.toUpperCase() === activeSymbol.toUpperCase()
     );
     const sig = sigs[sigs.length - 1];
-    const predicted = sig.predicted_close_price as number;
-    const N = projBars;
-    const m = (predicted - last.close) / N;
-    points = Array.from({ length: N + 1 }, (_, i) => ({
-      time: last.time + i * intervalSec,
-      price: last.close + m * i,
-    }));
+    points = path1Points(
+      { time: last.time, close: last.close },
+      Number(sig.predicted_close_price),
+      Math.floor(Number(sig.target_timestamp_ms) / 1000),
+      intervalSec,
+      projBars
+    );
   }
 
   // ── Projection engines ──────────────────────────────────────────────
@@ -856,6 +992,13 @@ export async function computeGhostPoints(
 
   // ── Pin the anchor onto the last candle at its CURRENT price ─────────
   //
+  // Store-sourced bars only. Chart-sourced bars already end on the forming bar
+  // with its live close (TradingView applies the realtime tick to the series
+  // before `exportData` reads it), and the `ohlcCandles` feed is a 10-minute
+  // bucket whose close is only the live price of the display bar on a 10m
+  // chart — applying it elsewhere would move the anchor off the bar it was
+  // fitted to.
+  //
   // PRICE-ONLY shift. Every engine already anchors `points[0].time` to
   // `last.time` — the last bar of the very series it was fitted on, which is by
   // construction on the display grid. Re-deriving the anchor's TIME from a
@@ -863,7 +1006,7 @@ export async function computeGhostPoints(
   // whole line off the displayed candles. The only thing worth refreshing here
   // is the price, so the ghost starts at the live close rather than the close of
   // the last completed bar.
-  if (points.length > 0) {
+  if (points.length > 0 && !fromChart) {
     const livePrice = latestStorePrice(
       activeSymbol,
       TIMEFRAME_MS[effectiveTimeframe as Timeframe] ?? 0

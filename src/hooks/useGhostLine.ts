@@ -73,7 +73,7 @@ function removeGhostSegments(chart: any, entityIds: string[]): string[] {
  * committed). Retrying on the next redraw self-heals those. But after a widget
  * teardown/recreate, ids from the dead widget are permanently invalid on the
  * new chart, so `removeEntity` throws on EVERY pass. Without bounding, those
- * dead ids live in `entityIdsRef.current` forever, warn on every redraw, and
+ * dead ids live in the renderer's id list forever, warn on every redraw, and
  * can transiently let a new run clear a prior run's still-valid segments via
  * the shared ref. We therefore drop an id after `maxAttempts` consecutive
  * failures.
@@ -169,13 +169,14 @@ export function shouldPulseOnRangeChange(
 }
 
 /**
- * Draw the ghost line as connected dashed `trend_line` segments.
+ * Fallback: draw the ghost line as connected `trend_line` segments.
  *
- * We deliberately use per-bar segments (NOT `polyline`/`path`): TradingView's
- * `polyline` auto-closes into a triangle and `path` collapses to a stub in this
- * build, whereas connected `trend_line` segments render reliably and extend
- * into the future whitespace. The points are already a smooth, bounded curve,
- * so the joined segments read as one continuous dashed line.
+ * Kept only as the last resort of `drawGhostEntity`. An earlier TradingView
+ * build auto-closed `polyline` into a triangle and collapsed `path` to a stub,
+ * so per-bar segments were the only reliable rendering; the vendored v32.1
+ * bundle draws both correctly (verified 2m/10m/75m/1W), and a single entity is
+ * one IPC round-trip instead of ~20 with dash patterns restarting at every
+ * vertex.
  *
  * `shouldAbort` is polled between each segment. If a newer draw supersedes this
  * one mid-flight we stop immediately and remove whatever we already drew, so a
@@ -275,7 +276,7 @@ async function drawGhostSegments(
 // ── Draw-commit helper ──────────────────────────────────────────────────
 
 /**
- * Decide the next `entityIdsRef` value and which ids to remove now, given the
+ * Decide the next tracked-id set and which ids to remove now, given the
  * outcome of a double-buffered draw.
  *
  * Drawing is async and slow (one IPC round-trip into the TradingView iframe
@@ -293,7 +294,7 @@ async function drawGhostSegments(
  * @param newIds The ids this draw just created (may be empty if it aborted).
  * @param stale  True if a newer run superseded this one while/after drawing.
  * @returns
- *   - `next`: the new value for `entityIdsRef.current` (who owns the chart now).
+ *   - `next`: the ids now on the chart (who owns it now).
  *   - `removeNow`: the ids the caller should remove from the chart immediately.
  *     On success these are the prev ids; on a stale-after-draw these are the
  *     newly-drawn ids (the stale run hands ownership back to the prior run).
@@ -315,6 +316,168 @@ export function commitDraw(
   // Success: the new line is the source of truth. Remove the old line now that
   // the new one is already on the chart (zero empty frames).
   return { next: newIds, removeNow: prevIds };
+}
+
+// ── Single-entity draw ───────────────────────────────────────────────────
+
+/** Ghost line colour. Amber is the projection's identity on the chart. */
+const GHOST_COLOR = '#f59e0b';
+
+/**
+ * Draw the whole projection as ONE chart entity and return its id.
+ *
+ * Straight engines (`linear` / `volume`) are a `trend_line` from the anchor to
+ * the end point — a rigid vector that cannot bend. Curved engines are a
+ * `polyline` through every projected point. Verified against the vendored
+ * TradingView Advanced Charts v32.1 bundle: `polyline` with
+ * `fillBackground: false, filled: false` renders an open dashed curve that
+ * extends into the future whitespace on 2m, 10m, 75m and 1W, so the older
+ * per-pair `trend_line` segments (~20 awaited IPC round-trips per redraw, with
+ * dash patterns restarting at every vertex) are no longer needed. Should
+ * `polyline` ever fail, `path` is tried, then the segment fallback.
+ *
+ * Returns `null` when nothing could be drawn.
+ */
+async function drawGhostEntity(
+  chart: any,
+  points: { time: number; price: number }[],
+  singleSegment: boolean
+): Promise<string | null> {
+  // Strictly-increasing, de-duplicated points (a session boundary can produce
+  // two points at the same timestamp, which TradingView rejects).
+  const clean: { time: number; price: number }[] = [];
+  for (const p of points) {
+    if (clean.length === 0 || p.time > clean[clean.length - 1].time) clean.push(p);
+  }
+  if (clean.length < 2) return null;
+
+  debugLog(
+    '[GhostLine] DRAW',
+    clean.length,
+    'pts times=',
+    clean.map((p) => p.time).join(','),
+    'prices=',
+    clean.map((p) => p.price).join(',')
+  );
+
+  const base = { lock: true, disableSelection: true, disableSave: true, disableUndo: true };
+
+  if (singleSegment) {
+    const id = await chart.createMultipointShape([clean[0], clean[clean.length - 1]], {
+      ...base,
+      shape: 'trend_line',
+      overrides: {
+        linecolor: GHOST_COLOR,
+        linewidth: 2,
+        linestyle: 2,
+        showLabel: false,
+        extendLeft: false,
+        extendRight: false,
+      },
+    });
+    return id == null ? null : String(id);
+  }
+
+  try {
+    const id = await chart.createMultipointShape(clean, {
+      ...base,
+      shape: 'polyline',
+      overrides: {
+        linecolor: GHOST_COLOR,
+        linewidth: 2,
+        linestyle: 2,
+        fillBackground: false,
+        filled: false,
+        transparency: 0,
+      },
+    });
+    if (id != null) return String(id);
+  } catch (err) {
+    console.warn('[GhostLine] polyline failed, trying path:', err);
+  }
+  try {
+    const id = await chart.createMultipointShape(clean, {
+      ...base,
+      shape: 'path',
+      overrides: { lineColor: GHOST_COLOR, lineWidth: 2, lineStyle: 2, leftEnd: 0, rightEnd: 0 },
+    });
+    if (id != null) return String(id);
+  } catch (err) {
+    console.warn('[GhostLine] path failed, falling back to segments:', err);
+  }
+  // Last resort: consecutive trend_line segments, the pre-polyline approach.
+  const ids = await drawGhostSegments(chart, clean, false, () => false);
+  return ids.length > 0 ? ids.join('+') : null;
+}
+
+/**
+ * Owns the ghost entity on the chart for the lifetime of a widget.
+ *
+ * The previous design tracked entity ids in refs inside the draw effect and
+ * removed them in that effect's CLEANUP. Because the effect re-runs on every
+ * pulse / new bar / zoom, every redraw began by wiping the line, and a
+ * "points unchanged — skip redraw" early-return then left the chart EMPTY
+ * until something else changed: the line flickered, and periodically vanished
+ * for a whole bar. Here the entity outlives the effect: `render` draws the new
+ * entity FIRST and only then removes the previous one (true double buffer),
+ * and `clear` runs only on widget teardown, symbol/timeframe change, feature
+ * lock, or an empty projection — never on a routine redraw.
+ *
+ * Ids that fail to remove are retried on the next pass, bounded by
+ * `pruneFailedIds` so an id from a torn-down widget cannot pile up forever.
+ */
+export class GhostLineRenderer {
+  /** Ids currently on the chart (normally exactly one). */
+  private ids: string[] = [];
+  private attempts = new Map<string, number>();
+  private lastPoints: { time: number; price: number }[] = [];
+
+  constructor(private readonly chart: any) {}
+
+  /** Points of the entity currently on the chart (for the skip-redraw check). */
+  get points(): { time: number; price: number }[] {
+    return this.lastPoints;
+  }
+
+  /**
+   * Replace whatever is on the chart with `points`. `isStale` is consulted
+   * after the awaited draw; a stale run removes what it just drew and leaves
+   * the previous entity in place, since a newer run owns the chart now.
+   */
+  async render(
+    points: { time: number; price: number }[],
+    singleSegment: boolean,
+    isStale: () => boolean
+  ): Promise<boolean> {
+    const prevIds = this.ids;
+    let newId: string | null = null;
+    try {
+      newId = await drawGhostEntity(this.chart, points, singleSegment);
+    } catch (err) {
+      console.warn('[GhostLine] draw failed:', err);
+    }
+    const newIds = newId ? newId.split('+') : [];
+    const stale = isStale();
+    const { next, removeNow } = commitDraw(prevIds, newIds, stale);
+    const failed = removeGhostSegments(this.chart, removeNow);
+    this.ids = [...next, ...pruneFailedIds(failed, this.attempts, 2, next)];
+    if (!stale && newIds.length > 0) this.lastPoints = points;
+    return !stale && newIds.length > 0;
+  }
+
+  /** Remove the ghost entity. Failed removes stay tracked for one retry. */
+  clear(): void {
+    const failed = removeGhostSegments(this.chart, this.ids);
+    this.ids = pruneFailedIds(failed, this.attempts, 2, this.ids);
+    this.lastPoints = [];
+  }
+
+  /** The chart is gone; forget everything (its ids can never be removed). */
+  dispose(): void {
+    this.ids = [];
+    this.attempts.clear();
+    this.lastPoints = [];
+  }
 }
 
 // ── Main Hook ─────────────────────────────────────────────────────────────
@@ -342,22 +505,59 @@ export function useGhostLine(widget: any, activeSymbol: string, effectiveTimefra
     return t;
   });
 
-  // The single source of truth for what is currently on the chart. Each draw
-  // is double-buffered: the NEW line is drawn first, then ownership swaps to
-  // it, then the OLD line is removed — so at most ONE ghost line ever exists
-  // and there is never an empty frame between draws.
-  const entityIdsRef = useRef<string[]>([]);
-  // Last successfully drawn point set — skip IPC when the projection is unchanged.
-  const lastPointsRef = useRef<{ time: number; price: number }[]>([]);
-  // Per-id consecutive-remove-failure counts. Lets us bound retries: an id
-  // that fails to remove a few passes in a row is dropped from the ref (see
-  // `pruneFailedIds`) so dead ids — e.g. from a torn-down widget — can't pile
-  // up forever and warn on every redraw.
-  const failedAttemptsRef = useRef<Map<string, number>>(new Map());
+  // The one owner of what is on the chart, bound to the widget's lifetime — see
+  // `GhostLineRenderer` for why ownership must outlive the draw effect.
+  const rendererRef = useRef<GhostLineRenderer | null>(null);
   // Monotonic draw generation. Any run whose generation is no longer the latest
-  // is "stale": it won't start a draw, and aborts (removing its own segments)
-  // if it's already mid-draw.
+  // is "stale": it won't start a draw, and hands the chart back if it already
+  // drew.
   const genRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!widget) return;
+    let cancelled = false;
+    whenChartReady(
+      widget,
+      () => {
+        if (cancelled) return;
+        try {
+          const chart = widget.activeChart();
+          if (chart) rendererRef.current = new GhostLineRenderer(chart);
+        } catch {
+          /* torn down */
+        }
+      },
+      () => cancelled,
+      'GhostLine'
+    );
+    return () => {
+      cancelled = true;
+      const r = rendererRef.current;
+      rendererRef.current = null;
+      if (!r) return;
+      // Best-effort removal if the chart is still alive; either way the ids
+      // belong to this widget and must not survive into the next one.
+      try {
+        if (widget.activeChart()) r.clear();
+      } catch {
+        /* widget already removed */
+      }
+      r.dispose();
+    };
+  }, [widget]);
+
+  // A different symbol or timeframe is a different series: the old projection
+  // has nothing to do with the new candles, so clear it rather than leave it
+  // on the chart until the first new draw lands.
+  useEffect(() => {
+    return () => {
+      try {
+        rendererRef.current?.clear();
+      } catch {
+        /* torn down */
+      }
+    };
+  }, [activeSymbol, effectiveTimeframe]);
 
   // ── Zoom pulse ───────────────────────────────────────────────────────
   // Re-project when the user zooms so the line length tracks the visible
@@ -461,13 +661,12 @@ export function useGhostLine(widget: any, activeSymbol: string, effectiveTimefra
   /**
    * True while the draw effect is mid-flight.
    *
-   * A pulse re-runs the draw effect, and that effect's CLEANUP removes the
-   * segments currently on the chart before the new run starts drawing. The draw
-   * itself is ~20 awaited IPC round-trips into the TradingView iframe, so it is
-   * far slower than the pulse interval: with a live price ticking, the line was
-   * being wiped every PULSE_THROTTLE_MS and superseded before it could finish, so
-   * a draw never completed and no ghost line was ever visible. Nothing was wrong
-   * with the projection — it just never got to render.
+   * A pulse re-runs the draw effect. The draw is an awaited `exportData` read
+   * plus an awaited shape creation into the TradingView iframe, so it can be
+   * slower than the pulse interval: with a live price ticking, runs used to be
+   * superseded before they could finish, so a draw never completed and no ghost
+   * line was ever visible. Nothing was wrong with the projection — it just never
+   * got to render.
    *
    * Interrupting a draw to start an identical-but-newer one gains nothing, so a
    * pulse that lands mid-draw is remembered instead of applied, and fired once
@@ -518,16 +717,7 @@ export function useGhostLine(widget: any, activeSymbol: string, effectiveTimefra
         () => {
           if (cancelled) return;
           try {
-            const chart = widget.activeChart();
-            if (!chart) return;
-            const failed = removeGhostSegments(chart, entityIdsRef.current);
-            entityIdsRef.current = pruneFailedIds(
-              failed,
-              failedAttemptsRef.current,
-              2,
-              entityIdsRef.current
-            );
-            lastPointsRef.current = [];
+            rendererRef.current?.clear();
           } catch {
             /* torn down */
           }
@@ -574,6 +764,10 @@ export function useGhostLine(widget: any, activeSymbol: string, effectiveTimefra
           return;
         }
         if (!chart) return;
+        // The widget effect above normally has the renderer ready first; cover
+        // the ordering where this effect's ready callback lands earlier.
+        if (!rendererRef.current) rendererRef.current = new GhostLineRenderer(chart);
+        const renderer = rendererRef.current;
 
         // Read the CURRENT zoom window so the projection length can scale to it.
         // `from` is a UNIX-second timestamp of the left edge of the view.
@@ -591,99 +785,43 @@ export function useGhostLine(widget: any, activeSymbol: string, effectiveTimefra
         // isn't re-fired by every predictive tick's new array reference.
         const predictiveSignals = useTradeStore.getState().predictiveSignals;
 
-        // From here to the `finally` below is the slow part: projecting, then one
-        // awaited IPC round-trip per segment. A live price pulse arriving inside
-        // this window must not restart it — see `drawInFlightRef`.
+        // From here to the `finally` below is the slow part: reading the chart's
+        // series, projecting, then one awaited IPC round-trip for the entity. A
+        // live price pulse arriving inside this window must not restart it —
+        // see `drawInFlightRef`.
         drawInFlightRef.current = true;
-        const points = await computeGhostPoints(
-          activeSymbol,
-          effectiveTimeframe,
-          ghostLineMode,
-          predictiveSignals,
-          visibleFromSec
-        );
-        if (isStale()) {
-          drawInFlightRef.current = false;
-          return;
-        }
-
-        // Unchanged projection → skip the expensive multipoint IPC round-trips.
-        if (points.length >= 2 && pointsUnchanged(points, lastPointsRef.current)) {
-          debugLog('[GhostLine] points unchanged — skip redraw');
-          drawInFlightRef.current = false;
-          if (pendingPulseRef.current) {
-            pendingPulseRef.current = false;
-            lastPulseRef.current = Date.now();
-            setPulse((p) => p + 1);
-          }
-          return;
-        }
-
-        // Straight engines (OLS 'linear' / VWLR 'volume') render as a SINGLE
-        // trend_line entity (anchor → end) that can never fragment or ladder.
-        // Curved engines ('curved' / 'forecast') draw the raw projection points
-        // as connected segments — a handful of dashes, not a block.
-        const isStraight = ghostLineMode === 'linear' || ghostLineMode === 'volume';
-
         try {
-          // ── Double-buffered draw (no empty-frame flicker) ────────────────
-          // TradingView's shape API is an async IPC into the iframe and is slow
-          // (one round-trip per segment). If we CLEARED the old line BEFORE
-          // drawing the new one, the chart would be empty for the whole draw
-          // window → the line visibly vanishes then reappears segment-by-segment
-          // (the "flicker / appears then disappears" artefact). Instead we draw
-          // the NEW line first, then swap ownership, then remove the OLD line, so
-          // there is never a frame where zero lines are on the chart.
-          //
-          // `drawGhostSegments` polls `shouldAbort` (= isStale) between each
-          // segment and removes its own segments if aborted, so a stale run
-          // cleans up after itself and never leaves half a line behind.
+          const points = await computeGhostPoints(
+            activeSymbol,
+            effectiveTimeframe,
+            ghostLineMode,
+            predictiveSignals,
+            visibleFromSec,
+            chart
+          );
+          if (isStale()) return;
 
           if (points.length < 2) {
             console.warn('[GhostLine] Not enough points:', points.length);
-            // Nothing new to draw — just clear the old line. (This is the one
-            // case where an empty frame is unavoidable and correct.)
-            const failedRemove = removeGhostSegments(chart, entityIdsRef.current);
-            entityIdsRef.current = pruneFailedIds(
-              failedRemove,
-              failedAttemptsRef.current,
-              2,
-              entityIdsRef.current
-            );
-            lastPointsRef.current = [];
+            // Nothing to show — clear the old line. (This is the one case where
+            // an empty chart is correct.)
+            renderer.clear();
             return;
           }
 
-          // Snapshot the previously-displayed ids BEFORE drawing, so we can
-          // remove them after the new line is on the chart.
-          const prevIds = entityIdsRef.current;
-
-          // Draw the new line first. If a newer run supersedes us mid-draw,
-          // drawGhostSegments aborts and removes whatever it already drew,
-          // returning [].
-          const newIds = await drawGhostSegments(chart, points, isStraight, isStale);
-
-          // Decide ownership via the pure `commitDraw` helper. Re-check isStale
-          // here — a newer run may have bumped genRef while we were awaiting the
-          // draw. `stale` is captured BEFORE we remove anything, so we don't
-          // race between the check and the removal/assignment below.
-          const stale = isStale();
-          const { next, removeNow } = commitDraw(prevIds, newIds, stale);
-
-          // Remove whichever ids the helper selected (the OLD line on success,
-          // or the just-drawn NEW line on a stale-after-draw). Any ids that FAIL
-          // to remove are folded back into `next` so they stay tracked and get
-          // retried next pass — this is the self-healing that keeps the chart
-          // from accumulating orphaned segments. `pruneFailedIds` bounds those
-          // retries so a permanently-invalid id (e.g. from a torn-down widget)
-          // is eventually dropped instead of warning forever.
-          const failed = removeGhostSegments(chart, removeNow);
-          const retry = pruneFailedIds(failed, failedAttemptsRef.current, 2, next);
-          entityIdsRef.current = [...next, ...retry];
-          if (!stale) {
-            lastPointsRef.current = points;
-            debugLog('[GhostLine] Ghost line ready with', newIds.length, 'segments');
+          // Unchanged projection → skip the IPC round-trip. The entity stays on
+          // the chart because nothing here removes it.
+          if (pointsUnchanged(points, renderer.points)) {
+            debugLog('[GhostLine] points unchanged — skip redraw');
+            return;
           }
+
+          // Straight engines (OLS 'linear' / VWLR 'volume') render as a single
+          // trend_line (anchor → end) that can never bend. Curved engines
+          // ('curved' / 'forecast') render as one polyline through every point.
+          const isStraight = ghostLineMode === 'linear' || ghostLineMode === 'volume';
+          const drawn = await renderer.render(points, isStraight, isStale);
+          if (drawn) debugLog('[GhostLine] Ghost line ready:', points.length, 'points');
         } catch (err) {
           console.error('[GhostLine] draw failed:', err);
         } finally {
@@ -705,54 +843,15 @@ export function useGhostLine(widget: any, activeSymbol: string, effectiveTimefra
     );
 
     return () => {
-      // Mark stale so any in-flight draw aborts and no queued run draws.
+      // Mark stale so an in-flight run hands the chart back instead of
+      // committing. The entity itself is NOT removed here: routine re-runs
+      // (pulse / new bar / zoom) must leave the current line on the chart until
+      // the next one is drawn. Removal is owned by the widget, symbol/timeframe
+      // and feature-lock effects above.
       cancelled = true;
-
-      // Backstop for the in-flight flag. The `finally` above clears it on every
-      // path that reaches the draw, but `computeGhostPoints` is awaited before
-      // that try block, so a throw there would leak the flag and wedge the pulse
-      // permanently. Cleanup always runs before the next effect run, so clearing
-      // here bounds the damage to nothing.
+      // Backstop for the in-flight flag: cleanup always runs before the next
+      // effect run, so clearing here bounds a leaked flag to nothing.
       drawInFlightRef.current = false;
-
-      // Clear the segments we own — but only FORGET the ids we actually managed
-      // to remove.
-      //
-      // This effect re-runs on every symbol / timeframe / mode change, and (now
-      // that the widget is no longer rebuilt per symbol) the chart is usually
-      // still ALIVE across those re-runs. The previous version cleared the ref
-      // unconditionally: any `removeEntity` that failed left its segment on the
-      // chart with nothing tracking it, and the next draw stacked a fresh line
-      // on top — the reported "two ghost lines". So:
-      //
-      //  · chart reachable → keep the ids that failed to remove so the next
-      //    pass retries them (`pruneFailedIds` still bounds those retries, so a
-      //    permanently-invalid id is dropped after a couple of attempts rather
-      //    than warning forever).
-      //  · chart gone (widget removed) → the ids belong to a dead chart and can
-      //    never be removed, so drop everything. Retaining them would make
-      //    `removeEntity` throw on every redraw of the next widget.
-      // Narrowed to what the cleanup actually needs, so this isn't another `any`.
-      let chart: { removeEntity: (id: string) => void } | null = null;
-      try {
-        chart = widget.activeChart();
-      } catch {
-        /* widget already removed */
-      }
-
-      if (chart) {
-        const failed = removeGhostSegments(chart, entityIdsRef.current);
-        entityIdsRef.current = pruneFailedIds(
-          failed,
-          failedAttemptsRef.current,
-          2,
-          entityIdsRef.current
-        );
-      } else {
-        entityIdsRef.current = [];
-        failedAttemptsRef.current.clear();
-        lastPointsRef.current = [];
-      }
     };
   }, [
     widget,
