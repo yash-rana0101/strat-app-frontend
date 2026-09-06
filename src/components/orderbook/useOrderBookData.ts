@@ -173,6 +173,8 @@ export function useOrderBookData(selectedSymbol: string) {
             } catch {}
           }
         } else {
+          // Broker returned depth with no active orders (market closed / off-hours)
+          setBook(createEmptyBook());
           setIsLive(false);
         }
       } catch {

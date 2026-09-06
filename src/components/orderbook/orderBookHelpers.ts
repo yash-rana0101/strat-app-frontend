@@ -110,10 +110,11 @@ export function parseCachedBook(raw: string | null): OrderBookState | null {
 }
 
 export function formatSize(size: number): string {
+  if (!size || size <= 0) return '0';
   if (size >= 1000) {
     return size.toLocaleString('en-IN', { maximumFractionDigits: 0 });
   }
-  return size >= 100 ? Math.round(size).toString() : size.toFixed(1);
+  return Number.isInteger(size) ? size.toString() : size.toFixed(1);
 }
 
 /**
