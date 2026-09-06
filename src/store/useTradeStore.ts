@@ -81,9 +81,15 @@ export interface OhlcCandle {
 export interface PredictiveSignal {
   symbol: string;
   timestamp_ms: number;
+  /** Close time of the candle being predicted. */
   target_timestamp_ms: number;
   predicted_close_price: number;
   confidence_score: number;
+  /** Close time / close of the last candle the regression was fitted through.
+   *  Sent by `agents/predictive` since the anchor fields landed; older signals
+   *  omit them. */
+  anchor_timestamp_ms?: number;
+  anchor_close?: number;
 }
 
 export interface MarketInsight {

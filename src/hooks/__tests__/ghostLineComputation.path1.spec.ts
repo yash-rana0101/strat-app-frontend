@@ -12,7 +12,12 @@
 // uniform interval grid (no last-point time rewrite).
 
 import { describe, it, expect } from 'vitest';
-import { olsSlope, path1SignalApplies, PATH1_MIN_CONFIDENCE } from '@/hooks/ghostLineComputation';
+import {
+  olsSlope,
+  path1Points,
+  path1SignalApplies,
+  PATH1_MIN_CONFIDENCE,
+} from '@/hooks/ghostLineComputation';
 
 /** Build a deterministic ramp of closes with a known positive slope so the
  *  OLS projection is forced upward (and is NOT the signal line). */
@@ -138,19 +143,34 @@ describe('GhostLine Path 1 gate (Unit 2)', () => {
   });
 
   it('Path 1 grid uses uniform interval times (no end-time rewrite)', () => {
-    // Mirrors the production construction: last.time + i * intervalSec only.
     const last = { time: 100_000, close: 100 };
     const intervalSec = 60;
-    const N = 6;
-    const predicted = 105;
-    const m = (predicted - last.close) / N;
-    const points = Array.from({ length: N + 1 }, (_, i) => ({
-      time: last.time + i * intervalSec,
-      price: last.close + m * i,
-    }));
+    const targetSec = last.time + 10 * intervalSec; // 10m candle close, 1m chart
+    const points = path1Points(last, 105, targetSec, intervalSec, 6);
+    expect(points).toHaveLength(7);
     for (let i = 1; i < points.length; i++) {
       expect(points[i].time - points[i - 1].time).toBe(intervalSec);
     }
-    expect(points[points.length - 1].price).toBeCloseTo(predicted, 10);
+  });
+
+  it('Path 1 slope comes from the signal horizon, not from projBars', () => {
+    // 1m chart, signal targets the close of the next 10m candle. Anchor bar
+    // closes at last.time + 60, so the horizon is 9 minutes of chart time.
+    const last = { time: 100_000, close: 100 };
+    const targetSec = last.time + 600;
+    const a = path1Points(last, 109, targetSec, 60, 6);
+    const b = path1Points(last, 109, targetSec, 60, 20);
+    // Same slope at every zoom (1/min), so the price at the target bar is the
+    // predicted close in both.
+    expect(a[6].price).toBeCloseTo(106, 10);
+    expect(b[9].price).toBeCloseTo(109, 10);
+    expect(b[6].price).toBeCloseTo(a[6].price, 10);
+  });
+
+  it('Path 1 floors the horizon at one bar when the target is already inside the anchor bar', () => {
+    // 15m chart: the 10m signal's target lands inside the forming 15m bar.
+    const last = { time: 100_000, close: 100 };
+    const points = path1Points(last, 103, last.time + 600, 900, 4);
+    expect(points[1].price).toBeCloseTo(103, 10);
   });
 });
