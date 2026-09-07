@@ -14,6 +14,7 @@ import { AlertTriangle, Loader2, Plus } from 'lucide-react';
 
 import { useCreateSession } from '../../../lib/fq/queries';
 import { useTradeStore } from '../../../store/useTradeStore';
+import { useSessionStore } from '../../../store/useSessionStore';
 
 export interface NewSessionButtonProps {
   /** Called with the server-minted id once the session exists. */
@@ -42,6 +43,7 @@ export default function NewSessionButton({ onCreated }: NewSessionButtonProps) {
         timeframe: activeTimeframe,
         profile: activeProfile,
       });
+      useSessionStore.getState().markHydrated(created.session_id, 0);
       onCreated?.(created.session_id);
     } catch (err) {
       setFailure(err instanceof Error && err.message ? err.message : 'Could not start a session.');

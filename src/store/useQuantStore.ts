@@ -52,9 +52,27 @@ async function ensureActiveSession(
 ): Promise<string | undefined> {
   if (!FQ_MULTI_SESSION) return undefined;
 
-  const existing = useSessionStore.getState().activeSessionId;
-  if (existing) {
-    useSessionStore.getState().upsertSession(existing, {
+  const sessionStore = useSessionStore.getState();
+  const existing = sessionStore.activeSessionId;
+  const activeSession = existing ? sessionStore.sessions[existing] : undefined;
+
+  // An existing session can ONLY be reused if it is brand-new, idle, empty,
+  // and has never executed a run or accumulated reasoning steps.
+  // If it has already completed, errored, is watching, or has reasoning steps / final trade,
+  // we MUST NOT overwrite it; hitting Find Trade should work exactly like adding a session
+  // via the plus icon (creates a fresh session on the server, activates it, and marks it hydrated).
+  const isFreshAndUnused =
+    existing &&
+    activeSession &&
+    activeSession.sessionStatus === 'idle' &&
+    (!activeSession.reasoningSteps || activeSession.reasoningSteps.length === 0) &&
+    !activeSession.finalTrade &&
+    !activeSession.aiPlan &&
+    !activeSession.analysisError;
+
+  if (isFreshAndUnused && existing) {
+    sessionStore.markHydrated(existing, 0);
+    sessionStore.upsertSession(existing, {
       sessionStatus: 'running',
       isAnalyzing: true,
       reasoningSteps: [],
@@ -74,8 +92,10 @@ async function ensureActiveSession(
   try {
     const { createSession } = await import('../lib/fq/api');
     const created = await createSession({ symbol: trimmed, timeframe, profile });
-    useSessionStore.getState().setActiveSession(created.session_id);
-    useSessionStore.getState().upsertSession(created.session_id, {
+    const store = useSessionStore.getState();
+    store.setActiveSession(created.session_id);
+    store.markHydrated(created.session_id, 0);
+    store.upsertSession(created.session_id, {
       sessionStatus: 'running',
       isAnalyzing: true,
       reasoningSteps: [],
@@ -1500,21 +1520,6 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       patternsError: null,
       isStartingRun: true,
     }));
-
-    if (FQ_MULTI_SESSION) {
-      const activeId = useSessionStore.getState().activeSessionId;
-      if (activeId) {
-        useSessionStore.getState().upsertSession(activeId, {
-          sessionStatus: 'running',
-          isAnalyzing: true,
-          reasoningSteps: [],
-          finalTrade: null,
-          aiPlan: null,
-          analysisError: null,
-          updatedAt: Date.now(),
-        });
-      }
-    }
 
     // Trigger multi-timeframe chart patterns fetch in parallel (non-blocking).
     get().fetchMultiTfPatterns(symbol);

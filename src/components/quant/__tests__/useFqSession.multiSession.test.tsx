@@ -23,6 +23,7 @@ import { useSessionStore } from '../../../store/useSessionStore';
 import {
   useFqDraft,
   useFqIsAnalyzing,
+  useFqIsSessionHydrating,
   useFqMode,
   useFqQaMessages,
   useFqReasoningSteps,
@@ -253,5 +254,36 @@ describe('with no session selected', () => {
     act(() => useQuantStore.setState({ isStartingRun: false }));
     expect(status.current).toBe('idle');
     expect(analyzing.current).toBe(false);
+  });
+});
+
+describe('useFqIsSessionHydrating', () => {
+  it('returns false when no session is active', () => {
+    const hydrating = harness(useFqIsSessionHydrating);
+    expect(hydrating.current).toBe(false);
+  });
+
+  it('returns true when a session is in activatingSessionIds', () => {
+    const hydrating = harness(useFqIsSessionHydrating);
+    act(() => {
+      useSessionStore.getState().setActiveSession(A);
+      useSessionStore.getState().setActivating(A, true);
+    });
+    expect(hydrating.current).toBe(true);
+
+    act(() => {
+      useSessionStore.getState().setActivating(A, false);
+    });
+    expect(hydrating.current).toBe(false);
+  });
+
+  it('returns false when session is running or analyzing even if activating flag is stale', () => {
+    const hydrating = harness(useFqIsSessionHydrating);
+    act(() => {
+      useSessionStore.getState().setActiveSession(A);
+      useSessionStore.getState().setActivating(A, true);
+      useSessionStore.getState().upsertSession(A, { sessionStatus: 'running', isAnalyzing: true });
+    });
+    expect(hydrating.current).toBe(false);
   });
 });

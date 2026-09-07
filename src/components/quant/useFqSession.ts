@@ -55,12 +55,17 @@ export function useFqIsSessionHydrating(sessionId?: string): boolean {
   const isActivating = useSessionStore((s) =>
     targetId ? Boolean(s.activatingSessionIds?.[targetId]) : false
   );
-  const hasHydrated = useSessionStore((s) =>
-    targetId ? Boolean(s.streams?.[targetId]?.hydratedAt) : false
+  const isAnalyzing = useSessionStore((s) =>
+    targetId
+      ? Boolean(
+        s.sessions?.[targetId]?.isAnalyzing ||
+        s.sessions?.[targetId]?.sessionStatus === 'running'
+      )
+      : false
   );
 
-  if (!FQ_MULTI_SESSION || !targetId) return false;
-  return isActivating || !hasHydrated;
+  if (!FQ_MULTI_SESSION || !targetId || isAnalyzing) return false;
+  return isActivating;
 }
 
 /** Whether a specific session id has an in-flight activation request. */
