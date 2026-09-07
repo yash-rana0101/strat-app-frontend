@@ -20,12 +20,13 @@ import { bridgeListen } from '../../lib/bridge';
 import { useQuantStore, type StreamEventPayload } from '../../store/useQuantStore';
 import { useSessionStore } from '../../store/useSessionStore';
 
-/**
- * Subscribe to a bridge channel for the lifetime of the caller.
- *
- * The `cancelled` flag is not defensive noise: `bridgeListen` is async, so a component that unmounts
- * before it resolves would otherwise leak a listener that keeps writing into the store forever.
- */
+interface ChannelSub {
+  refCount: number;
+  dispose?: () => void;
+}
+
+const channelSubs = new Map<string, ChannelSub>();
+
 function useBridgeChannel(
   channel: string,
   handler: (payload: StreamEventPayload) => void,
@@ -33,26 +34,44 @@ function useBridgeChannel(
 ) {
   useEffect(() => {
     if (!enabled) return;
+
+    let sub = channelSubs.get(channel);
+    if (!sub) {
+      sub = { refCount: 0 };
+      channelSubs.set(channel, sub);
+    }
+    sub.refCount += 1;
+
     let cancelled = false;
-    let dispose: (() => void) | undefined;
-    (async () => {
-      try {
-        const off = await bridgeListen<StreamEventPayload>(channel, (event) => {
-          if (!cancelled) handler(event.payload);
-        });
-        if (cancelled) off();
-        else dispose = off;
-      } catch (err) {
-        console.error(`Failed to register ${channel} listener:`, err);
-      }
-    })();
+
+    if (sub.refCount === 1) {
+      (async () => {
+        try {
+          const off = await bridgeListen<StreamEventPayload>(channel, (event) => {
+            handler(event.payload);
+          });
+          const current = channelSubs.get(channel);
+          if (cancelled || !current || current.refCount === 0) {
+            off();
+          } else {
+            current.dispose = off;
+          }
+        } catch (err) {
+          console.error(`Failed to register ${channel} listener:`, err);
+        }
+      })();
+    }
+
     return () => {
       cancelled = true;
-      dispose?.();
+      const current = channelSubs.get(channel);
+      if (!current) return;
+      current.refCount = Math.max(0, current.refCount - 1);
+      if (current.refCount === 0) {
+        current.dispose?.();
+        channelSubs.delete(channel);
+      }
     };
-    // `handler` is intentionally not a dependency: every caller passes a module-level dispatch, and
-    // including it would tear down and re-register the listener on each render — losing frames in the
-    // gap.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channel, enabled]);
 }

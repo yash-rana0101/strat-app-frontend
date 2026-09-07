@@ -174,4 +174,25 @@ describe('buildRenderGroups — the transcript grouping that moved out of AgentT
     const groups = buildRenderGroups([step({ type: 'message', content: '{"unrelated": 1}' })]);
     expect(groups.map((g) => g.type)).toEqual(['thinking_group']);
   });
+
+  it('deduplicates adjacent duplicate tool_start frames in buildRenderGroups and deriveProgress', () => {
+    const stepsWithDuplicates = [
+      step({ type: 'tool_start', toolName: 'get_multi_tf_trend' }),
+      step({ type: 'tool_start', toolName: 'get_multi_tf_trend' }), // Duplicate frame
+      step({ type: 'tool_end', toolName: 'get_multi_tf_trend' }),
+      step({ type: 'tool_start', toolName: 'get_consensus_report' }),
+      step({ type: 'tool_start', toolName: 'get_consensus_report' }), // Duplicate frame
+      step({ type: 'tool_end', toolName: 'get_consensus_report' }),
+    ];
+
+    const groups = buildRenderGroups(stepsWithDuplicates);
+    expect(groups.filter((g) => g.type === 'tool_start')).toHaveLength(2);
+    expect(groups.map((g) => (g.type === 'tool_start' ? g.step.toolName : ''))).toEqual([
+      'get_multi_tf_trend',
+      'get_consensus_report',
+    ]);
+
+    const progress = deriveProgress(stepsWithDuplicates, 'complete', null);
+    expect(progress.map((p) => p.label)).toEqual(['Get Multi Tf Trend', 'Get Consensus Report']);
+  });
 });

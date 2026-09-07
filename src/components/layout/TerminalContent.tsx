@@ -52,40 +52,36 @@ export default function TerminalContent({
       </div>
 
       {/* ── Mobile Watchlist view ── */}
-      <div
-        className={`h-full w-full flex-col ${activeMobileView === 'watchlist' ? 'flex' : 'hidden'
-          } md:hidden`}
-      >
-        <MobileWatchlistView>
-          <LeftPanel />
-        </MobileWatchlistView>
-      </div>
+      {activeMobileView === 'watchlist' && (
+        <div className="h-full w-full flex-col flex md:hidden">
+          <MobileWatchlistView>
+            <LeftPanel />
+          </MobileWatchlistView>
+        </div>
+      )}
 
       {/* ── Mobile AI Agent view ── */}
-      <div
-        className={`h-full w-full flex-col ${activeMobileView === 'agent' ? 'flex' : 'hidden'
-          } md:hidden`}
-      >
-        <MobileAgentView>
-          <DeepQuantPanel />
-        </MobileAgentView>
-      </div>
+      {activeMobileView === 'agent' && (
+        <div className="h-full w-full flex-col flex md:hidden">
+          <MobileAgentView>
+            <DeepQuantPanel />
+          </MobileAgentView>
+        </div>
+      )}
 
       {/* ── Mobile Order Book / Confluence view ── */}
-      <div
-        className={`h-full w-full flex-col ${activeMobileView === 'orderbook' ? 'flex' : 'hidden'
-          } md:hidden`}
-      >
-        <MobileOrderBookView activeProfile={activeProfile} />
-      </div>
+      {activeMobileView === 'orderbook' && (
+        <div className="h-full w-full flex-col flex md:hidden">
+          <MobileOrderBookView activeProfile={activeProfile} />
+        </div>
+      )}
 
       {/* ── Mobile Profile / Settings view ── */}
-      <div
-        className={`h-full w-full flex-col ${activeMobileView === 'profile' ? 'flex' : 'hidden'
-          } md:hidden`}
-      >
-        <MobileProfileView />
-      </div>
+      {activeMobileView === 'profile' && (
+        <div className="h-full w-full flex-col flex md:hidden">
+          <MobileProfileView />
+        </div>
+      )}
     </div>
   );
 }

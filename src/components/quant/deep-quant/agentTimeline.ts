@@ -61,7 +61,8 @@ export function buildRenderGroups(reasoningSteps: ReasoningStep[]): RenderGroup[
     thinking = [];
   };
 
-  for (const step of reasoningSteps) {
+  for (let i = 0; i < reasoningSteps.length; i++) {
+    const step = reasoningSteps[i];
     if (step.type === 'message') {
       if (isJsonDecisionMessage(step.content)) {
         flushThinking();
@@ -74,6 +75,11 @@ export function buildRenderGroups(reasoningSteps: ReasoningStep[]): RenderGroup[
 
     flushThinking();
     if (step.type === 'tool_start') {
+      const prev = reasoningSteps[i - 1];
+      if (prev && prev.type === 'tool_start' && prev.toolName === step.toolName) {
+        // Skip duplicate adjacent tool_start frame
+        continue;
+      }
       groups.push({ type: 'tool_start', step, id: step.id });
     } else if (step.type === 'tool_end') {
       // Skip: pairing is done in isToolStepCompleted.
@@ -185,7 +191,14 @@ export function deriveProgress(
   finalTrade: AiExecutionPlan | null
 ): ProgressItem[] {
   const items: ProgressItem[] = reasoningSteps
-    .filter((step) => step.type === 'tool_start')
+    .filter((step, idx, arr) => {
+      if (step.type !== 'tool_start') return false;
+      const prev = arr[idx - 1];
+      if (prev && prev.type === 'tool_start' && prev.toolName === step.toolName) {
+        return false;
+      }
+      return true;
+    })
     .map((step) => ({
       id: step.id,
       kind: 'tool' as const,

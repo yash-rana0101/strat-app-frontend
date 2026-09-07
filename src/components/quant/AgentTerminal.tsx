@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Shield, Loader2, AlertTriangle, Lock, ShieldAlert } from 'lucide-react';
+import { Loader2, AlertTriangle, Lock } from 'lucide-react';
 import { isActionableTrade } from '../../store/useQuantStore';
 import {
   useFqAnalysisError,
@@ -21,10 +21,8 @@ import TerminalStandAsideCard from './deep-quant/TerminalStandAsideCard';
 import ThinkingGroupRenderer from './deep-quant/ThinkingGroupRenderer';
 import LoadingState from './deep-quant/LoadingState';
 import { classifyAgentError } from './deep-quant/agentErrorClassifier';
-import { highlightNumbers } from './deep-quant/textHighlighter';
 import { buildRenderGroups } from './deep-quant/agentTimeline';
 import type { ReasoningStep } from '../../store/useQuantStore';
-import ConvictionGauge from './visuals/ConvictionGauge';
 
 interface AgentTerminalProps {
   /**
