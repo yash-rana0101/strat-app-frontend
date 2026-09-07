@@ -365,7 +365,7 @@ export default function DeepQuantPanel() {
             <SessionLoadingState variant="compact" symbol={symbol} />
           ) : hasRun ? (
             <>
-              {/* Phased radar sweep & loading theatre while awaiting first reasoning step */}
+              {/* Loading spinner while awaiting first reasoning step */}
               {reasoningSteps.length === 0 && sessionStatus === 'running' && (
                 <LoadingState />
               )}

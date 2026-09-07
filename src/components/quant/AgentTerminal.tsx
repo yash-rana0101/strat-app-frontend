@@ -113,7 +113,7 @@ export default function AgentTerminal({
         {/* Watching Indicator inside scroll log */}
         {sessionStatus === 'watching' && <WatchingIndicator />}
 
-        {/* Phased radar sweep & loading theatre while awaiting first reasoning step */}
+        {/* Loading spinner while awaiting first reasoning step */}
         {reasoningSteps.length === 0 && sessionStatus === 'running' && (
           <LoadingState />
         )}
