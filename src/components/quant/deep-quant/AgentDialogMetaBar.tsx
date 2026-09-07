@@ -9,6 +9,7 @@
 import React from 'react';
 import { Coins, Loader2, Shield, Square, Zap } from 'lucide-react';
 import { isFnoSymbol } from '../../../charting/symbolUtils';
+import { useQuantStore } from '../../../store/useQuantStore';
 import type { QuantMode } from './QuantActionBar';
 
 export interface AgentDialogMetaBarProps {
@@ -57,6 +58,7 @@ export default function AgentDialogMetaBar({
   isConfiguringSetup = false,
   onToggleConfigureSetup,
 }: AgentDialogMetaBarProps) {
+  const isStarting = useQuantStore((s) => s.isStartingRun);
   const symbolLabel = `${symbol} · ${activeTimeframe}`;
 
   return (
@@ -89,7 +91,7 @@ export default function AgentDialogMetaBar({
         <div className="flex h-7 items-center rounded bg-elevated/40 p-0.5 border border-border-default/60">
           <button
             type="button"
-            disabled={isAnalyzing}
+            disabled={isAnalyzing || isStarting}
             onClick={() => onModeChange('FIND')}
             className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
               mode === 'FIND'
@@ -101,7 +103,7 @@ export default function AgentDialogMetaBar({
           </button>
           <button
             type="button"
-            disabled={isAnalyzing}
+            disabled={isAnalyzing || isStarting}
             onClick={() => onModeChange('VERIFY')}
             className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
               mode === 'VERIFY'
@@ -129,23 +131,28 @@ export default function AgentDialogMetaBar({
 
         <button
           type="button"
-          disabled={isSessionLoading || (!isAnalyzing && !dataReady)}
+          disabled={isSessionLoading || (!isAnalyzing && !dataReady) || isStarting}
           onClick={() => {
+            if (isStarting) return;
             if (isAnalyzing) onStop();
             else onRun();
           }}
           className={`flex h-7 items-center justify-center gap-1.5 rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
             isSessionLoading
               ? 'bg-elevated/40 text-text-muted border border-border-default opacity-70 cursor-not-allowed'
-              : !dataReady && !isAnalyzing
-                ? 'bg-elevated/40 text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
-                : isAnalyzing
-                  ? 'bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white'
-                  : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white'
+              : isStarting
+                ? 'bg-emerald-600/80 text-white cursor-wait'
+                : !dataReady && !isAnalyzing
+                  ? 'bg-elevated/40 text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
+                  : isAnalyzing
+                    ? 'bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white'
+                    : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white'
           }`}
         >
           {isSessionLoading ? (
             <Loader2 size={11} className="animate-spin text-primary" />
+          ) : isStarting ? (
+            <Loader2 size={11} className="animate-spin text-white" />
           ) : !dataReady && !isAnalyzing ? (
             <Loader2 size={11} className="animate-spin text-text-muted" />
           ) : isAnalyzing ? (
@@ -157,13 +164,15 @@ export default function AgentDialogMetaBar({
           )}
           {isSessionLoading
             ? 'Restoring session…'
-            : !dataReady && !isAnalyzing
-              ? 'Awaiting data…'
-              : isAnalyzing
-                ? 'Stop analysis'
-                : mode === 'VERIFY'
-                  ? 'Verify my setup'
-                  : 'Find Trade'}
+            : isStarting
+              ? 'Starting…'
+              : !dataReady && !isAnalyzing
+                ? 'Awaiting data…'
+                : isAnalyzing
+                  ? 'Stop analysis'
+                  : mode === 'VERIFY'
+                    ? 'Verify my setup'
+                    : 'Find Trade'}
         </button>
       </div>
     </div>

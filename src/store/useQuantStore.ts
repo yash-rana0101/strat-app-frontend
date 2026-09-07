@@ -53,7 +53,18 @@ async function ensureActiveSession(
   if (!FQ_MULTI_SESSION) return undefined;
 
   const existing = useSessionStore.getState().activeSessionId;
-  if (existing) return existing;
+  if (existing) {
+    useSessionStore.getState().upsertSession(existing, {
+      sessionStatus: 'running',
+      isAnalyzing: true,
+      reasoningSteps: [],
+      finalTrade: null,
+      aiPlan: null,
+      analysisError: null,
+      updatedAt: Date.now(),
+    });
+    return existing;
+  }
 
   const trimmed = (symbol || '').trim();
   // The server rejects an empty symbol with a 422, and there is nothing useful to file a
@@ -64,6 +75,15 @@ async function ensureActiveSession(
     const { createSession } = await import('../lib/fq/api');
     const created = await createSession({ symbol: trimmed, timeframe, profile });
     useSessionStore.getState().setActiveSession(created.session_id);
+    useSessionStore.getState().upsertSession(created.session_id, {
+      sessionStatus: 'running',
+      isAnalyzing: true,
+      reasoningSteps: [],
+      finalTrade: null,
+      aiPlan: null,
+      analysisError: null,
+      updatedAt: Date.now(),
+    });
     return created.session_id;
   } catch (err) {
     console.warn(
@@ -341,6 +361,8 @@ interface QuantStore {
   qaStatus: 'idle' | 'streaming';
   /** Guard: true once the current Q&A turn's RUN_FINISHED has been handled. */
   _qaRunFinishedProcessed: boolean;
+  /** True while the run invoke request is in flight before stream frames arrive. */
+  isStartingRun: boolean;
 
   setConsensusData: (data: ConsensusReport) => void;
   clearConsensusData: () => void;
@@ -1059,6 +1081,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
   finalTrade: null,
   _pendingToolCalls: 0,
   _runFinishedProcessed: false,
+  isStartingRun: false,
 
   // ── Per-symbol session persistence ───────────────────────────────
   sessionsByKey: {},
@@ -1415,7 +1438,23 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       multiTfPatterns: null,
       isFetchingPatterns: true,
       patternsError: null,
+      isStartingRun: true,
     }));
+
+    if (FQ_MULTI_SESSION) {
+      const activeId = useSessionStore.getState().activeSessionId;
+      if (activeId) {
+        useSessionStore.getState().upsertSession(activeId, {
+          sessionStatus: 'running',
+          isAnalyzing: true,
+          reasoningSteps: [],
+          finalTrade: null,
+          aiPlan: null,
+          analysisError: null,
+          updatedAt: Date.now(),
+        });
+      }
+    }
 
     // Trigger multi-timeframe chart patterns fetch in parallel (non-blocking).
     get().fetchMultiTfPatterns(symbol);
@@ -1524,6 +1563,17 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         `[QuantStore] Deep analysis FAIL key=${runKey} ` +
           `total_ms=${Math.round(tDone - t0)} message=${message}`
       );
+      if (FQ_MULTI_SESSION) {
+        const activeId = useSessionStore.getState().activeSessionId;
+        if (activeId) {
+          useSessionStore.getState().upsertSession(activeId, {
+            sessionStatus: 'error',
+            isAnalyzing: false,
+            analysisError: message,
+            updatedAt: Date.now(),
+          });
+        }
+      }
       // Error ONLY this run's session (by key), mirroring to the view if active.
       set((s) => {
         const sess = s.sessionsByKey[runKey] ?? blankSession();
@@ -1539,6 +1589,8 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
           ...(s.activeViewKey === runKey ? projectSession(errored) : {}),
         };
       });
+    } finally {
+      set({ isStartingRun: false });
     }
   },
 
@@ -1554,6 +1606,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       multiTfPatterns: null,
       isFetchingPatterns: false,
       patternsError: null,
+      isStartingRun: false,
     }),
 
   activateSymbolSession: (symbol: string, profile: string) => {
@@ -1769,6 +1822,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       multiTfPatterns: null,
       isFetchingPatterns: false,
       patternsError: null,
+      isStartingRun: false,
     }));
   },
 
@@ -1820,6 +1874,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         _streamingKey: null,
         isAnalyzing: false,
         sessionStatus: 'idle',
+        isStartingRun: false,
         reasoningSteps: [...s.reasoningSteps, cancelStep],
         ...(runKey ? { sessionsByKey: { ...s.sessionsByKey, [runKey]: cancelled } } : {}),
         ...(runKey && s.activeViewKey === runKey ? projectSession(cancelled) : {}),

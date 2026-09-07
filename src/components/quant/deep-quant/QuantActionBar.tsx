@@ -16,6 +16,7 @@
 
 import React from 'react';
 import { ChevronDown, Loader2, Shield, Square, Zap } from 'lucide-react';
+import { useQuantStore } from '../../../store/useQuantStore';
 
 export type QuantMode = 'FIND' | 'VERIFY';
 
@@ -50,6 +51,7 @@ export default function QuantActionBar({
   omitRunId = false,
 }: QuantActionBarProps) {
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const isStarting = useQuantStore((s) => s.isStartingRun);
 
   const h = size === 'md' ? 'h-9' : 'h-8';
   const iconSize = size === 'md' ? 12 : 11;
@@ -58,11 +60,13 @@ export default function QuantActionBar({
   const label =
     !dataReady && !isAnalyzing
       ? 'AWAITING DATA…'
-      : isAnalyzing
-        ? 'STOP ANALYSIS'
-        : mode === 'VERIFY'
-          ? 'VERIFY MY SETUP'
-          : 'FIND TRADE';
+      : isStarting
+        ? 'STARTING…'
+        : isAnalyzing
+          ? 'STOP ANALYSIS'
+          : mode === 'VERIFY'
+            ? 'VERIFY MY SETUP'
+            : 'FIND TRADE';
 
   return (
     <div className="relative">
@@ -70,8 +74,9 @@ export default function QuantActionBar({
         <button
           {...(omitRunId ? {} : { id: 'btn-run-deep-quant' })}
           type="button"
-          disabled={!isAnalyzing && !dataReady}
+          disabled={(!isAnalyzing && !dataReady) || isStarting}
           onClick={() => {
+            if (isStarting) return;
             if (isAnalyzing) onStop();
             else onRun();
           }}
@@ -82,15 +87,19 @@ export default function QuantActionBar({
             ${
               !dataReady && !isAnalyzing
                 ? 'bg-elevated/40 text-text-muted/50 border-border-default opacity-50 cursor-not-allowed'
-                : isAnalyzing
-                  ? 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700 hover:border-rose-700 active:scale-[0.99] cursor-pointer'
-                  : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 active:scale-[0.99]'
+                : isStarting
+                  ? 'bg-emerald-600/80 text-white border-emerald-600 cursor-wait'
+                  : isAnalyzing
+                    ? 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700 hover:border-rose-700 active:scale-[0.99] cursor-pointer'
+                    : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 active:scale-[0.99]'
             }
           `}
         >
           <span className="relative flex items-center gap-1.5">
             {!dataReady && !isAnalyzing ? (
               <Loader2 size={iconSize} className="animate-spin text-text-muted" />
+            ) : isStarting ? (
+              <Loader2 size={iconSize} className="animate-spin text-white" />
             ) : isAnalyzing ? (
               <Square size={iconSize} />
             ) : mode === 'VERIFY' ? (
@@ -105,7 +114,7 @@ export default function QuantActionBar({
         {/* Dropdown Toggle */}
         <button
           type="button"
-          disabled={isAnalyzing}
+          disabled={isAnalyzing || isStarting}
           aria-haspopup="menu"
           aria-expanded={isDropdownOpen}
           aria-label="Choose analysis mode"

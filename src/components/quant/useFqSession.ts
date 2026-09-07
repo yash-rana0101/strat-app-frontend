@@ -73,13 +73,15 @@ export function useFqIsSessionActivating(sessionId: string): boolean {
 export function useFqSessionStatus() {
   const next = useSessionStore(selectSessionStatus);
   const legacy = useQuantStore((s) => s.sessionStatus);
-  return FQ_MULTI_SESSION ? next : legacy;
+  const isStarting = useQuantStore((s) => s.isStartingRun);
+  return isStarting ? 'running' : (FQ_MULTI_SESSION ? next : legacy);
 }
 
 export function useFqIsAnalyzing(): boolean {
   const next = useSessionStore(selectIsAnalyzing);
   const legacy = useQuantStore((s) => s.isAnalyzing);
-  return FQ_MULTI_SESSION ? next : legacy;
+  const isStarting = useQuantStore((s) => s.isStartingRun);
+  return (FQ_MULTI_SESSION ? next : legacy) || isStarting;
 }
 
 export function useFqReasoningSteps(): ReasoningStep[] {

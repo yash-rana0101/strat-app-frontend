@@ -20,6 +20,7 @@ import {
   useFqAnalysisError,
   useFqCanAskQuestion,
   useFqDraft,
+  useFqIsAnalyzing,
   useFqQaMessages,
   useFqQaStatus,
   useFqReasoningSteps,
@@ -136,5 +137,23 @@ describe('Q&A status', () => {
     const status = harness(useFqQaStatus);
     act(() => useQuantStore.setState({ qaStatus: 'streaming' }));
     expect(status.current).toBe('streaming');
+  });
+});
+
+describe('starting run state', () => {
+  it('reflects immediately as running and analyzing in legacy mode', () => {
+    const status = harness(useFqSessionStatus);
+    const analyzing = harness(useFqIsAnalyzing);
+
+    expect(status.current).toBe('idle');
+    expect(analyzing.current).toBe(false);
+
+    act(() => useQuantStore.setState({ isStartingRun: true }));
+    expect(status.current).toBe('running');
+    expect(analyzing.current).toBe(true);
+
+    act(() => useQuantStore.setState({ isStartingRun: false }));
+    expect(status.current).toBe('idle');
+    expect(analyzing.current).toBe(false);
   });
 });

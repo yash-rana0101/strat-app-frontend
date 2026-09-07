@@ -18,9 +18,11 @@ vi.mock('../../../lib/env', async (importOriginal) => ({
   FQ_MULTI_SESSION: true,
 }));
 
+import { useQuantStore } from '../../../store/useQuantStore';
 import { useSessionStore } from '../../../store/useSessionStore';
 import {
   useFqDraft,
+  useFqIsAnalyzing,
   useFqMode,
   useFqQaMessages,
   useFqReasoningSteps,
@@ -235,5 +237,21 @@ describe('with no session selected', () => {
     expect(steps.current).toEqual([]);
     expect(status.current).toBe('idle');
     expect(thread.current).toBeNull();
+  });
+
+  it('reflects starting run state immediately as running and analyzing', () => {
+    const status = harness(useFqSessionStatus);
+    const analyzing = harness(useFqIsAnalyzing);
+
+    expect(status.current).toBe('idle');
+    expect(analyzing.current).toBe(false);
+
+    act(() => useQuantStore.setState({ isStartingRun: true }));
+    expect(status.current).toBe('running');
+    expect(analyzing.current).toBe(true);
+
+    act(() => useQuantStore.setState({ isStartingRun: false }));
+    expect(status.current).toBe('idle');
+    expect(analyzing.current).toBe(false);
   });
 });
