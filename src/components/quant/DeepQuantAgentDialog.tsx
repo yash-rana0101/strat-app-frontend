@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Dialog } from '@base-ui/react/dialog';
-import { History, Square, X } from 'lucide-react';
+import { History, X } from 'lucide-react';
 
 import { useQuantStore } from '../../store/useQuantStore';
 import { useTradeStore } from '../../store/useTradeStore';
@@ -142,27 +142,16 @@ export default function DeepQuantAgentDialog({
                   aria-expanded={historyOpen}
                   aria-label="Session history"
                   title="Session history"
-                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                    historyOpen
+                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${historyOpen
                       ? 'bg-elevated border-primary/50 text-text-primary shadow-xs'
                       : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
-                  }`}
+                    }`}
                 >
                   <History size={11} aria-hidden="true" />
                   <span>History</span>
                 </button>
               )}
 
-              {run.isAnalyzing && (
-                <button
-                  type="button"
-                  onClick={run.cancelAnalysis}
-                  className="flex items-center gap-1 rounded bg-rose-600 hover:bg-rose-500 active:bg-rose-700 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white transition-colors cursor-pointer"
-                >
-                  <Square size={9} />
-                  Stop analysis
-                </button>
-              )}
               <Dialog.Close
                 aria-label="Close full analysis"
                 className="flex h-6 w-6 items-center justify-center rounded text-text-muted transition-colors hover:bg-elevated hover:text-text-primary focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary cursor-pointer"
