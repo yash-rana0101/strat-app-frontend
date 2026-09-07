@@ -81,18 +81,17 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
       {/* Right: AI Response Content (unboxed, uses available canvas width) */}
       <div className="flex-1 min-w-0 flex flex-col gap-1">
         {msg.streaming && !msg.content && (
-          <div className="flex items-center gap-1.5 py-0.5 text-text-muted text-[11px]">
-            <span className="animate-pulse font-normal">Thinking…</span>
+          <div className="h-6 flex items-center justify-center gap-1.5 py-0.5 text-text-muted">
             <span
-              className="w-1 h-1 rounded-full bg-emerald-400 animate-bounce"
+              className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"
               style={{ animationDelay: '0ms' }}
             />
             <span
-              className="w-1 h-1 rounded-full bg-emerald-400 animate-bounce"
+              className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"
               style={{ animationDelay: '150ms' }}
             />
             <span
-              className="w-1 h-1 rounded-full bg-emerald-400 animate-bounce"
+              className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"
               style={{ animationDelay: '300ms' }}
             />
           </div>
