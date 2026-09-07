@@ -303,6 +303,17 @@ export default function DeepQuantPanel() {
           ) : (
             <div className="flex-1 min-w-[100px]" />
           )}
+
+          {/* 4. Full Screen / Expand View Button */}
+          <button
+            type="button"
+            onClick={() => openDialog(finalTrade ? 'decision' : null)}
+            aria-label="Expand analysis"
+            title="Expand analysis view"
+            className="h-7 w-7 flex items-center justify-center rounded bg-elevated/35 border border-border-default/60 text-text-muted hover:text-text-primary hover:bg-elevated/65 hover:border-border-default/90 transition-all cursor-pointer shrink-0"
+          >
+            <Maximize2 size={12} />
+          </button>
         </div>
       </div>
 
@@ -330,27 +341,6 @@ export default function DeepQuantPanel() {
           dataReady={dataReady}
         />
       )}
-
-      {/* ── Status row ──────────────────────────────────────
-          The one line that answers "is it running". Deliberately just the pill and the way in:
-          `agentStatus` is NOT shown beside it, because nothing on the web path emits
-          `agent_status` — no `emitBridgeEvent('agent_status', …)` exists anywhere in `lib/bridge`,
-          so that state is frozen at its initial "Awaiting trigger..." and would render as
-          "Analysing · Awaiting trigger…" mid-run. Which step is live is answered honestly by the
-          progress list below, from real frames. */}
-      <div className="shrink-0 flex items-center justify-between border-b border-border-default/40 px-3 py-1.5">
-        <QuantStatusPill status={sessionStatus} />
-
-        <button
-          type="button"
-          onClick={() => openDialog(finalTrade ? 'decision' : null)}
-          aria-label="Expand analysis"
-          title="Expand analysis view"
-          className="flex h-6 w-6 items-center justify-center rounded text-text-muted hover:text-text-primary hover:bg-elevated transition-colors cursor-pointer"
-        >
-          <Maximize2 size={12} />
-        </button>
-      </div>
 
       {/* ── Content Area ──────────────────────────────────── */}
       {/* A flex column: ONLY the progress/result region scrolls; the Q&A composer is pinned as a
