@@ -143,8 +143,8 @@ export default function DeepQuantAgentDialog({
                   aria-label="Session history"
                   title="Session history"
                   className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${historyOpen
-                      ? 'bg-elevated border-primary/50 text-text-primary shadow-xs'
-                      : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
+                    ? 'bg-elevated border-primary/50 text-text-primary shadow-xs'
+                    : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
                     }`}
                 >
                   <History size={11} aria-hidden="true" />

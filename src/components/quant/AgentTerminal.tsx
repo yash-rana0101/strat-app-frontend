@@ -147,9 +147,9 @@ export default function AgentTerminal({
 
         {/* Streaming indicator inside console */}
         {sessionStatus === 'running' && (
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-500/5 border border-emerald-500/15 text-[10px] text-emerald-400/90 select-none">
-            <Loader2 size={11} className="animate-spin text-emerald-400" />
-            <span className="font-mono tracking-wide">Synthesizing live telemetry…</span>
+          <div className="flex items-center gap-2 py-1 pl-1 text-[11px] text-emerald-400/90 select-none">
+            <Loader2 size={11} className="animate-spin text-emerald-400 shrink-0" />
+            <span className="font-mono tracking-wide">Working...</span>
           </div>
         )}
 
