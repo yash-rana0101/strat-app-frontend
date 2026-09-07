@@ -44,6 +44,7 @@ import { useQuantRunActions } from './useQuantRunActions';
 import { useTradeStore } from '../../store/useTradeStore';
 import TradeQaPanel from './TradeQaPanel';
 import ModelSelector from './deep-quant/ModelSelector';
+import TimeframeSelector from './deep-quant/TimeframeSelector';
 import { useAuthStore } from '../../store/useAuthStore';
 
 // ── Subcomponents ──────────────────────────────────────────────────────
@@ -232,20 +233,15 @@ export default function DeepQuantPanel() {
             />
           </div>
 
-          {/* 2. Candle Status Box */}
-          <div
-            className="flex-1 min-w-[100px] h-7 flex items-center justify-center rounded bg-elevated/35 border border-border-default/60 px-2 py-1 text-[9px] text-text-muted/70 text-center transition-all"
-            title={`${symbol} • ${activeTimeframe}`}
-          >
-            <span className="truncate">
-              {symbol} • {activeTimeframe} •{' '}
-              {!dataReady
-                ? 'Loading…'
-                : insufficientData
-                  ? `${symbolCandleCount} candles (low)`
-                  : `${symbolCandleCount} candles`}
-            </span>
-          </div>
+          {/* 2. Timeframe & Candle Status Selector */}
+          <TimeframeSelector
+            symbol={symbol}
+            activeTimeframe={activeTimeframe}
+            symbolCandleCount={symbolCandleCount}
+            dataReady={dataReady}
+            insufficientData={insufficientData}
+            disabled={isAnalyzing}
+          />
 
           {/* 3. Credits Box (Coins icon on left, circular progress ring on right) ── */}
           {credit ? (

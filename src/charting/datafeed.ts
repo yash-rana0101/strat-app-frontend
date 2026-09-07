@@ -493,6 +493,39 @@ const pendingFetch = new Map<string, Promise<void>>();
 
 /** Start fetching the most recent Kite page for symbolName at 
 esolution into the cache. */
+function mirrorToHistoricalStore(
+  symbol: string,
+  timeframe: string,
+  kiteInterval: string,
+  bars: Bar[]
+): void {
+  try {
+    const cacheKey = `${symbol.toUpperCase()}::${timeframe}::${kiteInterval}`;
+    const store = useTradeStore.getState();
+    const existing = store.historicalCache[cacheKey] ?? [];
+    const mergedByTime = new Map<number, OhlcCandle>();
+    for (const c of existing) mergedByTime.set(c.start_timestamp_ms, c);
+    for (const b of bars) {
+      mergedByTime.set(b.time, {
+        symbol: symbol.toUpperCase(),
+        start_timestamp_ms: b.time,
+        open: b.open,
+        high: b.high,
+        low: b.low,
+        close: b.close,
+        volume: b.volume ?? 0,
+      });
+    }
+    const merged = Array.from(mergedByTime.values()).sort(
+      (a, b) => a.start_timestamp_ms - b.start_timestamp_ms
+    );
+    store.setHistoricalCache(cacheKey, merged);
+  } catch (cacheErr) {
+    console.warn('[Datafeed] historicalCache mirror failed:', cacheErr);
+  }
+}
+
+/** Start fetching the most recent Kite page for symbolName at resolution into the cache. */
 export function prefetchHistory(symbolName: string, resolution: string): void {
   const [exchange, symbol] = symbolName.includes(':')
     ? symbolName.split(':', 2)
@@ -518,7 +551,10 @@ export function prefetchHistory(symbolName: string, resolution: string): void {
     exchange,
     timeframe
   )
-    .then((bars) => mergeScrollBackCache(symbol, timeframe, bars))
+    .then((bars) => {
+      mergeScrollBackCache(symbol, timeframe, bars);
+      mirrorToHistoricalStore(symbol, timeframe, interval, bars);
+    })
     .catch((err) => console.warn('[Datafeed] prefetch failed:', err))
     .finally(() => pendingFetch.delete(key));
   pendingFetch.set(key, run);
@@ -611,7 +647,7 @@ function startLiveSubscription(
       if (droppedOutOfOrder <= 3) {
         console.warn(
           `[Datafeed] Dropping out-of-order bar for ${symbolUpper}: ` +
-            `${new Date(barTimeMs).toISOString()} arrived after ${new Date(lastBarTime).toISOString()}`
+          `${new Date(barTimeMs).toISOString()} arrived after ${new Date(lastBarTime).toISOString()}`
         );
       }
       return;
@@ -774,13 +810,13 @@ export function createDatafeed(): IBasicDatafeed {
         Array<
           | { kind: 'EQ'; symbol: string; name: string; exchange: string; segment?: string }
           | {
-              kind: 'FNO';
-              tradingsymbol: string;
-              underlying: string;
-              expiry: string;
-              strike: number | null;
-              optionType: string;
-            }
+            kind: 'FNO';
+            tradingsymbol: string;
+            underlying: string;
+            expiry: string;
+            strike: number | null;
+            optionType: string;
+          }
         >
       >('search_instruments', { query })
         .then((results) => {
@@ -795,12 +831,12 @@ export function createDatafeed(): IBasicDatafeed {
               const isIndex = r.segment
                 ? r.segment.toUpperCase() === 'INDICES'
                 : upper === 'NIFTY' ||
-                  upper === 'NIFTY 50' ||
-                  upper === 'BANKNIFTY' ||
-                  upper === 'NIFTY BANK' ||
-                  upper === 'FINNIFTY' ||
-                  upper === 'MIDCPNIFTY' ||
-                  upper === 'SENSEX';
+                upper === 'NIFTY 50' ||
+                upper === 'BANKNIFTY' ||
+                upper === 'NIFTY BANK' ||
+                upper === 'FINNIFTY' ||
+                upper === 'MIDCPNIFTY' ||
+                upper === 'SENSEX';
               return {
                 symbol: r.symbol,
                 full_name: `${r.exchange}:${r.symbol}`,
@@ -1037,30 +1073,7 @@ export function createDatafeed(): IBasicDatafeed {
         // `useTradeStore.historicalCache` (via symbolCandleCount) to know a
         // symbol has data. Each scroll-back page is MERGED with the existing
         // cache so pages accumulate rather than overwrite.
-        try {
-          const cacheKey = `${symbol.toUpperCase()}::${timeframe}::${kiteInterval}`;
-          const store = useTradeStore.getState();
-          const existing = store.historicalCache[cacheKey] ?? [];
-          const mergedByTime = new Map<number, OhlcCandle>();
-          for (const c of existing) mergedByTime.set(c.start_timestamp_ms, c);
-          for (const b of bars) {
-            mergedByTime.set(b.time, {
-              symbol: symbol.toUpperCase(),
-              start_timestamp_ms: b.time, // datafeed bars are in ms
-              open: b.open,
-              high: b.high,
-              low: b.low,
-              close: b.close,
-              volume: b.volume ?? 0,
-            });
-          }
-          const merged = Array.from(mergedByTime.values()).sort(
-            (a, b) => a.start_timestamp_ms - b.start_timestamp_ms
-          );
-          store.setHistoricalCache(cacheKey, merged);
-        } catch (cacheErr) {
-          console.warn('[Datafeed] historicalCache mirror failed:', cacheErr);
-        }
+        mirrorToHistoricalStore(symbol, timeframe, kiteInterval, bars);
 
         markOnce('first-history');
         onResult(bars, { noData: false });

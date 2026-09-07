@@ -1,4 +1,5 @@
 import type { ResolutionString } from '../charting/datafeedTypes';
+import type { ChartTimeframe } from '../store/useTradeStore';
 
 // ── Resolution Mapping ────────────────────────────────────────────────────
 /** Map store timeframe → TV resolution string. */
@@ -21,6 +22,30 @@ export const TIMEFRAME_TO_RESOLUTION: Record<string, ResolutionString> = {
   '1D': '1D',
   '1W': '1W',
   '1M': '1M',
+};
+
+/** Map TV resolution string → store timeframe. */
+export const RESOLUTION_TO_TIMEFRAME: Record<string, ChartTimeframe> = {
+  '1': '1m',
+  '2': '2m',
+  '3': '3m',
+  '4': '4m',
+  '5': '5m',
+  '10': '10m',
+  '15': '15m',
+  '30': '30m',
+  '60': '1h',
+  '75': '75m',
+  '120': '2h',
+  '125': '125m',
+  '180': '3h',
+  '240': '4h',
+  '1D': '1D',
+  D: '1D',
+  '1W': '1W',
+  W: '1W',
+  '1M': '1M',
+  M: '1M',
 };
 
 // ── Theme overrides to match the institutional dark palette ───────────────

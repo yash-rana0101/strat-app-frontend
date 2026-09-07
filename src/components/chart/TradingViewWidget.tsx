@@ -12,7 +12,7 @@ import {
 import { markOnce } from '../../lib/perfMarks';
 import { useGhostLine } from '../../hooks/useGhostLine';
 import type { IChartingLibraryWidget } from '../../charting/datafeedTypes';
-import { TIMEFRAME_TO_RESOLUTION, getThemeOverrides, applyChartTheme } from '../../utils/tvThemeOverrides';
+import { TIMEFRAME_TO_RESOLUTION, RESOLUTION_TO_TIMEFRAME, getThemeOverrides, applyChartTheme } from '../../utils/tvThemeOverrides';
 import { useTradingViewScript } from '../../hooks/useTradingViewScript';
 import { getTvWidgetOptions } from '../../utils/tvWidgetOptions';
 import { AlertTriangle } from 'lucide-react';
@@ -188,6 +188,30 @@ export default function TradingViewWidget({
           });
         } catch (err) {
           console.warn('[TradingViewWidget] Failed to subscribe to onSymbolChanged:', err);
+        }
+
+        // Listen to timeframe (interval) changes from the TV interval dropdown
+        try {
+          const chartApi = tvWidget.activeChart() as any;
+          chartApi.onIntervalChanged().subscribe(null, (interval: string) => {
+            const tf = RESOLUTION_TO_TIMEFRAME[interval];
+            if (tf) {
+              prevResolutionRef.current = interval as any;
+              const paneEl = containerRef.current?.closest('[data-pane-id]');
+              if (paneEl) {
+                const paneId = paneEl.getAttribute('data-pane-id') as PaneId;
+                if (paneId) {
+                  useChartUIStore.getState().setActivePane(paneId);
+                  useChartUIStore.getState().setPaneTimeframe(paneId, tf);
+                }
+              }
+              if (useTradeStore.getState().activeTimeframe !== tf) {
+                useTradeStore.getState().setActiveTimeframe(tf);
+              }
+            }
+          });
+        } catch (err) {
+          console.warn('[TradingViewWidget] Failed to subscribe to onIntervalChanged:', err);
         }
 
         whenHeaderReady(

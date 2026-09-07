@@ -54,8 +54,17 @@ export function useQuantRunActions(): QuantRunActions {
   // The cache is keyed `SYMBOL::timeframe::interval`, so this scans by prefix and takes the
   // widest series available for the symbol — a 10m series with history is enough to run on even
   // when the currently-selected timeframe has none yet.
+  // The cache is keyed `SYMBOL::timeframe::interval`. We prioritize the candle
+  // count for the currently active timeframe; if that is not yet loaded, we fall
+  // back to the widest available series for this symbol so the agent can still run.
   const symbolCandleCount = useMemo(() => {
     const symUpper = symbol.toUpperCase();
+    const activeKeyPrefix = `${symUpper}::${activeTimeframe}::`;
+    for (const [key, val] of Object.entries(historicalCache)) {
+      if (key.startsWith(activeKeyPrefix) && val && val.length > 0) {
+        return val.length;
+      }
+    }
     let maxCount = 0;
     for (const [key, val] of Object.entries(historicalCache)) {
       if (key.startsWith(`${symUpper}::`) && val && val.length > maxCount) {
@@ -63,7 +72,7 @@ export function useQuantRunActions(): QuantRunActions {
       }
     }
     return maxCount;
-  }, [historicalCache, symbol]);
+  }, [historicalCache, symbol, activeTimeframe]);
 
   const dataReady = symbolCandleCount > 0;
   const insufficientData = symbolCandleCount > 0 && symbolCandleCount < 50;
