@@ -15,10 +15,12 @@ import {
   useQuantStore,
 } from '../../../store/useQuantStore';
 import WatchingIndicator from './WatchingIndicator';
+import InterimWatchDetail from './InterimWatchDetail';
 import ConvictionGauge from '../visuals/ConvictionGauge';
 import PriceLadderBar from '../visuals/PriceLadderBar';
 import ConfluenceMatrix from '../visuals/ConfluenceMatrix';
 import StructuredAnalysisCards from '../visuals/StructuredAnalysisCards';
+import { useFqBestCurrentRead } from '../useFqHeartbeat';
 
 interface AgentDetailPanelProps {
   step?: ReasoningStep | null;
@@ -33,14 +35,23 @@ export default function AgentDetailPanel({
   symbol = '',
   sessionStatus,
 }: AgentDetailPanelProps) {
+  const bestCurrentRead = useFqBestCurrentRead();
+
   if (!finalTrade) {
+    if (sessionStatus === 'watching' || bestCurrentRead != null) {
+      return (
+        <div className="flex flex-col font-sans divide-y divide-border-default/30 select-text p-3.5">
+          <InterimWatchDetail
+            symbol={symbol}
+            bestCurrentRead={bestCurrentRead}
+            sessionStatus={sessionStatus}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="flex h-full flex-col items-center justify-center p-6 text-center select-none">
-        {sessionStatus === 'watching' && (
-          <div className="w-full mb-4 text-left">
-            <WatchingIndicator />
-          </div>
-        )}
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-elevated/60 border border-border-default mb-3">
           <Layers size={20} className="text-text-muted" />
         </div>
@@ -58,7 +69,7 @@ export default function AgentDetailPanel({
     <div className="flex flex-col font-sans divide-y divide-border-default/30 select-text">
       {sessionStatus === 'watching' && (
         <div className="p-3.5 pb-0">
-          <WatchingIndicator />
+          <WatchingIndicator symbol={symbol} />
         </div>
       )}
 
@@ -141,11 +152,10 @@ function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; s
           <span>Committed Trade Plan</span>
         </h3>
         <span
-          className={`rounded px-2 py-0.5 text-[8.5px] font-mono font-bold uppercase tracking-widest border ${
-            isBuy
-              ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-              : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
-          }`}
+          className={`rounded px-2 py-0.5 text-[8.5px] font-mono font-bold uppercase tracking-widest border ${isBuy
+            ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+            : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
+            }`}
         >
           {side} {symbol}
         </span>
@@ -158,9 +168,8 @@ function DecisionDetail({ finalTrade, symbol }: { finalTrade: AiExecutionPlan; s
             Directional Setup
           </span>
           <span
-            className={`text-xl font-black tracking-tight mt-0.5 ${
-              isBuy ? 'text-emerald-400' : 'text-rose-400'
-            }`}
+            className={`text-xl font-black tracking-tight mt-0.5 ${isBuy ? 'text-emerald-400' : 'text-rose-400'
+              }`}
           >
             {side} {symbol}
           </span>

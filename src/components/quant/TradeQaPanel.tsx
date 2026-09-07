@@ -46,11 +46,18 @@ export default function TradeQaPanel() {
   const canInteract = !isSessionLoading && (isWatching || isComplete) && !!currentThreadId;
   const canSend = canInteract && !isStreaming && draft.trim().length > 0;
 
+  const submittingRef = React.useRef(false);
+
   const handleSend = () => {
-    if (!canSend) return;
+    if (!canSend || submittingRef.current) return;
     const q = draft.trim();
+    if (!q) return;
+    submittingRef.current = true;
     setDraft('');
     askQuestion(q);
+    setTimeout(() => {
+      submittingRef.current = false;
+    }, 400);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -141,11 +148,10 @@ export default function TradeQaPanel() {
               onClick={handleSend}
               disabled={!canSend}
               title="Send question"
-              className={`h-7 w-7 rounded-full flex items-center justify-center transition-all duration-300 ${
-                canSend
-                  ? 'bg-emerald-500 text-black hover:bg-emerald-400 active:scale-[0.93] '
-                  : 'bg-elevated/40 text-text-muted/30 cursor-not-allowed opacity-50'
-              }`}
+              className={`h-7 w-7 rounded-full flex items-center justify-center transition-all duration-300 ${canSend
+                ? 'bg-emerald-500 text-black hover:bg-emerald-400 active:scale-[0.93] '
+                : 'bg-elevated/40 text-text-muted/30 cursor-not-allowed opacity-50'
+                }`}
             >
               {isStreaming ? (
                 <Loader2 size={12} className="animate-spin" />

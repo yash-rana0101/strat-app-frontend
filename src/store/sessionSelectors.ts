@@ -20,6 +20,7 @@ import {
   blankSession,
   isActionableTrade,
   type AiExecutionPlan,
+  type BestCurrentRead,
   type QaChatMessage,
   type QuantSession,
   type ReasoningStep,
@@ -135,6 +136,18 @@ export const selectFinalTrade = (state: State): AiExecutionPlan | null =>
 
 export const selectAiPlan = (state: State): AiExecutionPlan | null =>
   selectCurrentSession(state).aiPlan;
+
+export const selectBestCurrentRead = (state: State): BestCurrentRead | null =>
+  selectCurrentSession(state).bestCurrentRead ?? null;
+
+export const selectHeartbeatCount = (state: State): number =>
+  selectCurrentSession(state).heartbeatCount ?? 0;
+
+export const selectLastHeartbeatAt = (state: State): number | null =>
+  selectCurrentSession(state).lastHeartbeatAt ?? null;
+
+export const selectLastHeartbeatStatus = (state: State): string | null =>
+  selectCurrentSession(state).lastHeartbeatStatus ?? null;
 
 export const selectAnalysisError = (state: State): string | null =>
   selectCurrentSession(state).analysisError;

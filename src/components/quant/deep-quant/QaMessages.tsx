@@ -69,11 +69,10 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
     <div className="w-full my-3 animate-fade-in font-sans flex items-start gap-2.5 sm:gap-3">
       {/* Left: AI Avatar with sharp vector Strat AI logo */}
       <div
-        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border select-none mt-0.5 ${
-          msg.error
-            ? 'bg-rose-500/10 border-rose-500/30'
-            : 'bg-[#18181b] border-border-default/80 shadow-xs'
-        }`}
+        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border select-none mt-0.5 ${msg.error
+          ? 'bg-rose-500/10 border-rose-500/30'
+          : 'bg-[#18181b] border-border-default/80 shadow-xs'
+          }`}
       >
         <StratAiLogo size={13} className={msg.streaming ? 'animate-pulse' : ''} />
       </div>
@@ -113,9 +112,8 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
 
         {msg.content ? (
           <div
-            className={`w-full text-[11px] leading-relaxed ${
-              msg.error ? 'text-rose-400' : 'text-text-primary'
-            }`}
+            className={`w-full text-[11px] leading-relaxed ${msg.error ? 'text-rose-400' : 'text-text-primary'
+              }`}
           >
             <MarkdownRenderer content={msg.content} simple />
           </div>
@@ -141,9 +139,8 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
                 setLiked(!liked);
                 setDisliked(false);
               }}
-              className={`p-1 hover:bg-elevated rounded transition-all cursor-pointer flex items-center justify-center ${
-                liked ? 'text-emerald-500 bg-emerald-500/10' : 'hover:text-text-primary'
-              }`}
+              className={`p-1 hover:bg-elevated rounded transition-all cursor-pointer flex items-center justify-center ${liked ? 'text-emerald-500 bg-emerald-500/10' : 'hover:text-text-primary'
+                }`}
               title="Like response"
             >
               <ThumbsUp size={11} className={liked ? 'fill-current' : ''} />
@@ -155,9 +152,8 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
                 setDisliked(!disliked);
                 setLiked(false);
               }}
-              className={`p-1 hover:bg-elevated rounded transition-all cursor-pointer flex items-center justify-center ${
-                disliked ? 'text-rose-500 bg-rose-500/10' : 'hover:text-text-primary'
-              }`}
+              className={`p-1 hover:bg-elevated rounded transition-all cursor-pointer flex items-center justify-center ${disliked ? 'text-rose-500 bg-rose-500/10' : 'hover:text-text-primary'
+                }`}
               title="Dislike response"
             >
               <ThumbsDown size={11} className={disliked ? 'fill-current' : ''} />
@@ -184,14 +180,38 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
 export default function QaMessages() {
   const qaMessages = useFqQaMessages();
 
-  if (!qaMessages || qaMessages.length === 0) return null;
+  const renderedMessages = React.useMemo(() => {
+    if (!qaMessages || qaMessages.length === 0) return [];
+    const out: QaChatMessage[] = [];
+    const seenIds = new Set<string>();
+
+    for (let i = 0; i < qaMessages.length; i++) {
+      const msg = qaMessages[i];
+      const key = msg.id || `msg-${i}`;
+      if (seenIds.has(key)) continue;
+      // Deduplicate identical consecutive user messages
+      if (
+        msg.role === 'user' &&
+        out.length > 0 &&
+        out[out.length - 1].role === 'user' &&
+        out[out.length - 1].content.trim() === msg.content.trim()
+      ) {
+        continue;
+      }
+      seenIds.add(key);
+      out.push(msg);
+    }
+    return out;
+  }, [qaMessages]);
+
+  if (renderedMessages.length === 0) return null;
 
   return (
     <div className="space-y-4 mt-2 px-3 sm:px-4 pb-2">
-      {qaMessages.map((msg) =>
+      {renderedMessages.map((msg, idx) =>
         msg.role === 'user' ? (
           <div
-            key={msg.id}
+            key={msg.id ? `user-${msg.id}` : `user-${idx}`}
             className="flex justify-end items-start gap-2 animate-fade-in font-sans w-full my-1.5"
           >
             {/* Bubble - user message stays in box container */}
@@ -210,7 +230,7 @@ export default function QaMessages() {
             </div>
           </div>
         ) : (
-          <AssistantMessageRow key={msg.id} msg={msg} />
+          <AssistantMessageRow key={msg.id ? `asst-${msg.id}` : `asst-${idx}`} msg={msg} />
         )
       )}
     </div>

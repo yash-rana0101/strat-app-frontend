@@ -185,17 +185,19 @@ export function useFqAskQuestion(): (question: string) => void {
     const trimmed = question.trim();
     if (!trimmed || !activeSessionId) return;
 
-    // Doubles as the optimistic turn's id and the server's idempotency key, so a retried press
-    // cannot produce two copies of the same question — and the row the server persists carries
-    // the same id the client already rendered.
-    const clientMsgId = newClientMsgId();
     const store = useSessionStore.getState();
+    if (store.sessions[activeSessionId]?.qaStatus === 'streaming') return;
+
+    const clientMsgId = newClientMsgId();
+    const asstPlaceholderId = `qa-asst-${clientMsgId}`;
     const existing = store.sessions[activeSessionId]?.qaMessages ?? [];
 
     store.upsertSession(activeSessionId, {
-      qaMessages: [...existing, { id: clientMsgId, role: 'user', content: trimmed }],
-      // Locks the composer immediately. Waiting for the first frame leaves a window in which a
-      // second press sends the same question again.
+      qaMessages: [
+        ...existing,
+        { id: clientMsgId, role: 'user', content: trimmed },
+        { id: asstPlaceholderId, role: 'assistant', content: '', activity: [], streaming: true },
+      ],
       qaStatus: 'streaming',
     });
 
@@ -207,18 +209,14 @@ export function useFqAskQuestion(): (question: string) => void {
       client_msg_id: clientMsgId,
       userId,
     }).catch((err: unknown) => {
-      // The stream never started, so no ERROR frame is coming and nothing else will unlock the
-      // composer.
       const message = err instanceof Error ? err.message : String(err);
       const s = useSessionStore.getState();
       const current = s.sessions[activeSessionId]?.qaMessages ?? [];
-      s.upsertSession(activeSessionId, {
-        qaMessages: [
-          ...current,
-          { id: `${clientMsgId}-error`, role: 'assistant', content: message, error: true },
-        ],
-        qaStatus: 'idle',
-      });
+      const asstIdx = current.findLastIndex((m) => m.id === asstPlaceholderId);
+      if (asstIdx !== -1) {
+        current[asstIdx] = { ...current[asstIdx], content: message, error: true, streaming: false };
+        s.upsertSession(activeSessionId, { qaMessages: current, qaStatus: 'idle' });
+      }
     });
   };
 }

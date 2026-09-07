@@ -159,17 +159,13 @@ function applyQaFrame(session: QuantSession, payload: StreamEventPayload): Quant
   const id = qaTurnId(threadId, runId);
 
   const messages = [...session.qaMessages];
-  let index = messages.findIndex((m) => m.id === id);
-  if (index === -1) {
-    // If an in-flight streaming assistant turn already exists (e.g. from RUN_STARTED before
-    // run_id was known, or with a fallback threadId), adopt and re-key that existing turn
-    // instead of creating a duplicate orphan turn that stays stuck in "Thinking...".
-    const activeStreamingIndex = messages.findLastIndex(
-      (m) => m.role === 'assistant' && m.streaming
-    );
-    if (activeStreamingIndex !== -1) {
-      messages[activeStreamingIndex] = { ...messages[activeStreamingIndex], id };
-      index = activeStreamingIndex;
+  let index = messages.findLastIndex((m) => m.role === 'assistant' && m.streaming);
+  if (index !== -1) {
+    messages[index] = { ...messages[index], id };
+  } else {
+    const existingIndex = messages.findLastIndex((m) => m.id === id);
+    if (existingIndex !== -1 && (payload.event === 'RUN_FINISHED' || payload.event === 'ERROR')) {
+      index = existingIndex;
     } else {
       messages.push({ id, role: 'assistant', content: '', activity: [], streaming: true });
       index = messages.length - 1;
@@ -206,7 +202,8 @@ function applyQaFrame(session: QuantSession, payload: StreamEventPayload): Quant
     case 'RUN_FINISHED': {
       // Idempotent: a reattach can replay this, and flipping `streaming` back on would leave
       // the composer locked forever.
-      messages[index] = { ...turn, streaming: false };
+      const finalizedId = turn.id.includes('-done-') ? turn.id : `${turn.id}-done-${Date.now()}`;
+      messages[index] = { ...turn, id: finalizedId, streaming: false };
       // Prune any empty orphaned streaming assistant turns and finalize all assistant turns
       const cleaned = messages
         .filter(
@@ -223,8 +220,10 @@ function applyQaFrame(session: QuantSession, payload: StreamEventPayload): Quant
     }
     case 'ERROR': {
       const error = typeof data?.error === 'string' ? data.error : 'Unknown Q&A error';
+      const finalizedId = turn.id.includes('-done-') ? turn.id : `${turn.id}-done-${Date.now()}`;
       messages[index] = {
         ...turn,
+        id: finalizedId,
         // Keep whatever streamed; an empty bubble is worse than a partial answer plus the
         // reason it stopped.
         content: turn.content || error,
@@ -486,12 +485,12 @@ export const useSessionStore = create<SessionStore>((set, get) => ({
         seq === null
           ? s.streams
           : {
-              ...s.streams,
-              [sessionId as SessionId]: {
-                ...(s.streams[sessionId as SessionId] ?? blankStream()),
-                lastSeq: Math.max(s.streams[sessionId as SessionId]?.lastSeq ?? 0, seq),
-              },
+            ...s.streams,
+            [sessionId as SessionId]: {
+              ...(s.streams[sessionId as SessionId] ?? blankStream()),
+              lastSeq: Math.max(s.streams[sessionId as SessionId]?.lastSeq ?? 0, seq),
             },
+          },
     }));
 
     return sessionId;

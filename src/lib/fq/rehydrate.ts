@@ -106,22 +106,37 @@ export function replayEvents(events: StoredEvent[], base?: QuantSession): QuantS
  * so it keeps `streaming: true` and the live stream will finish it.
  */
 export function toQaMessages(messages: StoredMessage[]): QaChatMessage[] {
+  const sorted = [...messages].sort(
+    (a, b) => (a.seq ?? 0) - (b.seq ?? 0) || (a.created_at ?? 0) - (b.created_at ?? 0)
+  );
   const out: QaChatMessage[] = [];
-  for (const message of messages) {
+  const seenIds = new Set<string>();
+  const seenClientIds = new Set<string>();
+
+  for (const message of sorted) {
     if (message.kind !== 'qa_question' && message.kind !== 'qa_answer') continue;
+    if (message.client_msg_id) {
+      if (seenClientIds.has(message.client_msg_id)) continue;
+      seenClientIds.add(message.client_msg_id);
+    }
     const failed =
       message.status === 'truncated' ||
       message.status === 'error' ||
       message.status === 'cancelled';
+    const id =
+      message.status === 'streaming' && message.role === 'assistant' && message.run_id
+        ? `qa-${message.run_id}`
+        : message.message_id;
+
+    if (seenIds.has(id)) continue;
+    seenIds.add(id);
+
     out.push({
       // A STILL-STREAMING assistant answer gets the same id the live path derives from the
       // frame (`qa-<run_id>`), so when the stream reattaches its chunks land on this turn
       // instead of creating a second, parallel bubble for the same answer. Finished turns keep
       // their stable `message_id`, which is the better key for a list that will not change.
-      id:
-        message.status === 'streaming' && message.role === 'assistant' && message.run_id
-          ? `qa-${message.run_id}`
-          : message.message_id,
+      id,
       role: message.role === 'user' ? 'user' : 'assistant',
       content: message.content || (failed ? describeFailedMessage(message) : ''),
       activity: message.activity ?? undefined,
@@ -196,7 +211,7 @@ export function reconcileWithRun(session: QuantSession, run: StoredRun | null): 
         analysisError:
           session.analysisError ??
           'This analysis was interrupted before it finished, so its conclusion is incomplete. ' +
-            'Run it again for a current read.',
+          'Run it again for a current read.',
         // A truncated run may have emitted a DECISION before dying. Keeping it would render
         // an executable trade card for an analysis that never completed its own
         // verification, so the plan is dropped while the reasoning is kept.

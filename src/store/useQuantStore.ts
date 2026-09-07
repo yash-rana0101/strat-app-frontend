@@ -155,6 +155,13 @@ export interface AiExecutionPlan {
   execution_levels?: ExecutionLevels; // present ONLY for a validated directional trade
 }
 
+export interface BestCurrentRead {
+  bias: string;
+  levels: Record<string, number>;
+  why_standing_aside?: string;
+  timestamp?: number;
+}
+
 // Shared, pure render-guard predicate (R1). A plan is actionable only when the
 // committed decision is a directional BUY/SELL carrying three finite positive
 // prices. HOLD, `stand_aside`, an unknown/absent action, or missing/malformed
@@ -321,6 +328,10 @@ interface QuantStore {
     args?: Record<string, unknown>;
   }>;
   finalTrade: AiExecutionPlan | null;
+  bestCurrentRead: BestCurrentRead | null;
+  heartbeatCount: number;
+  lastHeartbeatAt: number | null;
+  lastHeartbeatStatus: string | null;
   /** Number of tool calls that have started but not yet completed */
   _pendingToolCalls: number;
   /** Guard: true once RUN_FINISHED has been processed for this session */
@@ -703,6 +714,10 @@ export interface QuantSession {
   reasoningSteps: ReasoningStep[];
   finalTrade: AiExecutionPlan | null;
   aiPlan: AiExecutionPlan | null;
+  bestCurrentRead: BestCurrentRead | null;
+  heartbeatCount: number;
+  lastHeartbeatAt: number | null;
+  lastHeartbeatStatus: string | null;
   analysisError: string | null;
   isAnalyzing: boolean;
   _pendingToolCalls: number;
@@ -722,6 +737,10 @@ export function blankSession(): QuantSession {
     reasoningSteps: [],
     finalTrade: null,
     aiPlan: null,
+    bestCurrentRead: null,
+    heartbeatCount: 0,
+    lastHeartbeatAt: null,
+    lastHeartbeatStatus: null,
     analysisError: null,
     isAnalyzing: false,
     _pendingToolCalls: 0,
@@ -742,6 +761,10 @@ function projectSession(s: QuantSession) {
     reasoningSteps: s.reasoningSteps,
     finalTrade: s.finalTrade,
     aiPlan: s.aiPlan,
+    bestCurrentRead: s.bestCurrentRead,
+    heartbeatCount: s.heartbeatCount,
+    lastHeartbeatAt: s.lastHeartbeatAt,
+    lastHeartbeatStatus: s.lastHeartbeatStatus,
     analysisError: s.analysisError,
     isAnalyzing: s.isAnalyzing,
     _pendingToolCalls: s._pendingToolCalls,
@@ -816,6 +839,10 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
           // dominates shipped builds. Clearing here keeps both properties.
           finalTrade: null,
           aiPlan: null,
+          bestCurrentRead: session.bestCurrentRead ?? null,
+          heartbeatCount: session.heartbeatCount ?? 0,
+          lastHeartbeatAt: session.lastHeartbeatAt ?? null,
+          lastHeartbeatStatus: 'Heartbeat check in progress...',
           reasoningSteps: [...session.reasoningSteps, resumeStep],
           updatedAt: Date.now(),
         };
@@ -826,6 +853,10 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
         reasoningSteps: [],
         finalTrade: null,
         aiPlan: null,
+        bestCurrentRead: null,
+        heartbeatCount: 0,
+        lastHeartbeatAt: null,
+        lastHeartbeatStatus: null,
         isAnalyzing: true,
         analysisError: null,
         _pendingToolCalls: 0,
@@ -877,8 +908,13 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
         data?.levels && typeof data.levels === 'object'
           ? (data.levels as Record<string, unknown>)
           : {};
-      const levelStr = Object.entries(levelsRaw)
-        .filter(([, v]) => typeof v === 'number' && Number.isFinite(v as number))
+      const numericLevels: Record<string, number> = {};
+      for (const [k, v] of Object.entries(levelsRaw)) {
+        if (typeof v === 'number' && Number.isFinite(v)) {
+          numericLevels[k] = v;
+        }
+      }
+      const levelStr = Object.entries(numericLevels)
         .map(([k, v]) => `${k}: ${v}`)
         .join(' · ');
       const lines = [
@@ -886,13 +922,29 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
         levelStr ? `Key levels: ${levelStr}` : '',
         why ? `Read: ${why}` : '',
       ].filter(Boolean);
+
+      const now = Date.now();
+      const count = (session.heartbeatCount ?? 0) + 1;
+      const statusMsg = why ? `Setup holding: ${bias}` : `Heartbeat check #${count} complete`;
+
+      const read: BestCurrentRead = {
+        bias,
+        levels: numericLevels,
+        why_standing_aside: why,
+        timestamp: now,
+      };
+
       return {
         ...session,
+        bestCurrentRead: read,
+        heartbeatCount: count,
+        lastHeartbeatAt: now,
+        lastHeartbeatStatus: statusMsg,
         reasoningSteps: [
           ...session.reasoningSteps,
-          { id: _newStepId(), type: 'message', content: lines.join('\n'), timestamp: Date.now() },
+          { id: _newStepId(), type: 'message', content: lines.join('\n'), timestamp: now },
         ],
-        updatedAt: Date.now(),
+        updatedAt: now,
       };
     }
     case 'VERIFICATION_STEP': {
@@ -956,13 +1008,13 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       const decisionPlan: AiExecutionPlan | null =
         conviction !== undefined || rationale || executionPlan || action
           ? {
-              conviction_score: conviction,
-              setup_validation: rationale,
-              execution_plan: executionPlan,
-              action: (action as AiExecutionPlan['action']) || undefined,
-              opportunity_tier: tier,
-              execution_levels: levels,
-            }
+            conviction_score: conviction,
+            setup_validation: rationale,
+            execution_plan: executionPlan,
+            action: (action as AiExecutionPlan['action']) || undefined,
+            opportunity_tier: tier,
+            execution_levels: levels,
+          }
           : null;
       return {
         ...session,
@@ -1036,6 +1088,10 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
           sessionStatus: 'watching',
           isAnalyzing: false,
           _runFinishedProcessed: true,
+          lastHeartbeatStatus:
+            s.lastHeartbeatStatus === 'Heartbeat check in progress...'
+              ? 'Setup holding • Thesis active'
+              : (s.lastHeartbeatStatus ?? 'Setup holding • Thesis active'),
           updatedAt: Date.now(),
         };
       }
@@ -1079,6 +1135,10 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
   sessionStatus: 'idle',
   reasoningSteps: [],
   finalTrade: null,
+  bestCurrentRead: null,
+  heartbeatCount: 0,
+  lastHeartbeatAt: null,
+  lastHeartbeatStatus: null,
   _pendingToolCalls: 0,
   _runFinishedProcessed: false,
   isStartingRun: false,
@@ -1233,8 +1293,8 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         ...(entry.payload
           ? { activeSentiment: entry.payload, sentimentError: null }
           : {
-              sentimentError: `Sentiment is rate limited for ${symbol}. Retrying automatically in ${secs}s.`,
-            }),
+            sentimentError: `Sentiment is rate limited for ${symbol}. Retrying automatically in ${secs}s.`,
+          }),
       });
       return;
     }
@@ -1275,17 +1335,17 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         // On 429: set cooldown so we don't hammer again for 5 minutes
         sentimentCache: is429
           ? {
-              ...state.sentimentCache,
-              [symbol]: {
-                payload:
-                  state.sentimentCache[symbol]?.payload ??
-                  (state.activeSentiment?.symbol === symbol
-                    ? state.activeSentiment
-                    : (null as unknown as SentimentPayload)),
-                fetchedAt: state.sentimentCache[symbol]?.fetchedAt ?? 0,
-                rateLimitedUntil: Date.now() + SENTIMENT_429_COOL,
-              },
-            }
+            ...state.sentimentCache,
+            [symbol]: {
+              payload:
+                state.sentimentCache[symbol]?.payload ??
+                (state.activeSentiment?.symbol === symbol
+                  ? state.activeSentiment
+                  : (null as unknown as SentimentPayload)),
+              fetchedAt: state.sentimentCache[symbol]?.fetchedAt ?? 0,
+              rateLimitedUntil: Date.now() + SENTIMENT_429_COOL,
+            },
+          }
           : state.sentimentCache,
       }));
     } finally {
@@ -1338,17 +1398,17 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         sentimentError: message,
         sentimentCache: is429
           ? {
-              ...state.sentimentCache,
-              [symbol]: {
-                payload:
-                  state.sentimentCache[symbol]?.payload ??
-                  (state.activeSentiment?.symbol === symbol
-                    ? state.activeSentiment
-                    : (null as unknown as SentimentPayload)),
-                fetchedAt: state.sentimentCache[symbol]?.fetchedAt ?? 0,
-                rateLimitedUntil: Date.now() + SENTIMENT_429_COOL,
-              },
-            }
+            ...state.sentimentCache,
+            [symbol]: {
+              payload:
+                state.sentimentCache[symbol]?.payload ??
+                (state.activeSentiment?.symbol === symbol
+                  ? state.activeSentiment
+                  : (null as unknown as SentimentPayload)),
+              fetchedAt: state.sentimentCache[symbol]?.fetchedAt ?? 0,
+              rateLimitedUntil: Date.now() + SENTIMENT_429_COOL,
+            },
+          }
           : state.sentimentCache,
       }));
     } finally {
@@ -1495,12 +1555,12 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         model: MODEL_SELECTION_LOCKED ? null : get().selectedModel || null,
         manualTrade: manualTrade
           ? {
-              side: manualTrade.side,
-              entry: manualTrade.entry,
-              stop_loss: manualTrade.stopLoss,
-              take_profit: manualTrade.takeProfit,
-              user_analysis: manualTrade.userAnalysis,
-            }
+            side: manualTrade.side,
+            entry: manualTrade.entry,
+            stop_loss: manualTrade.stopLoss,
+            take_profit: manualTrade.takeProfit,
+            user_analysis: manualTrade.userAnalysis,
+          }
           : null,
         // Authenticated user id → the droplet resolves this user's OpenRouter
         // key from the backend internal endpoint for the run.
@@ -1545,7 +1605,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       const tDone = typeof performance !== 'undefined' ? performance.now() : Date.now();
       debugLog(
         `[QuantStore] Deep analysis triggered symbol=${symbol} ` +
-          `ipc_ms=${Math.round(tDone - tInvoke)} total_ms=${Math.round(tDone - t0)}`
+        `ipc_ms=${Math.round(tDone - tInvoke)} total_ms=${Math.round(tDone - t0)}`
       );
 
       // Bug 2 fix: Activity-based safety watchdog. Rather than a fixed
@@ -1561,7 +1621,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       const message = err instanceof Error ? err.message : String(err);
       console.error(
         `[QuantStore] Deep analysis FAIL key=${runKey} ` +
-          `total_ms=${Math.round(tDone - t0)} message=${message}`
+        `total_ms=${Math.round(tDone - t0)} message=${message}`
       );
       if (FQ_MULTI_SESSION) {
         const activeId = useSessionStore.getState().activeSessionId;
@@ -1676,10 +1736,10 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       const secs = Math.round(window / 1000);
       const message = stillWatching
         ? `The price watch went quiet — no heartbeat for ${secs}s. The watcher that wakes ` +
-          `this analysis when your condition is met is no longer reporting, so it will not ` +
-          `resume on its own. Please re-run the analysis.`
+        `this analysis when your condition is met is no longer reporting, so it will not ` +
+        `resume on its own. Please re-run the analysis.`
         : `The agent stream stalled — no activity for ${secs}s. The agent server may be ` +
-          `unreachable or the LLM request stalled. Please retry.`;
+        `unreachable or the LLM request stalled. Please retry.`;
 
       console.warn(
         `[QuantStore] Stream watchdog tripped after ${secs}s on ${runKey} (status=${sess.sessionStatus}).`

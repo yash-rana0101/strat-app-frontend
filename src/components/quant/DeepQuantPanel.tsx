@@ -373,7 +373,7 @@ export default function DeepQuantPanel() {
               {/* Dedicated watching state indicator */}
               {sessionStatus === 'watching' && (
                 <div className="px-2 my-1">
-                  <WatchingIndicator />
+                  <WatchingIndicator symbol={symbol} />
                 </div>
               )}
 

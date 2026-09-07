@@ -135,6 +135,48 @@ describe('assembling one answer', () => {
 
     expect(answers()[0].activity).toEqual(['> get_quote…', 'get_quote']);
   });
+
+  it('assembles multiple Q&A turns in chronological order without overwriting prior turns', () => {
+    const s = useSessionStore.getState();
+
+    // Turn 1
+    s.upsertSession(S, {
+      qaMessages: [{ id: 'q1', role: 'user', content: 'What is the RSI?' }],
+      qaStatus: 'streaming',
+    });
+    s.applyFrame(qa('RUN_STARTED'));
+    s.applyFrame(qa('REASONING', { content: 'RSI is 65.' }));
+    s.applyFrame(qa('RUN_FINISHED'));
+
+    expect(qaMessages()).toHaveLength(2);
+    expect(qaMessages()[0].content).toBe('What is the RSI?');
+    expect(qaMessages()[1].content).toBe('RSI is 65.');
+    expect(qaMessages()[1].streaming).toBe(false);
+
+    // Turn 2
+    s.upsertSession(S, {
+      qaMessages: [
+        ...qaMessages(),
+        { id: 'q2', role: 'user', content: 'Can you do news sentiment analysis for me?' },
+      ],
+      qaStatus: 'streaming',
+    });
+    s.applyFrame(qa('RUN_STARTED'));
+    s.applyFrame(qa('REASONING', { content: 'News sentiment is positive.' }));
+    s.applyFrame(qa('RUN_FINISHED'));
+
+    expect(qaMessages()).toHaveLength(4);
+    expect(qaMessages()[0]).toMatchObject({ role: 'user', content: 'What is the RSI?' });
+    expect(qaMessages()[1]).toMatchObject({ role: 'assistant', content: 'RSI is 65.' });
+    expect(qaMessages()[2]).toMatchObject({
+      role: 'user',
+      content: 'Can you do news sentiment analysis for me?',
+    });
+    expect(qaMessages()[3]).toMatchObject({
+      role: 'assistant',
+      content: 'News sentiment is positive.',
+    });
+  });
 });
 
 describe('terminals', () => {

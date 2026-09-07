@@ -7,9 +7,11 @@
 // execution ladder, and structured analysis accordions.
 
 import React from 'react';
-import { ArrowRight, ShieldAlert, Sparkles } from 'lucide-react';
+import { ArrowRight, ShieldAlert, Sparkles, Activity } from 'lucide-react';
 
 import { isActionableTrade, type AiExecutionPlan } from '../../../store/useQuantStore';
+import { useFqBestCurrentRead } from '../useFqHeartbeat';
+import { useFqSessionStatus } from '../useFqSession';
 import ConvictionGauge from '../visuals/ConvictionGauge';
 import PriceLadderBar from '../visuals/PriceLadderBar';
 import StructuredAnalysisCards from '../visuals/StructuredAnalysisCards';
@@ -23,7 +25,57 @@ export default function QuantSidebarResult({
   finalTrade,
   onOpenFullAnalysis,
 }: QuantSidebarResultProps) {
-  if (!finalTrade) return null;
+  const bestCurrentRead = useFqBestCurrentRead();
+  const sessionStatus = useFqSessionStatus();
+
+  if (!finalTrade) {
+    if (sessionStatus === 'watching' && bestCurrentRead) {
+      const rawBias = (bestCurrentRead.bias || 'neutral').toLowerCase();
+      const isBullish = rawBias.includes('bull') || rawBias === 'buy';
+      const isBearish = rawBias.includes('bear') || rawBias === 'sell';
+      const biasLabel = isBullish ? 'BULLISH' : isBearish ? 'BEARISH' : 'NEUTRAL';
+      const biasTone = isBullish
+        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+        : isBearish
+          ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+          : 'bg-amber-500/10 text-amber-400 border-amber-500/30';
+
+      return (
+        <div className="mx-2 mb-2 rounded-lg border border-amber-500/25 bg-amber-500/5 font-sans overflow-hidden animate-fade-in shadow-sm select-text">
+          <div className="flex items-center justify-between border-b border-amber-500/20 px-3 py-2 bg-amber-500/10 select-none">
+            <div className="flex items-center gap-1.5">
+              <Activity size={13} className="shrink-0 text-amber-400" aria-hidden="true" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-text-primary font-mono">
+                Active Watcher Intelligence
+              </span>
+            </div>
+            <span className={`rounded px-1.5 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider border ${biasTone}`}>
+              {biasLabel} BIAS
+            </span>
+          </div>
+
+          <div className="p-3 flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[8px] font-bold uppercase tracking-widest text-text-muted">
+                Status
+              </span>
+              <span className="text-[10px] font-mono font-bold text-amber-400">
+                Awaiting Trigger Condition
+              </span>
+            </div>
+            {bestCurrentRead.why_standing_aside && (
+              <p className="text-[10px] text-text-secondary leading-relaxed line-clamp-2 mt-0.5">
+                {bestCurrentRead.why_standing_aside}
+              </p>
+            )}
+          </div>
+
+          <FullAnalysisButton onClick={onOpenFullAnalysis} />
+        </div>
+      );
+    }
+    return null;
+  }
 
   const actionable = isActionableTrade(finalTrade);
 
@@ -93,11 +145,10 @@ export default function QuantSidebarResult({
           </span>
         </div>
         <span
-          className={`rounded px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-widest border ${
-            isBuy
+          className={`rounded px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-widest border ${isBuy
               ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
               : 'bg-rose-500/15 text-rose-400 border-rose-500/30'
-          }`}
+            }`}
         >
           {side} SETUP
         </span>
@@ -110,9 +161,8 @@ export default function QuantSidebarResult({
             Directional Setup
           </span>
           <span
-            className={`text-base font-black tracking-tight mt-0.5 ${
-              isBuy ? 'text-emerald-400' : 'text-rose-400'
-            }`}
+            className={`text-base font-black tracking-tight mt-0.5 ${isBuy ? 'text-emerald-400' : 'text-rose-400'
+              }`}
           >
             {side} SETUP
           </span>
