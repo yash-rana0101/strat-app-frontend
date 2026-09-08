@@ -24,6 +24,51 @@ export default function SessionTabBarConnected() {
   const [historyOpen, setHistoryOpen] = React.useState(false);
   const [openError, setOpenError] = React.useState<string | null>(null);
 
+  const panelRef = React.useRef<HTMLDivElement | null>(null);
+  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
+
+  React.useEffect(() => {
+    if (!historyOpen) return;
+
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (
+        panelRef.current?.contains(target) ||
+        triggerRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setHistoryOpen(false);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setHistoryOpen(false);
+      }
+    };
+
+    const handleBlur = () => {
+      setTimeout(() => {
+        if (document.activeElement?.tagName === 'IFRAME') {
+          setHistoryOpen(false);
+        }
+      }, 0);
+    };
+
+    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('touchstart', handleOutsideClick);
+      document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, [historyOpen]);
+
   // Refetch the list when the active session changes underneath the query layer.
   //
   // `useCreateSession` invalidates on its own, but it is not the only thing that creates
@@ -76,6 +121,7 @@ export default function SessionTabBarConnected() {
           <SessionTabBar onActivate={onOpen} />
         </div>
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => setHistoryOpen((v) => !v)}
           aria-expanded={historyOpen}
@@ -113,7 +159,10 @@ export default function SessionTabBarConnected() {
         // A panel rather than a modal: history is a navigation aid, and a modal would block the
         // transcript the user is comparing against. Height-capped so a long list scrolls internally
         // instead of pushing the workspace off screen.
-        <div className="absolute inset-x-0 top-full z-20 max-h-80 overflow-hidden rounded-b-md border border-border-default/60 bg-surface shadow-lg">
+        <div
+          ref={panelRef}
+          className="absolute inset-x-0 top-full z-20 max-h-80 overflow-hidden rounded-b-md border border-border-default/60 bg-surface shadow-lg"
+        >
           <SessionHistory onOpen={onOpen} defaultStatus="archived" />
         </div>
       )}
