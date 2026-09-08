@@ -22,7 +22,7 @@ import {
   PlusCircle,
 } from 'lucide-react';
 import { ReasoningStep } from '../../../store/useQuantStore';
-import { isToolStepCompleted } from './agentTimeline';
+import { isToolStepCompleted, formatToolName } from './agentTimeline';
 
 interface ToolExecutionStepProps {
   step: ReasoningStep;
@@ -67,7 +67,7 @@ export default function ToolExecutionStep({
   if (step.type !== 'tool_start') return null;
 
   const isCompleted = isToolStepCompleted(step, reasoningSteps, sessionStatus);
-  const formattedToolName = step.toolName ? step.toolName.replace(/_/g, ' ') : 'tool execution';
+  const formattedToolName = formatToolName(step.toolName);
 
   const interactive = !!onSelect;
 
