@@ -82,6 +82,41 @@ export const MODEL_PROVIDERS_OMNIROUTE: ModelProviderGroup[] = [
     ],
   },
   {
+    provider: 'OpenAI (GPT)',
+    models: [
+      // ── GPT-5.6 Sol ──
+      { id: 'cx/gpt-5.6-sol', label: 'GPT 5.6 Sol' },
+      { id: 'cx/gpt-5.6-sol-high', label: 'GPT 5.6 Sol (High)' },
+      { id: 'cx/gpt-5.6-sol-ultra', label: 'GPT 5.6 Sol (Ultra)' },
+      { id: 'cx/gpt-5.6-sol-medium', label: 'GPT 5.6 Sol (Medium)' },
+      { id: 'cx/gpt-5.6-sol-max', label: 'GPT 5.6 Sol (Max)' },
+      { id: 'cx/gpt-5.6-sol-low', label: 'GPT 5.6 Sol (Low)' },
+      { id: 'cx/gpt-5.6-sol-xhigh', label: 'GPT 5.6 Sol (xHigh)', recommended: true },
+      // ── GPT-5.6 Terra ──
+      { id: 'cx/gpt-5.6-terra', label: 'GPT 5.6 Terra' },
+      { id: 'cx/gpt-5.6-terra-ultra', label: 'GPT 5.6 Terra (Ultra)' },
+      { id: 'cx/gpt-5.6-terra-max', label: 'GPT 5.6 Terra (Max)' },
+      { id: 'cx/gpt-5.6-terra-shigh', label: 'GPT 5.6 Terra (sHigh)' },
+      { id: 'cx/gpt-5.6-terra-high', label: 'GPT 5.6 Terra (High)' },
+      { id: 'cx/gpt-5.6-terra-medium', label: 'GPT 5.6 Terra (Medium)' },
+      { id: 'cx/gpt-5.6-terra-low', label: 'GPT 5.6 Terra (Low)' },
+      // ── GPT-5.6 Luna ──
+      { id: 'cx/gpt-5.6-luna', label: 'GPT 5.6 Luna' },
+      { id: 'cx/gpt-5.6-luna-shigh', label: 'GPT 5.6 Luna (sHigh)' },
+      { id: 'cx/gpt-5.6-luna-high', label: 'GPT 5.6 Luna (High)' },
+      { id: 'cx/gpt-5.6-luna-medium', label: 'GPT 5.6 Luna (Medium)' },
+      { id: 'cx/gpt-5.6-luna-low', label: 'GPT 5.6 Luna (Low)' },
+      { id: 'cx/gpt-5.6-luna-max', label: 'GPT 5.6 Luna (Max)' },
+      // ── GPT-5.5 ──
+      { id: 'cx/gpt-5.5', label: 'GPT 5.5' },
+      { id: 'cx/gpt-5.5-xhigh', label: 'GPT 5.5 (xHigh)' },
+      { id: 'cx/gpt-5.5-high', label: 'GPT 5.5 (High)' },
+      { id: 'cx/gpt-5.5-medium', label: 'GPT 5.5 (Medium)' },
+      { id: 'cx/gpt-5.5-low', label: 'GPT 5.5 (Low)' },
+      { id: 'cx/gpt-5.5-codex-spark', label: 'GPT 5.5 Codex Spark' },
+    ],
+  },
+  {
     provider: 'Google (Gemini)',
     models: [
       {
