@@ -193,6 +193,37 @@ function applyQaFrame(session: QuantSession, payload: StreamEventPayload): Quant
       messages[index] = { ...turn, activity: [...(turn.activity ?? []), `> ${tool}…`] };
       break;
     }
+    case 'TOOL_CALL_RESULT': {
+      // The backend has always emitted this between START and END
+      // (`stream_events.message_events`), and this reducer used to drop it, so a
+      // Q&A turn that fetched data showed "> get_candles…" then "get_candles" and
+      // nothing about what came back. The summary is what makes the trace worth
+      // reading — and what shows an `unavailable` result instead of implying the
+      // fetch succeeded.
+      const tool = typeof data?.tool === 'string' ? data.tool : '';
+      // `build_tool_call_result_event` sends `{tool, result}` where `result` is a
+      // string for prose results and an object for structured/summarised ones.
+      const raw = data?.summary ?? data?.result;
+      let summary = '';
+      if (typeof raw === 'string') summary = raw;
+      else if (raw && typeof raw === 'object') {
+        try {
+          summary = JSON.stringify(raw);
+        } catch {
+          summary = '';
+        }
+      }
+      if (!tool && !summary) return session;
+      const trimmed = summary.trim().replace(/\s+/g, ' ').slice(0, 300);
+      messages[index] = {
+        ...turn,
+        activity: [
+          ...(turn.activity ?? []),
+          trimmed ? `${tool || 'tool'} → ${trimmed}` : `${tool} returned`,
+        ],
+      };
+      break;
+    }
     case 'TOOL_CALL_END': {
       const tool = typeof data?.tool === 'string' ? data.tool : '';
       if (!tool) return session;

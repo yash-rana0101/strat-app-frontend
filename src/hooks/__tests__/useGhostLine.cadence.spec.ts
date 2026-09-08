@@ -36,13 +36,17 @@ import { ALL_SWITCHES_OFF } from '../../lib/featureFlags';
 vi.mock('../ghostLineComputation', () => {
   let n = 0;
   return {
-    computeGhostPoints: vi.fn(async () => {
+    computeGhostProjection: vi.fn(async () => {
       n += 1;
-      return [
-        { time: 1000, price: 10 + n * 0.01 },
-        { time: 2000, price: 11 + n * 0.01 },
-      ];
+      return {
+        kind: 'ok',
+        points: [
+          { time: 1000, price: 10 + n * 0.01 },
+          { time: 2000, price: 11 + n * 0.01 },
+        ],
+      };
     }),
+    clampProjectionBars: () => 20,
   };
 });
 

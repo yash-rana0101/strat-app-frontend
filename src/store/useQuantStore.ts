@@ -733,6 +733,14 @@ export interface ReasoningStep {
   timestamp: number;
   toolName?: string;
   args?: Record<string, unknown>;
+  /**
+   * Set on a `watch_price_condition` step once a LATER step replaced or cancelled
+   * that watch. The transcript is append-only, so without this flag two armed
+   * levels sit in it with nothing saying which one the server is actually
+   * monitoring — and `extractWatchCondition` would keep reading a level that was
+   * deleted. Only the newest un-superseded watch is live.
+   */
+  superseded?: boolean;
 }
 
 export interface QuantSession {
@@ -1062,20 +1070,51 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       const toolName = data?.tool || '';
       if (!toolName) return session;
       const isWatching = toolName === 'watch_price_condition';
+      const isCancel = toolName === 'cancel_price_watch';
+      // A new registration REPLACES the server-side watch, and a cancel DELETES
+      // it. Either way every earlier watch step is now history: flag them so the
+      // panel reads the current level (and only one "watching" band is drawn).
+      //
+      // ponytail: flagged at START, i.e. on INTENT rather than on confirmed
+      // registration, because this reducer has no TOOL_CALL_RESULT case to read an
+      // outcome from. Ceiling: when the server REJECTS a level (400
+      // "watch_level_rejected" — validation runs before the insert, so the prior
+      // watcher survives), the panel shows no armed band for the one turn it takes
+      // the model to re-arm a corrected level. That is strictly better than the
+      // alternative of trusting the newest step unconditionally, which showed a
+      // level the server had already stopped monitoring, indefinitely. Upgrade
+      // path: add a TOOL_CALL_RESULT case here and only supersede when the result
+      // is not a rejection/error marker.
+      const steps =
+        isWatching || isCancel
+          ? session.reasoningSteps.map((s) =>
+              s.toolName === 'watch_price_condition' && !s.superseded
+                ? { ...s, superseded: true }
+                : s
+            )
+          : session.reasoningSteps;
       return {
         ...session,
         reasoningSteps: [
-          ...session.reasoningSteps,
+          ...steps,
           {
             id: _newStepId(),
             type: 'tool_start',
             toolName,
             args: data?.args,
-            content: `> Executing tool: ${toolName}...`,
+            content: isCancel
+              ? '> Deleting the previous price trigger...'
+              : `> Executing tool: ${toolName}...`,
             timestamp: Date.now(),
           },
         ],
-        sessionStatus: isWatching ? 'watching' : session.sessionStatus,
+        // A cancel leaves nothing armed, so the panel must stop claiming to be
+        // watching; the run is thinking again until it arms or declares.
+        sessionStatus: isWatching
+          ? 'watching'
+          : isCancel && session.sessionStatus === 'watching'
+            ? 'running'
+            : session.sessionStatus,
         _pendingToolCalls: session._pendingToolCalls + 1,
         updatedAt: Date.now(),
       };
