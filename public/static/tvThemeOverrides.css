@@ -69,14 +69,14 @@
 
 /* ── Light theme (fallback — matches .light class from globals.css) ─── */
 :root:not(.theme-dark) {
-  /* Pastel mint palette — matches .light in globals.css (#e9f5e9). */
-  --tv-color-platform-background: #e9f5e9;
-  --tv-color-pane-background: #e9f5e9;
+  /* Warm linen porcelain palette — matches .light in globals.css (#fcfaf7). */
+  --tv-color-platform-background: #fcfaf7;
+  --tv-color-pane-background: #fcfaf7;
 
-  --tv-color-toolbar-button-background-hover: #d7ebd7;
-  --tv-color-toolbar-button-background-expanded: #d7ebd7;
-  --tv-color-toolbar-button-background-active: #ddefdd;
-  --tv-color-toolbar-button-background-active-hover: #d7ebd7;
+  --tv-color-toolbar-button-background-hover: #ebe4d8;
+  --tv-color-toolbar-button-background-expanded: #ebe4d8;
+  --tv-color-toolbar-button-background-active: #f5f0e9;
+  --tv-color-toolbar-button-background-active-hover: #ebe4d8;
 
   --tv-color-toolbar-button-text: #5b6675;
   --tv-color-toolbar-button-text-hover: #0f172a;
@@ -88,14 +88,14 @@
   --tv-color-toolbar-toggle-button-background-active: rgba(4, 120, 87, 0.12);
   --tv-color-toolbar-toggle-button-background-active-hover: rgba(4, 120, 87, 0.2);
 
-  --tv-color-toolbar-divider-background: #bcdbbc;
+  --tv-color-toolbar-divider-background: #dfd7c8;
   --tv-color-toolbar-save-layout-loader: #5b6675;
 
-  --tv-color-popup-background: #e9f5e9;
+  --tv-color-popup-background: #fcfaf7;
   --tv-color-popup-element-text: #0f172a;
   --tv-color-popup-element-text-hover: #000000;
-  --tv-color-popup-element-background-hover: #d7ebd7;
-  --tv-color-popup-element-divider-background: #bcdbbc;
+  --tv-color-popup-element-background-hover: #ebe4d8;
+  --tv-color-popup-element-divider-background: #dfd7c8;
   --tv-color-popup-element-secondary-text: #5b6675;
   --tv-color-popup-element-hint-text: #788596;
 
@@ -105,7 +105,7 @@
   --tv-color-popup-element-toolbox-text: #5b6675;
   --tv-color-popup-element-toolbox-text-hover: #0f172a;
   --tv-color-popup-element-toolbox-text-active-hover: #047857;
-  --tv-color-popup-element-toolbox-background-hover: #d7ebd7;
+  --tv-color-popup-element-toolbox-background-hover: #ebe4d8;
   --tv-color-popup-element-toolbox-background-active-hover: rgba(4, 120, 87, 0.15);
 }
 
@@ -120,7 +120,7 @@
 }
 
 :root:not(.theme-dark) ::-webkit-scrollbar-track {
-  background: #e9f5e9;
+  background: #fcfaf7;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -129,7 +129,7 @@
 }
 
 :root:not(.theme-dark) ::-webkit-scrollbar-thumb {
-  background: #bcdbbc;
+  background: #dfd7c8;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -137,7 +137,7 @@
 }
 
 :root:not(.theme-dark) ::-webkit-scrollbar-thumb:hover {
-  background: #a3caa3;
+  background: #c9bea9;
 }
 
 /* ── Ensure chart type & other dropdowns are scrollable ──────────── */

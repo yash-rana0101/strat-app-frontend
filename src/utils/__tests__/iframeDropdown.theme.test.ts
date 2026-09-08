@@ -27,9 +27,9 @@ const DARK = {
   '--color-primary': '#10b981',
 };
 const LIGHT = {
-  '--bg-surface': '#e9f5e9',
-  '--bg-elevated': '#d7ebd7',
-  '--border-default': '#bcdbbc',
+  '--bg-surface': '#fcfaf7',
+  '--bg-elevated': '#ebe4d8',
+  '--border-default': '#dfd7c8',
   '--text-primary': '#0f172a',
   '--text-muted': '#5b6675',
   '--color-primary': '#10b981',
@@ -75,9 +75,9 @@ describe('the injected iframe CSS follows the app’s theme', () => {
     applyTheme('light');
     injectIframeDropdownStyles(document);
 
-    expect(css()).toContain('background-color: #e9f5e9'); // dropdown surface
+    expect(css()).toContain('background-color: #fcfaf7'); // dropdown surface
     expect(css()).toContain('color: #0f172a'); // item text
-    expect(css()).toContain('1px solid #bcdbbc'); // border
+    expect(css()).toContain('1px solid #dfd7c8'); // border
     // The dark surface is what showed through before; it must be gone entirely.
     expect(css()).not.toContain('#191a1b');
     expect(css()).not.toContain('#f0f1f3');
@@ -92,7 +92,7 @@ describe('the injected iframe CSS follows the app’s theme', () => {
     applyTheme('light');
     injectIframeDropdownStyles(document);
 
-    expect(css()).toContain('#e9f5e9');
+    expect(css()).toContain('#fcfaf7');
     expect(css()).not.toContain('#191a1b');
     // Reuses its own <style> element rather than stacking a new one each time.
     expect(document.querySelectorAll('#tv-custom-dropdown-styles')).toHaveLength(1);
@@ -176,7 +176,7 @@ describe('the dropdown itself', () => {
   it('injects the current theme when it opens', () => {
     applyTheme('light');
     open('linear');
-    expect(css()).toContain('#e9f5e9');
+    expect(css()).toContain('#fcfaf7');
   });
 
   it('selects, then closes and releases the button', () => {

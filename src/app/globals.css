@@ -83,23 +83,23 @@
 }
 
 .light {
-  /* Soft pastel mint theme based on #e9f5e9 */
-  --bg-base: #e9f5e9;
+  /* Warm linen porcelain theme based on #fcfaf7 */
+  --bg-base: #fcfaf7;
   --bg-main: var(--bg-base);
-  --bg-surface: #e9f5e9;
-  --bg-card: #ddefdd;
-  --bg-elevated: #d7ebd7;
-  --bg-muted: #cee7ce;
-  /* Panel dividers — subtle mint separation on #e9f5e9. */
-  --border-default: #bcdbbc;
-  --border-subtle: #d1e7d1;
+  --bg-surface: #fcfaf7;
+  --bg-card: #f5f0e9;
+  --bg-elevated: #ebe4d8;
+  --bg-muted: #e2d9ca;
+  /* Panel dividers — subtle warm separation on #fcfaf7. */
+  --border-default: #dfd7c8;
+  --border-subtle: #ede7db;
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #5b6675;
   --text-muted-soft: #788596;
   --chart-bg: var(--bg-surface);
-  /* Subtle gridlines matching the #e9f5e9 mint canvas. */
-  --chart-grid: #d6ead6;
+  /* Subtle warm gridlines matching the #fcfaf7 canvas. */
+  --chart-grid: #f2ece2;
   --background: var(--bg-main);
   --foreground: var(--text-primary);
 
