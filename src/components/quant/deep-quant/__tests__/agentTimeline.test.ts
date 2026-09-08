@@ -193,6 +193,6 @@ describe('buildRenderGroups — the transcript grouping that moved out of AgentT
     ]);
 
     const progress = deriveProgress(stepsWithDuplicates, 'complete', null);
-    expect(progress.map((p) => p.label)).toEqual(['Get Multi Tf Trend', 'Get Consensus Report']);
+    expect(progress.map((p) => p.label)).toEqual(['Read Multi Tf Trend', 'Read Consensus Report']);
   });
 });
