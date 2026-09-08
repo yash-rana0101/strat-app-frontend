@@ -83,24 +83,23 @@
 }
 
 .light {
-  --bg-base: #f0eee9;
+  /* Soft pastel mint theme based on #e9f5e9 */
+  --bg-base: #e9f5e9;
   --bg-main: var(--bg-base);
-  --bg-surface: #f0eee9;
-  --bg-card: #e8e5de;
-  --bg-elevated: #e4dfd5;
-  --bg-muted: #ded9cf;
-  /* Panel dividers — warm subtle separation on #f0eee9. */
-  --border-default: #d0c8b8;
-  --border-subtle: #ddd8ce;
+  --bg-surface: #e9f5e9;
+  --bg-card: #ddefdd;
+  --bg-elevated: #d7ebd7;
+  --bg-muted: #cee7ce;
+  /* Panel dividers — subtle mint separation on #e9f5e9. */
+  --border-default: #bcdbbc;
+  --border-subtle: #d1e7d1;
   --text-primary: #0f172a;
   --text-secondary: #334155;
-  /* Darkened from #64748b: the warmer #f0eee9 base dropped it to 4.1:1, under
-     WCAG AA. #5b6675 restores ~5.0:1 while staying in the same slate family. */
   --text-muted: #5b6675;
   --text-muted-soft: #788596;
   --chart-bg: var(--bg-surface);
-  /* Subtle warm gridlines, independent of the panel-divider colour. */
-  --chart-grid: #e4dfd5;
+  /* Subtle gridlines matching the #e9f5e9 mint canvas. */
+  --chart-grid: #d6ead6;
   --background: var(--bg-main);
   --foreground: var(--text-primary);
 
