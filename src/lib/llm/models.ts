@@ -70,7 +70,7 @@ export const MODEL_PROVIDERS_OPENROUTER: ModelProviderGroup[] = [
 export const MODEL_PROVIDERS_OMNIROUTE: ModelProviderGroup[] = [
   {
     provider: 'Default',
-    models: [{ id: '', label: 'Auto (Claude Sonnet 4.6)' }],
+    models: [{ id: 'cx/gpt-5.6-sol', label: 'GPT 5.6 Sol' }],
   },
   {
     provider: 'Anthropic (Claude)',

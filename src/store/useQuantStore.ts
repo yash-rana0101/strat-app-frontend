@@ -1067,7 +1067,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
   _threadToKey: {},
 
   // ── Model provider selection ─────────────────────────────────────
-  selectedModel: '',
+  selectedModel: MODEL_PROVIDERS[0]?.models[0]?.id ?? '',
   setSelectedModel: (modelId: string) => set({ selectedModel: modelId }),
 
   // ── Trade Q&A State ──────────────────────────────────────────────
