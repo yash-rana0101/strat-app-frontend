@@ -334,7 +334,13 @@ interface QuantStore {
   /** Cache entry: payload + timestamp fetched + optional rate-limit cooldown */
   sentimentCache: Record<
     string,
-    { payload: SentimentPayload; fetchedAt: number; rateLimitedUntil?: number }
+    {
+      payload: SentimentPayload;
+      fetchedAt: number;
+      rateLimitedUntil?: number;
+      rateLimitedModel?: string;
+      model?: string;
+    }
   >;
 
   // ── Terminal / Stream States ──────────────────────────────────────────
@@ -410,8 +416,8 @@ interface QuantStore {
       userAnalysis: string;
     }
   ) => Promise<void>;
-  loadSentimentForSymbol: (symbol: string) => Promise<void>;
-  refreshSentimentForSymbol: (symbol: string) => Promise<void>;
+  loadSentimentForSymbol: (symbol: string, modelOverride?: string) => Promise<void>;
+  refreshSentimentForSymbol: (symbol: string, modelOverride?: string) => Promise<void>;
   /** Clear stale sentiment from a previous symbol without triggering an LLM fetch. */
   clearActiveSentiment: () => void;
   clearAiPlan: () => void;
@@ -1171,7 +1177,31 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
 
   // ── Model provider selection ─────────────────────────────────────
   selectedModel: MODEL_PROVIDERS[0]?.models[0]?.id ?? '',
-  setSelectedModel: (modelId: string) => set({ selectedModel: modelId }),
+  setSelectedModel: (modelId: string) => {
+    set({ selectedModel: modelId });
+    // Reset rate-limit cooldown for the current symbol so the newly selected model
+    // is not blocked by a previous model's 429 quota exhaustion.
+    const state = get();
+    const activeSym = state.activeSentiment?.symbol;
+    if (activeSym) {
+      const sym = sentimentSubject(activeSym);
+      const entry = state.sentimentCache[sym];
+      if (entry?.rateLimitedUntil || state.sentimentError) {
+        set((s) => ({
+          sentimentError: null,
+          sentimentCache: {
+            ...s.sentimentCache,
+            [sym]: {
+              ...s.sentimentCache[sym],
+              rateLimitedUntil: undefined,
+              rateLimitedModel: undefined,
+            },
+          },
+        }));
+      }
+      void state.refreshSentimentForSymbol(sym, modelId);
+    }
+  },
 
   // ── Trade Q&A State ──────────────────────────────────────────────
   currentThreadId: null,
@@ -1276,20 +1306,22 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
 
   // Cache-aware with TTL: serves cached data on symbol click.
   // Skips network call if:
-  //   • Data is fresh (< 10 minutes old)
-  //   • Same symbol is already being fetched (deduplication)
-  //   • HF returned 429 recently (5-minute cooldown per symbol)
-  loadSentimentForSymbol: async (requested: string) => {
+  //   • Data is fresh (< 10 minutes old) AND model matches
+  //   • Same symbol+model is already being fetched (deduplication)
+  //   • HF returned 429 recently for the same model (5-minute cooldown per symbol+model)
+  loadSentimentForSymbol: async (requested: string, modelOverride?: string) => {
     // Resolved once, here, so every use below — the cache key, the in-flight
     // key, the bridge argument, the user-facing rate-limit message — refers to
     // the instrument the news is about rather than to an option contract no
     // journalist has ever written a word about.
     const symbol = sentimentSubject(requested);
+    const model = modelOverride ?? get().selectedModel ?? '';
     const entry = get().sentimentCache[symbol];
     const now = Date.now();
 
-    // Serve fresh cache hit
-    if (entry && now - entry.fetchedAt < SENTIMENT_TTL_MS) {
+    // Serve fresh cache hit only if matching model (or if model wasn't specified)
+    const modelMatches = !model || !entry?.model || entry.model === model;
+    if (entry && now - entry.fetchedAt < SENTIMENT_TTL_MS && modelMatches) {
       debugLog(
         `[QuantStore] Sentiment CACHE HIT symbol=${symbol} score=${entry.payload.score} age=${Math.round((now - entry.fetchedAt) / 1000)}s`
       );
@@ -1297,15 +1329,9 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       return;
     }
 
-    // Rate-limit cooldown active?
-    //
-    // This branch used to return WITHOUT clearing `isFetchingSentiment` or
-    // setting an error, so the UI could sit on a spinner for the whole 5-minute
-    // cooldown with nothing explaining why. It also only re-showed the cached
-    // payload when one existed — and the 429 handler below can store a null
-    // payload, in which case absolutely nothing was set. Always settle the
-    // loading flag and say what is happening.
-    if (entry?.rateLimitedUntil && now < entry.rateLimitedUntil) {
+    // Rate-limit cooldown active? (only if for the same model)
+    const sameModel429 = !entry?.rateLimitedModel || entry.rateLimitedModel === model;
+    if (entry?.rateLimitedUntil && now < entry.rateLimitedUntil && sameModel429) {
       const secs = Math.round((entry.rateLimitedUntil - now) / 1000);
       console.warn(`[QuantStore] Sentiment 429 cooldown active for ${symbol} — ${secs}s remaining`);
       set({
@@ -1319,21 +1345,23 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       return;
     }
 
-    // In-flight deduplication. Reflect the in-flight state so a second caller
-    // (e.g. a panel mounting after the first request started) still renders the
-    // loading branch rather than an indefinite empty state.
-    if (sentimentInFlight.has(symbol)) {
-      debugLog(`[QuantStore] Sentiment already in-flight for ${symbol} — skipping duplicate`);
+    // In-flight deduplication per symbol and model.
+    const inFlightKey = `${symbol}::${model}`;
+    if (sentimentInFlight.has(inFlightKey)) {
+      debugLog(`[QuantStore] Sentiment already in-flight for ${inFlightKey} — skipping duplicate`);
       set({ isFetchingSentiment: true });
       return;
     }
 
-    debugLog(`[QuantStore] Sentiment fetch symbol=${symbol}`);
-    sentimentInFlight.add(symbol);
+    debugLog(`[QuantStore] Sentiment fetch symbol=${symbol} model=${model}`);
+    sentimentInFlight.add(inFlightKey);
     set({ isFetchingSentiment: true, sentimentError: null });
 
     try {
-      const payload = await bridgeInvoke<SentimentPayload>('fetch_symbol_sentiment', { symbol });
+      const payload = await bridgeInvoke<SentimentPayload>('fetch_symbol_sentiment', {
+        symbol,
+        ...(model ? { model } : {}),
+      });
       debugLog(
         `[QuantStore] Sentiment OK symbol=${symbol} score=${payload.score} label=${payload.label}`
       );
@@ -1342,7 +1370,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         isFetchingSentiment: false,
         sentimentCache: {
           ...state.sentimentCache,
-          [symbol]: { payload, fetchedAt: Date.now() },
+          [symbol]: { payload, fetchedAt: Date.now(), model },
         },
       }));
     } catch (err) {
@@ -1352,7 +1380,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       set((state) => ({
         isFetchingSentiment: false,
         sentimentError: message,
-        // On 429: set cooldown so we don't hammer again for 5 minutes
+        // On 429: set cooldown for this model so we don't hammer again for 5 minutes
         sentimentCache: is429
           ? {
             ...state.sentimentCache,
@@ -1364,24 +1392,27 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
                   : (null as unknown as SentimentPayload)),
               fetchedAt: state.sentimentCache[symbol]?.fetchedAt ?? 0,
               rateLimitedUntil: Date.now() + SENTIMENT_429_COOL,
+              rateLimitedModel: model,
             },
           }
           : state.sentimentCache,
       }));
     } finally {
-      sentimentInFlight.delete(symbol);
+      sentimentInFlight.delete(inFlightKey);
     }
   },
 
-  // Force-refresh: bypasses TTL cache (but still respects 429 cooldown).
-  // Called from AI Quant Analysis button.
-  refreshSentimentForSymbol: async (requested: string) => {
+  // Force-refresh: bypasses TTL cache (but still respects 429 cooldown for the same model).
+  // Called from AI Quant Analysis button and model selector.
+  refreshSentimentForSymbol: async (requested: string, modelOverride?: string) => {
     const symbol = sentimentSubject(requested);
+    const model = modelOverride ?? get().selectedModel ?? '';
     const entry = get().sentimentCache[symbol];
     const now = Date.now();
 
-    // Respect 429 cooldown even on force-refresh
-    if (entry?.rateLimitedUntil && now < entry.rateLimitedUntil) {
+    // Respect 429 cooldown even on force-refresh only if it was for the same model
+    const sameModel429 = !entry?.rateLimitedModel || entry.rateLimitedModel === model;
+    if (entry?.rateLimitedUntil && now < entry.rateLimitedUntil && sameModel429) {
       const secs = Math.round((entry.rateLimitedUntil - now) / 1000);
       console.warn(
         `[QuantStore] Sentiment 429 cooldown — skipping refresh for ${symbol} (${secs}s remaining)`
@@ -1389,24 +1420,28 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       return;
     }
 
-    if (sentimentInFlight.has(symbol)) {
-      debugLog(`[QuantStore] Sentiment already in-flight for ${symbol} — skipping refresh`);
+    const inFlightKey = `${symbol}::${model}`;
+    if (sentimentInFlight.has(inFlightKey)) {
+      debugLog(`[QuantStore] Sentiment already in-flight for ${inFlightKey} — skipping refresh`);
       return;
     }
 
-    debugLog(`[QuantStore] Sentiment REFRESH (force) symbol=${symbol}`);
-    sentimentInFlight.add(symbol);
+    debugLog(`[QuantStore] Sentiment REFRESH (force) symbol=${symbol} model=${model}`);
+    sentimentInFlight.add(inFlightKey);
     set({ isFetchingSentiment: true, sentimentError: null });
 
     try {
-      const payload = await bridgeInvoke<SentimentPayload>('fetch_symbol_sentiment', { symbol });
+      const payload = await bridgeInvoke<SentimentPayload>('fetch_symbol_sentiment', {
+        symbol,
+        ...(model ? { model } : {}),
+      });
       debugLog(`[QuantStore] Sentiment REFRESHED symbol=${symbol} score=${payload.score}`);
       set((state) => ({
         activeSentiment: payload,
         isFetchingSentiment: false,
         sentimentCache: {
           ...state.sentimentCache,
-          [symbol]: { payload, fetchedAt: Date.now() },
+          [symbol]: { payload, fetchedAt: Date.now(), model },
         },
       }));
     } catch (err) {
@@ -1427,12 +1462,13 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
                   : (null as unknown as SentimentPayload)),
               fetchedAt: state.sentimentCache[symbol]?.fetchedAt ?? 0,
               rateLimitedUntil: Date.now() + SENTIMENT_429_COOL,
+              rateLimitedModel: model,
             },
           }
           : state.sentimentCache,
       }));
     } finally {
-      sentimentInFlight.delete(symbol);
+      sentimentInFlight.delete(inFlightKey);
     }
   },
 
@@ -1531,7 +1567,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
     // the agent is invoked immediately and the glass-box transcript streams in
     // with minimal latency.
     get()
-      .refreshSentimentForSymbol(symbol)
+      .refreshSentimentForSymbol(symbol, get().selectedModel)
       .catch(() => {
         console.warn('[QuantStore] Sentiment refresh failed, continuing with analysis...');
       });
