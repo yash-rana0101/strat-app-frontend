@@ -724,7 +724,10 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
   // ── Sentiment ─────────────────────────────────────────────────────────────
   fetch_symbol_sentiment: async (args) => {
     const symbol = reqStr(args, 'symbol', 'fetch_symbol_sentiment');
-    return apiJson(`/api/sentiment?symbol=${encodeURIComponent(symbol)}`);
+    const model = optStr(args, 'model');
+    const qs = new URLSearchParams({ symbol });
+    if (model) qs.set('model', model);
+    return apiJson(`/api/sentiment?${qs.toString()}`);
   },
 
   // ── Deep-quant agent ──────────────────────────────────────────────────────

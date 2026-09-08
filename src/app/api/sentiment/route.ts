@@ -134,10 +134,14 @@ export function toSentimentPayload(symbol: string, verdict: StrategicVerdict): S
 }
 
 export async function GET(req: Request): Promise<Response> {
-  const symbol = (new URL(req.url).searchParams.get('symbol') ?? '').trim().toUpperCase();
+  const urlObj = new URL(req.url);
+  const symbol = (urlObj.searchParams.get('symbol') ?? '').trim().toUpperCase();
+  const model = (urlObj.searchParams.get('model') ?? '').trim();
   if (!symbol) return proxyError(400, 'sentiment: a symbol query parameter is required');
 
-  const url = `${upstreamBase('sentiment')}/sentiment?symbol=${encodeURIComponent(symbol)}`;
+  const upstreamParams = new URLSearchParams({ symbol });
+  if (model) upstreamParams.set('model', model);
+  const url = `${upstreamBase('sentiment')}/sentiment?${upstreamParams.toString()}`;
 
   // The upstream classifies on demand on a cache miss and waits up to
   // SENTIMENT_ON_DEMAND_TIMEOUT_MS (default 25s) before degrading to 404, so
