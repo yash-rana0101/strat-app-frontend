@@ -80,13 +80,13 @@
 
   --tv-color-toolbar-button-text: #5b6675;
   --tv-color-toolbar-button-text-hover: #0f172a;
-  --tv-color-toolbar-button-text-active: #047857;
-  --tv-color-toolbar-button-text-active-hover: #047857;
+  --tv-color-toolbar-button-text-active: #b45309;
+  --tv-color-toolbar-button-text-active-hover: #b45309;
 
-  --tv-color-item-active-text: #047857;
+  --tv-color-item-active-text: #b45309;
 
-  --tv-color-toolbar-toggle-button-background-active: rgba(4, 120, 87, 0.12);
-  --tv-color-toolbar-toggle-button-background-active-hover: rgba(4, 120, 87, 0.2);
+  --tv-color-toolbar-toggle-button-background-active: rgba(180, 83, 9, 0.12);
+  --tv-color-toolbar-toggle-button-background-active-hover: rgba(180, 83, 9, 0.2);
 
   --tv-color-toolbar-divider-background: #dfd7c8;
   --tv-color-toolbar-save-layout-loader: #5b6675;
@@ -99,14 +99,14 @@
   --tv-color-popup-element-secondary-text: #5b6675;
   --tv-color-popup-element-hint-text: #788596;
 
-  --tv-color-popup-element-text-active: #047857;
-  --tv-color-popup-element-background-active: rgba(4, 120, 87, 0.12);
+  --tv-color-popup-element-text-active: #b45309;
+  --tv-color-popup-element-background-active: rgba(180, 83, 9, 0.12);
 
   --tv-color-popup-element-toolbox-text: #5b6675;
   --tv-color-popup-element-toolbox-text-hover: #0f172a;
-  --tv-color-popup-element-toolbox-text-active-hover: #047857;
+  --tv-color-popup-element-toolbox-text-active-hover: #b45309;
   --tv-color-popup-element-toolbox-background-hover: #ebe4d8;
-  --tv-color-popup-element-toolbox-background-active-hover: rgba(4, 120, 87, 0.15);
+  --tv-color-popup-element-toolbox-background-active-hover: rgba(180, 83, 9, 0.15);
 }
 
 /* ── Scrollbars within the widget ────────────────────────────────────── */
@@ -150,6 +150,7 @@
   overflow-y: auto !important;
 }
 
+/* ── Custom toolbar buttons — theme-neutral layout ───────────────── */
 .tv-custom-toolbar-btn {
   display: inline-flex !important;
   align-items: center !important;
@@ -162,7 +163,6 @@
   background: transparent !important;
   border: none !important;
   cursor: pointer !important;
-  color: #8f96a3 !important;
   position: relative !important;
   border-radius: 4px !important;
   margin: 0 1px !important;
@@ -175,29 +175,43 @@
   box-sizing: border-box !important;
 }
 
-.tv-custom-toolbar-btn:hover {
+/* ── Custom toolbar buttons — dark theme colours ─────────────────── */
+.theme-dark .tv-custom-toolbar-btn {
+  color: #8f96a3 !important;
+}
+.theme-dark .tv-custom-toolbar-btn:hover {
   background-color: #262729 !important;
   color: #ffffff !important;
 }
-
-.tv-custom-toolbar-btn.active {
+.theme-dark .tv-custom-toolbar-btn.active {
   background-color: rgba(255, 255, 255, 0.12) !important;
   color: #ffffff !important;
 }
 
-/* Custom Dropdown menu */
+/* ── Custom toolbar buttons — light theme colours ────────────────── */
+:root:not(.theme-dark) .tv-custom-toolbar-btn {
+  color: #5b6675 !important;
+}
+:root:not(.theme-dark) .tv-custom-toolbar-btn:hover {
+  background-color: #ebe4d8 !important;
+  color: #0f172a !important;
+}
+:root:not(.theme-dark) .tv-custom-toolbar-btn.active {
+  background-color: rgba(180, 83, 9, 0.12) !important;
+  color: #b45309 !important;
+}
+
+/* ── Custom dropdown — layout ────────────────────────────────────── */
 .tv-custom-dropdown {
   position: absolute !important;
   z-index: 100000 !important;
-  width: 170px !important;
-  background-color: #191a1b !important;
-  border: 1px solid #2e3033 !important;
+  min-width: 170px !important;
   padding: 4px !important;
   display: flex !important;
   flex-direction: column !important;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7) !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
   box-sizing: border-box !important;
+  border-radius: 8px !important;
 }
 
 .tv-custom-dropdown-item {
@@ -209,26 +223,14 @@
   border: none !important;
   padding: 6px 10px !important;
   font-size: 11px !important;
-  color: #8a8f98 !important;
   text-align: left !important;
   cursor: pointer !important;
   box-sizing: border-box !important;
-}
-
-.tv-custom-dropdown-item:hover {
-  background-color: #262729 !important;
-  color: #ffffff !important;
-}
-
-.tv-custom-dropdown-item.active {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff !important;
-  font-weight: bold !important;
+  border-radius: 6px !important;
 }
 
 .tv-custom-dropdown-item-desc {
   font-size: 9px !important;
-  color: #555555 !important;
   margin-top: 2px !important;
 }
 
@@ -236,4 +238,48 @@
   display: flex !important;
   flex-direction: column !important;
   align-items: flex-start !important;
+}
+
+/* ── Custom dropdown — dark theme colours ────────────────────────── */
+.theme-dark .tv-custom-dropdown {
+  background-color: #191a1b !important;
+  border: 1px solid #2e3033 !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.7) !important;
+}
+.theme-dark .tv-custom-dropdown-item {
+  color: #8a8f98 !important;
+}
+.theme-dark .tv-custom-dropdown-item:hover {
+  background-color: #262729 !important;
+  color: #ffffff !important;
+}
+.theme-dark .tv-custom-dropdown-item.active {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  font-weight: bold !important;
+}
+.theme-dark .tv-custom-dropdown-item-desc {
+  color: #555555 !important;
+}
+
+/* ── Custom dropdown — light theme colours ───────────────────────── */
+:root:not(.theme-dark) .tv-custom-dropdown {
+  background-color: #fcfaf7 !important;
+  border: 1px solid #dfd7c8 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+}
+:root:not(.theme-dark) .tv-custom-dropdown-item {
+  color: #0f172a !important;
+}
+:root:not(.theme-dark) .tv-custom-dropdown-item:hover {
+  background-color: #ebe4d8 !important;
+  color: #0f172a !important;
+}
+:root:not(.theme-dark) .tv-custom-dropdown-item.active {
+  background-color: rgba(180, 83, 9, 0.12) !important;
+  color: #b45309 !important;
+  font-weight: bold !important;
+}
+:root:not(.theme-dark) .tv-custom-dropdown-item-desc {
+  color: #788596 !important;
 }
