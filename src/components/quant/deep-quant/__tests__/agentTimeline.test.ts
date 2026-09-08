@@ -64,7 +64,7 @@ describe('deriveProgress — rows come from the stream, never from a script', ()
     ];
 
     const items = deriveProgress(steps, 'running', null);
-    expect(items.map((i) => i.label)).toEqual(['Get Multi Tf Trend', 'Get Consensus Report']);
+    expect(items.map((i) => i.label)).toEqual(['Read Multi Tf Trend', 'Read Consensus Report']);
     // Prose does not become a row: it is transcript content, and it is what used to flood the
     // sidebar.
     expect(items).toHaveLength(2);

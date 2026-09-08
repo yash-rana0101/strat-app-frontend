@@ -164,10 +164,11 @@ export function progressMeta(args: Record<string, unknown> | undefined): string 
   return parts.join(' · ');
 }
 
-/** `get_multi_tf_trend` → `Get Multi Tf Trend`. */
+/** `get_multi_tf_trend` → `Read Multi Tf Trend`. */
 export function formatToolName(toolName: string | undefined): string {
   if (!toolName) return 'Tool';
   return toolName
+    .replace(/^get[_\s]/i, 'read_')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (c) => c.toUpperCase())
     .trim();
