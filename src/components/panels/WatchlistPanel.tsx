@@ -9,6 +9,7 @@ import WatchlistSkeleton from './left-panel/WatchlistSkeleton';
 import InstrumentLogo from '../common/InstrumentLogo';
 import { kiteFetch } from '../../lib/kiteFetch';
 import { bridgeInvoke } from '../../lib/bridge';
+import { useLiveTickPrices } from '../../hooks/useLiveTickPrices';
 
 // ── Static Top-10 Watchlist Symbols (NIFTY 50 Blue Chips) ──────────────
 const TOP_WATCHLIST = [
@@ -103,6 +104,7 @@ export default function WatchlistPanel() {
   // ── Symbol selection from store ────────────────────────────────────
   const selectedSymbol = useTradeStore((s) => s.selectedSymbol);
   const setSelectedSymbol = useTradeStore((s) => s.setSelectedSymbol);
+  const liveTicks = useLiveTickPrices();
 
   // ── Fetch quotes for watchlist stocks ──────────────────────────────
   const fetchQuotes = useCallback(async () => {
@@ -327,8 +329,22 @@ export default function WatchlistPanel() {
             {TOP_WATCHLIST.map((stock) => {
               const quote = quotes[stock.symbol];
               const sectorColor = SECTOR_COLORS[stock.sector] ?? 'bg-elevated text-text-muted';
-              const isPositive = quote ? quote.change !== null && quote.change >= 0 : false;
               const isActive = selectedSymbol === stock.symbol;
+
+              const liveTick = liveTicks.get(stock.symbol);
+              const displayPrice = liveTick?.price ?? quote?.last_price ?? null;
+              const prevClose =
+                quote?.close ??
+                (quote?.last_price && quote.change !== null && quote.change !== -100
+                  ? quote.last_price / (1 + quote.change / 100)
+                  : null);
+              const rawPct =
+                displayPrice && prevClose && prevClose > 0
+                  ? ((displayPrice - prevClose) / prevClose) * 100
+                  : null;
+              const changeVal: number | null =
+                rawPct !== null && Number.isFinite(rawPct) ? rawPct : (quote ? quote.change : null);
+              const isPositive = changeVal !== null && changeVal >= 0;
 
               return (
                 <motion.button
@@ -375,22 +391,22 @@ export default function WatchlistPanel() {
 
                   {/* Right: Price + Change */}
                   <div className="flex flex-col items-end shrink-0">
-                    {quote ? (
+                    {displayPrice ? (
                       <>
                         <span className="text-[12px] font-semibold text-text-primary tabular-nums">
-                          {formatPrice(quote.last_price)}
+                          {formatPrice(displayPrice)}
                         </span>
                         <div
-                          className={`flex items-center gap-0.5 ${quote.change === null ? 'text-text-muted' : isPositive ? 'text-bull' : 'text-bear'}`}
+                          className={`flex items-center gap-0.5 ${changeVal === null ? 'text-text-muted' : isPositive ? 'text-bull' : 'text-bear'}`}
                         >
-                          {quote.change !== null &&
+                          {changeVal !== null &&
                             (isPositive ? (
                               <ArrowUpRight size={10} />
                             ) : (
                               <ArrowDownRight size={10} />
                             ))}
                           <span className="text-[10px] font-medium tabular-nums">
-                            {formatChange(quote.change)}
+                            {formatChange(changeVal)}
                           </span>
                         </div>
                       </>
