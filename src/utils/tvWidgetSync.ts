@@ -1,6 +1,7 @@
 import { injectIframeDropdownStyles } from './iframeDropdown';
 import { useChartUIStore } from '../store/useChartUIStore';
 import { SVGS } from '../components/chart/toolbarIcons';
+import { getLayoutSvgString } from '../components/chart/layoutDividers';
 
 /**
  * Synchronize custom button states (active class, icons) inside the TradingView iframe.
@@ -10,6 +11,7 @@ export function syncButtonStates(doc: Document): void {
 
   const ghostLineMode = useChartUIStore.getState().ghostLineMode;
   const splitView = useChartUIStore.getState().splitView;
+  const activeLayout = useChartUIStore.getState().activeLayout;
 
   const ghostLineBtn = doc.getElementById('tv-btn-ghost-line');
   if (ghostLineBtn) {
@@ -23,7 +25,9 @@ export function syncButtonStates(doc: Document): void {
 
   const splitViewBtn = doc.getElementById('tv-btn-split-view');
   if (splitViewBtn) {
-    splitViewBtn.innerHTML = splitView ? SVGS.splitView : SVGS.singleView;
+    splitViewBtn.innerHTML = splitView
+      ? getLayoutSvgString(activeLayout, 18)
+      : SVGS.singleView;
     if (splitView) {
       splitViewBtn.classList.add('active');
     } else {

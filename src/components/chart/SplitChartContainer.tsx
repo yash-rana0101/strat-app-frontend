@@ -29,6 +29,7 @@ import ChartPane from './ChartPane';
 import { useChartUIStore } from '../../store/useChartUIStore';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import type { TradeProfile } from '../../store/useTradeStore';
+import { getGridContainerClass, getPaneGridClass } from './layoutGridStyles';
 
 /** The workspace profiles in which the Split_Chart_View is available (R4.7). */
 export type SplitEnabledProfile = Extract<TradeProfile, 'INTRADAY' | 'FNO'>;
@@ -39,36 +40,54 @@ interface SplitChartContainerProps {
 }
 
 /**
- * Two-pane split chart. Mounts one `ChartPane` per pane in the store, each with
- * an independent symbol/timeframe/chart type and a stable React key, separated
- * by a draggable divider that reuses the existing resize-handle styling.
+ * Multi-pane split chart container supporting 1 to 8 charts.
+ * For standard 2-vertical split, uses resizable panels.
+ * For all other multi-pane configurations, uses structured CSS grid.
  */
 export default function SplitChartContainer({ mode }: SplitChartContainerProps) {
   const panes = useChartUIStore((s) => s.panes);
+  const activeLayout = useChartUIStore((s) => s.activeLayout);
   const isMobile = useIsMobile();
 
-  // Exactly two panes this phase (R4.2, R7.5): index 0 = 'A' (left),
-  // index 1 = 'B' (right). Destructure to make the two-pane contract explicit.
-  const [paneA, paneB] = panes;
+  // Exactly two panes with vertical split (or default): retain resizable panels
+  if ((activeLayout === '2v' || !activeLayout) && panes.length === 2) {
+    const [paneA, paneB] = panes;
+    return (
+      <div data-split-mode={mode} className="flex h-full w-full min-h-0 flex-col bg-chart-bg">
+        <Group orientation={isMobile ? 'vertical' : 'horizontal'} className="h-full w-full min-h-0">
+          <Panel defaultSize={50} minSize={20}>
+            <ChartPane key={paneA.id} pane={paneA} />
+          </Panel>
+          <Separator
+            className={
+              isMobile
+                ? 'h-px cursor-row-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:h-1'
+                : 'w-px cursor-col-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:w-1'
+            }
+          />
+          <Panel defaultSize={50} minSize={20}>
+            <ChartPane key={paneB.id} pane={paneB} />
+          </Panel>
+        </Group>
+      </div>
+    );
+  }
+
+  // Multi-pane layouts (3 to 8 panes, or horizontal split '2h')
+  const containerClass = getGridContainerClass(activeLayout);
 
   return (
-    <div data-split-mode={mode} className="flex h-full w-full min-h-0 flex-col bg-chart-bg">
-      <Group orientation={isMobile ? 'vertical' : 'horizontal'} className="h-full w-full min-h-0">
-        <Panel defaultSize={50} minSize={20}>
-          {/* Stable key = pane id so React keeps each chart instance isolated. */}
-          <ChartPane key={paneA.id} pane={paneA} />
-        </Panel>
-        <Separator
-          className={
-            isMobile
-              ? 'h-px cursor-row-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:h-1'
-              : 'w-px cursor-col-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:w-1'
-          }
-        />
-        <Panel defaultSize={50} minSize={20}>
-          <ChartPane key={paneB.id} pane={paneB} />
-        </Panel>
-      </Group>
+    <div data-split-mode={mode} className="h-full w-full min-h-0 bg-chart-bg p-0.5">
+      <div className={`h-full w-full min-h-0 ${containerClass}`}>
+        {panes.map((pane, idx) => {
+          const paneClass = getPaneGridClass(activeLayout, idx);
+          return (
+            <div key={pane.id} className={`h-full w-full min-h-0 overflow-hidden ${paneClass}`}>
+              <ChartPane pane={pane} />
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

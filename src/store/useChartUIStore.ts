@@ -11,6 +11,10 @@ import {
 } from '../charting/workspace';
 import { useTradeStore, type ChartTimeframe } from './useTradeStore';
 import { readPreferences, savePreferences } from '../lib/preferences';
+import type { ChartLayoutId, LayoutSyncSettings, PaneId } from '../types/chartLayout';
+import { DEFAULT_LAYOUT_SYNC } from '../types/chartLayout';
+import { ensurePanes } from './splitLayoutSlice';
+import { getLayoutDefinition } from '../components/chart/layoutCatalog';
 
 type CursorMode = 'cross' | 'dot' | 'arrow' | 'eraser';
 // Exported so `lib/preferences.ts` can assert its validation allowlist covers
@@ -58,7 +62,7 @@ function writeStoredTheme(theme: 'light' | 'dark'): void {
 // default and is mode-gated: it can only be enabled in the INTRADAY or FNO
 // workspace modes (R4.7), enforced at the store boundary in `setSplitView`.
 
-export type PaneId = 'A' | 'B';
+export type { PaneId };
 
 export interface ChartPaneState {
   /** Stable identifier for the pane (left = 'A', right = 'B'). */
@@ -221,11 +225,13 @@ interface ChartUIState {
   /** Whether the drawing Layers panel is visible. */
   showLayersPanel: boolean;
 
-  // ── Split-Chart (Dual-Pane) State (Requirement 4) ──────────────────
-  /** Whether the chart area is split into two independent panes (off by default). */
+  // ── Split-Chart (Multi-Pane) State (Requirement 4) ──────────────────
+  activeLayout: ChartLayoutId;
+  layoutSync: LayoutSyncSettings;
+  /** Whether the chart area is split into independent panes (off by default). */
   splitView: boolean;
-  /** The two independent chart panes; index 0 = 'A', index 1 = 'B'. */
-  panes: [ChartPaneState, ChartPaneState];
+  /** The independent chart panes (up to 8). */
+  panes: ChartPaneState[];
   /** The pane that search/global controls target (the Active_Pane). */
   activePaneId: PaneId;
   sidebarOpen: boolean;
@@ -270,17 +276,19 @@ interface ChartUIState {
   setShowLayersPanel: (value: boolean) => void;
   toggleLayersPanel: () => void;
 
-  // ── Split-Chart (Dual-Pane) Actions (Requirement 4) ────────────────
+  // ── Split-Chart (Multi-Pane) Actions (Requirement 4) ────────────────
+  setLayout: (layoutId: ChartLayoutId) => void;
+  setLayoutSync: (key: keyof LayoutSyncSettings, enabled: boolean) => void;
   /** Enable/disable split view. Enabling is a no-op unless the active
    *  workspace profile is INTRADAY or FNO (mode-gating, R4.7). */
   setSplitView: (on: boolean) => void;
   /** Designate which pane is the Active_Pane (R4.4, R4.5). */
   setActivePane: (id: PaneId) => void;
-  /** Set a single pane's symbol without affecting the other pane (R4.3, R4.8). */
+  /** Set a single pane's symbol (or all panes when layoutSync.symbol is true). */
   setPaneSymbol: (id: PaneId, symbol: string) => void;
-  /** Set a single pane's timeframe without affecting the other pane (R4.3, R4.8). */
+  /** Set a single pane's timeframe (or all panes when layoutSync.interval is true). */
   setPaneTimeframe: (id: PaneId, tf: ChartTimeframe) => void;
-  /** Set a single pane's chart type without affecting the other pane (R4.3, R4.8). */
+  /** Set a single pane's chart type without affecting other panes. */
   setPaneChartType: (id: PaneId, t: ChartType) => void;
   // ── Workspace Persistence ──────────────────────────────────────────
   loadWorkspaceFromDB: (symbol: string) => Promise<void>;
@@ -351,6 +359,8 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
   ghostLineMode: savedChartPrefs.ghostLineMode ?? 'curved',
   chartType: savedChartPrefs.chartType ?? 'candlestick',
   chartTypeParams: savedChartPrefs.chartTypeParams ?? {},
+  activeLayout: (savedChartPrefs.splitView ? '2v' : '1') as ChartLayoutId,
+  layoutSync: { ...DEFAULT_LAYOUT_SYNC },
   splitView: savedChartPrefs.splitView ?? false,
   panes: savedChartPrefs.panes ?? [defaultPane('A'), defaultPane('B')],
   activePaneId: savedChartPrefs.activePaneId ?? 'A',
@@ -489,66 +499,96 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
   setShowLayersPanel: (value) => set({ showLayersPanel: value }),
   toggleLayersPanel: () => set((s) => ({ showLayersPanel: !s.showLayersPanel })),
 
-  // ── Split-Chart (Dual-Pane) Actions ────────────────────────────────
+  // ── Split-Chart (Multi-Pane) Actions ────────────────────────────────
+
+  setLayout: (layoutId) =>
+    set((state) => {
+      if (layoutId === '1') {
+        return {
+          splitView: false,
+          activeLayout: '1',
+          activePaneId: 'A',
+        };
+      }
+      if (!isSplitAllowed()) return state;
+      const def = getLayoutDefinition(layoutId);
+      const activeSymbol = useTradeStore.getState().selectedSymbol || '';
+      const seed = activeSymbol || state.panes[0]?.symbol || '';
+      const newPanes = ensurePanes(def.paneCount, state.panes, seed);
+      const validActivePane = newPanes.some((p) => p.id === state.activePaneId)
+        ? state.activePaneId
+        : 'A';
+      return {
+        splitView: true,
+        activeLayout: layoutId,
+        panes: newPanes,
+        activePaneId: validActivePane,
+      };
+    }),
+
+  setLayoutSync: (key, enabled) =>
+    set((state) => ({
+      layoutSync: {
+        ...state.layoutSync,
+        [key]: enabled,
+      },
+    })),
 
   /**
-   * Toggle the dual-pane split view. Enabling is mode-gated: when the active
-   * workspace profile is not INTRADAY or FNO, `setSplitView(true)` is a no-op
-   * and the view stays single (Requirement 4.7). Disabling is always allowed
-   * (returning to single view is valid in any mode).
-   *
-   * On enable, panes are seeded from the currently active symbol so the split
-   * view opens showing the same instrument the user was just viewing, rather
-   * than a hard-coded placeholder. The active pane keeps the symbol verbatim;
-   * the sibling pane also starts with it (the user can then pick a different
-   * symbol per pane via search / watchlist routing).
+   * Toggle split view. Enabling is mode-gated: when the active workspace profile
+   * is not INTRADAY or FNO, `setSplitView(true)` is a no-op (Requirement 4.7).
    */
   setSplitView: (on) =>
     set((state) => {
       if (on && !isSplitAllowed()) return state;
       if (!on) return { splitView: on };
 
-      // Enabling: seed panes from the active selection so split view never
-      // falls back to a placeholder symbol.
       const activeSymbol = useTradeStore.getState().selectedSymbol || '';
       const seed = activeSymbol || state.panes[0]?.symbol || state.panes[1]?.symbol || '';
+      const targetLayout = state.activeLayout === '1' ? '2v' : state.activeLayout;
+      const def = getLayoutDefinition(targetLayout);
+      const targetCount = Math.max(def.paneCount, Math.min(state.panes.length, 2));
+      const newPanes = ensurePanes(targetCount, state.panes, seed);
       return {
         splitView: on,
-        panes: [
-          { ...state.panes[0], symbol: state.panes[0].symbol || seed },
-          { ...state.panes[1], symbol: state.panes[1].symbol || seed },
-        ] as [ChartPaneState, ChartPaneState],
+        activeLayout: targetLayout,
+        panes: newPanes,
       };
     }),
 
   /** Designate the Active_Pane that search/global controls target (R4.4). */
   setActivePane: (id) => set({ activePaneId: id }),
 
-  /** Update one pane's symbol, leaving the sibling pane untouched (R4.3, R4.8). */
+  /** Update one pane's symbol (or all panes when layoutSync.symbol is true). */
   setPaneSymbol: (id, symbol) =>
-    set((state) => ({
-      panes: state.panes.map((p) => (p.id === id ? { ...p, symbol } : p)) as [
-        ChartPaneState,
-        ChartPaneState,
-      ],
-    })),
+    set((state) => {
+      if (state.layoutSync.symbol) {
+        return {
+          panes: state.panes.map((p) => ({ ...p, symbol })),
+        };
+      }
+      return {
+        panes: state.panes.map((p) => (p.id === id ? { ...p, symbol } : p)),
+      };
+    }),
 
-  /** Update one pane's timeframe, leaving the sibling pane untouched (R4.3, R4.8). */
+  /** Update one pane's timeframe (or all panes when layoutSync.interval is true). */
   setPaneTimeframe: (id, tf) =>
-    set((state) => ({
-      panes: state.panes.map((p) => (p.id === id ? { ...p, timeframe: tf } : p)) as [
-        ChartPaneState,
-        ChartPaneState,
-      ],
-    })),
+    set((state) => {
+      if (state.layoutSync.interval) {
+        return {
+          panes: state.panes.map((p) => ({ ...p, timeframe: tf })),
+        };
+      }
+      return {
+        panes: state.panes.map((p) => (p.id === id ? { ...p, timeframe: tf } : p)),
+      };
+    }),
 
-  /** Update one pane's chart type, leaving the sibling pane untouched (R4.3, R4.8). */
+  /** Update one pane's chart type, leaving the sibling panes untouched. */
   setPaneChartType: (id, t) =>
     set((state) => ({
-      panes: state.panes.map((p) => (p.id === id ? { ...p, chartType: t } : p)) as [
-        ChartPaneState,
-        ChartPaneState,
-      ],
+      panes: state.panes.map((p) => (p.id === id ? { ...p, chartType: t } : p)),
     })),
 
   // ── Workspace Persistence Actions ──────────────────────────────────
@@ -779,12 +819,14 @@ export const useChartUIStore = create<ChartUIState>((set, get) => ({
 // on unrelated state changes.
 useChartUIStore.subscribe((state, prev) => {
   const samePanes =
-    state.panes[0].symbol === prev.panes[0].symbol &&
-    state.panes[0].timeframe === prev.panes[0].timeframe &&
-    state.panes[0].chartType === prev.panes[0].chartType &&
-    state.panes[1].symbol === prev.panes[1].symbol &&
-    state.panes[1].timeframe === prev.panes[1].timeframe &&
-    state.panes[1].chartType === prev.panes[1].chartType;
+    state.panes.length === prev.panes.length &&
+    state.panes.every(
+      (p, i) =>
+        p.id === prev.panes[i]?.id &&
+        p.symbol === prev.panes[i]?.symbol &&
+        p.timeframe === prev.panes[i]?.timeframe &&
+        p.chartType === prev.panes[i]?.chartType
+    );
   if (
     samePanes &&
     state.chartType === prev.chartType &&

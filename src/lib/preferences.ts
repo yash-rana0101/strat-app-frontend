@@ -77,7 +77,7 @@ export interface TerminalPreferences {
   chartTypeParams: ChartTypeParams;
   ghostLineMode: GhostLineMode;
   splitView: boolean;
-  panes: [ChartPaneState, ChartPaneState];
+  panes: ChartPaneState[];
   activePaneId: PaneId;
   sidebarOpen: boolean;
   drawingColor: string;
@@ -129,7 +129,7 @@ const _chartModesCoverUnion: CoversUnion<ChartMode, (typeof CHART_MODES)[number]
 const MAGNET_MODES = ['off', 'weak', 'strong'] as const;
 const _magnetModesCoverUnion: CoversUnion<MagnetMode, (typeof MAGNET_MODES)[number]> = true;
 
-const PANE_IDS = ['A', 'B'] as const;
+const PANE_IDS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] as const;
 const _paneIdsCoverUnion: CoversUnion<PaneId, (typeof PANE_IDS)[number]> = true;
 
 // `RANGE_DAYS` is keyed by DataRange, so its keys ARE the allowlist — no second
@@ -227,7 +227,7 @@ function paneOf(value: unknown, expectedId: PaneId): ChartPaneState | undefined 
 
 /** Both panes, or undefined when either fails (a half-valid pair is not usable). */
 function panesOf(value: unknown): [ChartPaneState, ChartPaneState] | undefined {
-  if (!Array.isArray(value) || value.length !== 2) return undefined;
+  if (!Array.isArray(value) || value.length < 2) return undefined;
   const a = paneOf(value[0], 'A');
   const b = paneOf(value[1], 'B');
   return a && b ? [a, b] : undefined;

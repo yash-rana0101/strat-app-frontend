@@ -149,7 +149,7 @@ describe('parsePreferences — a rejected field is indistinguishable from an abs
       ['chartType', 'spaghetti'],
       ['ghostLineMode', 'psychic'],
       ['magnetMode', 'magnetic'],
-      ['activePaneId', 'C'],
+      ['activePaneId', 'Z'],
     ] as const) {
       const prefs = parsePreferences(validBlob({ [field[0]]: field[1] }));
       expect(prefs).not.toHaveProperty(field[0]);

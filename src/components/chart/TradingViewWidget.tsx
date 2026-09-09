@@ -16,10 +16,10 @@ import { TIMEFRAME_TO_RESOLUTION, RESOLUTION_TO_TIMEFRAME, getThemeOverrides, ap
 import { useTradingViewScript } from '../../hooks/useTradingViewScript';
 import { getTvWidgetOptions } from '../../utils/tvWidgetOptions';
 import { AlertTriangle } from 'lucide-react';
-import { showIframeDropdown } from '../../utils/iframeDropdown';
 import { whenChartReady, whenHeaderReady } from '../../charting/widgetReady';
 import { syncButtonStates } from '../../utils/tvWidgetSync';
-import { openExternalUrl, dashboardUrl } from '../../lib/redirect';
+import { registerTvToolbarButtons } from '../../utils/tvToolbarButtons';
+import { ChartLayoutDropdown } from './ChartLayoutDropdown';
 
 export interface TradingViewWidgetProps {
   symbolOverride?: string;
@@ -56,10 +56,35 @@ export default function TradingViewWidget({
     return (activeDecision ?? liveDecisions[liveDecisions.length - 1])?.symbol ?? 'RELIANCE';
   }, [symbolOverride, selectedSymbol, activeDecision, liveDecisions]);
 
+  const activeLayout = useChartUIStore((s) => s.activeLayout);
+  const layoutSync = useChartUIStore((s) => s.layoutSync);
+  const setLayout = useChartUIStore((s) => s.setLayout);
+  const setLayoutSync = useChartUIStore((s) => s.setLayoutSync);
+  const [layoutAnchor, setLayoutAnchor] = useState<{ top: number; left: number } | null>(null);
+  const layoutPickerRef = useRef<HTMLDivElement>(null);
+
   const effectiveTimeframe = timeframeOverride ?? activeTimeframe ?? '15m';
   const resolution = TIMEFRAME_TO_RESOLUTION[effectiveTimeframe] ?? '15';
   const { ready: scriptReady, error: scriptError } = useTradingViewScript();
   const [widgetError, setWidgetError] = useState<string | null>(null);
+
+  // Close layout picker on outside clicks (inside iframe or parent window)
+  useEffect(() => {
+    if (!layoutAnchor) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (layoutPickerRef.current && !layoutPickerRef.current.contains(e.target as Node)) {
+        setLayoutAnchor(null);
+      }
+    };
+    const iframe = containerRef.current?.querySelector('iframe');
+    const doc = iframe?.contentDocument;
+    document.addEventListener('mousedown', handleOutside);
+    doc?.addEventListener('mousedown', handleOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      doc?.removeEventListener('mousedown', handleOutside);
+    };
+  }, [layoutAnchor]);
 
   // ── Iframe Focus & Mouse Activation for Split Pane Selection ──────────
   useEffect(() => {
@@ -222,79 +247,12 @@ export default function TradingViewWidget({
             if (!doc) return;
 
             try {
-              const ghostLineBtn = (tvWidget as any).createButton();
-              ghostLineBtn.id = 'tv-btn-ghost-line';
-              ghostLineBtn.className = 'tv-custom-toolbar-btn';
-              ghostLineBtn.title = ghostlineEnabled
-                ? 'Projection Engine'
-                : 'Ghostline requires a subscription';
-              ghostLineBtn.addEventListener('click', () => {
-                if (!useFeatureStore.getState().access.ghostline) {
-                  openExternalUrl(dashboardUrl());
-                  return;
-                }
-                const currentMode = useChartUIStore.getState().ghostLineMode;
-                showIframeDropdown(
-                  ghostLineBtn,
-                  [
-                    {
-                      value: 'linear' as const,
-                      label: 'OLS',
-                      description: 'Linear regression baseline',
-                    },
-                    {
-                      value: 'volume' as const,
-                      label: 'VWLR',
-                      description: 'Volume-weighted linear regression',
-                    },
-                    {
-                      value: 'curved' as const,
-                      label: 'VWEPR',
-                      description: 'Volume-weighted polynomial',
-                    },
-                    {
-                      value: 'forecast' as const,
-                      label: 'FCST',
-                      description: 'Volatility-aware forecaster',
-                    },
-                  ],
-                  currentMode,
-                  (v) => {
-                    useChartUIStore.getState().setGhostLineMode(v);
-                    syncButtonStates(doc);
-                  },
-                  doc
-                );
+              registerTvToolbarButtons(tvWidget, doc, {
+                onToggleLayoutPicker: (anchor) => {
+                  setLayoutAnchor((prev) => (prev ? null : anchor));
+                },
               });
-
-              let splitViewBtn: HTMLElement | undefined;
-              const activeProfile = useTradeStore.getState().activeProfile;
-              if (activeProfile === 'INTRADAY' || activeProfile === 'FNO') {
-                const btn = (tvWidget as any).createButton();
-                btn.id = 'tv-btn-split-view';
-                btn.className = 'tv-custom-toolbar-btn';
-                btn.title = 'Chart Layout';
-                btn.addEventListener('click', () => {
-                  const currentVal = useChartUIStore.getState().splitView;
-                  showIframeDropdown(
-                    btn,
-                    [
-                      { value: false, label: 'Single Pane' },
-                      { value: true, label: 'Split Pane' },
-                    ],
-                    currentVal,
-                    (v) => {
-                      useChartUIStore.getState().setSplitView(v);
-                      syncButtonStates(doc);
-                    },
-                    doc
-                  );
-                });
-                splitViewBtn = btn;
-              }
-
               setButtonsCreated(true);
-              syncButtonStates(doc);
             } catch (err) {
               console.error('[TradingViewWidget] Custom button registration failed:', err);
             }
@@ -490,6 +448,27 @@ export default function TradingViewWidget({
         className={`relative flex-1 w-full h-full min-h-0 ${className}`}
         style={{ minHeight: '320px' }}
       />
+      {layoutAnchor && (
+        <div
+          ref={layoutPickerRef}
+          style={{ top: layoutAnchor.top, left: layoutAnchor.left }}
+          className="absolute z-50 animate-in fade-in zoom-in-95 duration-150"
+        >
+          <ChartLayoutDropdown
+            activeLayout={activeLayout}
+            syncSettings={layoutSync}
+            onSelectLayout={(id) => {
+              setLayout(id);
+              setLayoutAnchor(null);
+              const iframe = containerRef.current?.querySelector('iframe');
+              if (iframe?.contentDocument) {
+                syncButtonStates(iframe.contentDocument);
+              }
+            }}
+            onToggleSync={setLayoutSync}
+          />
+        </div>
+      )}
     </div>
   );
 }
