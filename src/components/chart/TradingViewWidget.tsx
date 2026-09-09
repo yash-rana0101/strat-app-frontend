@@ -88,10 +88,8 @@ export default function TradingViewWidget({
     };
   }, [layoutAnchor]);
 
-  // Pane Focus & Mouse Activation for Split Pane Selection
   useTradingViewPaneFocus(containerRef, hideLeftToolbar, scriptReady, scriptError);
 
-  // Widget Initialization & Button Injection
   useEffect(() => {
     if (!scriptReady || !containerRef.current) return;
     if (!window.TradingView) {
@@ -183,33 +181,35 @@ export default function TradingViewWidget({
           });
         } catch { }
 
-        // Always register toolbar buttons in the header widget (both single and split views)
-        whenHeaderReady(
-          tvWidget,
-          () => {
-            const iframe = containerRef.current?.querySelector('iframe');
-            const doc = iframe?.contentDocument;
-            if (!doc) return;
+        // Register toolbar buttons in single chart view header
+        if (!isSplitPane) {
+          whenHeaderReady(
+            tvWidget,
+            () => {
+              const iframe = containerRef.current?.querySelector('iframe');
+              const doc = iframe?.contentDocument;
+              if (!doc) return;
 
-            try {
-              registerTvToolbarButtons(
-                tvWidget,
-                doc,
-                {
-                  onToggleLayoutPicker: (anchor) => {
-                    setLayoutAnchor((prev) => (prev ? null : anchor));
+              try {
+                registerTvToolbarButtons(
+                  tvWidget,
+                  doc,
+                  {
+                    onToggleLayoutPicker: (anchor) => {
+                      setLayoutAnchor((prev) => (prev ? null : anchor));
+                    },
                   },
-                },
-                isSplitPane
-              );
-              setButtonsCreated(true);
-            } catch (err) {
-              console.error('[TradingViewWidget] Custom button registration failed:', err);
-            }
-          },
-          () => !widgetRef.current,
-          'ToolbarButtons'
-        );
+                  false
+                );
+                setButtonsCreated(true);
+              } catch (err) {
+                console.error('[TradingViewWidget] Custom button registration failed:', err);
+              }
+            },
+            () => !widgetRef.current,
+            'ToolbarButtons'
+          );
+        }
       });
     } catch (err) {
       console.error('[TradingViewWidget] Widget creation failed:', err);
