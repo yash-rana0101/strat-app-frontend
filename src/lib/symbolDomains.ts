@@ -201,3 +201,43 @@ export function getSymbolColor(symbol: string): { bg: string; text: string; bord
   };
 }
 
+/**
+ * Resolves a logo URL for TradingView Charting Library search results & symbol info.
+ * Supports equities, indices, F&O contracts, and bond tickers (extracting underlying company ticker).
+ */
+export function getTradingViewLogoUrls(symbol: string): string[] | undefined {
+  if (!symbol) return undefined;
+  const upper = symbol.trim().toUpperCase();
+
+  // 1. Direct clean symbol
+  const clean = cleanSymbol(upper);
+  let ticker = clean;
+
+  // 2. If F&O contract (e.g. RELIANCE24APRFUT -> RELIANCE, NIFTY24DEC24000CE -> NIFTY)
+  if (isFnoSymbol(clean)) {
+    const fnoMatch = clean.match(/^[A-Z]+/);
+    if (fnoMatch && fnoMatch[0]) {
+      ticker = fnoMatch[0];
+    }
+  } else if (!SYMBOL_DOMAINS[ticker]) {
+    // 3. If it's a bond/debenture symbol like "0IRFC35-N0" or "647IRFC28-N0",
+    // extract the core alphabetic ticker
+    const match = upper.match(/[A-Z]{3,}/);
+    if (match && match[0]) {
+      ticker = match[0];
+    }
+  }
+
+  if (!ticker) return undefined;
+  return [`/logos/${encodeURIComponent(ticker)}.svg`];
+}
+
+/**
+ * Resolves an exchange logo URL for TradingView Charting Library.
+ */
+export function getTradingViewExchangeLogoUrl(exchange?: string): string | undefined {
+  const ex = (exchange || 'NSE').trim().toUpperCase();
+  const name = ex === 'BSE' ? 'BSE' : 'NSE';
+  return `/logos/${name}.svg`;
+}
+

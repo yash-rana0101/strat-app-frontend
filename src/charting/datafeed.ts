@@ -29,6 +29,7 @@ import { kiteFetch } from '../lib/kiteFetch';
 import { bridgeInvoke } from '../lib/bridge';
 import { debugLog } from '../lib/debugLog';
 import { markOnce } from '../lib/perfMarks';
+import { getTradingViewLogoUrls, getTradingViewExchangeLogoUrl } from '../lib/symbolDomains';
 
 // ── Resolution Mapping ────────────────────────────────────────────────────
 // Maps TV resolution strings to Kite Historical API interval strings.
@@ -755,6 +756,8 @@ async function fallbackRestSearch(
         // `EQ` — so the old `instrument_type === 'INDEX'` test matched nothing
         // and every index was labelled a stock.
         type: (inst.segment ?? '').toUpperCase() === 'INDICES' ? 'index' : 'stock',
+        logo_urls: getTradingViewLogoUrls(inst.tradingsymbol),
+        exchange_logo: getTradingViewExchangeLogoUrl(inst.exchange),
       }))
     );
   } catch {
@@ -844,6 +847,8 @@ export function createDatafeed(): IBasicDatafeed {
                 exchange: r.exchange,
                 ticker: `${r.exchange}:${r.symbol}`,
                 type: isIndex ? 'index' : 'stock',
+                logo_urls: getTradingViewLogoUrls(r.symbol),
+                exchange_logo: getTradingViewExchangeLogoUrl(r.exchange),
               };
             }
             const desc =
@@ -857,6 +862,8 @@ export function createDatafeed(): IBasicDatafeed {
               exchange: 'NFO',
               ticker: `NFO:${r.tradingsymbol}`,
               type: 'fno',
+              logo_urls: getTradingViewLogoUrls(r.underlying),
+              exchange_logo: getTradingViewExchangeLogoUrl('NFO'),
             };
           });
           // An empty result is not necessarily "no such symbol": on the web
@@ -919,6 +926,8 @@ export function createDatafeed(): IBasicDatafeed {
           volume_precision: 0,
           data_status: 'streaming',
           currency_code: 'INR',
+          logo_urls: getTradingViewLogoUrls(cleanSymbol),
+          exchange_logo: getTradingViewExchangeLogoUrl(exchange),
         };
 
         // Verify symbol exists via quote API

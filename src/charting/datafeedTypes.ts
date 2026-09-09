@@ -36,6 +36,8 @@ export interface LibrarySymbolInfo {
   volume_precision: number;
   data_status: 'streaming' | 'endofday' | 'pulsed' | 'delayed_streaming';
   currency_code?: string;
+  logo_urls?: string[];
+  exchange_logo?: string;
 }
 
 // ── Bar ───────────────────────────────────────────────────────────────────
@@ -64,6 +66,8 @@ export interface SearchSymbolResultItem {
   exchange: string;
   ticker: string;
   type: string;
+  logo_urls?: string[];
+  exchange_logo?: string;
 }
 
 // ── DatafeedConfiguration ────────────────────────────────────────────────
