@@ -25,12 +25,18 @@ export interface TradingViewWidgetProps {
   symbolOverride?: string;
   timeframeOverride?: string;
   className?: string;
+  isSplitPane?: boolean;
+  hideLeftToolbar?: boolean;
+  hideTimeframesToolbar?: boolean;
 }
 
 export default function TradingViewWidget({
   symbolOverride,
   timeframeOverride,
   className = '',
+  isSplitPane = false,
+  hideLeftToolbar = false,
+  hideTimeframesToolbar = false,
 }: TradingViewWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetRef = useRef<IChartingLibraryWidget | null>(null);
@@ -168,6 +174,9 @@ export default function TradingViewWidget({
       activeSymbol,
       resolution,
       theme,
+      isSplitPane,
+      hideLeftToolbar,
+      hideTimeframesToolbar,
     });
 
     try {
@@ -239,27 +248,29 @@ export default function TradingViewWidget({
           console.warn('[TradingViewWidget] Failed to subscribe to onIntervalChanged:', err);
         }
 
-        whenHeaderReady(
-          tvWidget,
-          () => {
-            const iframe = containerRef.current?.querySelector('iframe');
-            const doc = iframe?.contentDocument;
-            if (!doc) return;
+        if (!isSplitPane) {
+          whenHeaderReady(
+            tvWidget,
+            () => {
+              const iframe = containerRef.current?.querySelector('iframe');
+              const doc = iframe?.contentDocument;
+              if (!doc) return;
 
-            try {
-              registerTvToolbarButtons(tvWidget, doc, {
-                onToggleLayoutPicker: (anchor) => {
-                  setLayoutAnchor((prev) => (prev ? null : anchor));
-                },
-              });
-              setButtonsCreated(true);
-            } catch (err) {
-              console.error('[TradingViewWidget] Custom button registration failed:', err);
-            }
-          },
-          () => !widgetRef.current,
-          'ToolbarButtons'
-        );
+              try {
+                registerTvToolbarButtons(tvWidget, doc, {
+                  onToggleLayoutPicker: (anchor) => {
+                    setLayoutAnchor((prev) => (prev ? null : anchor));
+                  },
+                });
+                setButtonsCreated(true);
+              } catch (err) {
+                console.error('[TradingViewWidget] Custom button registration failed:', err);
+              }
+            },
+            () => !widgetRef.current,
+            'ToolbarButtons'
+          );
+        }
       });
     } catch (err) {
       console.error('[TradingViewWidget] Widget creation failed:', err);
@@ -420,6 +431,7 @@ export default function TradingViewWidget({
   }, []);
 
   useGhostLine(widgetState, activeSymbol, effectiveTimeframe);
+  useGhostLine(isSplitPane ? null : widgetState, activeSymbol, effectiveTimeframe);
 
   const displayError = scriptError || widgetError;
 

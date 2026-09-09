@@ -40,12 +40,18 @@ interface MainTerminalChartProps extends AlphaPredictiveChartProps {
   timeframeOverride?: Timeframe;
   /** Per-pane chart type (split view). */
   chartTypeOverride?: ChartType;
+  isSplitPane?: boolean;
+  hideLeftToolbar?: boolean;
+  hideTimeframesToolbar?: boolean;
 }
 
 export default function MainTerminalChart({
   symbolOverride,
   timeframeOverride,
   chartTypeOverride,
+  isSplitPane = false,
+  hideLeftToolbar = false,
+  hideTimeframesToolbar = false,
 }: MainTerminalChartProps) {
   return (
     <ChartSurface
@@ -53,6 +59,9 @@ export default function MainTerminalChart({
       symbolOverride={symbolOverride}
       timeframeOverride={timeframeOverride}
       chartTypeOverride={chartTypeOverride}
+      isSplitPane={isSplitPane}
+      hideLeftToolbar={hideLeftToolbar}
+      hideTimeframesToolbar={hideTimeframesToolbar}
     />
   );
 }

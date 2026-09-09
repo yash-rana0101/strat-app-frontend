@@ -8,6 +8,9 @@ interface WidgetOptionsInput {
   activeSymbol: string;
   resolution: string;
   theme: 'light' | 'dark';
+  isSplitPane?: boolean;
+  hideLeftToolbar?: boolean;
+  hideTimeframesToolbar?: boolean;
 }
 
 /**
@@ -19,6 +22,9 @@ export function getTvWidgetOptions({
   activeSymbol,
   resolution,
   theme,
+  isSplitPane = false,
+  hideLeftToolbar = false,
+  hideTimeframesToolbar = false,
 }: WidgetOptionsInput): ChartingLibraryWidgetOptions {
   const sym = activeSymbol.toUpperCase();
   const isFno =
@@ -64,7 +70,13 @@ export function getTvWidgetOptions({
     //
     // `__tests__/tvWidgetOptions.featuresets.test.ts` enforces this by checking
     // every name below against the base union.
-    disabled_features: [],
+    disabled_features: isSplitPane
+      ? [
+          'header_widget',
+          ...(hideLeftToolbar ? ['left_toolbar'] : []),
+          ...(hideTimeframesToolbar ? ['timeframes_toolbar'] : []),
+        ]
+      : [],
     enabled_features: [
       'use_localstorage_for_settings',
       'header_compare',
