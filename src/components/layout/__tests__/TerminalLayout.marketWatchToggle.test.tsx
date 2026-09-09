@@ -51,7 +51,7 @@ describe('the Market Watch toggle in the nav rail', () => {
   it('starts expanded, and says what pressing it will do', () => {
     expect(toggle()).toHaveAttribute('title', 'Hide Market Watch');
     expect(toggle()).toHaveAttribute('aria-pressed', 'true');
-    expect(marketWatchColumn()).toHaveStyle({ width: '224px' });
+    expect(marketWatchColumn()).toHaveStyle({ width: '300px' });
   });
 
   it('collapses the column to zero width', () => {
@@ -68,7 +68,7 @@ describe('the Market Watch toggle in the nav rail', () => {
     expect(toggle()).toHaveAttribute('aria-pressed', 'false');
 
     fireEvent.click(toggle());
-    expect(marketWatchColumn()).toHaveStyle({ width: '224px' });
+    expect(marketWatchColumn()).toHaveStyle({ width: '300px' });
     expect(toggle()).toHaveAttribute('title', 'Hide Market Watch');
   });
 
