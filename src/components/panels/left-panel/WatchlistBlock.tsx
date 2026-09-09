@@ -189,7 +189,9 @@ export default function WatchlistBlock() {
         const map: Record<string, QuoteData> = {};
         for (const q of data.quotes) {
           map[q.symbol] = q;
-          useTradeStore.getState().updateWatchlistQuote(q.symbol, q.last_price, q.change);
+          useTradeStore
+            .getState()
+            .updateWatchlistQuote(q.symbol, q.last_price, q.change, q.close);
         }
         setQuotes(map);
         setQuotesError(null);
@@ -343,9 +345,28 @@ export default function WatchlistBlock() {
                   // Falls back to polled REST quote, then cached item price.
                   const liveTick = liveTicks.get(item.symbol);
                   const displayPrice = liveTick?.price ?? quote?.last_price ?? item.lastPrice;
-                  // `null` when the upstream reported no previous close, in which case
-                  // there is no direction to show — no arrow, no bull/bear colour.
-                  const changeVal: number | null = quote ? quote.change : item.change;
+                  // Baseline previous close price to compute real-time percentage change.
+                  // Prefer explicit previous close from quote or store; fallback to deriving
+                  // it from lastPrice and change if close is missing.
+                  const prevClose =
+                    quote?.close ??
+                    item.close ??
+                    (quote?.last_price && quote.change !== null && quote.change !== -100
+                      ? quote.last_price / (1 + quote.change / 100)
+                      : item.lastPrice && item.change !== null && item.change !== -100
+                        ? item.lastPrice / (1 + item.change / 100)
+                        : null);
+
+                  // Real-time percent change: updates tick-by-tick alongside displayPrice.
+                  // Falls back to polled REST quote change, then cached item change.
+                  const rawPct =
+                    displayPrice > 0 && prevClose && prevClose > 0
+                      ? ((displayPrice - prevClose) / prevClose) * 100
+                      : null;
+                  const changeVal: number | null =
+                    rawPct !== null && Number.isFinite(rawPct)
+                      ? rawPct
+                      : (quote ? quote.change : item.change);
                   const isPositive = changeVal !== null && changeVal >= 0;
                   const sectorColor =
                     SECTOR_COLORS[item.sector] ??
