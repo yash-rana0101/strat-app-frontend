@@ -22,11 +22,11 @@ import SessionHistoryRow from './SessionHistoryRow';
 export interface SessionHistoryProps {
   /** Opening a session must also rehydrate it, so the caller supplies the activation. */
   onOpen: (sessionId: string) => void;
-  /** `active` is the tab bar's set; `archived` is everything closed. */
-  status?: 'active' | 'archived';
-  /** Default status when not controlled */
-  defaultStatus?: 'active' | 'archived';
-  /** Whether to show the Closed / Active filter tabs */
+  /** Filter sessions: 'all' by default to load the complete history, or specific status */
+  status?: 'active' | 'archived' | 'all';
+  /** @deprecated Kept for backwards compatibility */
+  defaultStatus?: 'active' | 'archived' | 'all';
+  /** @deprecated Kept for backwards compatibility */
   showStatusFilter?: boolean;
 }
 
@@ -36,18 +36,14 @@ const SEARCH_DEBOUNCE_MS = 250;
 export default function SessionHistory({
   onOpen,
   status: controlledStatus,
-  defaultStatus = 'active',
-  showStatusFilter = true,
+  defaultStatus,
 }: SessionHistoryProps) {
   const [rawQuery, setRawQuery] = React.useState('');
   const [query, setQuery] = React.useState('');
   const [busyId, setBusyId] = React.useState<string | null>(null);
   const [openingId, setOpeningId] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
-  const [internalStatus, setInternalStatus] = React.useState<'active' | 'archived'>(
-    controlledStatus ?? defaultStatus
-  );
-  const status = controlledStatus ?? internalStatus;
+  const status = controlledStatus ?? defaultStatus ?? 'all';
 
   React.useEffect(() => {
     const id = setTimeout(() => setQuery(rawQuery.trim()), SEARCH_DEBOUNCE_MS);
@@ -132,10 +128,6 @@ export default function SessionHistory({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <SessionHistoryControls
-        showStatusFilter={showStatusFilter}
-        controlledStatus={controlledStatus}
-        status={status}
-        onStatusChange={setInternalStatus}
         everPaged={everPaged}
         rawQuery={rawQuery}
         onQueryChange={setRawQuery}
@@ -193,7 +185,9 @@ export default function SessionHistory({
               ? `No sessions match “${query}”.`
               : status === 'archived'
                 ? 'Nothing archived yet.'
-                : 'No sessions yet. Start one to analyse a symbol.'}
+                : status === 'active'
+                  ? 'No active sessions yet.'
+                  : 'No sessions in history yet.'}
           </p>
         ) : (
           <>

@@ -2,18 +2,14 @@
 
 // components/quant/session/SessionHistoryControls.tsx
 //
-// Presentational header controls for SessionHistory: status filter tabs (Closed/Active),
-// server-side search input, and action error banner. Extracted to keep SessionHistory
-// focused on orchestration and well under the 300-line architecture limit.
+// Presentational header controls for SessionHistory: server-side search input
+// and action error banner. Extracted to keep SessionHistory focused on
+// orchestration and well under the 300-line architecture limit.
 
 import React from 'react';
 import { AlertTriangle, Loader2, Search } from 'lucide-react';
 
 export interface SessionHistoryControlsProps {
-  showStatusFilter?: boolean;
-  controlledStatus?: 'active' | 'archived';
-  status: 'active' | 'archived';
-  onStatusChange: (status: 'active' | 'archived') => void;
   everPaged: boolean;
   rawQuery: string;
   onQueryChange: (q: string) => void;
@@ -24,10 +20,6 @@ export interface SessionHistoryControlsProps {
 }
 
 export default function SessionHistoryControls({
-  showStatusFilter = true,
-  controlledStatus,
-  status,
-  onStatusChange,
   everPaged,
   rawQuery,
   onQueryChange,
@@ -38,37 +30,6 @@ export default function SessionHistoryControls({
 }: SessionHistoryControlsProps) {
   return (
     <>
-      {showStatusFilter && !controlledStatus && (
-        <div className="flex shrink-0 border-b border-border-default/40 bg-surface/50 text-xs">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={status === 'archived'}
-            onClick={() => onStatusChange('archived')}
-            className={`flex-1 py-1.5 text-center font-medium transition-colors ${
-              status === 'archived'
-                ? 'border-b-2 border-primary text-text-primary'
-                : 'text-text-muted hover:text-text-secondary'
-            }`}
-          >
-            Closed
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={status === 'active'}
-            onClick={() => onStatusChange('active')}
-            className={`flex-1 py-1.5 text-center font-medium transition-colors ${
-              status === 'active'
-                ? 'border-b-2 border-primary text-text-primary'
-                : 'text-text-muted hover:text-text-secondary'
-            }`}
-          >
-            Active
-          </button>
-        </div>
-      )}
-
       {everPaged && (
         <div className="shrink-0 border-b border-border-default/40 p-2">
           <div className="flex items-center gap-1.5 rounded border border-border-default/60 bg-surface px-2">

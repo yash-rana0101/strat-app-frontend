@@ -222,6 +222,13 @@ describe('useSessions pagination', () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(String(fetchMock.mock.calls[0][0])).toContain('status=archived');
   });
+
+  it('defaults to status=all to load all history', async () => {
+    fetchMock.mockResolvedValue(json({ items: [], next_cursor: null }));
+    const { result } = renderHook(() => useSessions(), { wrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(String(fetchMock.mock.calls[0][0])).toContain('status=all');
+  });
 });
 
 // ── Mutations ─────────────────────────────────────────────────────────────────
@@ -261,7 +268,7 @@ describe('useCreateSession', () => {
 describe('useRenameSession', () => {
   it('applies the new title optimistically', async () => {
     client.setQueryData(fqKeys.session('sess_1'), summary({ title: 'Old' }));
-    let release: (v: Response) => void = () => {};
+    let release: (v: Response) => void = () => { };
     fetchMock.mockImplementation(
       () =>
         new Promise<Response>((r) => {
@@ -312,7 +319,7 @@ describe('useArchiveSession', () => {
     // Archiving removes a tab. A removal that has to be undone looks like the app losing
     // track of the user's work, which is worse than a brief wait.
     client.setQueryData(fqKeys.session('sess_1'), summary({ status: 'active' }));
-    let release: (v: Response) => void = () => {};
+    let release: (v: Response) => void = () => { };
     fetchMock.mockImplementation(
       () =>
         new Promise<Response>((r) => {

@@ -163,7 +163,7 @@ export default function SessionTabBarConnected() {
           ref={panelRef}
           className="absolute inset-x-0 top-full z-20 max-h-80 overflow-hidden rounded-b-md border border-border-default/60 bg-surface shadow-lg"
         >
-          <SessionHistory onOpen={onOpen} defaultStatus="archived" />
+          <SessionHistory onOpen={onOpen} />
         </div>
       )}
     </div>

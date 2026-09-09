@@ -53,7 +53,7 @@ export const fqKeys = {
   all: ['fq'] as const,
   sessions: () => ['fq', 'sessions'] as const,
   sessionList: (params: { status?: string; q?: string }) =>
-    ['fq', 'sessions', 'list', params.status ?? 'active', params.q ?? ''] as const,
+    ['fq', 'sessions', 'list', params.status ?? 'all', params.q ?? ''] as const,
   session: (sessionId: string) => ['fq', 'sessions', sessionId] as const,
   messages: (sessionId: string) => ['fq', 'sessions', sessionId, 'messages'] as const,
   runs: (sessionId: string) => ['fq', 'sessions', sessionId, 'runs'] as const,
@@ -88,12 +88,12 @@ const IMMUTABLE_STALE_MS = Infinity;
 
 // ── Reads ─────────────────────────────────────────────────────────────────────
 
-export function useSessions(params: { status?: 'active' | 'archived'; q?: string } = {}) {
+export function useSessions(params: { status?: 'active' | 'archived' | 'all'; q?: string } = {}) {
   return useInfiniteQuery({
     queryKey: fqKeys.sessionList(params),
     queryFn: ({ pageParam }) =>
       listSessions({
-        status: params.status ?? 'active',
+        status: params.status ?? 'all',
         q: params.q,
         cursor: pageParam,
         limit: 25,

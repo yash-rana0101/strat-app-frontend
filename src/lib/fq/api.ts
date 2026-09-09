@@ -191,7 +191,7 @@ export function createSession(input: CreateSessionInput): Promise<SessionSummary
 
 export function listSessions(
   params: {
-    status?: 'active' | 'archived';
+    status?: 'active' | 'archived' | 'all';
     cursor?: string | null;
     limit?: number;
     q?: string;

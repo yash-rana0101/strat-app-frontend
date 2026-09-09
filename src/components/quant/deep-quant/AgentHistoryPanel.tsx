@@ -97,12 +97,10 @@ function AgentHistoryPanelContent({ onClose, onSessionSelect }: AgentHistoryPane
         </div>
       )}
 
-      {/* ── History List (Active & Closed, with Rename, Archive & Delete) ── */}
+      {/* ── History List (All Sessions, with Open, Rename & Delete) ── */}
       <div className="min-h-0 flex-1">
         <SessionHistory
           onOpen={(id) => void handleOpen(id)}
-          defaultStatus="active"
-          showStatusFilter={true}
         />
       </div>
     </aside>

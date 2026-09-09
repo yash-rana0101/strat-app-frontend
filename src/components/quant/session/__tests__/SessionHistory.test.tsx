@@ -136,7 +136,7 @@ describe('the list', () => {
   it('shows a skeleton while loading, not an empty list', async () => {
     // An empty list and a loading list look identical without this, and "no sessions" is a very
     // different message from "not loaded yet".
-    fetchMock.mockImplementation(() => new Promise(() => {}));
+    fetchMock.mockImplementation(() => new Promise(() => { }));
     renderHistory();
 
     expect(await screen.findByText('Loading session history…')).toBeTruthy();
@@ -146,7 +146,7 @@ describe('the list', () => {
     fetchMock.mockResolvedValue(json({ items: [], next_cursor: null }));
     renderHistory();
 
-    expect(await screen.findByText(/No sessions yet/)).toBeTruthy();
+    expect(await screen.findByText(/No sessions in history yet/)).toBeTruthy();
   });
 
   it('says the archived list is empty in its own words', async () => {
@@ -317,7 +317,7 @@ describe('rename', () => {
   const listOf = (items: SessionSummary[]) => json({ items, next_cursor: null });
 
   it('is optimistic — the new name shows before the server replies', async () => {
-    let resolvePatch: (r: Response) => void = () => {};
+    let resolvePatch: (r: Response) => void = () => { };
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
       if (init?.method === 'PATCH') return new Promise<Response>((res) => (resolvePatch = res));
       return Promise.resolve(listOf([summary({ session_id: 'a' })]));
