@@ -60,13 +60,13 @@ interface SearchInstrument {
 type TauriSearchResult =
   | { kind: 'EQ'; symbol: string; name: string; exchange: string }
   | {
-    kind: 'FNO';
-    tradingsymbol: string;
-    underlying: string;
-    expiry: string;
-    strike: number | null;
-    optionType: 'CE' | 'PE' | 'FUT';
-  };
+      kind: 'FNO';
+      tradingsymbol: string;
+      underlying: string;
+      expiry: string;
+      strike: number | null;
+      optionType: 'CE' | 'PE' | 'FUT';
+    };
 
 function toSearchInstrument(r: TauriSearchResult): SearchInstrument {
   if (r.kind === 'EQ') {
@@ -290,7 +290,12 @@ export default function WatchlistPanel() {
                       className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left transition-colors hover:bg-elevated/70"
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <InstrumentLogo symbol={inst.tradingsymbol} name={inst.name} size={22} className="shrink-0" />
+                        <InstrumentLogo
+                          symbol={inst.tradingsymbol}
+                          name={inst.name}
+                          size={22}
+                          className="shrink-0"
+                        />
                         <div className="flex flex-col min-w-0">
                           <span className="text-xs font-semibold text-text-primary truncate">
                             {inst.tradingsymbol}
@@ -331,14 +336,26 @@ export default function WatchlistPanel() {
                   variants={fadeInUp}
                   type="button"
                   onClick={() => setSelectedSymbol(stock.symbol)}
-                  className={`group flex w-full items-center justify-between gap-1 px-3 py-2 text-xs text-left transition-colors cursor-pointer border-l-2 ${isActive
-                      ? 'bg-primary/10 border-primary text-text-primary'
-                      : 'hover:bg-elevated/70 border-transparent hover:border-primary/50'
-                    }`}
+                  className={`group relative flex w-full items-center justify-between gap-1 px-3 py-2 text-xs text-left cursor-pointer transition-all duration-200 ease-out ${
+                    isActive
+                      ? 'bg-gradient-to-r from-emerald-500/[0.08] via-emerald-500/[0.03] to-transparent text-text-primary'
+                      : 'hover:bg-emerald-500/[0.035] text-text-secondary hover:text-text-primary'
+                  }`}
                 >
+                  {/* Active accent pill (thin, smooth floating indicator) */}
+                  <span
+                    className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2.5px] rounded-r-full bg-emerald-500 transition-all duration-200 ease-out ${
+                      isActive ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-50'
+                    }`}
+                  />
                   {/* Left: Symbol + Name */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <InstrumentLogo symbol={stock.symbol} name={stock.name} size={28} className="shrink-0" />
+                    <InstrumentLogo
+                      symbol={stock.symbol}
+                      name={stock.name}
+                      size={28}
+                      className="shrink-0"
+                    />
                     <div className="flex flex-col min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
                         <span className="text-[13px] font-semibold text-text-primary truncate">
