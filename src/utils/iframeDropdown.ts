@@ -116,12 +116,13 @@ export function injectIframeDropdownStyles(doc: Document) {
       transition: background-color 0.15s ease, color 0.15s ease;
     }
     .tv-custom-toolbar-btn:hover {
-      background-color: ${c.elevated};
-      color: ${c.textPrimary};
+      background-color: rgba(16, 185, 129, 0.15);
+      color: ${c.isLight ? '#047857' : c.textPrimary};
     }
     .tv-custom-toolbar-btn.active {
-      background-color: ${c.elevated};
+      background-color: rgba(16, 185, 129, 0.2);
       color: ${c.accent};
+      --btn-elevated: ${c.elevated};
     }
     .tv-custom-dropdown {
       position: absolute;
@@ -155,10 +156,12 @@ export function injectIframeDropdownStyles(doc: Document) {
       transition: background-color 0.15s ease;
     }
     .tv-custom-dropdown-item:hover {
-      background-color: ${c.elevated};
+      background-color: rgba(16, 185, 129, 0.15);
+      color: ${c.isLight ? '#047857' : c.textPrimary};
     }
     .tv-custom-dropdown-item.active {
-      background-color: ${c.elevated};
+      background-color: rgba(16, 185, 129, 0.2);
+      color: ${c.isLight ? '#047857' : '#10b981'};
       font-weight: 700;
     }
     .tv-custom-dropdown-item-container {

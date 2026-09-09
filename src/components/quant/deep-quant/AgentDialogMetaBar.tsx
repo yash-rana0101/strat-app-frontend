@@ -95,8 +95,8 @@ export default function AgentDialogMetaBar({
             onClick={() => onModeChange('FIND')}
             className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
               mode === 'FIND'
-                ? 'bg-elevated text-text-primary shadow-xs'
-                : 'text-text-muted hover:text-text-primary'
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                : 'text-text-muted hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/10'
             }`}
           >
             Find Trade
@@ -107,8 +107,8 @@ export default function AgentDialogMetaBar({
             onClick={() => onModeChange('VERIFY')}
             className={`h-full flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
               mode === 'VERIFY'
-                ? 'bg-elevated text-text-primary shadow-xs'
-                : 'text-text-muted hover:text-text-primary'
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                : 'text-text-muted hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/10'
             }`}
           >
             Verify Setup
@@ -122,7 +122,7 @@ export default function AgentDialogMetaBar({
             className={`h-7 flex items-center rounded px-2.5 text-[9.5px] font-bold uppercase tracking-wider transition-all cursor-pointer border ${
               isConfiguringSetup
                 ? 'border-emerald-500/50 bg-emerald-500/15 text-emerald-400'
-                : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
+                : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-emerald-500/10'
             }`}
           >
             {isConfiguringSetup ? 'View Analysis' : 'Edit Setup'}

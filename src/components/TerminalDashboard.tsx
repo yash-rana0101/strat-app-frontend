@@ -103,8 +103,8 @@ export default function TerminalDashboard() {
             onClick={() => setActiveTab('risk')}
             className={`rounded-[4px] px-3 py-1 text-xs font-semibold transition-all duration-200 ${
               activeTab === 'risk'
-                ? 'bg-elevated text-text-primary border border-border-default'
-                : 'text-text-secondary hover:bg-elevated/20 hover:text-text-primary border border-transparent'
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                : 'text-text-secondary hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 border border-transparent'
             }`}
           >
             <div className="flex items-center gap-1.5">
@@ -118,8 +118,8 @@ export default function TerminalDashboard() {
             onClick={() => setActiveTab('positions')}
             className={`rounded-[4px] px-3 py-1 text-xs font-semibold transition-all duration-200 ${
               activeTab === 'positions'
-                ? 'bg-elevated text-text-primary border border-border-default'
-                : 'text-text-secondary hover:bg-elevated/20 hover:text-text-primary border border-transparent'
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                : 'text-text-secondary hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 border border-transparent'
             }`}
           >
             <div className="flex items-center gap-1.5">
@@ -133,8 +133,8 @@ export default function TerminalDashboard() {
             onClick={() => setActiveTab('orders')}
             className={`rounded-[4px] px-3 py-1 text-xs font-semibold transition-all duration-200 ${
               activeTab === 'orders'
-                ? 'bg-elevated text-text-primary border border-border-default'
-                : 'text-text-secondary hover:bg-elevated/20 hover:text-text-primary border border-transparent'
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                : 'text-text-secondary hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400 border border-transparent'
             }`}
           >
             <div className="flex items-center gap-1.5">
@@ -258,8 +258,8 @@ export default function TerminalDashboard() {
                     onClick={() => setPositionsSubTab('net')}
                     className={`rounded px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
                       positionsSubTab === 'net'
-                        ? 'bg-elevated text-emerald-400 border border-border-default'
-                        : 'text-text-muted hover:text-text-secondary'
+                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                        : 'text-text-muted hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400'
                     }`}
                   >
                     Net Positions ({positionsData.net?.length || 0})
@@ -269,8 +269,8 @@ export default function TerminalDashboard() {
                     onClick={() => setPositionsSubTab('day')}
                     className={`rounded px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-all ${
                       positionsSubTab === 'day'
-                        ? 'bg-elevated text-emerald-400 border border-border-default'
-                        : 'text-text-muted hover:text-text-secondary'
+                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                        : 'text-text-muted hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400'
                     }`}
                   >
                     Day Positions ({positionsData.day?.length || 0})
