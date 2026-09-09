@@ -282,6 +282,35 @@ async function relayAgentStream(
   await relaySse(
     res.body,
     (frame) => {
+      // A Q&A turn's frames must be DROPPED here ΓÇö not relayed, and not counted
+      // toward this relay's outcome.
+      //
+      // `GET /stream/{thread_id}` is a per-THREAD fan-out hub, and Q&A is answered on
+      // the SAME thread as the analysis (that is how it stays grounded). The server
+      // tees `/qa` into that hub so a client parked on a price watch still receives
+      // its own answer ΓÇö correct, but it means this reattach relay sees Q&A frames
+      // too, and it was forwarding every one of them to `deep-quant-stream`.
+      //
+      // That is what made a committed trade disappear. `applyStreamEvent` has no
+      // notion of `turn`: the Q&A `RUN_STARTED` hit its `watching` branch, which
+      // deliberately clears `finalTrade`/`aiPlan` (a resumed analysis leg is supposed
+      // to re-declare), and the Q&A run declares nothing ΓÇö so asking "did you give me
+      // a trade?" ERASED the decision panel, while the agent, reading the intact
+      // server-side transcript, correctly answered that it had already given one. The
+      // answer text also appended into the glass box as if it were the agent
+      // narrating its own scan.
+      //
+      // The `outcome` read below is skipped for the same reason: a Q&A turn always
+      // reaches `RUN_FINISHED(completed)`, which would end this reattach loop and
+      // abandon a still-live price watch ΓÇö the analysis is paused, not finished.
+      //
+      // DROPPED rather than re-emitted onto the Q&A channel: `ask_trade_question`
+      // relays its own `/qa` response to `deep-quant-qa-stream` already, so echoing
+      // the hub's copy would append every answer to the chat twice.
+      //
+      // The server stamps `turn` on every frame precisely so the two can be told
+      // apart. Analysis frames continue below, unchanged.
+      if ((frame.data as { turn?: unknown } | undefined)?.turn === 'qa') return;
       if (frame.event === 'RUN_FINISHED') {
         const status = (frame.data as Record<string, unknown> | null)?.status;
         outcome = status === 'paused' ? 'paused' : 'completed';
