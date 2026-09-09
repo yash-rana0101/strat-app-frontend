@@ -30,11 +30,26 @@ export default function TerminalLayout({
   const [profileOpen, setProfileOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
 
-  const [leftPanelWidth, setLeftPanelWidth] = useState(224);
+  const [leftPanelWidth, setLeftPanelWidth] = useState(300);
   const [isResizing, setIsResizing] = useState(false);
   const [leftPanelOpen, setLeftPanelOpen] = useState(true);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [initialQuery, setInitialQuery] = useState('');
+
+  // Hydrate user-persisted panel width from localStorage if available
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('strat_left_panel_width');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 200 && parsed <= 600) {
+          setLeftPanelWidth(parsed);
+        }
+      }
+    } catch {
+      // Ignore in iframe / private browsing environments
+    }
+  }, []);
 
   const mobileSearchOpen = useMobileNavStore((s) => s.isSearchOpen);
   const mobileSearchInitialQuery = useMobileNavStore((s) => s.searchInitialQuery);
@@ -46,15 +61,21 @@ export default function TerminalLayout({
 
     const startWidth = leftPanelWidth;
     const startX = mouseDownEvent.clientX;
+    let latestWidth = startWidth;
 
     const doDrag = (mouseMoveEvent: MouseEvent) => {
       const deltaX = mouseMoveEvent.clientX - startX;
-      const newWidth = Math.max(180, Math.min(500, startWidth + deltaX));
-      setLeftPanelWidth(newWidth);
+      latestWidth = Math.max(200, Math.min(600, startWidth + deltaX));
+      setLeftPanelWidth(latestWidth);
     };
 
     const stopDrag = () => {
       setIsResizing(false);
+      try {
+        localStorage.setItem('strat_left_panel_width', latestWidth.toString());
+      } catch {
+        // Ignore
+      }
       document.removeEventListener('mousemove', doDrag);
       document.removeEventListener('mouseup', stopDrag);
     };
