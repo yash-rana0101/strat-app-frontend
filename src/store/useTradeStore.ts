@@ -129,6 +129,11 @@ export interface WatchlistItem {
    * being made on no evidence.
    */
   change: number | null;
+  /**
+   * Previous close price from broker quote OHLC. Used to compute real-time
+   * percentage changes when tick prices update via WebSocket.
+   */
+  close?: number | null;
 }
 
 export interface OrderFlowTick {
@@ -271,7 +276,12 @@ interface TradeStore {
   /** Remove a symbol from the dynamic watchlist. */
   removeFromWatchlist: (symbol: string) => void;
   /** Update price/change for a watchlist item. */
-  updateWatchlistQuote: (symbol: string, lastPrice: number, change: number | null) => void;
+  updateWatchlistQuote: (
+    symbol: string,
+    lastPrice: number,
+    change: number | null,
+    close?: number | null
+  ) => void;
   /** Reorder watchlist items (drag-and-drop). */
   reorderWatchlist: (fromIndex: number, toIndex: number) => void;
   /** Replace the entire watchlist (used for hydration from persistence). */
@@ -563,6 +573,7 @@ export async function hydrateWatchlist() {
           // have rendered "+0.00%", asserting the instrument is flat.
           lastPrice: 0,
           change: null,
+          close: null,
         }));
         useTradeStore.getState().setWatchlist(hydrated);
         return;
@@ -899,10 +910,17 @@ export const useTradeStore = create<TradeStore>((set) => {
       });
     },
 
-    updateWatchlistQuote: (symbol: string, lastPrice: number, change: number | null) => {
+    updateWatchlistQuote: (
+      symbol: string,
+      lastPrice: number,
+      change: number | null,
+      close?: number | null
+    ) => {
       set((state) => ({
         watchlist: state.watchlist.map((w) =>
-          w.symbol === symbol ? { ...w, lastPrice, change } : w
+          w.symbol === symbol
+            ? { ...w, lastPrice, change, ...(close !== undefined ? { close } : {}) }
+            : w
         ),
       }));
     },
