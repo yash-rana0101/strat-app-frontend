@@ -150,7 +150,7 @@ export default function QuantActionBar({
                 onModeChange('FIND');
                 setIsDropdownOpen(false);
               }}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-sm text-left transition-all ${mode === 'FIND' ? 'bg-elevated text-text-primary' : 'text-text-secondary hover:bg-elevated hover:text-text-primary'}`}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-sm text-left transition-all ${mode === 'FIND' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'text-text-secondary hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400'}`}
             >
               <Zap size={13} className="text-text-secondary" />
               <div className="flex flex-col">
@@ -173,7 +173,7 @@ export default function QuantActionBar({
                 onModeChange('VERIFY');
                 setIsDropdownOpen(false);
               }}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-sm text-left transition-all ${mode === 'VERIFY' ? 'bg-elevated text-text-primary' : 'text-text-secondary hover:bg-elevated hover:text-text-primary'}`}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-sm text-left transition-all ${mode === 'VERIFY' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'text-text-secondary hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400'}`}
             >
               <Shield size={13} className="text-text-secondary" />
               <div className="flex flex-col">

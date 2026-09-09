@@ -48,8 +48,8 @@ export default function SessionTab({
     <div
       className={`group relative flex shrink-0 items-center gap-1.5 rounded-t-md border-b-2 pl-3 pr-1 transition-colors ${
         isActive
-          ? 'border-primary bg-elevated text-text-primary'
-          : 'border-transparent text-text-secondary hover:bg-elevated/40 hover:text-text-primary'
+          ? 'border-primary bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+          : 'border-transparent text-text-secondary hover:bg-emerald-500/10 hover:text-text-primary'
       }`}
       style={{ scrollSnapAlign: 'start' }}
       data-session-id={session.session_id}

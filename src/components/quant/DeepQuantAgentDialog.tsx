@@ -132,8 +132,6 @@ export default function DeepQuantAgentDialog({
             <div className="flex shrink-0 items-center gap-2">
               <QuantStatusPill status={sessionStatus} />
 
-
-
               {/* History Button (toggles right-side panel) */}
               {FQ_MULTI_SESSION && (
                 <button
@@ -142,10 +140,11 @@ export default function DeepQuantAgentDialog({
                   aria-expanded={historyOpen}
                   aria-label="Session history"
                   title="Session history"
-                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${historyOpen
-                    ? 'bg-elevated border-primary/50 text-text-primary shadow-xs'
-                    : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated'
-                    }`}
+                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                    historyOpen
+                      ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                      : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/10'
+                  }`}
                 >
                   <History size={11} aria-hidden="true" />
                   <span>History</span>
@@ -226,9 +225,7 @@ export default function DeepQuantAgentDialog({
                   )}
                 </div>
               ) : (
-                <AgentTerminal
-                  showTradePlan={false}
-                />
+                <AgentTerminal showTradePlan={false} />
               )}
             </div>
 

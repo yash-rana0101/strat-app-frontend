@@ -21,11 +21,11 @@
   /* Chart pane — #0d0d0e depth canvas. */
   --tv-color-pane-background: #0d0d0e;
 
-  /* Toolbar buttons — default state (hover=--bg-elevated, active=--bg-card) */
-  --tv-color-toolbar-button-background-hover: #262729;
-  --tv-color-toolbar-button-background-expanded: #262729;
-  --tv-color-toolbar-button-background-active: #202123;
-  --tv-color-toolbar-button-background-active-hover: #262729;
+  /* Toolbar buttons — default state (hover=light-green, active=light-green) */
+  --tv-color-toolbar-button-background-hover: rgba(16, 185, 129, 0.15);
+  --tv-color-toolbar-button-background-expanded: rgba(16, 185, 129, 0.15);
+  --tv-color-toolbar-button-background-active: rgba(16, 185, 129, 0.2);
+  --tv-color-toolbar-button-background-active-hover: rgba(16, 185, 129, 0.28);
 
   /* Toolbar text — matches --text-secondary / --text-muted */
   --tv-color-toolbar-button-text: #8a8f98;
@@ -37,8 +37,8 @@
   --tv-color-item-active-text: #10b981;
 
   /* Toggle button — active state */
-  --tv-color-toolbar-toggle-button-background-active: rgba(16, 185, 129, 0.15);
-  --tv-color-toolbar-toggle-button-background-active-hover: rgba(16, 185, 129, 0.25);
+  --tv-color-toolbar-toggle-button-background-active: rgba(16, 185, 129, 0.2);
+  --tv-color-toolbar-toggle-button-background-active-hover: rgba(16, 185, 129, 0.28);
 
   /* Toolbar divider — matches --border-default (#2e3033) */
   --tv-color-toolbar-divider-background: #2e3033;
@@ -50,21 +50,21 @@
   --tv-color-popup-background: #191a1b;
   --tv-color-popup-element-text: #f0f1f3;
   --tv-color-popup-element-text-hover: #ffffff;
-  --tv-color-popup-element-background-hover: #262729;
+  --tv-color-popup-element-background-hover: rgba(16, 185, 129, 0.15);
   --tv-color-popup-element-divider-background: #2e3033;
   --tv-color-popup-element-secondary-text: #8a8f98;
   --tv-color-popup-element-hint-text: #6b6f76;
 
   /* Active popup items — emerald accent */
   --tv-color-popup-element-text-active: #10b981;
-  --tv-color-popup-element-background-active: rgba(16, 185, 129, 0.12);
+  --tv-color-popup-element-background-active: rgba(16, 185, 129, 0.2);
 
   /* Toolbox popup elements */
   --tv-color-popup-element-toolbox-text: #8a8f98;
   --tv-color-popup-element-toolbox-text-hover: #f0f1f3;
   --tv-color-popup-element-toolbox-text-active-hover: #10b981;
-  --tv-color-popup-element-toolbox-background-hover: #262729;
-  --tv-color-popup-element-toolbox-background-active-hover: rgba(16, 185, 129, 0.15);
+  --tv-color-popup-element-toolbox-background-hover: rgba(16, 185, 129, 0.15);
+  --tv-color-popup-element-toolbox-background-active-hover: rgba(16, 185, 129, 0.22);
 }
 
 /* ── Light theme (fallback — matches .light class from globals.css) ─── */
@@ -73,40 +73,40 @@
   --tv-color-platform-background: #fcfaf7;
   --tv-color-pane-background: #fcfaf7;
 
-  --tv-color-toolbar-button-background-hover: #ebe4d8;
-  --tv-color-toolbar-button-background-expanded: #ebe4d8;
-  --tv-color-toolbar-button-background-active: #f5f0e9;
-  --tv-color-toolbar-button-background-active-hover: #ebe4d8;
+  --tv-color-toolbar-button-background-hover: rgba(16, 185, 129, 0.15);
+  --tv-color-toolbar-button-background-expanded: rgba(16, 185, 129, 0.15);
+  --tv-color-toolbar-button-background-active: rgba(16, 185, 129, 0.2);
+  --tv-color-toolbar-button-background-active-hover: rgba(16, 185, 129, 0.28);
 
   --tv-color-toolbar-button-text: #5b6675;
-  --tv-color-toolbar-button-text-hover: #0f172a;
-  --tv-color-toolbar-button-text-active: #b45309;
-  --tv-color-toolbar-button-text-active-hover: #b45309;
+  --tv-color-toolbar-button-text-hover: #047857;
+  --tv-color-toolbar-button-text-active: #047857;
+  --tv-color-toolbar-button-text-active-hover: #047857;
 
-  --tv-color-item-active-text: #b45309;
+  --tv-color-item-active-text: #047857;
 
-  --tv-color-toolbar-toggle-button-background-active: rgba(180, 83, 9, 0.12);
-  --tv-color-toolbar-toggle-button-background-active-hover: rgba(180, 83, 9, 0.2);
+  --tv-color-toolbar-toggle-button-background-active: rgba(16, 185, 129, 0.2);
+  --tv-color-toolbar-toggle-button-background-active-hover: rgba(16, 185, 129, 0.28);
 
   --tv-color-toolbar-divider-background: #dfd7c8;
   --tv-color-toolbar-save-layout-loader: #5b6675;
 
   --tv-color-popup-background: #fcfaf7;
   --tv-color-popup-element-text: #0f172a;
-  --tv-color-popup-element-text-hover: #000000;
-  --tv-color-popup-element-background-hover: #ebe4d8;
+  --tv-color-popup-element-text-hover: #047857;
+  --tv-color-popup-element-background-hover: rgba(16, 185, 129, 0.15);
   --tv-color-popup-element-divider-background: #dfd7c8;
   --tv-color-popup-element-secondary-text: #5b6675;
   --tv-color-popup-element-hint-text: #788596;
 
-  --tv-color-popup-element-text-active: #b45309;
-  --tv-color-popup-element-background-active: rgba(180, 83, 9, 0.12);
+  --tv-color-popup-element-text-active: #047857;
+  --tv-color-popup-element-background-active: rgba(16, 185, 129, 0.2);
 
   --tv-color-popup-element-toolbox-text: #5b6675;
-  --tv-color-popup-element-toolbox-text-hover: #0f172a;
-  --tv-color-popup-element-toolbox-text-active-hover: #b45309;
-  --tv-color-popup-element-toolbox-background-hover: #ebe4d8;
-  --tv-color-popup-element-toolbox-background-active-hover: rgba(180, 83, 9, 0.15);
+  --tv-color-popup-element-toolbox-text-hover: #047857;
+  --tv-color-popup-element-toolbox-text-active-hover: #047857;
+  --tv-color-popup-element-toolbox-background-hover: rgba(16, 185, 129, 0.15);
+  --tv-color-popup-element-toolbox-background-active-hover: rgba(16, 185, 129, 0.22);
 }
 
 /* ── Scrollbars within the widget ────────────────────────────────────── */
@@ -180,12 +180,12 @@
   color: #8f96a3 !important;
 }
 .theme-dark .tv-custom-toolbar-btn:hover {
-  background-color: #262729 !important;
+  background-color: rgba(16, 185, 129, 0.15) !important;
   color: #ffffff !important;
 }
 .theme-dark .tv-custom-toolbar-btn.active {
-  background-color: rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #10b981 !important;
 }
 
 /* ── Custom toolbar buttons — light theme colours ────────────────── */
@@ -193,12 +193,12 @@
   color: #5b6675 !important;
 }
 :root:not(.theme-dark) .tv-custom-toolbar-btn:hover {
-  background-color: #ebe4d8 !important;
-  color: #0f172a !important;
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #047857 !important;
 }
 :root:not(.theme-dark) .tv-custom-toolbar-btn.active {
-  background-color: rgba(180, 83, 9, 0.12) !important;
-  color: #b45309 !important;
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #047857 !important;
 }
 
 /* ── Custom dropdown — layout ────────────────────────────────────── */
@@ -250,12 +250,12 @@
   color: #8a8f98 !important;
 }
 .theme-dark .tv-custom-dropdown-item:hover {
-  background-color: #262729 !important;
+  background-color: rgba(16, 185, 129, 0.15) !important;
   color: #ffffff !important;
 }
 .theme-dark .tv-custom-dropdown-item.active {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  color: #ffffff !important;
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #10b981 !important;
   font-weight: bold !important;
 }
 .theme-dark .tv-custom-dropdown-item-desc {
@@ -266,18 +266,20 @@
 :root:not(.theme-dark) .tv-custom-dropdown {
   background-color: #fcfaf7 !important;
   border: 1px solid #dfd7c8 !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
 }
 :root:not(.theme-dark) .tv-custom-dropdown-item {
   color: #0f172a !important;
 }
 :root:not(.theme-dark) .tv-custom-dropdown-item:hover {
-  background-color: #ebe4d8 !important;
-  color: #0f172a !important;
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #047857 !important;
 }
 :root:not(.theme-dark) .tv-custom-dropdown-item.active {
-  background-color: rgba(180, 83, 9, 0.12) !important;
-  color: #b45309 !important;
+  background-color: rgba(16, 185, 129, 0.2) !important;
+  color: #047857 !important;
   font-weight: bold !important;
 }
 :root:not(.theme-dark) .tv-custom-dropdown-item-desc {

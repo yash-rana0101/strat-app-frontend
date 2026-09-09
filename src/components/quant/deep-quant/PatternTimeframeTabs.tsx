@@ -40,10 +40,10 @@ export default function PatternTimeframeTabs({
               focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary
               ${
                 isActive
-                  ? 'bg-elevated text-text-primary border-border-default shadow-sm'
+                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 shadow-sm'
                   : count > 0
-                    ? 'bg-surface text-text-secondary border-border-default/40 hover:bg-elevated/50 hover:text-text-primary'
-                    : 'bg-surface/50 text-text-muted border-border-default/20 hover:bg-elevated/30'
+                    ? 'bg-surface text-text-secondary border-border-default/40 hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400'
+                    : 'bg-surface/50 text-text-muted border-border-default/20 hover:bg-emerald-500/10'
               }
             `}
           >

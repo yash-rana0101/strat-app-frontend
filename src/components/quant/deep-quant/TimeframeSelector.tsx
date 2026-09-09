@@ -156,8 +156,8 @@ export default function TimeframeSelector({
                         onClick={() => handleSelect(opt.value)}
                         className={`flex w-full items-center justify-between px-2.5 py-1 text-left text-[10.5px] transition-colors cursor-pointer ${
                           isSelected
-                            ? 'bg-elevated text-text-primary font-semibold'
-                            : 'text-text-secondary hover:bg-elevated/60 hover:text-text-primary'
+                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold'
+                            : 'text-text-secondary hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400'
                         }`}
                       >
                         <span className="truncate">{opt.label}</span>
@@ -179,4 +179,3 @@ export default function TimeframeSelector({
     </>
   );
 }
-

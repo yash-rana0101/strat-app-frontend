@@ -39,6 +39,8 @@
   --reasoning-green-300: #86efac;
   --reasoning-green-400: #4ade80;
   --reasoning-green-500: #22c55e;
+  --hover-green: rgba(16, 185, 129, 0.15);
+  --active-green: rgba(16, 185, 129, 0.2);
 
   /* Shadow tokens — calm, professional depth */
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
@@ -107,6 +109,8 @@
   --reasoning-green-300: #15803d;
   --reasoning-green-400: #166534;
   --reasoning-green-500: #14532d;
+  --hover-green: rgba(16, 185, 129, 0.14);
+  --active-green: rgba(16, 185, 129, 0.2);
 
   /*
    * Sentiment colours, darkened for a light background.
@@ -1082,3 +1086,28 @@ html[data-theme-changing] * {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/* ── Universal Light Green Hover & Active States ─────────────────────────── */
+/* Ensures all interactive hovering and active states throughout the application use a clean, consistent light green */
+:is(
+    [class*='hover:bg-elevated'],
+    [class*='hover:bg-slate-800'],
+    [class*='hover:bg-surface'],
+    [class*='hover:bg-card']
+  ):hover:not([class*='hover:bg-red']):not([class*='hover:bg-rose']):not(
+    [class*='hover:bg-emerald-600']
+  ):not([class*='hover:bg-emerald-500']) {
+  background-color: var(--hover-green, rgba(16, 185, 129, 0.14)) !important;
+}
+
+:is(
+    [class*='hover:bg-elevated'],
+    [class*='hover:bg-slate-800'],
+    [class*='hover:bg-surface'],
+    [class*='hover:bg-card']
+  ):is(:active, .active, [data-state='active'], [aria-pressed='true']):not(
+    [class*='hover:bg-red']
+  ):not([class*='hover:bg-rose']):not([class*='hover:bg-emerald-600']):not(
+    [class*='hover:bg-emerald-500']
+  ) {
+  background-color: var(--active-green, rgba(16, 185, 129, 0.2)) !important;
+}

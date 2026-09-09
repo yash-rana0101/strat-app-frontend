@@ -201,8 +201,8 @@ export default function ModelSelector({
                     onClick={(e) => (single ? pick(group.models[0].id) : onProviderEnter(e, group))}
                     className={`flex w-full items-center justify-between gap-3 px-3 py-1.5 text-left text-[11px] font-bold tracking-wide transition-colors ${
                       isActive
-                        ? 'bg-elevated text-text-primary'
-                        : 'text-text-primary hover:bg-elevated/60'
+                        ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                        : 'text-text-primary hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400'
                     }`}
                   >
                     <span className="truncate">{group.provider}</span>
@@ -234,8 +234,8 @@ export default function ModelSelector({
                       locked
                         ? 'text-text-muted/60 cursor-not-allowed'
                         : m.id === value
-                          ? 'bg-elevated text-text-primary font-semibold'
-                          : 'text-text-secondary hover:bg-elevated/60 hover:text-text-primary'
+                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold'
+                          : 'text-text-secondary hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-400'
                     }`}
                   >
                     <span className="flex items-center gap-1.5 min-w-0">
