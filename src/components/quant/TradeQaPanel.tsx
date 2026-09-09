@@ -8,26 +8,30 @@ import {
   useFqAskQuestion,
   useFqDraft,
   useFqIsSessionHydrating,
+  useFqQaMessages,
   useFqQaStatus,
+  useFqReasoningSteps,
   useFqSessionStatus,
   useFqThreadId,
 } from './useFqSession';
+import { FQ_MULTI_SESSION } from '../../lib/env';
 
 // Unified Q&A composer, rendered as a continuous footer of the agent working
 // section (no separate "panel" chrome). The conversation turns themselves
 // render INLINE inside the agent console (see AgentTerminal → QaMessages), so
 // this component is ONLY the pinned input row.
 //
-// The input stays DISABLED until the agent reaches the AI-watcher state (or the
-// run completes); once it is watching, the user can chat while the AI keeps
-// watching for the price trigger. Includes a model-provider selector so the
-// user can pick which LLM answers.
+// The input stays DISABLED until the agent reaches the AI-watcher state, completes the
+// run, or is continuing an existing historical conversation. Includes a model-provider
+// selector so the user can pick which LLM answers.
 export default function TradeQaPanel() {
   const isSessionLoading = useFqIsSessionHydrating();
   const qaStatus = useFqQaStatus();
   const currentThreadId = useFqThreadId();
   const sessionStatus = useFqSessionStatus();
   const askQuestion = useFqAskQuestion();
+  const qaMessages = useFqQaMessages();
+  const reasoningSteps = useFqReasoningSteps();
   // The model choice is a USER preference, not session state: it stays global deliberately, so
   // picking a model once applies to the next question in every session.
   const selectedModel = useQuantStore((s) => s.selectedModel);
@@ -38,12 +42,18 @@ export default function TradeQaPanel() {
   const [draft, setDraft] = useFqDraft();
 
   const isStreaming = qaStatus === 'streaming';
-  // The input unlocks ONLY at the AI-watcher state or once the run is complete —
-  // and only when a thread id has been captured so the backend can ground the
-  // answer in this session's analysis.
+  // The input unlocks at the AI-watcher state, when the run completes, or when continuing
+  // a historical session that already has conversation turns or reasoning steps.
+  // In legacy single-session mode it also requires a thread id; in multi-session mode
+  // grounding is addressed by session id directly.
   const isWatching = sessionStatus === 'watching';
   const isComplete = sessionStatus === 'complete';
-  const canInteract = !isSessionLoading && (isWatching || isComplete) && !!currentThreadId;
+  const hasHistory = qaMessages.length > 0 || reasoningSteps.length > 0;
+  const canInteract =
+    !isSessionLoading &&
+    sessionStatus !== 'running' &&
+    (hasHistory || isWatching || isComplete) &&
+    (FQ_MULTI_SESSION || !!currentThreadId);
   const canSend = canInteract && !isStreaming && draft.trim().length > 0;
 
   const submittingRef = React.useRef(false);
@@ -74,10 +84,10 @@ export default function TradeQaPanel() {
       ? 'Answering…'
       : isWatching
         ? 'Ask while the AI watches for your price trigger…'
-        : isComplete
-          ? 'Ask anything, @ to mention, / for actions'
-          : sessionStatus === 'running'
-            ? 'Agent is analyzing — chat unlocks once it starts watching…'
+        : sessionStatus === 'running'
+          ? 'Agent is analyzing — chat unlocks once it starts watching…'
+          : isComplete || hasHistory
+            ? 'Ask anything, @ to mention, / for actions'
             : 'Run an analysis first…';
 
   return (

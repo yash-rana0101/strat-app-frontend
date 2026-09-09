@@ -160,9 +160,10 @@ export function useFqCanAskQuestion(): boolean {
   const legacyStatus = useQuantStore((s) => s.sessionStatus);
   const legacyThread = useQuantStore((s) => s.currentThreadId);
   const legacyQa = useQuantStore((s) => s.qaStatus);
+  const legacyHistory = useQuantStore((s) => s.qaMessages.length > 0);
   if (FQ_MULTI_SESSION) return next;
-  const unlocked = legacyStatus === 'watching' || legacyStatus === 'complete';
-  return unlocked && !!legacyThread && legacyQa !== 'streaming';
+  const unlocked = legacyHistory || legacyStatus === 'watching' || legacyStatus === 'complete';
+  return unlocked && legacyStatus !== 'running' && !!legacyThread && legacyQa !== 'streaming';
 }
 
 /**

@@ -78,7 +78,7 @@ export default function DeepQuantAgentDialog({
     verificationForm?.onSubmit();
   };
 
-  const hasRun = reasoningSteps.length > 0 || sessionStatus !== 'idle';
+  const hasRun = reasoningSteps.length > 0 || sessionStatus !== 'idle' || qaMessages.length > 0;
 
   return (
     <Dialog.Root

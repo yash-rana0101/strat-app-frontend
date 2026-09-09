@@ -152,9 +152,9 @@ export const selectLastHeartbeatStatus = (state: State): string | null =>
 export const selectAnalysisError = (state: State): string | null =>
   selectCurrentSession(state).analysisError;
 
-/** The thread id for Q&A and cancel. Reads the ACTIVE session's stream, never a global. */
+/** The thread id for Q&A and cancel. Reads the ACTIVE session's stream, falling back to session state. */
 export const selectCurrentThreadId = (state: State): string | null =>
-  selectCurrentStream(state).threadId;
+  selectCurrentStream(state).threadId ?? selectCurrentSession(state).currentThreadId ?? null;
 
 export const selectCurrentRunId = (state: State): string | null => selectCurrentStream(state).runId;
 
@@ -170,18 +170,19 @@ export const selectVerification = (state: State): SessionUiState['verification']
 /**
  * Whether the composer may send.
  *
- * Unlocks at `watching` or `complete` and only with a thread id, matching the existing
- * `TradeQaPanel` gate — the backend needs the thread to ground the answer, so offering the
- * control earlier would produce a failure the user cannot act on.
- *
- * The `qaStatus` check is now PER SESSION. It was a flat field, so a Q&A on one session
- * blocked a Q&A on every other one.
+ * Unlocks at `watching`, `complete`, or when continuing a historical session with existing
+ * chat messages. In multi-session mode grounding resolves by session id; when evaluating
+ * against thread id, checks both the active stream and the rehydrated session.
  */
 export function selectCanAskQuestion(state: State): boolean {
   const session = selectCurrentSession(state);
   const stream = selectCurrentStream(state);
-  const unlocked = session.sessionStatus === 'watching' || session.sessionStatus === 'complete';
-  return unlocked && !!stream.threadId && session.qaStatus !== 'streaming';
+  const threadId = stream.threadId ?? session.currentThreadId ?? null;
+  const hasHistory = session.qaMessages.length > 0;
+  const unlocked =
+    hasHistory ||
+    ((session.sessionStatus === 'watching' || session.sessionStatus === 'complete') && !!threadId);
+  return unlocked && session.sessionStatus !== 'running' && session.qaStatus !== 'streaming';
 }
 
 /** Whether the active session has a committed, actionable trade plan to render. */
