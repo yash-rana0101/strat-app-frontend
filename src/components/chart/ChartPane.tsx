@@ -36,6 +36,9 @@ import { useChartUIStore, type ChartPaneState, type PaneId } from '../../store/u
 interface ChartPaneProps {
   /** The independent state for this pane (symbol/timeframe/chartType). */
   pane: ChartPaneState;
+  isSplitPane?: boolean;
+  hideLeftToolbar?: boolean;
+  hideTimeframesToolbar?: boolean;
 }
 
 // ── Per-pane Error Boundary ────────────────────────────────────────────
@@ -96,7 +99,12 @@ class PaneErrorBoundary extends React.Component<PaneErrorBoundaryProps, PaneErro
  * own pane state, designates itself active on click, shows the emerald ring when
  * it is the Active_Pane, and exposes its own timeframe + chart-type controls.
  */
-export default function ChartPane({ pane }: ChartPaneProps) {
+export default function ChartPane({
+  pane,
+  isSplitPane = true,
+  hideLeftToolbar = false,
+  hideTimeframesToolbar = false,
+}: ChartPaneProps) {
   const activePaneId = useChartUIStore((s) => s.activePaneId);
   const setActivePane = useChartUIStore((s) => s.setActivePane);
   const selectedSymbol = useTradeStore((s) => s.selectedSymbol);
@@ -120,8 +128,8 @@ export default function ChartPane({ pane }: ChartPaneProps) {
       data-active={isActive}
       onMouseDownCapture={handleActivate}
       onClick={handleActivate}
-      className={`flex h-full w-full flex-col overflow-hidden bg-chart-bg transition-shadow ${
-        isActive ? 'ring-2 ring-inset ring-emerald-500/70' : 'ring-1 ring-inset ring-border-default'
+      className={`flex h-full w-full flex-col overflow-hidden bg-chart-bg transition-all ${
+        isActive ? 'ring-2 ring-inset ring-emerald-500/70 z-10' : 'ring-1 ring-inset ring-border-default'
       }`}
     >
       {/* The independent chart instance for this pane. */}
@@ -131,6 +139,9 @@ export default function ChartPane({ pane }: ChartPaneProps) {
             symbolOverride={paneSymbol || undefined}
             timeframeOverride={pane.timeframe as Timeframe}
             chartTypeOverride={pane.chartType}
+            isSplitPane={isSplitPane}
+            hideLeftToolbar={hideLeftToolbar}
+            hideTimeframesToolbar={hideTimeframesToolbar}
           />
         </PaneErrorBoundary>
       </div>

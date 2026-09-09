@@ -29,7 +29,8 @@ import ChartPane from './ChartPane';
 import { useChartUIStore } from '../../store/useChartUIStore';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import type { TradeProfile } from '../../store/useTradeStore';
-import { getGridContainerClass, getPaneGridClass } from './layoutGridStyles';
+import { getGridContainerClass, getPaneGridClass, getPaneChromeConfig } from './layoutGridStyles';
+import SplitViewToggle from './SplitViewToggle';
 
 /** The workspace profiles in which the Split_Chart_View is available (R4.7). */
 export type SplitEnabledProfile = Extract<TradeProfile, 'INTRADAY' | 'FNO'>;
@@ -52,11 +53,20 @@ export default function SplitChartContainer({ mode }: SplitChartContainerProps) 
   // Exactly two panes with vertical split (or default): retain resizable panels
   if ((activeLayout === '2v' || !activeLayout) && panes.length === 2) {
     const [paneA, paneB] = panes;
+    const chromeA = getPaneChromeConfig('2v', 0);
+    const chromeB = getPaneChromeConfig('2v', 1);
+
     return (
-      <div data-split-mode={mode} className="flex h-full w-full min-h-0 flex-col bg-chart-bg">
+      <div data-split-mode={mode} className="relative flex h-full w-full min-h-0 flex-col bg-chart-bg">
         <Group orientation={isMobile ? 'vertical' : 'horizontal'} className="h-full w-full min-h-0">
           <Panel defaultSize={50} minSize={20}>
-            <ChartPane key={paneA.id} pane={paneA} />
+            <ChartPane
+              key={paneA.id}
+              pane={paneA}
+              isSplitPane={true}
+              hideLeftToolbar={chromeA.hideLeftToolbar}
+              hideTimeframesToolbar={chromeA.hideTimeframesToolbar}
+            />
           </Panel>
           <Separator
             className={
@@ -66,9 +76,24 @@ export default function SplitChartContainer({ mode }: SplitChartContainerProps) 
             }
           />
           <Panel defaultSize={50} minSize={20}>
-            <ChartPane key={paneB.id} pane={paneB} />
+            <ChartPane
+              key={paneB.id}
+              pane={paneB}
+              isSplitPane={true}
+              hideLeftToolbar={chromeB.hideLeftToolbar}
+              hideTimeframesToolbar={chromeB.hideTimeframesToolbar}
+            />
           </Panel>
         </Group>
+
+        {/* Bottom-right layout switcher */}
+        <div className="absolute bottom-2 right-2 z-30 pointer-events-auto">
+          <SplitViewToggle
+            direction="up"
+            label="Layout"
+            buttonClassName="flex h-7 items-center gap-1.5 rounded bg-surface/90 px-2.5 text-[11px] font-medium text-text-secondary shadow-lg backdrop-blur-sm border border-border-default hover:bg-elevated hover:text-text-primary transition-all"
+          />
+        </div>
       </div>
     );
   }
@@ -77,16 +102,31 @@ export default function SplitChartContainer({ mode }: SplitChartContainerProps) 
   const containerClass = getGridContainerClass(activeLayout);
 
   return (
-    <div data-split-mode={mode} className="h-full w-full min-h-0 bg-chart-bg p-0.5">
+    <div data-split-mode={mode} className="relative h-full w-full min-h-0 bg-chart-bg p-0.5">
       <div className={`h-full w-full min-h-0 ${containerClass}`}>
         {panes.map((pane, idx) => {
           const paneClass = getPaneGridClass(activeLayout, idx);
+          const chrome = getPaneChromeConfig(activeLayout, idx);
           return (
             <div key={pane.id} className={`h-full w-full min-h-0 overflow-hidden ${paneClass}`}>
-              <ChartPane pane={pane} />
+              <ChartPane
+                pane={pane}
+                isSplitPane={true}
+                hideLeftToolbar={chrome.hideLeftToolbar}
+                hideTimeframesToolbar={chrome.hideTimeframesToolbar}
+              />
             </div>
           );
         })}
+      </div>
+
+      {/* Bottom-right layout switcher */}
+      <div className="absolute bottom-2 right-2 z-30 pointer-events-auto">
+        <SplitViewToggle
+          direction="up"
+          label="Layout"
+          buttonClassName="flex h-7 items-center gap-1.5 rounded bg-surface/90 px-2.5 text-[11px] font-medium text-text-secondary shadow-lg backdrop-blur-sm border border-border-default hover:bg-elevated hover:text-text-primary transition-all"
+        />
       </div>
     </div>
   );

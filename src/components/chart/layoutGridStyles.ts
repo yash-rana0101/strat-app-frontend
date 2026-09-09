@@ -151,3 +151,70 @@ export function getPaneGridClass(layoutId: ChartLayoutId, index: number): string
   return LAYOUT_GRID_CONFIGS[layoutId]?.paneClasses?.[index] ?? '';
 }
 
+export interface PaneChromeConfig {
+  hideLeftToolbar: boolean;
+  hideTimeframesToolbar: boolean;
+}
+
+/**
+ * Derives which toolbars should be hidden for a given pane in a split-chart layout:
+ * - `hideLeftToolbar`: true for secondary panes not on the leftmost edge, to prevent duplicate drawing sidebars.
+ * - `hideTimeframesToolbar`: true for panes that do not reach the bottom of the grid, preserving vertical space.
+ */
+export function getPaneChromeConfig(layoutId: ChartLayoutId, index: number): PaneChromeConfig {
+  if (layoutId === '1') {
+    return { hideLeftToolbar: false, hideTimeframesToolbar: false };
+  }
+
+  const hideLeftToolbar = index > 0;
+
+  let hideTimeframesToolbar = false;
+  switch (layoutId) {
+    case '2h':
+      hideTimeframesToolbar = index === 0;
+      break;
+    case '3h':
+      hideTimeframesToolbar = index < 2;
+      break;
+    case '1-2':
+      hideTimeframesToolbar = index === 1;
+      break;
+    case '2-1':
+      hideTimeframesToolbar = index === 0;
+      break;
+    case '3s':
+      hideTimeframesToolbar = index === 0;
+      break;
+    case '3r':
+      hideTimeframesToolbar = index === 0 || index === 1;
+      break;
+    case '4':
+      hideTimeframesToolbar = index === 0 || index === 1;
+      break;
+    case '4h':
+      hideTimeframesToolbar = index < 3;
+      break;
+    case '1-3':
+      hideTimeframesToolbar = index === 1 || index === 2;
+      break;
+    case '3-1':
+      hideTimeframesToolbar = index === 0 || index === 1;
+      break;
+    case '1-3-h':
+    case '3-1-h':
+    case '2-2-l':
+    case '2-2-r':
+    case '2-2-h':
+      hideTimeframesToolbar = index === 0 || index === 1;
+      break;
+    default:
+      if (layoutId.includes('h') || layoutId === '6' || layoutId === '6c' || layoutId === '8' || layoutId === '8c') {
+        hideTimeframesToolbar = index < (layoutId.startsWith('8') ? 4 : 3);
+      }
+      break;
+  }
+
+  return { hideLeftToolbar, hideTimeframesToolbar };
+}
+
+

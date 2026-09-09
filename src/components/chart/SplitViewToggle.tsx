@@ -20,9 +20,19 @@ import { LayoutIcon } from './LayoutIcon';
  */
 export interface SplitViewToggleProps {
   noText?: boolean;
+  direction?: 'up' | 'down';
+  label?: string;
+  className?: string;
+  buttonClassName?: string;
 }
 
-export default function SplitViewToggle({ noText = false }: SplitViewToggleProps) {
+export default function SplitViewToggle({
+  noText = false,
+  direction = 'down',
+  label,
+  className = '',
+  buttonClassName,
+}: SplitViewToggleProps) {
   const activeProfile = useTradeStore((s) => s.activeProfile);
   const splitView = useChartUIStore((s) => s.splitView);
   const activeLayout = useChartUIStore((s) => s.activeLayout);
@@ -37,9 +47,23 @@ export default function SplitViewToggle({ noText = false }: SplitViewToggleProps
     return null;
   }
 
+  const defaultBtnClass = noText
+    ? `flex h-7 w-7 items-center justify-center rounded-sm transition-all ${
+        isOpen
+          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+          : 'bg-transparent text-text-secondary hover:bg-elevated hover:text-text-primary'
+      }`
+    : `flex h-full items-center gap-1.5 px-2.5 text-[11px] font-semibold transition-all border-r border-border-default ${
+        isOpen
+          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+          : 'bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary'
+      }`;
+
+  const displayText = label !== undefined ? label : splitView ? 'Split' : 'Single';
+
   return (
     <div
-      className="relative flex items-center justify-center"
+      className={`relative flex items-center justify-center ${className}`}
       ref={ref}
       role="group"
       aria-label="Chart layout"
@@ -49,36 +73,29 @@ export default function SplitViewToggle({ noText = false }: SplitViewToggleProps
         id="split-view-dropdown-trigger"
         onClick={() => setIsOpen(!isOpen)}
         title={noText ? `Layout: ${splitView ? activeLayout : 'Single'}` : undefined}
-        className={
-          noText
-            ? `flex h-7 w-7 items-center justify-center rounded-sm transition-all ${isOpen
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-              : 'bg-transparent text-text-secondary hover:bg-elevated hover:text-text-primary'
-            }`
-            : `flex h-full items-center gap-1.5 px-2.5 text-[11px] font-semibold transition-all border-r border-border-default ${isOpen
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-              : 'bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary'
-            }`
-        }
+        className={buttonClassName || defaultBtnClass}
       >
         <LayoutIcon
           id={splitView ? activeLayout : '1'}
           size={noText ? 18 : 14}
           className={isOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-text-muted'}
         />
-        {!noText && <span>{splitView ? 'Split' : 'Single'}</span>}
+        {!noText && <span>{displayText}</span>}
         {!noText && (
           <ChevronDown
             size={11}
-            className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+            className={`transition-transform duration-200 ${
+              isOpen ? (direction === 'up' ? '' : 'rotate-180') : (direction === 'up' ? 'rotate-180' : '')
+            }`}
           />
         )}
       </button>
 
       {/* Dropdown Options (always rendered in DOM for unit test compatibility, hidden via class when closed) */}
       <div
-        className={`absolute right-0 z-50 mt-1 ${isOpen ? 'block' : 'hidden'
-          } ${noText ? 'top-[32px]' : 'top-full'}`}
+        className={`absolute right-0 z-50 ${
+          isOpen ? 'block' : 'hidden'
+        } ${direction === 'up' ? 'bottom-full mb-1.5' : noText ? 'top-[32px]' : 'top-full mt-1'}`}
       >
         <ChartLayoutDropdown
           activeLayout={activeLayout}

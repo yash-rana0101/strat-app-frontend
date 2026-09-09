@@ -27,6 +27,9 @@ export interface ChartSurfaceProps {
   timeframeOverride?: Timeframe;
   /** Per-pane chart type (split view); falls back to the store. */
   chartTypeOverride?: ChartType;
+  isSplitPane?: boolean;
+  hideLeftToolbar?: boolean;
+  hideTimeframesToolbar?: boolean;
 }
 
 /**
@@ -41,6 +44,10 @@ export default function ChartSurface({
   className = '',
   symbolOverride,
   timeframeOverride,
+  chartTypeOverride: _chartTypeOverride,
+  isSplitPane = false,
+  hideLeftToolbar = false,
+  hideTimeframesToolbar = false,
 }: ChartSurfaceProps) {
   return (
     <div className={`relative h-full w-full ${className}`}>
@@ -48,6 +55,9 @@ export default function ChartSurface({
         className="h-full w-full"
         symbolOverride={symbolOverride}
         timeframeOverride={timeframeOverride}
+        isSplitPane={isSplitPane}
+        hideLeftToolbar={hideLeftToolbar}
+        hideTimeframesToolbar={hideTimeframesToolbar}
       />
     </div>
   );
