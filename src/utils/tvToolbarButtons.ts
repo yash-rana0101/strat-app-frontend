@@ -1,3 +1,4 @@
+import type { IChartingLibraryWidget } from '../charting/datafeedTypes';
 import { useFeatureStore } from '../store/useFeatureStore';
 import { useTradeStore } from '../store/useTradeStore';
 import { useChartUIStore } from '../store/useChartUIStore';
@@ -15,13 +16,18 @@ interface TvWidgetWithButton {
 
 export function registerTvToolbarButtons(
   tvWidget: TvWidgetWithButton,
+  tvWidget: IChartingLibraryWidget,
   doc: Document,
   handlers: ToolbarButtonHandlers
 ): void {
+  const createButton = tvWidget.createButton?.bind(tvWidget);
+  if (typeof createButton !== 'function') return;
+
   const ghostlineEnabled = useFeatureStore.getState().access.ghostline;
 
   // 1. Ghost Line Button
   const ghostLineBtn = tvWidget.createButton();
+  const ghostLineBtn = createButton();
   ghostLineBtn.id = 'tv-btn-ghost-line';
   ghostLineBtn.className = 'tv-custom-toolbar-btn';
   ghostLineBtn.title = ghostlineEnabled
@@ -54,6 +60,7 @@ export function registerTvToolbarButtons(
   const activeProfile = useTradeStore.getState().activeProfile;
   if (activeProfile === 'INTRADAY' || activeProfile === 'FNO') {
     const splitBtn = tvWidget.createButton();
+    const splitBtn = createButton();
     splitBtn.id = 'tv-btn-split-view';
     splitBtn.className = 'tv-custom-toolbar-btn';
     splitBtn.title = 'Select Layout';

@@ -194,6 +194,7 @@ export interface IChartingLibraryWidget {
   activeChart: () => IChartWidgetApi;
   remove: () => void;
   headerReady: () => Promise<void>;
+  createButton?: () => HTMLElement;
   applyOverrides: (overrides: Record<string, string | number | boolean>) => void;
   changeTheme: (theme: 'Light' | 'Dark' | 'light' | 'dark') => void;
   save: (callback: (state: object) => void) => void;
