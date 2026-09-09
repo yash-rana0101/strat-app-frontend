@@ -18,6 +18,12 @@ export function registerTvToolbarButtons(
   const createButton = tvWidget.createButton?.bind(tvWidget);
   if (typeof createButton !== 'function') return;
 
+  // Prevent duplicate button injection if already registered
+  if (doc.getElementById('tv-btn-ghost-line')) {
+    syncButtonStates(doc);
+    return;
+  }
+
   const ghostlineEnabled = useFeatureStore.getState().access.ghostline;
 
   // 1. Ghost Line Button

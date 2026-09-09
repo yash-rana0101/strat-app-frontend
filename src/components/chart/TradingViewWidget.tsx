@@ -19,6 +19,12 @@ import { AlertTriangle } from 'lucide-react';
 import { whenChartReady, whenHeaderReady } from '../../charting/widgetReady';
 import { syncButtonStates } from '../../utils/tvWidgetSync';
 import { registerTvToolbarButtons } from '../../utils/tvToolbarButtons';
+import {
+  registerChartWidget,
+  unregisterChartWidget,
+  handleLineToolChange,
+  syncToolToPane,
+} from '../../utils/tvDrawingToolSync';
 import { ChartLayoutDropdown } from './ChartLayoutDropdown';
 
 export interface TradingViewWidgetProps {
@@ -97,12 +103,20 @@ export default function TradingViewWidget({
     const container = containerRef.current;
     if (!container) return;
 
-    const handlePaneActivate = () => {
+    const handlePaneActivate = (e?: Event) => {
+      // If clicking inside the left drawing toolbar, do not switch active pane
+      // so the secondary pane keeps its active status while selecting drawing tools!
+      if (!hideLeftToolbar && e && e.target instanceof HTMLElement) {
+        if (e.target.closest('.tv-side-toolbar, [class*="drawingToolbar"]')) {
+          return;
+        }
+      }
       const paneEl = container.closest('[data-pane-id]');
       if (paneEl) {
         const paneId = paneEl.getAttribute('data-pane-id') as PaneId;
         if (paneId && useChartUIStore.getState().activePaneId !== paneId) {
           useChartUIStore.getState().setActivePane(paneId);
+          syncToolToPane(paneId);
         }
       }
     };
@@ -248,6 +262,18 @@ export default function TradingViewWidget({
           console.warn('[TradingViewWidget] Failed to subscribe to onIntervalChanged:', err);
         }
 
+        const paneEl = containerRef.current?.closest('[data-pane-id]');
+        const currentPaneId = paneEl ? (paneEl.getAttribute('data-pane-id') as PaneId) : 'main';
+        if (currentPaneId) {
+          registerChartWidget(currentPaneId, tvWidget);
+        }
+
+        try {
+          (tvWidget as any).subscribe?.('onSelectedLineToolChanged', () => {
+            handleLineToolChange(tvWidget);
+          });
+        } catch { }
+
         if (!isSplitPane) {
           whenHeaderReady(
             tvWidget,
@@ -278,6 +304,11 @@ export default function TradingViewWidget({
     }
 
     return () => {
+      const paneEl = containerRef.current?.closest('[data-pane-id]');
+      const currentPaneId = paneEl ? (paneEl.getAttribute('data-pane-id') as PaneId) : 'main';
+      if (currentPaneId) {
+        unregisterChartWidget(currentPaneId);
+      }
       if (widgetRef.current) {
         try {
           widgetRef.current.remove();

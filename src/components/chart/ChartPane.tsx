@@ -32,6 +32,7 @@ import MainTerminalChart from '../MainTerminalChart';
 import { type Timeframe } from '../../utils/chartTypes';
 import { useTradeStore } from '../../store/useTradeStore';
 import { useChartUIStore, type ChartPaneState, type PaneId } from '../../store/useChartUIStore';
+import { syncToolToPane } from '../../utils/tvDrawingToolSync';
 
 interface ChartPaneProps {
   /** The independent state for this pane (symbol/timeframe/chartType). */
@@ -120,7 +121,10 @@ export default function ChartPane({
   // interacts with the chart. Mouse-down capture fires on the wrapper for every
   // pointer press inside the pane (including over the iframe) because the
   // capture phase runs before the iframe's content receives the event.
-  const handleActivate = () => setActivePane(pane.id);
+  const handleActivate = () => {
+    setActivePane(pane.id);
+    syncToolToPane(pane.id);
+  };
 
   return (
     <div
