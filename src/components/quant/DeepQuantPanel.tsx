@@ -23,7 +23,7 @@
 // and switching tabs no longer silently resets it.
 
 import React from 'react';
-import { Coins, Maximize2 } from 'lucide-react';
+import { Coins, Loader2, Maximize2 } from 'lucide-react';
 import { useQuantStore } from '../../store/useQuantStore';
 import { FQ_MULTI_SESSION } from '../../lib/env';
 import { FqQueryProvider } from '../../lib/fq/FqQueryProvider';
@@ -352,9 +352,7 @@ export default function DeepQuantPanel() {
           ) : hasRun ? (
             <>
               {/* Loading spinner while awaiting first reasoning step */}
-              {reasoningSteps.length === 0 && sessionStatus === 'running' && (
-                <LoadingState />
-              )}
+              {reasoningSteps.length === 0 && sessionStatus === 'running' && <LoadingState />}
 
               {/* Dedicated watching state indicator */}
               {sessionStatus === 'watching' && (
@@ -378,6 +376,14 @@ export default function DeepQuantPanel() {
                 finalTrade={finalTrade}
                 onSelect={(stepId) => openDialog(stepId)}
               />
+
+              {/* Streaming indicator inside sidebar (Chat Mode) */}
+              {sessionStatus === 'running' && (
+                <div className="flex items-center gap-2 py-1 px-3 text-[11px] text-emerald-400/90 select-none animate-fade-in">
+                  <Loader2 size={11} className="animate-spin text-emerald-400 shrink-0" />
+                  <span className="font-mono tracking-wide">Working...</span>
+                </div>
+              )}
 
               {reasoningSteps.length === 0 && sessionStatus === 'complete' && (
                 <div className="mx-2 my-2 rounded border border-amber-500/25 bg-amber-500/5 px-2.5 py-2">
