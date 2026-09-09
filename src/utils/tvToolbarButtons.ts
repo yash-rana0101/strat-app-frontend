@@ -10,12 +10,7 @@ export interface ToolbarButtonHandlers {
   onToggleLayoutPicker: (anchor: { top: number; left: number }) => void;
 }
 
-interface TvWidgetWithButton {
-  createButton: () => HTMLElement;
-}
-
 export function registerTvToolbarButtons(
-  tvWidget: TvWidgetWithButton,
   tvWidget: IChartingLibraryWidget,
   doc: Document,
   handlers: ToolbarButtonHandlers
@@ -26,7 +21,6 @@ export function registerTvToolbarButtons(
   const ghostlineEnabled = useFeatureStore.getState().access.ghostline;
 
   // 1. Ghost Line Button
-  const ghostLineBtn = tvWidget.createButton();
   const ghostLineBtn = createButton();
   ghostLineBtn.id = 'tv-btn-ghost-line';
   ghostLineBtn.className = 'tv-custom-toolbar-btn';
@@ -59,7 +53,6 @@ export function registerTvToolbarButtons(
   // 2. Split View / Layout Selector Button
   const activeProfile = useTradeStore.getState().activeProfile;
   if (activeProfile === 'INTRADAY' || activeProfile === 'FNO') {
-    const splitBtn = tvWidget.createButton();
     const splitBtn = createButton();
     splitBtn.id = 'tv-btn-split-view';
     splitBtn.className = 'tv-custom-toolbar-btn';

@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   // `pageExtensions` that admitted `route.web.ts` only outside export mode. Those
   // handlers are now plain `route.ts`.
   output: 'standalone',
+  distDir: process.env.NEXT_DIST_DIR || '.next',
 
   images: { unoptimized: true },
 
