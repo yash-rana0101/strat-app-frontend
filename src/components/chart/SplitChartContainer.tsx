@@ -2,18 +2,35 @@
 
 // Feature: terminal-ux-overhaul (Task 5.2)
 //
+// SplitChartContainer — the dual-pane chart layout (Requirement 4).
 // SplitChartContainer — the multi-pane chart layout (Requirement 4).
 //
-// Renders the Split_Chart_View with ONE full header across the top
-// (`SplitChartHeader`) while only the chart portion below is split into
-// independent `ChartPane`s. Uses `react-resizable-panels` for 2-pane
-// vertical split and CSS grid for other configurations.
+// Renders the Split_Chart_View as two fully-independent `ChartPane`s side by
+// side, using the terminal's `react-resizable-panels` primitive (the same
+// `Group`/`Panel`/`Separator` building blocks and divider styling already used
+// by `FnoSection`, so the resize-handle look stays consistent — R5.4, R8.4).
+//
+// Design decisions honored here:
+//   · The two panes come straight from `useChartUIStore.panes` ([A, B]); the
+//     container holds no pane state of its own (single source of truth — AD-3,
+//     R6.1).
+//   · Exactly TWO panes are rendered in this phase — no more (AD-4, R4.2, R7.5).
+//     Additional pane counts are deferred to future work.
+//   · Each `ChartPane` is given a STABLE React `key` of its pane id, so React
+//     never reuses one pane's chart instance for the other when the underlying
+//     symbols change — keeping the two chart instances isolated (R4.8).
+//   · The container accepts a `mode` prop typed to the split-enabled profiles
+//     ('INTRADAY' | 'FNO'); split is only ever mounted in those modes (R4.7,
+//     mode-gated at the store boundary and again where this is rendered).
+// Renders the Split_Chart_View as independent `ChartPane`s, using
+// `react-resizable-panels` for 2-pane vertical split and CSS grid for
+// other configurations. Each pane includes its native TradingView header
+// with the split layout button.
 
 import React from 'react';
 import { Group, Panel, Separator } from 'react-resizable-panels';
 
 import ChartPane from './ChartPane';
-import SplitChartHeader from './SplitChartHeader';
 import { useChartUIStore } from '../../store/useChartUIStore';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import type { TradeProfile } from '../../store/useTradeStore';
@@ -29,7 +46,8 @@ interface SplitChartContainerProps {
 
 /**
  * Multi-pane split chart container supporting 1 to 8 charts.
- * Features ONE full header across the top while splitting only the chart portion below.
+ * For standard 2-vertical split, uses resizable panels.
+ * For all other multi-pane configurations, uses structured CSS grid.
  */
 export default function SplitChartContainer({ mode }: SplitChartContainerProps) {
   const panes = useChartUIStore((s) => s.panes);
@@ -44,39 +62,33 @@ export default function SplitChartContainer({ mode }: SplitChartContainerProps) 
 
     return (
       <div data-split-mode={mode} className="relative flex h-full w-full min-h-0 flex-col bg-chart-bg">
-        {/* One full header across the top */}
-        <SplitChartHeader />
-
-        {/* Split chart portion below */}
-        <div className="relative flex-1 min-h-0 w-full">
-          <Group orientation={isMobile ? 'vertical' : 'horizontal'} className="h-full w-full min-h-0">
-            <Panel defaultSize={50} minSize={20}>
-              <ChartPane
-                key={paneA.id}
-                pane={paneA}
-                isSplitPane={true}
-                hideLeftToolbar={chromeA.hideLeftToolbar}
-                hideTimeframesToolbar={chromeA.hideTimeframesToolbar}
-              />
-            </Panel>
-            <Separator
-              className={
-                isMobile
-                  ? 'h-px cursor-row-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:h-1'
-                  : 'w-px cursor-col-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:w-1'
-              }
+        <Group orientation={isMobile ? 'vertical' : 'horizontal'} className="h-full w-full min-h-0">
+          <Panel defaultSize={50} minSize={20}>
+            <ChartPane
+              key={paneA.id}
+              pane={paneA}
+              isSplitPane={true}
+              hideLeftToolbar={chromeA.hideLeftToolbar}
+              hideTimeframesToolbar={chromeA.hideTimeframesToolbar}
             />
-            <Panel defaultSize={50} minSize={20}>
-              <ChartPane
-                key={paneB.id}
-                pane={paneB}
-                isSplitPane={true}
-                hideLeftToolbar={chromeB.hideLeftToolbar}
-                hideTimeframesToolbar={chromeB.hideTimeframesToolbar}
-              />
-            </Panel>
-          </Group>
-        </div>
+          </Panel>
+          <Separator
+            className={
+              isMobile
+                ? 'h-px cursor-row-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:h-1'
+                : 'w-px cursor-col-resize bg-border-default transition-colors hover:bg-emerald-500/40 data-[separator]:w-1'
+            }
+          />
+          <Panel defaultSize={50} minSize={20}>
+            <ChartPane
+              key={paneB.id}
+              pane={paneB}
+              isSplitPane={true}
+              hideLeftToolbar={chromeB.hideLeftToolbar}
+              hideTimeframesToolbar={chromeB.hideTimeframesToolbar}
+            />
+          </Panel>
+        </Group>
       </div>
     );
   }
@@ -85,29 +97,24 @@ export default function SplitChartContainer({ mode }: SplitChartContainerProps) 
   const containerClass = getGridContainerClass(activeLayout);
 
   return (
-    <div data-split-mode={mode} className="relative flex h-full w-full min-h-0 flex-col bg-chart-bg">
-      {/* One full header across the top */}
-      <SplitChartHeader />
-
-      {/* Split chart portion below */}
-      <div className="relative flex-1 min-h-0 w-full p-0.5">
-        <div className={`h-full w-full min-h-0 ${containerClass}`}>
-          {panes.map((pane, idx) => {
-            const paneClass = getPaneGridClass(activeLayout, idx);
-            const chrome = getPaneChromeConfig(activeLayout, idx);
-            return (
-              <div key={pane.id} className={`h-full w-full min-h-0 overflow-hidden ${paneClass}`}>
-                <ChartPane
-                  pane={pane}
-                  isSplitPane={true}
-                  hideLeftToolbar={chrome.hideLeftToolbar}
-                  hideTimeframesToolbar={chrome.hideTimeframesToolbar}
-                />
-              </div>
-            );
-          })}
-        </div>
+    <div data-split-mode={mode} className="relative h-full w-full min-h-0 bg-chart-bg p-0.5">
+      <div className={`h-full w-full min-h-0 ${containerClass}`}>
+        {panes.map((pane, idx) => {
+          const paneClass = getPaneGridClass(activeLayout, idx);
+          const chrome = getPaneChromeConfig(activeLayout, idx);
+          return (
+            <div key={pane.id} className={`h-full w-full min-h-0 overflow-hidden ${paneClass}`}>
+              <ChartPane
+                pane={pane}
+                isSplitPane={true}
+                hideLeftToolbar={chrome.hideLeftToolbar}
+                hideTimeframesToolbar={chrome.hideTimeframesToolbar}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
+
