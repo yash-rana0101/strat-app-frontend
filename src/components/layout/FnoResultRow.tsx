@@ -10,6 +10,7 @@
 
 import React from 'react';
 import type { FnoResult } from '../../types/searchResult';
+import InstrumentLogo from '../common/InstrumentLogo';
 
 interface FnoResultRowProps {
   result: FnoResult;
@@ -53,10 +54,11 @@ export default function FnoResultRow({
           : 'hover:bg-elevated/40 text-text-secondary'
       }`}
     >
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <InstrumentLogo symbol={result.underlying} size={24} className="shrink-0" />
         {/* CE/PE/FUT badge */}
         <span
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-[9px] font-black uppercase tracking-wider ${badgeColor}`}
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[8px] font-black uppercase tracking-wider ${badgeColor}`}
         >
           {result.optionType}
         </span>

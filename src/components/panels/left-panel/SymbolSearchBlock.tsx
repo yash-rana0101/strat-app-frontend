@@ -5,6 +5,7 @@ import { Search, Loader2, X, Plus } from 'lucide-react';
 import { useTradeStore } from '../../../store/useTradeStore';
 import { useChartUIStore } from '../../../store/useChartUIStore';
 import { isFnoSymbol } from '../../../charting/symbolUtils';
+import InstrumentLogo from '../../common/InstrumentLogo';
 import { bridgeInvoke } from '../../../lib/bridge';
 
 interface ResolvedContract {
@@ -347,11 +348,14 @@ export default function SymbolSearchBlock() {
           onClick={() => handleSelectResult(inst)}
           className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-left transition-colors hover:bg-elevated/70"
         >
-          <div className="flex flex-col min-w-0">
-            <span className="text-[11px] font-semibold text-text-primary truncate">
-              {inst.symbol}
-            </span>
-            <span className="text-[9px] text-text-muted truncate">{inst.name}</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <InstrumentLogo symbol={inst.symbol} name={inst.name} size={22} className="shrink-0" />
+            <div className="flex flex-col min-w-0">
+              <span className="text-[11px] font-semibold text-text-primary truncate">
+                {inst.symbol}
+              </span>
+              <span className="text-[9px] text-text-muted truncate">{inst.name}</span>
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <Plus size={10} className="text-text-secondary" />
@@ -375,11 +379,14 @@ export default function SymbolSearchBlock() {
         onClick={() => handleSelectResult(inst)}
         className="flex w-full items-center justify-between gap-2 border-l-2 border-l-primary/30 px-3 py-1.5 text-left transition-colors hover:bg-elevated/70"
       >
-        <div className="flex flex-col min-w-0">
-          <span className="text-[11px] font-semibold text-text-primary truncate">
-            {inst.tradingsymbol}
-          </span>
-          <span className="text-[9px] text-text-muted truncate">{meta}</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <InstrumentLogo symbol={inst.underlying} size={22} className="shrink-0" />
+          <div className="flex flex-col min-w-0">
+            <span className="text-[11px] font-semibold text-text-primary truncate">
+              {inst.tradingsymbol}
+            </span>
+            <span className="text-[9px] text-text-muted truncate">{meta}</span>
+          </div>
         </div>
         <div className="flex items-center gap-1">
           <Plus size={10} className="text-text-secondary" />
