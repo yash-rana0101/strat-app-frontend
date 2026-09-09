@@ -122,11 +122,10 @@ export default function SplitChartHeader(): React.JSX.Element {
                 type="button"
                 onClick={() => setActivePane(p.id)}
                 title={`Select Chart ${idx + 1} (${p.symbol || 'Default'})`}
-                className={`flex h-6 items-center gap-1 rounded px-2 text-[11px] font-medium transition-all ${
-                  isSelected
+                className={`flex h-6 items-center gap-1 rounded px-2 text-[11px] font-medium transition-all ${isSelected
                     ? 'bg-emerald-500/15 text-emerald-500 ring-1 ring-emerald-500/50'
                     : 'text-text-muted hover:bg-elevated hover:text-text-primary'
-                }`}
+                  }`}
               >
                 <span>Chart {idx + 1}</span>
                 {p.symbol && <span className="opacity-70 text-[10px]">({p.symbol})</span>}
@@ -175,11 +174,10 @@ export default function SplitChartHeader(): React.JSX.Element {
                 key={tf}
                 type="button"
                 onClick={() => handleSelectTimeframe(tf)}
-                className={`h-6 rounded px-1.5 text-[11px] font-medium transition-colors ${
-                  isSelected
+                className={`h-6 rounded px-1.5 text-[11px] font-medium transition-colors ${isSelected
                     ? 'bg-emerald-500/15 text-emerald-500 font-bold'
                     : 'text-text-secondary hover:bg-elevated hover:text-text-primary'
-                }`}
+                  }`}
               >
                 {tf}
               </button>
@@ -203,11 +201,10 @@ export default function SplitChartHeader(): React.JSX.Element {
                     key={tf}
                     type="button"
                     onClick={() => handleSelectTimeframe(tf)}
-                    className={`h-6 rounded px-2 text-[11px] font-medium transition-colors ${
-                      activeTimeframe === tf
+                    className={`h-6 rounded px-2 text-[11px] font-medium transition-colors ${activeTimeframe === tf
                         ? 'bg-emerald-500/15 text-emerald-500 font-bold'
                         : 'text-text-secondary hover:bg-elevated hover:text-text-primary'
-                    }`}
+                      }`}
                   >
                     {tf}
                   </button>

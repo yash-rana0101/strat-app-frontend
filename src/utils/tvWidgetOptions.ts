@@ -72,10 +72,10 @@ export function getTvWidgetOptions({
     // every name below against the base union.
     disabled_features: isSplitPane
       ? [
-          'header_widget',
-          ...(hideLeftToolbar ? ['left_toolbar'] : []),
-          ...(hideTimeframesToolbar ? ['timeframes_toolbar'] : []),
-        ]
+        'header_widget',
+        ...(hideLeftToolbar ? ['left_toolbar'] : []),
+        ...(hideTimeframesToolbar ? ['timeframes_toolbar'] : []),
+      ]
       : [],
     enabled_features: [
       'use_localstorage_for_settings',
