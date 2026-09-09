@@ -3,6 +3,7 @@
 // Feature: terminal-ux-overhaul (Task 5.2)
 //
 // SplitChartContainer — the dual-pane chart layout (Requirement 4).
+// SplitChartContainer — the multi-pane chart layout (Requirement 4).
 //
 // Renders the Split_Chart_View as two fully-independent `ChartPane`s side by
 // side, using the terminal's `react-resizable-panels` primitive (the same
@@ -21,6 +22,10 @@
 //   · The container accepts a `mode` prop typed to the split-enabled profiles
 //     ('INTRADAY' | 'FNO'); split is only ever mounted in those modes (R4.7,
 //     mode-gated at the store boundary and again where this is rendered).
+// Renders the Split_Chart_View as independent `ChartPane`s, using
+// `react-resizable-panels` for 2-pane vertical split and CSS grid for
+// other configurations. Each pane includes its native TradingView header
+// with the split layout button.
 
 import React from 'react';
 import { Group, Panel, Separator } from 'react-resizable-panels';
@@ -30,7 +35,6 @@ import { useChartUIStore } from '../../store/useChartUIStore';
 import { useIsMobile } from '../../hooks/useIsMobile';
 import type { TradeProfile } from '../../store/useTradeStore';
 import { getGridContainerClass, getPaneGridClass, getPaneChromeConfig } from './layoutGridStyles';
-import SplitViewToggle from './SplitViewToggle';
 
 /** The workspace profiles in which the Split_Chart_View is available (R4.7). */
 export type SplitEnabledProfile = Extract<TradeProfile, 'INTRADAY' | 'FNO'>;
@@ -85,15 +89,6 @@ export default function SplitChartContainer({ mode }: SplitChartContainerProps) 
             />
           </Panel>
         </Group>
-
-        {/* Bottom-right layout switcher */}
-        <div className="absolute bottom-2 right-2 z-30 pointer-events-auto">
-          <SplitViewToggle
-            direction="up"
-            label="Layout"
-            buttonClassName="flex h-7 items-center gap-1.5 rounded bg-surface/90 px-2.5 text-[11px] font-medium text-text-secondary shadow-lg backdrop-blur-sm border border-border-default hover:bg-elevated hover:text-text-primary transition-all"
-          />
-        </div>
       </div>
     );
   }
@@ -118,15 +113,6 @@ export default function SplitChartContainer({ mode }: SplitChartContainerProps) 
             </div>
           );
         })}
-      </div>
-
-      {/* Bottom-right layout switcher */}
-      <div className="absolute bottom-2 right-2 z-30 pointer-events-auto">
-        <SplitViewToggle
-          direction="up"
-          label="Layout"
-          buttonClassName="flex h-7 items-center gap-1.5 rounded bg-surface/90 px-2.5 text-[11px] font-medium text-text-secondary shadow-lg backdrop-blur-sm border border-border-default hover:bg-elevated hover:text-text-primary transition-all"
-        />
       </div>
     </div>
   );
