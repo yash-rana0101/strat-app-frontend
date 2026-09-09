@@ -13,7 +13,14 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { buildBookFromKiteDepth, parseCachedBook, type KiteDepth } from '../orderBookHelpers';
+import {
+  buildBookFromKiteDepth,
+  indexFutureSpec,
+  parseCachedBook,
+  selectNearestLiveFuture,
+  type KiteDepth,
+  type KiteFutureInstrument,
+} from '../orderBookHelpers';
 
 /** A realistic RELIANCE payload: five levels a side, tight spread. */
 const DEPTH: KiteDepth = {
@@ -151,6 +158,58 @@ describe('buildBookFromKiteDepth', () => {
     const realBids = book.bids;
     expect(realBids).toHaveLength(1);
     expect(realBids[0].price).toBe(1304.8);
+  });
+});
+
+describe('index futures depth source', () => {
+  it('maps index spot names to the correct derivative exchange', () => {
+    expect(indexFutureSpec('NIFTY 50')).toEqual({
+      underlying: 'NIFTY',
+      spotExchange: 'NSE',
+      exchange: 'NFO',
+    });
+    expect(indexFutureSpec('SENSEX')).toEqual({
+      underlying: 'SENSEX',
+      spotExchange: 'BSE',
+      exchange: 'BFO',
+    });
+    expect(indexFutureSpec('RELIANCE')).toBeNull();
+  });
+
+  it('chooses the nearest live future and rejects expired or similarly named rows', () => {
+    const rows: KiteFutureInstrument[] = [
+      {
+        tradingsymbol: 'NIFTY26AUGFUT',
+        name: 'NIFTY',
+        exchange: 'NFO',
+        instrument_type: 'FUT',
+        expiry: '2026-08-27',
+      },
+      {
+        tradingsymbol: 'BANKNIFTY26SEPFUT',
+        name: 'BANKNIFTY',
+        exchange: 'NFO',
+        instrument_type: 'FUT',
+        expiry: '2026-09-29',
+      },
+      {
+        tradingsymbol: 'NIFTY26OCTFUT',
+        name: 'NIFTY',
+        exchange: 'NFO',
+        instrument_type: 'FUT',
+        expiry: '2026-10-29',
+      },
+      {
+        tradingsymbol: 'NIFTY26SEPFUT',
+        name: 'NIFTY',
+        exchange: 'NFO',
+        instrument_type: 'FUT',
+        expiry: '2026-09-24',
+      },
+    ];
+
+    const picked = selectNearestLiveFuture(rows, indexFutureSpec('NIFTY 50')!, '2026-09-08');
+    expect(picked?.tradingsymbol).toBe('NIFTY26SEPFUT');
   });
 });
 

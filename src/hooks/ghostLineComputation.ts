@@ -187,14 +187,40 @@ export function path1Points(
 }
 
 /** Compute how many bars to project from how many bars are visible. Counting
- *  ACTUAL bars (not raw seconds) makes this immune to overnight/weekend gaps. */
-function dynamicProjectionBars(lookback: { time: number }[], visibleFromSec: number): number {
-  if (!(visibleFromSec > 0)) return PROJECTION_BARS;
+ *  ACTUAL bars (not raw seconds) makes this immune to overnight/weekend gaps.
+ *  `maxBars` lets the caller shrink the ceiling to the future whitespace the
+ *  chart is actually showing — see `clampProjectionBars`. */
+function dynamicProjectionBars(
+  lookback: { time: number }[],
+  visibleFromSec: number,
+  maxBars: number = MAX_PROJECTION_BARS
+): number {
+  const ceiling = Math.max(MIN_PROJECTION_BARS, Math.min(MAX_PROJECTION_BARS, maxBars));
+  if (!(visibleFromSec > 0)) return Math.min(PROJECTION_BARS, ceiling);
   let visibleCount = 0;
   for (const c of lookback) if (c.time >= visibleFromSec) visibleCount++;
-  if (visibleCount <= 0) return PROJECTION_BARS;
+  if (visibleCount <= 0) return Math.min(PROJECTION_BARS, ceiling);
   const raw = Math.round(visibleCount * PROJECTION_FRACTION);
-  return Math.max(MIN_PROJECTION_BARS, Math.min(MAX_PROJECTION_BARS, raw));
+  return Math.max(MIN_PROJECTION_BARS, Math.min(ceiling, raw));
+}
+
+/**
+ * How many bars the projection may occupy given the chart's right-hand
+ * whitespace.
+ *
+ * TradingView's `defaultRightOffset` is 10 bars in the vendored bundle and we
+ * never configure `time_scale`, so a 20-bar projection is drawn half outside
+ * the viewport: the user sees a stub whose apparent slope is just its first few
+ * bars, and whose visible LENGTH changes as they zoom — which reads as the line
+ * being unstable. Clamping to what is actually on screen keeps the whole
+ * projection visible and its length steady.
+ *
+ * A small overhang is allowed (the right offset is a minimum, and the user can
+ * pan), but never the 2× that produced the stub.
+ */
+export function clampProjectionBars(rightOffsetBars: number): number {
+  if (!Number.isFinite(rightOffsetBars) || rightOffsetBars <= 0) return MAX_PROJECTION_BARS;
+  return Math.max(MIN_PROJECTION_BARS, Math.min(MAX_PROJECTION_BARS, Math.floor(rightOffsetBars)));
 }
 
 /** Lookback window (bars) for every regression engine. Kept identical to the
@@ -239,40 +265,133 @@ function isWeekend(utcSec: number): boolean {
 }
 
 /**
+ * NSE trading holidays, `YYYY-MM-DD` in IST.
+ *
+ * Why this exists at all: a projected timestamp is only drawn where TradingView
+ * says it belongs. `_convertUserPointsToDataSource` resolves a future time
+ * through `syncModel().distance()`, which does an EXACT lookup into
+ * TradingView's own extrapolated bar grid and, on a miss, silently leaves the
+ * point at `closestIndexLeft` — the last real bar's index. So a slot that lands
+ * on a non-trading day is not merely mislabelled: it stacks onto the last
+ * candle's x-coordinate, and two such points render as a vertical spike. That
+ * is the reported "weird pattern". Weekends were already handled; exchange
+ * holidays were not modelled at all, so every projection spanning one deformed.
+ *
+ * ponytail: a hardcoded table with a known ceiling — it must be refreshed each
+ * year from the NSE circular, and a projection crossing an unlisted holiday
+ * degrades exactly as it does today. The upgrade path is `session_holidays` on
+ * `LibrarySymbolInfo` (the datafeed already builds that object; TradingView
+ * accepts a `YYYYMMDD` list and would then own the grid on both sides). Doing
+ * that properly needs a holiday source the datafeed can fetch, which is a
+ * larger change than this stability fix.
+ */
+export const NSE_HOLIDAYS = new Set<string>([
+  // 2025
+  '2025-02-26',
+  '2025-03-14',
+  '2025-03-31',
+  '2025-04-10',
+  '2025-04-14',
+  '2025-04-18',
+  '2025-05-01',
+  '2025-08-15',
+  '2025-08-27',
+  '2025-10-02',
+  '2025-10-21',
+  '2025-10-22',
+  '2025-11-05',
+  '2025-12-25',
+  // 2026
+  '2026-01-26',
+  '2026-02-15',
+  '2026-03-04',
+  '2026-03-21',
+  '2026-03-26',
+  '2026-04-01',
+  '2026-04-03',
+  '2026-04-14',
+  '2026-05-01',
+  '2026-05-28',
+  '2026-08-15',
+  '2026-08-26',
+  '2026-09-14',
+  '2026-10-02',
+  '2026-10-20',
+  '2026-11-09',
+  '2026-11-24',
+  '2026-12-25',
+]);
+
+/** `YYYY-MM-DD` of the IST calendar day containing `utcSec`. */
+function istDateKey(utcSec: number): string {
+  return new Date((utcSec + IST_OFFSET_SEC) * 1000).toISOString().slice(0, 10);
+}
+
+/** A day the exchange does not trade: weekend or a listed NSE holiday. */
+function isNonTradingDay(utcSec: number): boolean {
+  return isWeekend(utcSec) || NSE_HOLIDAYS.has(istDateKey(utcSec));
+}
+
+/**
  * Infer the true bar interval (seconds) from the actual spacing of recent
  * lookback bars. This is authoritative — it avoids the "vertical line" bug
  * where a timeframe-string mismatch (e.g. chart resolution "10" vs the map key
  * "10m") collapses the interval to the 60s fallback, cramming the whole
- * projection into one bar's width. Uses the median of the most recent
- * consecutive gaps so a rare overnight/weekend gap can't skew it.
+ * projection into one bar's width.
+ *
+ * Uses the MINIMUM of the recent gaps, not the median. The median is only
+ * correct when in-session gaps outnumber overnight gaps in the sample, and on a
+ * 4h chart they do not: NSE's 375-minute session holds exactly 2 bars (09:15,
+ * 13:15), so the gap sequence alternates 4h, 20h, 4h, 20h… and the median of
+ * the last 15 gaps is 20h (72000s) for half of all possible last-bar positions.
+ * A 20h step puts every projected point off TradingView's bar grid, where it
+ * silently collapses onto the last candle (see `nextSessionSlots`). Simulated
+ * across every intra-session truncation: min() is correct for 1h/2h/3h/4h/75m/
+ * 125m, median() is wrong for 4h.
+ *
+ * The in-session gap is by construction the smallest gap on a session-aligned
+ * series — an overnight/weekend jump can only ever be larger — so the minimum is
+ * the robust estimator here, and it needs no assumption about how many bars fit
+ * in a session.
  */
 function inferBarIntervalSec(bars: { time: number }[]): number {
   if (bars.length < 3) return 0;
-  const diffs: number[] = [];
-  for (let i = bars.length - 1; i > 0 && diffs.length < 15; i--) {
+  let min = 0;
+  let seen = 0;
+  for (let i = bars.length - 1; i > 0 && seen < 15; i--) {
     const d = bars[i].time - bars[i - 1].time;
-    if (d > 0) diffs.push(d);
+    if (d > 0) {
+      if (min === 0 || d < min) min = d;
+      seen++;
+    }
   }
-  if (diffs.length === 0) return 0;
-  diffs.sort((a, b) => a - b);
-  return diffs[Math.floor(diffs.length / 2)]; // median
+  return min;
 }
 
 /**
  * Resolve the projection step interval (seconds) for a given display timeframe.
  *
- * Two cases, decided by where the lookback came from:
+ * The `TIMEFRAME_MS` map is authoritative whenever it has an entry, for both
+ * chart-sourced and store-sourced bars. Inferring from the bars' own spacing is
+ * only the fallback for a timeframe string the map does not know.
  *
- *   · `fromChart` — the bars are TradingView's own displayed series (see
- *     `readChartBars`), already on the display grid. Their median gap IS the
- *     display interval, and it beats the map for calendar resolutions where the
- *     map can only approximate (`1M` = 30 days in the map; the chart's real
- *     month-to-month gap is 28–31 days). The map is the fallback.
+ * This used to prefer the inferred gap for chart-sourced bars, on the grounds
+ * that the map can only approximate calendar resolutions (`1M` is a 30-day
+ * approximation; real months are 28–31 days). Two things retired that
+ * argument:
  *
- *   · store bars — these are at the Kite *base* interval (`2m` stores 1-minute
- *     bars, `75m` stores 15-minute bars), so the inferred gap would be wrong for
- *     every aggregated timeframe. The display-timeframe map is authoritative and
- *     the inferred gap is only a fallback for timeframes missing from the map.
+ *   · Daily/weekly/monthly slots are now stepped by real CALENDAR units in
+ *     `nextSessionSlots`, which only reads `intervalSec` to pick the branch.
+ *     Whether `1M` resolves to 30 or 31 days no longer affects any timestamp.
+ *   · Inference is not safe on sparse intraday timeframes. `4h` fits exactly 2
+ *     bars in NSE's 375-minute session, so its gap sequence alternates 4h, 20h,
+ *     4h, 20h…, and the old median-of-15 returned the 20h OVERNIGHT gap for
+ *     half of all possible last-bar positions (verified by simulating every
+ *     intra-session truncation). A 20h step puts every projected point off
+ *     TradingView's bar grid, where it silently collapses onto the last candle.
+ *
+ * The map is exact for every intraday timeframe it lists, so preferring it is
+ * both simpler and strictly safer than any estimator over observed gaps.
  *
  * Exported (pure) so the resolution precedence is unit-testable without driving
  * stores/IPC.
@@ -283,15 +402,11 @@ export function resolveIntervalSec(
   fromChart = false
 ): number {
   const mapInterval = Math.floor((TIMEFRAME_MS[effectiveTimeframe as Timeframe] ?? 0) / 1000);
-  if (fromChart) {
-    const barInterval = inferBarIntervalSec(lookback);
-    if (barInterval > 0) return barInterval;
-  }
   if (mapInterval > 0) return mapInterval;
   const barInterval = inferBarIntervalSec(lookback);
   if (barInterval > 0) {
     console.warn(
-      `[GhostLine] resolveIntervalSec — timeframe "${effectiveTimeframe}" missing from TIMEFRAME_MS map; falling back to inferred bar interval ${barInterval}s`
+      `[GhostLine] resolveIntervalSec — timeframe "${effectiveTimeframe}" missing from TIMEFRAME_MS map; falling back to inferred bar interval ${barInterval}s (fromChart=${fromChart})`
     );
     return barInterval;
   }
@@ -301,40 +416,104 @@ export function resolveIntervalSec(
   return 60;
 }
 
-/** UNIX-second timestamp of the next weekday's 09:15 IST after `fromUtcSec`. */
+/** UNIX-second timestamp of the next trading day's 09:15 IST after `fromUtcSec`. */
 function nextTradingOpen(fromUtcSec: number): number {
   let candidate = fromUtcSec;
-  for (let tries = 0; tries < 7; tries++) {
+  // Bounded at 10 so a long holiday cluster (Diwali week) still resolves.
+  for (let tries = 0; tries < 10; tries++) {
     const istMidnightUTC =
       Math.floor((candidate + IST_OFFSET_SEC) / 86400) * 86400 - IST_OFFSET_SEC + 86400;
     const openUTC = istMidnightUTC + NSE_OPEN_IST;
-    if (!isWeekend(openUTC)) return openUTC;
+    if (!isNonTradingDay(openUTC)) return openUTC;
     candidate = istMidnightUTC;
   }
   return fromUtcSec + 86400;
 }
 
+/** Start of the IST calendar day containing `utcSec`, as a UNIX second. */
+function istDayStart(utcSec: number): number {
+  return Math.floor((utcSec + IST_OFFSET_SEC) / 86400) * 86400 - IST_OFFSET_SEC;
+}
+
+/**
+ * Advance one whole trading day from `utcSec`, landing on 09:15 IST and
+ * skipping weekends and holidays.
+ */
+function nextTradingDay(utcSec: number): number {
+  return nextTradingOpen(istDayStart(utcSec) + NSE_OPEN_IST);
+}
+
+/**
+ * Advance to the first trading day of the NEXT ISO week (Monday onward),
+ * at 09:15 IST. Weekly bars are week-anchored, not "+7 days from wherever the
+ * anchor happened to be".
+ */
+function nextWeekSlot(utcSec: number): number {
+  const dayStart = istDayStart(utcSec);
+  const dow = new Date((dayStart + IST_OFFSET_SEC) * 1000).getUTCDay(); // 0=Sun
+  const daysToNextMonday = (8 - dow) % 7 || 7;
+  const monday = dayStart + daysToNextMonday * 86400 + NSE_OPEN_IST;
+  // A Monday holiday moves the week's first traded bar forward, but never past
+  // the week — nextTradingOpen walks day by day from the Sunday before.
+  return isNonTradingDay(monday) ? nextTradingOpen(monday - 86400) : monday;
+}
+
+/**
+ * Advance to the first trading day of the NEXT calendar month, at 09:15 IST.
+ *
+ * `TIMEFRAME_MS['1M']` is a 30-day approximation (it says so in
+ * `chartTypes.ts`). Stepping by a fixed 30 days makes two consecutive slots
+ * land in the SAME calendar month roughly once every eight steps — verified by
+ * simulation for anchors in Jan/Mar/Aug. TradingView snaps every monthly point
+ * to its containing month's start, so those two slots collapse onto one
+ * x-coordinate and the line draws a vertical segment. Stepping by real calendar
+ * months is the only way to keep monthly points distinct.
+ */
+function nextMonthSlot(utcSec: number): number {
+  const ist = new Date((utcSec + IST_OFFSET_SEC) * 1000);
+  const firstOfNext = Date.UTC(ist.getUTCFullYear(), ist.getUTCMonth() + 1, 1) / 1000;
+  const open = firstOfNext - IST_OFFSET_SEC + NSE_OPEN_IST;
+  return isNonTradingDay(open) ? nextTradingOpen(open - 86400) : open;
+}
+
 /**
  * Generate `count` future timestamps (seconds) that continue on from the last
- * bar, aligned to valid NSE trading slots. Intraday steps by `intervalSec` and
- * jumps to the next session's 09:15 when it would cross 15:30 / a weekend;
- * daily+ steps by whole intervals skipping weekends. Produces a contiguous,
- * strictly-increasing, in-session sequence.
+ * bar, aligned to valid NSE trading slots.
+ *
+ * Every slot must be a timestamp TradingView can resolve to a real future bar
+ * index. Intraday steps by `intervalSec` and jumps to the next session's 09:15
+ * when it would cross 15:30, a weekend or a holiday. Daily/weekly/monthly step
+ * by CALENDAR units rather than by `intervalSec`, because the caller's interval
+ * for those is a fixed-seconds approximation (`1W` = 7 days from an arbitrary
+ * weekday, `1M` = 30 days) that drifts off the calendar grid TradingView
+ * actually uses — see `nextMonthSlot`.
+ *
+ * The result is contiguous, strictly increasing and free of duplicates. It may
+ * be SHORTER than `count` if a slot could not be advanced; callers must
+ * truncate their points to the number of slots returned rather than assume a
+ * one-to-one mapping.
  */
-function nextSessionSlots(lastBarSec: number, intervalSec: number, count: number): number[] {
+export function nextSessionSlots(lastBarSec: number, intervalSec: number, count: number): number[] {
   const slots: number[] = [];
-  const intraday = intervalSec < 86_400;
   let t = lastBarSec;
   for (let k = 0; k < count; k++) {
-    let cand = t + intervalSec;
-    if (intraday) {
+    let cand: number;
+    if (intervalSec >= 28 * 86_400) {
+      cand = nextMonthSlot(t);
+    } else if (intervalSec >= 7 * 86_400) {
+      cand = nextWeekSlot(t);
+    } else if (intervalSec >= 86_400) {
+      cand = nextTradingDay(t);
+    } else {
+      cand = t + intervalSec;
       const istSec = (cand + IST_OFFSET_SEC) % 86400;
-      if (isWeekend(cand) || istSec < NSE_OPEN_IST || istSec >= NSE_CLOSE_IST) {
+      if (isNonTradingDay(cand) || istSec < NSE_OPEN_IST || istSec >= NSE_CLOSE_IST) {
         cand = nextTradingOpen(t);
       }
-    } else {
-      while (isWeekend(cand)) cand += 86_400;
     }
+    // Defence in depth: a duplicate or backwards slot is exactly what collapses
+    // the drawing, so never emit one even if a helper misbehaves.
+    if (slots.length > 0 && cand <= slots[slots.length - 1]) break;
     slots.push(cand);
     t = cand;
   }
@@ -368,8 +547,9 @@ export type ExportableChart = {
  * shows, so on every non-10m timeframe the store-derived anchor sat on the
  * wrong candle (1m/2m/5m: the 10m bucket overwrote the real last bar; 15m/1h:
  * the anchor froze between :00/:30 boundaries; 125m/1D: session-aligned bars
- * never matched the epoch-aligned `% intervalMs` test, so the anchor was never
- * live at all).
+ * never matched the old epoch-aligned `% intervalMs` test, so the anchor was
+ * never live at all — that test is now `isOnDisplayGrid`, measured from the
+ * session open, which fixes the store path but does not make it authoritative).
  *
  * `includedStudies: 'all'` picks up the Volume study when it is on the chart
  * (the VWLR/VWEPR engines weight by volume); without it every bar weighs 1 and
@@ -377,10 +557,16 @@ export type ExportableChart = {
  *
  * Returns `[]` on any failure so the caller can fall back to the store.
  */
-export async function readChartBars(chart: ExportableChart | null | undefined): Promise<LookbackCandle[]> {
+export async function readChartBars(
+  chart: ExportableChart | null | undefined
+): Promise<LookbackCandle[]> {
   if (!chart || typeof chart.exportData !== 'function') return [];
   try {
-    const ex = await chart.exportData({ includeTime: true, includeSeries: true, includedStudies: 'all' });
+    const ex = await chart.exportData({
+      includeTime: true,
+      includeSeries: true,
+      includedStudies: 'all',
+    });
     return exportedDataToBars(ex);
   } catch (err) {
     console.warn('[GhostLine] chart.exportData failed — falling back to store bars:', err);
@@ -459,7 +645,8 @@ function readStoreCandles(symbol: string, timeframe: string): LookbackCandle[] {
   const live =
     intervalMs > 0
       ? allLive.filter(
-          (c) => histTimes.has(c.start_timestamp_ms) || c.start_timestamp_ms % intervalMs === 0
+          (c) =>
+            histTimes.has(c.start_timestamp_ms) || isOnDisplayGrid(c.start_timestamp_ms, intervalMs)
         )
       : allLive;
 
@@ -494,6 +681,31 @@ function readStoreCandles(symbol: string, timeframe: string): LookbackCandle[] {
 }
 
 /**
+ * Is `ms` the start of a bar on the DISPLAY grid for `intervalMs`?
+ *
+ * Measured from the session open (09:15 IST), not from the Unix epoch. The
+ * epoch test this replaces (`ms % intervalMs === 0`) silently rejected every
+ * live bar on `10m`, `30m`, `75m`, `125m`, `1h`, `2h`, `4h` and `1D`, because
+ * NSE bars start at 09:15 IST and 09:15 is not a multiple of those intervals
+ * from the epoch — e.g. for `75m` the remainder is a constant 2 700 000 ms.
+ * The store fallback therefore had no live bars at all on those timeframes; it
+ * is masked today only because the chart's own `exportData` is preferred, and
+ * would surface as a dead ghost line the moment that path fails.
+ *
+ * Daily-and-above bars are one per trading day, so any timestamp inside the
+ * session qualifies.
+ */
+export function isOnDisplayGrid(ms: number, intervalMs: number): boolean {
+  if (!(intervalMs > 0)) return true;
+  const sec = Math.floor(ms / 1000);
+  const istSec = (((sec + IST_OFFSET_SEC) % 86400) + 86400) % 86400;
+  if (intervalMs >= 86_400_000) return istSec >= NSE_OPEN_IST && istSec < NSE_CLOSE_IST;
+  const sinceOpen = istSec - NSE_OPEN_IST;
+  if (sinceOpen < 0) return false;
+  return (sinceOpen * 1000) % intervalMs === 0;
+}
+
+/**
  * The freshest traded price for `symbol`, used to pin the projection's anchor
  * PRICE to the live market.
  *
@@ -517,7 +729,7 @@ function latestStorePrice(symbol: string, intervalMs: number): number | null {
   let close = 0;
   for (const c of store.ohlcCandles) {
     if (c.symbol?.toUpperCase() !== sym) continue;
-    if (intervalMs > 0 && c.start_timestamp_ms % intervalMs !== 0) continue;
+    if (intervalMs > 0 && !isOnDisplayGrid(c.start_timestamp_ms, intervalMs)) continue;
     if (c.start_timestamp_ms > bestMs) {
       bestMs = c.start_timestamp_ms;
       close = c.close;
@@ -905,16 +1117,38 @@ export function forecastProjection(
 
 // ── Main export ───────────────────────────────────────────────────────────
 
-export async function computeGhostPoints(
+/**
+ * Outcome of a projection attempt.
+ *
+ * The three cases are NOT interchangeable, and conflating them is what made the
+ * line blink out. `applyGhostBounds` returns `[]` when a candidate leaves the
+ * ±20% band — one volatile tick — and the old array-only signature made that
+ * indistinguishable from "this symbol has no data", so the caller cleared the
+ * chart and the last good line vanished until the next redraw re-admitted it.
+ *
+ *   · `ok`       — draw these points.
+ *   · `rejected` — a projection existed but failed a sanity gate. Keep whatever
+ *                  is already on the chart; this is a transient verdict about
+ *                  one candidate, not about the symbol.
+ *   · `empty`    — there is genuinely nothing to draw (no bars, unusable
+ *                  anchor). Clearing is correct.
+ */
+export type GhostProjection =
+  | { kind: 'ok'; points: { time: number; price: number }[] }
+  | { kind: 'rejected'; reason: string }
+  | { kind: 'empty'; reason: string };
+
+export async function computeGhostProjection(
   activeSymbol: string,
   effectiveTimeframe: string,
   ghostLineMode: string,
   predictiveSignals: any[],
   visibleFromSec: number = 0,
-  chart?: ExportableChart | null
-): Promise<{ time: number; price: number }[]> {
+  chart?: ExportableChart | null,
+  maxProjectionBars: number = MAX_PROJECTION_BARS
+): Promise<GhostProjection> {
   debugLog(
-    `[GhostLine] computeGhostPoints — symbol=${activeSymbol} tf=${effectiveTimeframe} mode=${ghostLineMode}`
+    `[GhostLine] computeGhostProjection — symbol=${activeSymbol} tf=${effectiveTimeframe} mode=${ghostLineMode}`
   );
 
   const { bars: rawLookback, fromChart } = await fetchLookbackCandles(
@@ -924,8 +1158,8 @@ export async function computeGhostPoints(
   );
   const lookback = sanitizeLookback(rawLookback);
   if (lookback.length < 20) {
-    console.warn(`[GhostLine] Not enough candles (${lookback.length})`);
-    return [];
+    debugLog(`[GhostLine] Not enough candles (${lookback.length})`);
+    return { kind: 'empty', reason: `only ${lookback.length} candles` };
   }
 
   const last = lookback[lookback.length - 1];
@@ -934,10 +1168,13 @@ export async function computeGhostPoints(
   // (Kite base interval) must use the display-timeframe map.
   const intervalSec = resolveIntervalSec(effectiveTimeframe, lookback, fromChart);
   debugLog(`[GhostLine] intervalSec=${intervalSec} fromChart=${fromChart}`);
-  if (!Number.isFinite(last.close) || last.close <= 0) return [];
+  if (!Number.isFinite(last.close) || last.close <= 0) {
+    return { kind: 'empty', reason: 'anchor close is not a positive number' };
+  }
 
-  // Length scales with the current zoom (fraction of visible bars).
-  const projBars = dynamicProjectionBars(lookback, visibleFromSec);
+  // Length scales with the current zoom (fraction of visible bars), then is
+  // capped by however much future whitespace the chart is actually showing.
+  const projBars = dynamicProjectionBars(lookback, visibleFromSec, maxProjectionBars);
   debugLog(`[GhostLine] projBars=${projBars} (visibleFromSec=${visibleFromSec})`);
 
   // Single 50-bar window shared by every engine (OLS, VWLR, VWEPR) and by both
@@ -1022,6 +1259,7 @@ export async function computeGhostPoints(
   // ── Bound / reject runaway prices (no cliff to ~0) ───────────────────
   // Replaces the old avgStep-only clamp and the absolute 0.01 engine floors.
   // See `applyGhostBounds` for the price-relative band + step/total caps.
+  const hadPoints = points.length > 1;
   if (points.length > 1) {
     const anchor = points[0].price;
     points = applyGhostBounds(
@@ -1031,30 +1269,40 @@ export async function computeGhostPoints(
       anchor
     );
   }
-
-  // ── Align projected points to contiguous future NSE session slots ────
-  if (points.length > 1) {
-    const slots = nextSessionSlots(points[0].time, intervalSec, points.length - 1);
-    points = points.map((p, i) => ({ time: i === 0 ? p.time : slots[i - 1], price: p.price }));
+  // An engine produced a projection and the bounds threw it out. That is a
+  // verdict about THIS candidate, not about the symbol — the caller must keep
+  // the previous line rather than clear the chart. See `GhostProjection`.
+  if (hadPoints && points.length < 2) {
+    return { kind: 'rejected', reason: 'projection failed the price-band guard' };
+  }
+  if (points.length < 2) {
+    return { kind: 'empty', reason: 'no engine produced a projection' };
   }
 
-  // ── Safety net: times must be strictly forward ──────────────────────
-  // Guarantees the line can NEVER render vertically. If any upstream step
-  // collapsed the timestamps (span ≤ 0 or non-increasing), rebuild a clean
-  // forward ramp from the anchor using the resolved interval.
-  if (points.length > 1) {
-    const span = points[points.length - 1].time - points[0].time;
-    let strictlyIncreasing = true;
-    for (let i = 1; i < points.length; i++) {
-      if (points[i].time <= points[i - 1].time) {
-        strictlyIncreasing = false;
-        break;
-      }
-    }
-    if (!(span > 0) || !strictlyIncreasing) {
-      const base = points[0].time;
-      points = points.map((p, i) => ({ time: base + i * intervalSec, price: p.price }));
-      console.warn('[GhostLine] collapsed/non-increasing times — forced forward ramp');
+  // ── Align projected points to contiguous future NSE session slots ────
+  // `nextSessionSlots` may return fewer slots than asked (it stops rather than
+  // emit a duplicate/backwards time), so the projection is truncated to the
+  // slots actually available. A short line is correct; a collapsed one is not.
+  const slots = nextSessionSlots(points[0].time, intervalSec, points.length - 1);
+  points = [points[0], ...slots.map((t, i) => ({ time: t, price: points[i + 1].price }))];
+
+  // ── Final gate: strictly-forward times, or nothing ──────────────────
+  //
+  // Previously this "repaired" a bad sequence by rebuilding a uniform ramp of
+  // `base + i * intervalSec`. That was worse than useless: a raw arithmetic
+  // ramp ignores session boundaries, so on any timeframe it produced times that
+  // fall outside trading hours — precisely the timestamps TradingView cannot
+  // resolve, which then stack on the last bar's x-coordinate and draw the
+  // vertical spike this repair was meant to prevent. If the slot generator
+  // could not produce a clean forward sequence, there is no safe fallback
+  // geometry: reject and keep the previous line.
+  if (points.length < 2) {
+    return { kind: 'rejected', reason: 'no future session slots available' };
+  }
+  for (let i = 1; i < points.length; i++) {
+    if (!(points[i].time > points[i - 1].time)) {
+      console.warn('[GhostLine] non-increasing slot times — discarding projection');
+      return { kind: 'rejected', reason: 'non-increasing slot times' };
     }
   }
 
@@ -1064,5 +1312,32 @@ export async function computeGhostPoints(
     'prices=',
     points.map((p) => p.price).join(',')
   );
-  return points;
+  return { kind: 'ok', points };
+}
+
+/**
+ * Back-compat array form: `[]` for both `rejected` and `empty`.
+ *
+ * Retained because callers outside the ghost-line hook (and existing tests)
+ * treat the projection as a plain array. New code should prefer
+ * `computeGhostProjection`, which distinguishes "keep the current line" from
+ * "clear the chart".
+ */
+export async function computeGhostPoints(
+  activeSymbol: string,
+  effectiveTimeframe: string,
+  ghostLineMode: string,
+  predictiveSignals: any[],
+  visibleFromSec: number = 0,
+  chart?: ExportableChart | null
+): Promise<{ time: number; price: number }[]> {
+  const res = await computeGhostProjection(
+    activeSymbol,
+    effectiveTimeframe,
+    ghostLineMode,
+    predictiveSignals,
+    visibleFromSec,
+    chart
+  );
+  return res.kind === 'ok' ? res.points : [];
 }

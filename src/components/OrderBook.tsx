@@ -10,7 +10,8 @@ import MarketDepthStats from './orderbook/MarketDepthStats';
 
 export default function OrderBook() {
   const selectedSymbol = useTradeStore((s) => s.selectedSymbol);
-  const { book, isLive, stats } = useOrderBookData(selectedSymbol);
+  const { book, isLive, stats, depthSourceSymbol, indexDepthMode } =
+    useOrderBookData(selectedSymbol);
 
   // ── Zerodha 5-level depth normalization ─────────────────────────────
   // When market is closed or order book has fewer than 5 levels, pad with
@@ -102,6 +103,28 @@ export default function OrderBook() {
         <span className="text-right">Size</span>
         <span className="text-right">Total</span>
       </div>
+
+      {indexDepthMode !== 'native' && (
+        <div
+          role="status"
+          aria-live="polite"
+          title={
+            depthSourceSymbol
+              ? `${selectedSymbol} is a calculated spot index with no native bids or asks. The ladder shows ${depthSourceSymbol}, its nearest-expiry futures contract.`
+              : `${selectedSymbol} is a calculated spot index and has no native bids or asks.`
+          }
+          className="flex shrink-0 items-center justify-between gap-2 border-b border-border-subtle bg-amber-500/5 px-3.5 py-1 text-[9px] font-bold uppercase tracking-wide"
+        >
+          <span className="shrink-0 text-amber-500 dark:text-amber-400">Index spot</span>
+          <span className="min-w-0 truncate text-right text-text-muted">
+            {indexDepthMode === 'future' && depthSourceSymbol
+              ? `Depth from ${depthSourceSymbol}`
+              : indexDepthMode === 'resolving'
+                ? 'Finding nearest future depth…'
+                : 'No native market depth'}
+          </span>
+        </div>
+      )}
 
       {/* ── Ask Levels (Red) — 5-level Zerodha-style ladder ─────────── */}
       <div

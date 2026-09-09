@@ -17,6 +17,7 @@ import { useChartUIStore } from '../../../store/useChartUIStore';
 import { useMobileNavStore } from '../../../store/useMobileNavStore';
 import { isFnoSymbol } from '../../../charting/symbolUtils';
 import WatchlistSkeleton from './WatchlistSkeleton';
+import InstrumentLogo from '../../common/InstrumentLogo';
 import { kiteFetch } from '../../../lib/kiteFetch';
 import { bridgeInvoke } from '../../../lib/bridge';
 import { useLiveTickPrices } from '../../../hooks/useLiveTickPrices';
@@ -400,6 +401,9 @@ export default function WatchlistBlock() {
                       <div className="w-0 group-hover:w-4 opacity-0 group-hover:opacity-75 transition-all overflow-hidden shrink-0 flex items-center justify-center cursor-grab active:cursor-grabbing -ml-1 group-hover:mr-1">
                         <GripVertical size={13} className="text-text-muted" />
                       </div>
+
+                      {/* Instrument Logo */}
+                      <InstrumentLogo symbol={item.symbol} name={item.name} size={26} className="shrink-0" />
 
                       {(() => {
                         const isFnoItem =

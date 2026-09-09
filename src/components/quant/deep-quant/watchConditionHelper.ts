@@ -35,11 +35,19 @@ export interface WatchBands {
 }
 
 /**
- * Extracts the latest `watch_price_condition` tool arguments or monologue parameters from reasoning steps.
+ * Extracts the latest LIVE `watch_price_condition` tool arguments or monologue parameters
+ * from reasoning steps.
+ *
+ * Steps flagged `superseded` are skipped: the transcript is append-only, so a watch the
+ * agent later replaced (or deleted via `cancel_price_watch`) is still in it, and reading
+ * the newest step regardless of that flag showed a level the server had stopped
+ * monitoring. Returns `null` when the only watches present have been superseded — the
+ * correct answer, because nothing is armed.
  */
 export function extractWatchCondition(steps: ReasoningStep[]): WatchConditionData | null {
   for (let i = steps.length - 1; i >= 0; i--) {
     const s = steps[i];
+    if (s.superseded) continue;
     if (
       s.toolName === 'watch_price_condition' ||
       (s.type === 'tool_start' && s.toolName === 'watch_price_condition')

@@ -24,7 +24,16 @@ import { ALL_SWITCHES_OFF } from '../../lib/featureFlags';
 
 const computeGhostPoints = vi.fn();
 vi.mock('../ghostLineComputation', () => ({
-  computeGhostPoints: (...args: unknown[]) => computeGhostPoints(...args),
+  // The hook consumes the discriminated `computeGhostProjection`; the mock keeps
+  // returning a plain array of points and adapts here, so each test stays a
+  // statement about points-in / entities-on-chart rather than about the wrapper.
+  computeGhostProjection: async (...args: unknown[]) => {
+    const points = await computeGhostPoints(...args);
+    return Array.isArray(points) && points.length >= 2
+      ? { kind: 'ok', points }
+      : { kind: 'empty', reason: 'test stub returned no points' };
+  },
+  clampProjectionBars: () => 20,
 }));
 
 function makeWidget() {

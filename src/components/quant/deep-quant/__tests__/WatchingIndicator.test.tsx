@@ -78,6 +78,56 @@ describe('extractWatchCondition', () => {
     ];
     expect(extractWatchCondition(steps)).toBeNull();
   });
+
+  it('reads the replacement watch and ignores the superseded one', () => {
+    // The transcript is append-only, so a watch the agent replaced after a
+    // heartbeat is still in it. Reading the newest step regardless of the flag
+    // showed the level the server had stopped monitoring.
+    const steps: ReasoningStep[] = [
+      {
+        id: 's1',
+        type: 'tool_start',
+        toolName: 'watch_price_condition',
+        args: { symbol: 'RELIANCE', price_level: 2500, direction: 'above' },
+        content: 'stale watch',
+        timestamp: 100,
+        superseded: true,
+      },
+      {
+        id: 's2',
+        type: 'tool_start',
+        toolName: 'watch_price_condition',
+        args: { symbol: 'RELIANCE', price_level: 2465, direction: 'above' },
+        content: 'live watch',
+        timestamp: 200,
+      },
+    ];
+    expect(extractWatchCondition(steps)?.priceLevel).toBe(2465);
+  });
+
+  it('returns null once every watch has been superseded or cancelled', () => {
+    // `cancel_price_watch` leaves NOTHING armed. Surfacing the last level anyway
+    // would keep the panel claiming to watch a trigger that was deleted.
+    const steps: ReasoningStep[] = [
+      {
+        id: 's1',
+        type: 'tool_start',
+        toolName: 'watch_price_condition',
+        args: { symbol: 'RELIANCE', price_level: 2500, direction: 'above' },
+        content: 'cancelled watch',
+        timestamp: 100,
+        superseded: true,
+      },
+      {
+        id: 's2',
+        type: 'tool_start',
+        toolName: 'cancel_price_watch',
+        content: '> Deleting the previous price trigger...',
+        timestamp: 200,
+      },
+    ];
+    expect(extractWatchCondition(steps)).toBeNull();
+  });
 });
 
 describe('computeWatchBands', () => {

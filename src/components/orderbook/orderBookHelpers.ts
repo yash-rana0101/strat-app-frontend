@@ -135,6 +135,77 @@ export interface KiteDepth {
   sell?: KiteDepthLevel[];
 }
 
+export type IndexFutureExchange = 'NFO' | 'BFO';
+
+export interface IndexFutureSpec {
+  underlying: string;
+  spotExchange: 'NSE' | 'BSE';
+  exchange: IndexFutureExchange;
+}
+
+/** A futures row returned by the Kite instrument-search endpoint. */
+export interface KiteFutureInstrument {
+  tradingsymbol: string;
+  name: string;
+  exchange: string;
+  instrument_type: string;
+  expiry: string;
+}
+
+/** The derivative used when a calculated spot index has no native order book. */
+const INDEX_FUTURES: Readonly<Record<string, IndexFutureSpec>> = {
+  NIFTY: { underlying: 'NIFTY', spotExchange: 'NSE', exchange: 'NFO' },
+  NIFTY50: { underlying: 'NIFTY', spotExchange: 'NSE', exchange: 'NFO' },
+  'NIFTY 50': { underlying: 'NIFTY', spotExchange: 'NSE', exchange: 'NFO' },
+  BANKNIFTY: { underlying: 'BANKNIFTY', spotExchange: 'NSE', exchange: 'NFO' },
+  'NIFTY BANK': { underlying: 'BANKNIFTY', spotExchange: 'NSE', exchange: 'NFO' },
+  FINNIFTY: { underlying: 'FINNIFTY', spotExchange: 'NSE', exchange: 'NFO' },
+  'NIFTY FIN SERVICE': { underlying: 'FINNIFTY', spotExchange: 'NSE', exchange: 'NFO' },
+  'NIFTY FINANCIAL SERVICES': {
+    underlying: 'FINNIFTY',
+    spotExchange: 'NSE',
+    exchange: 'NFO',
+  },
+  MIDCPNIFTY: { underlying: 'MIDCPNIFTY', spotExchange: 'NSE', exchange: 'NFO' },
+  'NIFTY MIDCAP SELECT': {
+    underlying: 'MIDCPNIFTY',
+    spotExchange: 'NSE',
+    exchange: 'NFO',
+  },
+  NIFTYNXT50: { underlying: 'NIFTYNXT50', spotExchange: 'NSE', exchange: 'NFO' },
+  'NIFTY NEXT 50': { underlying: 'NIFTYNXT50', spotExchange: 'NSE', exchange: 'NFO' },
+  SENSEX: { underlying: 'SENSEX', spotExchange: 'BSE', exchange: 'BFO' },
+  BANKEX: { underlying: 'BANKEX', spotExchange: 'BSE', exchange: 'BFO' },
+};
+
+export function indexFutureSpec(symbol: string): IndexFutureSpec | null {
+  return INDEX_FUTURES[symbol.trim().toUpperCase()] ?? null;
+}
+
+/** Pick the nearest non-expired future without accepting a similarly named index. */
+export function selectNearestLiveFuture(
+  rows: KiteFutureInstrument[],
+  spec: IndexFutureSpec,
+  today: string
+): KiteFutureInstrument | null {
+  const underlying = spec.underlying.toUpperCase();
+  return (
+    rows
+      .filter(
+        (row) =>
+          row?.instrument_type?.toUpperCase() === 'FUT' &&
+          row.name?.trim().toUpperCase() === underlying &&
+          row.exchange?.toUpperCase() === spec.exchange &&
+          typeof row.expiry === 'string' &&
+          row.expiry >= today &&
+          Boolean(row.tradingsymbol)
+      )
+      .sort(
+        (a, b) => a.expiry.localeCompare(b.expiry) || a.tradingsymbol.localeCompare(b.tradingsymbol)
+      )[0] ?? null
+  );
+}
+
 /**
  * Build the book from a Kite REST depth payload.
  *

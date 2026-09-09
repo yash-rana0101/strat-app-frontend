@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTradeStore } from '../../store/useTradeStore';
 import { staggerContainer, fadeInUp, crossfade } from '../../lib/motionVariants';
 import WatchlistSkeleton from './left-panel/WatchlistSkeleton';
+import InstrumentLogo from '../common/InstrumentLogo';
 import { kiteFetch } from '../../lib/kiteFetch';
 import { bridgeInvoke } from '../../lib/bridge';
 
@@ -59,13 +60,13 @@ interface SearchInstrument {
 type TauriSearchResult =
   | { kind: 'EQ'; symbol: string; name: string; exchange: string }
   | {
-      kind: 'FNO';
-      tradingsymbol: string;
-      underlying: string;
-      expiry: string;
-      strike: number | null;
-      optionType: 'CE' | 'PE' | 'FUT';
-    };
+    kind: 'FNO';
+    tradingsymbol: string;
+    underlying: string;
+    expiry: string;
+    strike: number | null;
+    optionType: 'CE' | 'PE' | 'FUT';
+  };
 
 function toSearchInstrument(r: TauriSearchResult): SearchInstrument {
   if (r.kind === 'EQ') {
@@ -288,11 +289,14 @@ export default function WatchlistPanel() {
                       }}
                       className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left transition-colors hover:bg-elevated/70"
                     >
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-semibold text-text-primary truncate">
-                          {inst.tradingsymbol}
-                        </span>
-                        <span className="text-[10px] text-text-muted truncate">{inst.name}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <InstrumentLogo symbol={inst.tradingsymbol} name={inst.name} size={22} className="shrink-0" />
+                        <div className="flex flex-col min-w-0">
+                          <span className="text-xs font-semibold text-text-primary truncate">
+                            {inst.tradingsymbol}
+                          </span>
+                          <span className="text-[10px] text-text-muted truncate">{inst.name}</span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-1.5 shrink-0">
                         <span className="rounded px-1 py-px text-[8px] font-semibold uppercase tracking-wider bg-elevated text-text-muted">
@@ -327,27 +331,29 @@ export default function WatchlistPanel() {
                   variants={fadeInUp}
                   type="button"
                   onClick={() => setSelectedSymbol(stock.symbol)}
-                  className={`group flex w-full items-center justify-between gap-1 px-3 py-2 text-xs text-left transition-colors cursor-pointer border-l-2 ${
-                    isActive
+                  className={`group flex w-full items-center justify-between gap-1 px-3 py-2 text-xs text-left transition-colors cursor-pointer border-l-2 ${isActive
                       ? 'bg-primary/10 border-primary text-text-primary'
                       : 'hover:bg-elevated/70 border-transparent hover:border-primary/50'
-                  }`}
+                    }`}
                 >
                   {/* Left: Symbol + Name */}
-                  <div className="flex flex-col min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[13px] font-semibold text-text-primary truncate">
-                        {stock.symbol}
-                      </span>
-                      <span
-                        className={`rounded px-1 py-px text-[7px] font-semibold uppercase tracking-wider ${sectorColor}`}
-                      >
-                        {stock.sector}
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <InstrumentLogo symbol={stock.symbol} name={stock.name} size={28} className="shrink-0" />
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[13px] font-semibold text-text-primary truncate">
+                          {stock.symbol}
+                        </span>
+                        <span
+                          className={`rounded px-1 py-px text-[7px] font-semibold uppercase tracking-wider ${sectorColor}`}
+                        >
+                          {stock.sector}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-text-muted truncate mt-0.5">
+                        {stock.name}
                       </span>
                     </div>
-                    <span className="text-[10px] text-text-muted truncate mt-0.5">
-                      {stock.name}
-                    </span>
                   </div>
 
                   {/* Right: Price + Change */}

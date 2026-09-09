@@ -2,13 +2,18 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { bridgeListen } from '../../lib/bridge';
+import { istToday } from '../../lib/bridge/fnoWeb';
 import { kiteFetch } from '../../lib/kiteFetch';
 import {
   type OrderBookState,
+  type IndexFutureExchange,
+  type KiteFutureInstrument,
   createEmptyBook,
   buildBookFromDepth,
   buildBookFromKiteDepth,
+  indexFutureSpec,
   parseCachedBook,
+  selectNearestLiveFuture,
   BOOK_CACHE_VERSION,
 } from './orderBookHelpers';
 import type { MarketDepthStatsData } from './marketDepthTypes';
@@ -19,6 +24,9 @@ const DEPTH_POLL_MS = 2000;
 /** Per-request ceiling for a depth fetch. */
 const DEPTH_REQUEST_TIMEOUT_MS = 1800;
 
+/** Instrument-master lookups are larger than quote responses, so give them room. */
+const DEPTH_SOURCE_REQUEST_TIMEOUT_MS = 8000;
+
 /** Write the cache at most this often; the poll itself runs every 2s. */
 const CACHE_WRITE_MIN_INTERVAL_MS = 10_000;
 
@@ -27,20 +35,40 @@ const cacheKey = (symbol: string) =>
 
 const statsCacheKey = (symbol: string) => `ai-trader-orderbook-stats-${symbol.toUpperCase()}`;
 
+interface IndexDepthSource {
+  forSymbol: string;
+  symbol: string;
+  exchange: IndexFutureExchange;
+}
+
+export type IndexDepthMode = 'native' | 'resolving' | 'future' | 'unavailable';
+
 export function useOrderBookData(selectedSymbol: string) {
   const [book, setBook] = useState<OrderBookState>(() => createEmptyBook());
   const [isLive, setIsLive] = useState(false);
   const [stats, setStats] = useState<MarketDepthStatsData | null>(null);
+  const [depthSource, setDepthSource] = useState<IndexDepthSource | null>(null);
+  const [indexDepthMode, setIndexDepthMode] = useState<IndexDepthMode>(() =>
+    indexFutureSpec(selectedSymbol) ? 'resolving' : 'native'
+  );
   const updateCountRef = useRef(0);
+
+  const normalizedSelectedSymbol = selectedSymbol.trim().toUpperCase();
+  const activeDepthSource =
+    depthSource?.forSymbol === normalizedSelectedSymbol ? depthSource : null;
 
   // ── Load cached order book and stats when symbol changes ──────────────────
   useEffect(() => {
     if (typeof window !== 'undefined') {
       let cached: string | null = null;
-      try {
-        cached = localStorage.getItem(cacheKey(selectedSymbol));
-      } catch {
-        cached = null;
+      // A spot index's ladder comes from its current near-month future. Do not
+      // restore that book under the index name after the contract has rolled.
+      if (!indexFutureSpec(selectedSymbol)) {
+        try {
+          cached = localStorage.getItem(cacheKey(selectedSymbol));
+        } catch {
+          cached = null;
+        }
       }
       const restored = parseCachedBook(cached);
       if (restored) {
@@ -68,6 +96,64 @@ export function useOrderBookData(selectedSymbol: string) {
     setStats(null);
   }, [selectedSymbol]);
 
+  // ── Resolve a tradable depth source for calculated spot indices ───────────
+  useEffect(() => {
+    const spec = indexFutureSpec(selectedSymbol);
+    setDepthSource(null);
+
+    if (!spec) {
+      setIndexDepthMode('native');
+      return;
+    }
+
+    setIndexDepthMode('resolving');
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), DEPTH_SOURCE_REQUEST_TIMEOUT_MS);
+
+    const resolve = async () => {
+      try {
+        const query = encodeURIComponent(`${spec.underlying} FUT`);
+        const res = await kiteFetch(`/instruments?q=${query}&exchange=${spec.exchange}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error(`instrument lookup HTTP ${res.status}`);
+
+        const data = (await res.json()) as { results?: KiteFutureInstrument[] };
+        const future = selectNearestLiveFuture(data.results ?? [], spec, istToday());
+        if (cancelled) return;
+
+        if (future) {
+          setDepthSource({
+            forSymbol: selectedSymbol.trim().toUpperCase(),
+            symbol: future.tradingsymbol,
+            exchange: spec.exchange,
+          });
+          setIndexDepthMode('future');
+        } else {
+          setIndexDepthMode('unavailable');
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setIndexDepthMode('unavailable');
+          console.warn(
+            `[OrderBook] Could not resolve a live future for ${selectedSymbol}:`,
+            err instanceof Error ? err.message : String(err)
+          );
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    void resolve();
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
+  }, [selectedSymbol]);
+
   // ── Listen for real-time order book data from backend IPC ──────────
   useEffect(() => {
     let cleanup: (() => void) | undefined;
@@ -86,7 +172,7 @@ export function useOrderBookData(selectedSymbol: string) {
           setIsLive(true);
           updateCountRef.current += 1;
 
-          if (updateCountRef.current % 5 === 0) {
+          if (updateCountRef.current % 5 === 0 && !indexFutureSpec(selectedSymbol)) {
             if (typeof window !== 'undefined') {
               localStorage.setItem(cacheKey(selectedSymbol), JSON.stringify(newBook));
             }
@@ -117,20 +203,31 @@ export function useOrderBookData(selectedSymbol: string) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), DEPTH_REQUEST_TIMEOUT_MS);
       try {
+        const indexSpec = indexFutureSpec(symbol);
         const isFno =
           symbol.endsWith('FUT') ||
           ((symbol.endsWith('CE') || symbol.endsWith('PE')) && /\d/.test(symbol));
-        const exchange = isFno ? 'NFO' : 'NSE';
+        const exchange = indexSpec?.spotExchange ?? (isFno ? 'NFO' : 'NSE');
 
-        const res = await kiteFetch(`/quote?i=${exchange}:${encodeURIComponent(symbol)}`, {
+        const quoteParams = [`i=${exchange}:${encodeURIComponent(symbol)}`];
+        if (activeDepthSource) {
+          quoteParams.push(
+            `i=${activeDepthSource.exchange}:${encodeURIComponent(activeDepthSource.symbol)}`
+          );
+        }
+
+        const res = await kiteFetch(`/quote?${quoteParams.join('&')}`, {
           signal: controller.signal,
         });
         if (!res.ok) throw new Error(`quote HTTP ${res.status}`);
         const data = await res.json();
-        const quote =
-          (data?.quotes ?? []).find(
-            (q: { symbol?: string }) => q?.symbol?.toUpperCase() === symbol.toUpperCase()
-          ) ?? (data?.quotes ?? [])[0];
+        const quotes = Array.isArray(data?.quotes) ? data.quotes : [];
+        const findQuote = (target: string) =>
+          quotes.find(
+            (q: { symbol?: string }) => q?.symbol?.toUpperCase() === target.toUpperCase()
+          );
+        const quote = findQuote(symbol) ?? (!activeDepthSource ? quotes[0] : undefined);
+        const depthQuote = activeDepthSource ? findQuote(activeDepthSource.symbol) : quote;
 
         if (quote) {
           const newStats: MarketDepthStatsData = {
@@ -155,7 +252,7 @@ export function useOrderBookData(selectedSymbol: string) {
           }
         }
 
-        const next = buildBookFromKiteDepth(quote?.depth);
+        const next = buildBookFromKiteDepth(depthQuote?.depth);
         if (cancelled) return;
 
         if (next) {
@@ -165,6 +262,7 @@ export function useOrderBookData(selectedSymbol: string) {
           const now = Date.now();
           if (
             typeof window !== 'undefined' &&
+            !indexSpec &&
             now - lastCacheWrite >= CACHE_WRITE_MIN_INTERVAL_MS
           ) {
             lastCacheWrite = now;
@@ -190,7 +288,13 @@ export function useOrderBookData(selectedSymbol: string) {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [selectedSymbol]);
+  }, [selectedSymbol, activeDepthSource]);
 
-  return { book, isLive, stats };
+  return {
+    book,
+    isLive,
+    stats,
+    depthSourceSymbol: activeDepthSource?.symbol ?? null,
+    indexDepthMode,
+  };
 }

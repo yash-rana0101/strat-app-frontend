@@ -3,7 +3,7 @@ import { useTradeStore } from '../store/useTradeStore';
 import { useChartUIStore } from '../store/useChartUIStore';
 import { useFeature } from '../store/useFeatureStore';
 import { whenChartReady } from '../charting/widgetReady';
-import { computeGhostPoints } from './ghostLineComputation';
+import { computeGhostProjection, clampProjectionBars } from './ghostLineComputation';
 import { debugLog } from '../lib/debugLog';
 
 /**
@@ -17,8 +17,33 @@ import { debugLog } from '../lib/debugLog';
  */
 const PULSE_THROTTLE_MS = 1500;
 
-/** Skip redraw when every point matches the last drawn set within this epsilon. */
-const POINTS_EPS_PRICE = 1e-4;
+/**
+ * How many consecutive rejected projections before the line is cleared.
+ *
+ * A rejection means the bounds guard threw out one candidate — usually a single
+ * volatile tick — so the previous line is still the best information available
+ * and blanking the chart for it is the "line disappears" bug. But if every
+ * candidate is being rejected, the displayed line is stale and increasingly
+ * wrong, so it must eventually go. Three at the ~1.5s pulse cadence is a few
+ * seconds of grace.
+ */
+const MAX_CONSECUTIVE_REJECTS = 3;
+
+/** Skip redraw when every point matches the last drawn set within this epsilon.
+ *
+ *  Sized to the price tick, not to a fixed number. NSE quotes to one paisa
+ *  (`pricescale: 100` in the datafeed's `LibrarySymbolInfo`), so half a paisa is
+ *  the largest change that cannot represent a real move at ANY price — and it
+ *  is what we treat as "no change".
+ *
+ *  The previous absolute 1e-4 was 4e-9 relative on a ₹25 000 index: no live tick
+ *  is ever that small, so the guard never fired there and every pulse paid a
+ *  full redraw into the chart iframe. A purely RELATIVE epsilon has the opposite
+ *  failure — 1e-6 of ₹25 000 is 2.5 paisa, which silently swallows real moves.
+ *  An absolute half-paisa floor is correct at both ends: it is coarse enough to
+ *  absorb float noise on an index and fine enough to keep every genuine tick on
+ *  a ₹40 option. */
+const POINTS_EPS_PRICE = 0.005;
 const POINTS_EPS_TIME = 0.5;
 
 export function pointsUnchanged(
@@ -28,7 +53,7 @@ export function pointsUnchanged(
   if (a.length !== b.length || a.length === 0) return false;
   for (let i = 0; i < a.length; i++) {
     if (Math.abs(a[i].time - b[i].time) > POINTS_EPS_TIME) return false;
-    if (Math.abs(a[i].price - b[i].price) > POINTS_EPS_PRICE) return false;
+    if (Math.abs(a[i].price - b[i].price) >= POINTS_EPS_PRICE) return false;
   }
   return true;
 }
@@ -247,9 +272,9 @@ async function drawGhostSegments(
             // segments render as one smooth continuous curve. The projection's
             // "ghost" identity comes from its amber colour, not the dashes.
             //
-            // A straight projection is a SINGLE segment, so it could keep a dash
-            // without artefacts — but both engines use one style so the two read
-            // as the same feature.
+            // The single-entity paths in `drawGhostEntity` are solid for a
+            // related reason (a dash period wider than the bar spacing erases
+            // the line when zoomed out), so all four draw paths now agree.
             linestyle: 0,
             showLabel: false,
             extendLeft: false,
@@ -324,6 +349,22 @@ export function commitDraw(
 const GHOST_COLOR = '#f59e0b';
 
 /**
+ * SOLID, on every draw path.
+ *
+ * A dash pattern is a fixed pixel period (~8px). The projection's horizontal
+ * extent per segment is one bar of spacing, which shrinks as the user zooms
+ * out: at 200 visible bars a 1200px pane gives 6px per bar and at 400 bars just
+ * 3px — below one dash cell per segment, so the stroke degrades into sparse
+ * dots and then effectively disappears. That is the "line becomes very thin to
+ * notice" report, and it is why the segment fallback below already forced
+ * solid. The polyline path had kept `linestyle: 2`, so the SAME feature looked
+ * different depending on which draw path happened to run. One constant now
+ * feeds both: the ghost's identity is its amber colour, not its dashes.
+ */
+const GHOST_LINE_STYLE = 0; // LineStyle.Solid
+const GHOST_LINE_WIDTH = 2;
+
+/**
  * Draw the whole projection as ONE chart entity and return its id.
  *
  * Straight engines (`linear` / `volume`) are a `trend_line` from the anchor to
@@ -368,8 +409,8 @@ async function drawGhostEntity(
       shape: 'trend_line',
       overrides: {
         linecolor: GHOST_COLOR,
-        linewidth: 2,
-        linestyle: 2,
+        linewidth: GHOST_LINE_WIDTH,
+        linestyle: GHOST_LINE_STYLE,
         showLabel: false,
         extendLeft: false,
         extendRight: false,
@@ -384,8 +425,8 @@ async function drawGhostEntity(
       shape: 'polyline',
       overrides: {
         linecolor: GHOST_COLOR,
-        linewidth: 2,
-        linestyle: 2,
+        linewidth: GHOST_LINE_WIDTH,
+        linestyle: GHOST_LINE_STYLE,
         fillBackground: false,
         filled: false,
         transparency: 0,
@@ -399,7 +440,13 @@ async function drawGhostEntity(
     const id = await chart.createMultipointShape(clean, {
       ...base,
       shape: 'path',
-      overrides: { lineColor: GHOST_COLOR, lineWidth: 2, lineStyle: 2, leftEnd: 0, rightEnd: 0 },
+      overrides: {
+        lineColor: GHOST_COLOR,
+        lineWidth: GHOST_LINE_WIDTH,
+        lineStyle: GHOST_LINE_STYLE,
+        leftEnd: 0,
+        rightEnd: 0,
+      },
     });
     if (id != null) return String(id);
   } catch (err) {
@@ -508,6 +555,10 @@ export function useGhostLine(widget: any, activeSymbol: string, effectiveTimefra
   // The one owner of what is on the chart, bound to the widget's lifetime — see
   // `GhostLineRenderer` for why ownership must outlive the draw effect.
   const rendererRef = useRef<GhostLineRenderer | null>(null);
+  // Consecutive `rejected` projections. A rejection keeps the previous line
+  // (a single volatile tick must not blank the chart), but a projection that is
+  // persistently invalid must not leave a stale line up forever.
+  const rejectStreakRef = useRef(0);
   // Monotonic draw generation. Any run whose generation is no longer the latest
   // is "stale": it won't start a draw, and hands the chart back if it already
   // drew.
@@ -781,6 +832,17 @@ export function useGhostLine(widget: any, activeSymbol: string, effectiveTimefra
           /* chart not ready to report a range yet */
         }
 
+        // How much empty space exists to the RIGHT of the last bar. The
+        // projection is drawn into that whitespace, so it is the real ceiling
+        // on a visible projection — see `clampProjectionBars`.
+        let maxProjectionBars = clampProjectionBars(NaN);
+        try {
+          const offset = chart.timeScale?.().rightOffset?.();
+          if (Number.isFinite(offset)) maxProjectionBars = clampProjectionBars(offset as number);
+        } catch {
+          /* older bundle without timeScale() — keep the default ceiling */
+        }
+
         // Read signals at run-time (not as a render subscription) so the effect
         // isn't re-fired by every predictive tick's new array reference.
         const predictiveSignals = useTradeStore.getState().predictiveSignals;
@@ -791,23 +853,47 @@ export function useGhostLine(widget: any, activeSymbol: string, effectiveTimefra
         // see `drawInFlightRef`.
         drawInFlightRef.current = true;
         try {
-          const points = await computeGhostPoints(
+          const result = await computeGhostProjection(
             activeSymbol,
             effectiveTimeframe,
             ghostLineMode,
             predictiveSignals,
             visibleFromSec,
-            chart
+            chart,
+            maxProjectionBars
           );
           if (isStale()) return;
 
-          if (points.length < 2) {
-            console.warn('[GhostLine] Not enough points:', points.length);
+          // A REJECTED candidate is not a reason to blank the chart. The bounds
+          // guard fires on a single volatile tick, and clearing here is what
+          // made the line disappear and come back. Keep the last good entity and
+          // try again on the next redraw — but not forever: after
+          // MAX_CONSECUTIVE_REJECTS the projection is persistently invalid and a
+          // stale line would be worse than none.
+          if (result.kind === 'rejected') {
+            rejectStreakRef.current += 1;
+            if (rejectStreakRef.current >= MAX_CONSECUTIVE_REJECTS) {
+              console.warn(
+                `[GhostLine] ${rejectStreakRef.current} consecutive rejections (${result.reason}) — clearing`
+              );
+              renderer.clear();
+            } else {
+              debugLog('[GhostLine] projection rejected — keeping previous line:', result.reason);
+            }
+            return;
+          }
+
+          if (result.kind === 'empty') {
             // Nothing to show — clear the old line. (This is the one case where
             // an empty chart is correct.)
+            debugLog('[GhostLine] nothing to draw:', result.reason);
+            rejectStreakRef.current = 0;
             renderer.clear();
             return;
           }
+
+          rejectStreakRef.current = 0;
+          const points = result.points;
 
           // Unchanged projection → skip the IPC round-trip. The entity stays on
           // the chart because nothing here removes it.

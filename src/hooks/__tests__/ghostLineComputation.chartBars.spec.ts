@@ -84,8 +84,13 @@ describe('resolveIntervalSec with chart-sourced bars', () => {
     expect(resolveIntervalSec('75m', bars, true)).toBe(4_500);
   });
 
-  it('beats the approximate map for calendar resolutions (1M)', () => {
-    // Real month-to-month gaps vary (28–31 days); the map says 30 days.
+  it('uses the display map for calendar resolutions (1M), not the observed gap', () => {
+    // Real month-to-month gaps vary (28–31 days) and the map says 30. That
+    // difference used to matter because monthly slots were stepped by
+    // `intervalSec`; `nextSessionSlots` now steps DWM by real calendar units
+    // and only reads the interval to choose that branch, so the map's
+    // approximation is harmless — and preferring the map keeps `4h` (2 bars per
+    // NSE session) from ever resolving to its 20h overnight gap.
     const data = [
       Float64Array.from([Date.UTC(2026, 5, 1) / 1000, 1, 1, 1, 1]),
       Float64Array.from([Date.UTC(2026, 6, 1) / 1000, 1, 1, 1, 1]),
@@ -93,17 +98,41 @@ describe('resolveIntervalSec with chart-sourced bars', () => {
       Float64Array.from([Date.UTC(2026, 8, 1) / 1000, 1, 1, 1, 1]),
     ];
     const bars = exportedDataToBars({ schema, data });
-    expect(resolveIntervalSec('1M', bars, true)).toBe(31 * 86_400);
+    expect(resolveIntervalSec('1M', bars, true)).toBe(30 * 86_400);
     expect(resolveIntervalSec('1M', bars, false)).toBe(30 * 86_400);
   });
 
-  it('ignores an overnight gap thanks to the median (5 bars, one 19h gap)', () => {
+  it('is unaffected by an overnight gap (5 bars, one 19h gap)', () => {
     const t = 1_788_498_000;
     const data = [t - 68_400 - 3 * 4_500, t - 68_400 - 2 * 4_500, t - 68_400 - 4_500, t - 68_400, t].map((x) =>
       Float64Array.from([x, 1, 1, 1, 1])
     );
     const bars = exportedDataToBars({ schema, data });
     expect(resolveIntervalSec('75m', bars, true)).toBe(4_500);
+  });
+
+  it('resolves 4h to 4h even though NSE fits only 2 four-hour bars per session', () => {
+    // Regression: the session is 375 minutes, so a 4h chart has bars at 09:15
+    // and 13:15 and the gap sequence alternates 4h / 20h. Inferring the step
+    // from those gaps returned 72000s (20h) for half of all last-bar
+    // positions, and every projected point then landed off TradingView's grid
+    // and collapsed onto the last candle.
+    const IST = 19_800, OPEN = 33_300;
+    const times: number[] = [];
+    let day = Math.floor(Date.UTC(2026, 8, 4) / 1000) - IST - 10 * 86_400;
+    for (let d = 0; d < 10; d++) {
+      const dow = new Date((day + OPEN) * 1000).getUTCDay();
+      if (dow !== 0 && dow !== 6) {
+        times.push(day + OPEN);
+        times.push(day + OPEN + 14_400);
+      }
+      day += 86_400;
+    }
+    const data = times.map((x) => Float64Array.from([x, 1, 1, 1, 1]));
+    const bars = exportedDataToBars({ schema, data });
+    expect(resolveIntervalSec('4h', bars, true)).toBe(14_400);
+    // ...and from every intra-session truncation, not just this one.
+    expect(resolveIntervalSec('4h', bars.slice(0, -1), true)).toBe(14_400);
   });
 
   it('store-sourced bars still use the display map (2m chart over 1-minute bars)', () => {
