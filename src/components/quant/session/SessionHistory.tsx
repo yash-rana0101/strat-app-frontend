@@ -10,7 +10,6 @@ import React from 'react';
 import { AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
 
 import {
-  useArchiveSession,
   useDeleteSession,
   useRenameSession,
   useReopenSession,
@@ -59,7 +58,6 @@ export default function SessionHistory({
   const activeSessionId = useSessionStore((s) => s.activeSessionId);
   const activatingSessionIds = useSessionStore((s) => s.activatingSessionIds);
   const rename = useRenameSession();
-  const archive = useArchiveSession();
   const reopen = useReopenSession();
   const deleteSession = useDeleteSession();
 
@@ -105,15 +103,6 @@ export default function SessionHistory({
 
   const handleRename = (sessionId: string, title: string | null) =>
     void run(sessionId, 'rename this session', () => rename.mutateAsync({ sessionId, title }));
-
-  const handleArchive = (sessionId: string) =>
-    void run(sessionId, 'archive this session', async () => {
-      await archive.mutateAsync(sessionId);
-      if (useSessionStore.getState().activeSessionId === sessionId) {
-        useSessionStore.getState().setActiveSession(null);
-      }
-      useSessionStore.getState().dropSession(sessionId);
-    });
 
   const handleOpenRow = async (sessionId: string) => {
     setOpeningId(sessionId);
@@ -221,7 +210,6 @@ export default function SessionHistory({
                   }
                   onOpen={handleOpenRow}
                   onRename={handleRename}
-                  onArchive={handleArchive}
                   onReopen={handleReopen}
                   onDelete={handleDelete}
                 />

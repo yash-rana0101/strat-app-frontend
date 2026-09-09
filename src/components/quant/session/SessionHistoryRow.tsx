@@ -5,7 +5,7 @@
 // every mutation is handed upward so the list owns the server interaction.
 
 import React from 'react';
-import { Archive, Check, Loader2, Pencil, RotateCcw, Trash2, X } from 'lucide-react';
+import { Check, Loader2, Pencil, RotateCcw, Trash2, X } from 'lucide-react';
 
 import type { SessionSummary } from '../../../lib/fq/api';
 import { formatSessionDay, formatSessionTime, sessionTabLabel } from './sessionLabel';
@@ -19,7 +19,7 @@ export interface SessionHistoryRowProps {
   isOpening?: boolean;
   onOpen: (sessionId: string) => void;
   onRename: (sessionId: string, title: string | null) => void;
-  onArchive: (sessionId: string) => void;
+  onArchive?: (sessionId: string) => void;
   onReopen: (sessionId: string) => void;
   onDelete?: (sessionId: string) => void;
 }
@@ -204,7 +204,7 @@ export default function SessionHistoryRow({
               >
                 <Pencil size={12} aria-hidden="true" />
               </button>
-              {archived ? (
+              {archived && (
                 <button
                   type="button"
                   aria-label={`Reopen ${label}`}
@@ -213,16 +213,6 @@ export default function SessionHistoryRow({
                   className="rounded p-1 text-text-muted opacity-0 transition-opacity hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-text-primary/60 group-hover:opacity-100 cursor-pointer"
                 >
                   <RotateCcw size={12} aria-hidden="true" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  aria-label={`Archive ${label}`}
-                  title="Archive"
-                  onClick={() => onArchive(session.session_id)}
-                  className="rounded p-1 text-text-muted opacity-0 transition-opacity hover:bg-surface hover:text-text-primary focus:outline-none focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-text-primary/60 group-hover:opacity-100 cursor-pointer"
-                >
-                  <Archive size={12} aria-hidden="true" />
                 </button>
               )}
               {onDelete && (

@@ -425,39 +425,18 @@ describe('rename', () => {
   });
 });
 
-describe('archive and reopen', () => {
-  it('archives a row and drops the client copy only after the server agrees', async () => {
-    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
-      if (init?.method === 'PATCH') {
-        return Promise.resolve(json(summary({ session_id: 'a', status: 'archived' })));
-      }
-      return Promise.resolve(json({ items: [summary({ session_id: 'a' })], next_cursor: null }));
-    });
-    useSessionStore.getState().setActiveSession('a');
+describe('reopen and archive removal', () => {
+  it('does not show an archive button on active session rows', async () => {
+    fetchMock.mockResolvedValue(
+      json({ items: [summary({ session_id: 'a', status: 'active' })], next_cursor: null })
+    );
     renderHistory();
 
-    await clickAsync(await screen.findByRole('button', { name: /^Archive/ }));
-
-    await waitFor(() => expect(useSessionStore.getState().activeSessionId).toBeNull());
-    expect(useSessionStore.getState().sessions.a).toBeUndefined();
+    await screen.findByRole('listitem');
+    expect(screen.queryByRole('button', { name: /^Archive/ })).toBeNull();
   });
 
-  it('keeps the client copy when the archive fails', async () => {
-    fetchMock.mockImplementation((url: string, init?: RequestInit) => {
-      if (init?.method === 'PATCH') return Promise.resolve(json({ detail: 'boom' }, 500));
-      return Promise.resolve(json({ items: [summary({ session_id: 'a' })], next_cursor: null }));
-    });
-    useSessionStore.getState().setActiveSession('a');
-    renderHistory();
-
-    await clickAsync(await screen.findByRole('button', { name: /^Archive/ }));
-
-    // Nothing was archived, so discarding the transcript would be losing work the server still has.
-    expect((await screen.findByRole('alert')).textContent).toMatch(/Could not archive/);
-    expect(useSessionStore.getState().activeSessionId).toBe('a');
-  });
-
-  it('offers reopen instead of archive for an archived session, and opens it', async () => {
+  it('offers reopen for an archived session, and opens it', async () => {
     fetchMock.mockImplementation((url: string, init?: RequestInit) => {
       if (init?.method === 'PATCH') return Promise.resolve(json(summary({ session_id: 'a' })));
       return Promise.resolve(
