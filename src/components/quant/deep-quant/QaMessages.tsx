@@ -1,11 +1,54 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, Wrench, Copy, Check, ThumbsUp, ThumbsDown, Share2 } from 'lucide-react';
+import { User, Copy, Check, ThumbsUp, ThumbsDown, Share2 } from 'lucide-react';
 import { QaChatMessage } from '../../../store/useQuantStore';
 import { useFqQaMessages } from '../useFqSession';
 import MarkdownRenderer from './MarkdownRenderer';
 import StratAiLogo from '../../brand/StratAiLogo';
+import ToolCallStatusRow, { type ToolCallStatus } from './ToolCallStatusRow';
+
+interface QaToolActivity {
+  toolName: string;
+  status: ToolCallStatus;
+}
+
+function parseToolActivity(activity: string[]): QaToolActivity[] {
+  const tools: QaToolActivity[] = [];
+
+  for (const rawLine of activity) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const running = line.startsWith('> ');
+    const failure = line.startsWith('! ');
+    const toolName = line
+      .replace(/^[>!]\s*/, '')
+      .replace(/…$/, '')
+      .split('→', 1)[0]
+      .replace(/\s+returned$/i, '')
+      .trim();
+    if (!toolName) continue;
+
+    const status: ToolCallStatus = failure ? 'failure' : running ? 'running' : 'success';
+    const pendingIndex = tools.findLastIndex(
+      (tool) => tool.toolName === toolName && tool.status === 'running'
+    );
+
+    if (pendingIndex !== -1 && status !== 'running') {
+      tools[pendingIndex] = { toolName, status };
+    } else if (
+      status === 'running' ||
+      tools.length === 0 ||
+      tools[tools.length - 1].toolName !== toolName ||
+      tools[tools.length - 1].status !== status
+    ) {
+      tools.push({ toolName, status });
+    }
+  }
+
+  return tools;
+}
 
 // Small copy-to-clipboard button with transient "copied" feedback.
 function CopyButton({
@@ -64,6 +107,7 @@ function CopyButton({
 function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
+  const toolActivity = React.useMemo(() => parseToolActivity(msg.activity ?? []), [msg.activity]);
 
   return (
     <div className="w-full my-3 animate-fade-in font-sans flex items-start gap-2.5 sm:gap-3">
@@ -96,16 +140,14 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
           </div>
         )}
 
-        {msg.activity && msg.activity.length > 0 && (
+        {toolActivity.length > 0 && (
           <div className="mb-2 flex flex-col gap-0.5 border-b border-border-default/20 pb-1.5">
-            {msg.activity.map((line, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-1.5 text-[8.5px] font-mono text-text-muted"
-              >
-                <Wrench size={8} className="shrink-0" />
-                <span>{line}</span>
-              </div>
+            {toolActivity.map((tool, i) => (
+              <ToolCallStatusRow
+                key={`${tool.toolName}-${i}`}
+                toolName={tool.toolName}
+                status={tool.status}
+              />
             ))}
           </div>
         )}
@@ -216,7 +258,7 @@ export default function QaMessages() {
           >
             {/* Bubble - user message stays in box container */}
             <div className="group relative max-w-[80%] bg-emerald-500/10 text-emerald-100 border border-emerald-500/25 rounded-lg pl-3 pr-7 py-2 text-[11px] leading-relaxed shadow-sm">
-              <span className="text-text-primary break-words whitespace-pre-wrap">
+              <span className="text-text-primary wrap-break-word whitespace-pre-wrap">
                 {msg.content}
               </span>
               <span className="absolute right-1.5 top-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
