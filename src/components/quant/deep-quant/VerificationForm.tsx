@@ -45,7 +45,10 @@ export default function VerificationForm({
   dataReady,
 }: VerificationFormProps) {
   return (
-    <div className="mx-3 mt-3 p-3 rounded-lg border border-border-default bg-surface flex flex-col gap-3">
+    <div
+      data-tour="verify-trade-form"
+      className="mx-3 mt-3 p-3 rounded-lg border border-border-default bg-surface flex flex-col gap-3"
+    >
       <div className="flex items-center justify-between border-b border-border-default pb-1.5">
         <span className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">
           Configure Setup
@@ -183,6 +186,7 @@ export default function VerificationForm({
 
       {/* Verify Button */}
       <button
+        data-tour="verify-trade-submit"
         type="button"
         disabled={isAnalyzing || !dataReady}
         onClick={onSubmit}

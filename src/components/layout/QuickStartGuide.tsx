@@ -18,6 +18,71 @@ interface QuickStartGuideProps {
 const TOUR_STORAGE_KEY = 'stratai.onboarding-tour.v1';
 export const REPLAY_TOUR_EVENT = 'stratai:replay-onboarding-tour';
 
+type AnalysisMode = 'FIND' | 'VERIFY';
+
+interface TradeTourState {
+  originalMode: AnalysisMode | null;
+}
+
+function visibleElement(selector: string): HTMLElement | null {
+  return (
+    Array.from(document.querySelectorAll<HTMLElement>(selector)).find((target) => {
+      const bounds = target.getBoundingClientRect();
+      return bounds.width > 0 && bounds.height > 0;
+    }) ?? null
+  );
+}
+
+function waitForVisible(selector: string, timeoutMs = 1200): Promise<HTMLElement | null> {
+  const startedAt = performance.now();
+
+  return new Promise((resolve) => {
+    const check = () => {
+      const target = visibleElement(selector);
+      if (target || performance.now() - startedAt >= timeoutMs) {
+        resolve(target);
+        return;
+      }
+      window.requestAnimationFrame(check);
+    };
+    check();
+  });
+}
+
+async function openDeepQuantPanel(triggerSelector: string): Promise<HTMLElement | null> {
+  const mountedActions = visibleElement('[data-tour="deep-quant-actions"]');
+  if (mountedActions) return mountedActions;
+
+  visibleElement(triggerSelector)?.click();
+  return waitForVisible('[data-tour="deep-quant-actions"]');
+}
+
+async function selectAnalysisMode(mode: AnalysisMode): Promise<boolean> {
+  const actions = visibleElement('[data-tour="deep-quant-actions"]');
+  if (!actions) return false;
+  if (actions.dataset.analysisMode === mode) return true;
+  if (actions.dataset.analysisState !== 'idle') return false;
+
+  visibleElement('[data-tour="deep-quant-mode-toggle"]')?.click();
+  const option = await waitForVisible(
+    mode === 'FIND' ? '[data-tour="find-trade-option"]' : '[data-tour="verify-trade-option"]',
+    600
+  );
+  option?.click();
+
+  const updatedActions = await waitForVisible(
+    `[data-tour="deep-quant-actions"][data-analysis-mode="${mode}"]`,
+    600
+  );
+  return updatedActions !== null;
+}
+
+function moveWhenActive(tour: Driver, direction: 'next' | 'previous' = 'next') {
+  if (!tour.isActive()) return;
+  if (direction === 'next') tour.moveNext();
+  else tour.movePrevious();
+}
+
 const step = (
   element: string | undefined,
   title: string,
@@ -28,7 +93,110 @@ const step = (
   popover: { title, description, side, align: 'center' },
 });
 
-function desktopSteps(): DriveStep[] {
+function tradeActionSteps(
+  triggerSelector: string,
+  side: 'left' | 'top',
+  state: TradeTourState
+): DriveStep[] {
+  const dynamicStep = (
+    element: string,
+    title: string,
+    description: string,
+    popover: DriveStep['popover'] = {}
+  ): DriveStep => ({
+    element,
+    data: { dynamic: true },
+    waitForElement: 1200,
+    skipMissingElement: true,
+    popover: { title, description, side, align: 'center', ...popover },
+  });
+
+  return [
+    {
+      ...step(
+        triggerSelector,
+        'Deep Quant AI Agent',
+        'Open the AI workspace to find a new setup or verify your own trade thesis. Runs stream their reasoning, can watch price conditions, and accept follow-up Q&A when available. Plan access and credits may apply.',
+        side
+      ),
+      popover: {
+        title: 'Deep Quant AI Agent',
+        description:
+          'Open the AI workspace to find a new setup or verify your own trade thesis. Runs stream their reasoning, can watch price conditions, and accept follow-up Q&A when available. Plan access and credits may apply.',
+        side,
+        align: 'center',
+        onNextClick: (_element, _step, { driver: tour }) => {
+          void (async () => {
+            const actions = await openDeepQuantPanel(triggerSelector);
+            if (!tour.isActive()) return;
+            if (!actions || actions.dataset.analysisState !== 'idle') {
+              tour.moveTo((tour.getActiveIndex() ?? 0) + 5);
+              return;
+            }
+            const currentMode = actions?.dataset.analysisMode;
+            if (
+              state.originalMode === null &&
+              (currentMode === 'FIND' || currentMode === 'VERIFY')
+            ) {
+              state.originalMode = currentMode;
+            }
+            if (await selectAnalysisMode('FIND')) moveWhenActive(tour);
+            else tour.moveTo((tour.getActiveIndex() ?? 0) + 5);
+          })();
+        },
+      },
+    },
+    dynamicStep(
+      '[data-tour="deep-quant-actions"][data-analysis-mode="FIND"][data-analysis-state="idle"] [data-tour="deep-quant-run-action"]',
+      'Find Trade',
+      'This action scans the selected symbol and timeframe using the available candle data, then streams its quantitative reasoning and proposed setup. It may wait for a live price condition, but it never places an order. If data is still loading, the button shows Awaiting Data.',
+      {
+        onPrevClick: (_element, _step, { driver: tour }) => {
+          moveWhenActive(tour, 'previous');
+        },
+      }
+    ),
+    dynamicStep(
+      '[data-tour="deep-quant-actions"][data-analysis-state="idle"] [data-tour="deep-quant-mode-toggle"]',
+      'Choose Find or Verify',
+      'Use this mode picker to switch between searching for a setup and reviewing one you already planned. Next, the tour selects Verify My Trade Idea through this same picker.',
+      {
+        onNextClick: (_element, _step, { driver: tour }) => {
+          void (async () => {
+            await selectAnalysisMode('VERIFY');
+            moveWhenActive(tour);
+          })();
+        },
+        onPrevClick: (_element, _step, { driver: tour }) => {
+          void (async () => {
+            await selectAnalysisMode('FIND');
+            moveWhenActive(tour, 'previous');
+          })();
+        },
+      }
+    ),
+    dynamicStep(
+      '[data-tour="verify-trade-form"]',
+      'Describe your trade setup',
+      'Choose BUY / LONG or SELL / SHORT, then review or edit the entry, stop loss, and take-profit levels. Add your own setup rationale so the critique can address the thesis. Percentages and risk-to-reward update from these values.'
+    ),
+    dynamicStep(
+      '[data-tour="verify-trade-submit"]',
+      'Verify My Setup',
+      'This asks the agent to challenge your thesis, levels, and risk instead of searching for a different trade. The critique streams into the panel and does not place an order.',
+      {
+        onNextClick: (_element, _step, { driver: tour }) => {
+          void (async () => {
+            if (state.originalMode) await selectAnalysisMode(state.originalMode);
+            moveWhenActive(tour);
+          })();
+        },
+      }
+    ),
+  ];
+}
+
+function desktopSteps(tradeState: TradeTourState): DriveStep[] {
   return [
     step(
       undefined,
@@ -78,12 +246,7 @@ function desktopSteps(): DriveStep[] {
       'Open the panel matched to the active mode: five-level order-book depth, swing confluence, investor macro sentiment, or the F&O option chain. Selecting the active icon again closes the panel.',
       'left'
     ),
-    step(
-      '[data-tour="ai-agent"]',
-      'Deep Quant AI Agent',
-      'Find a Trade Setup scans the active symbol; Verify My Setup evaluates your own thesis. Runs stream their reasoning, can watch price conditions, and accept follow-up Q&A when available. Plan access and credits may apply.',
-      'left'
-    ),
+    ...tradeActionSteps('[data-tour="ai-agent"]', 'left', tradeState),
     step(
       '[data-tour="quant-radar"]',
       'Quant Radar',
@@ -112,7 +275,7 @@ function desktopSteps(): DriveStep[] {
   ];
 }
 
-function mobileSteps(): DriveStep[] {
+function mobileSteps(tradeState: TradeTourState): DriveStep[] {
   return [
     step(
       undefined,
@@ -142,12 +305,7 @@ function mobileSteps(): DriveStep[] {
       'Search instruments, monitor live quotes, choose what is charted, reorder symbols, and review the sentiment, technical, and pattern summaries.',
       'top'
     ),
-    step(
-      '[data-tour="mobile-agent"]',
-      'AI Agent',
-      'Find a new setup or verify your own thesis, follow streamed analysis, monitor price-watcher conditions, and ask follow-up questions when available.',
-      'top'
-    ),
+    ...tradeActionSteps('[data-tour="mobile-agent"]', 'top', tradeState),
     step(
       '[data-tour="mobile-orderbook"]',
       'Book and intelligence',
@@ -164,12 +322,10 @@ function mobileSteps(): DriveStep[] {
 }
 
 function availableSteps(steps: DriveStep[]): DriveStep[] {
-  return steps.filter(({ element }) => {
+  return steps.filter(({ element, data }) => {
+    if (data?.dynamic) return true;
     if (typeof element !== 'string') return true;
-    const target = document.querySelector(element);
-    if (target === null) return false;
-    const bounds = target.getBoundingClientRect();
-    return bounds.width > 0 && bounds.height > 0;
+    return visibleElement(element) !== null;
   });
 }
 
@@ -189,7 +345,10 @@ export default function QuickStartGuide({ open, onClose }: QuickStartGuideProps)
     if (driverRef.current?.isActive()) return;
 
     const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-    const steps = availableSteps(isDesktop ? desktopSteps() : mobileSteps());
+    const tradeState: TradeTourState = { originalMode: null };
+    const steps = availableSteps(
+      isDesktop ? desktopSteps(tradeState) : mobileSteps(tradeState)
+    );
     if (steps.length === 0) return;
 
     startedRef.current = true;
@@ -214,6 +373,7 @@ export default function QuickStartGuide({ open, onClose }: QuickStartGuideProps)
       doneBtnText: 'Start exploring',
       onDestroyed: () => {
         driverRef.current = null;
+        if (tradeState.originalMode) void selectAnalysisMode(tradeState.originalMode);
         try {
           localStorage.setItem(storageKey, 'complete');
         } catch {

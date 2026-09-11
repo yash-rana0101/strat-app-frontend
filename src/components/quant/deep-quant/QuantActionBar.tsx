@@ -68,11 +68,24 @@ export default function QuantActionBar({
             ? 'VERIFY MY SETUP'
             : 'FIND TRADE';
 
+  const analysisState = isStarting ? 'starting' : isAnalyzing ? 'analyzing' : 'idle';
+
   return (
-    <div className="relative">
+    <div
+      {...(omitRunId
+        ? {}
+        : {
+            'data-tour': 'deep-quant-actions',
+            'data-analysis-mode': mode,
+            'data-analysis-state': analysisState,
+          })}
+      className="relative"
+    >
       <div className="flex items-center gap-0">
         <button
-          {...(omitRunId ? {} : { id: 'btn-run-deep-quant' })}
+          {...(omitRunId
+            ? {}
+            : { id: 'btn-run-deep-quant', 'data-tour': 'deep-quant-run-action' })}
           type="button"
           disabled={(!isAnalyzing && !dataReady) || isStarting}
           onClick={() => {
@@ -113,6 +126,7 @@ export default function QuantActionBar({
 
         {/* Dropdown Toggle */}
         <button
+          {...(omitRunId ? {} : { 'data-tour': 'deep-quant-mode-toggle' })}
           type="button"
           disabled={isAnalyzing || isStarting}
           aria-haspopup="menu"
@@ -144,6 +158,7 @@ export default function QuantActionBar({
             className="absolute inset-x-0 mt-1.5 z-50 rounded bg-surface/95 backdrop-blur-xl border border-border-default/60 shadow-2xl p-1.5 flex flex-col gap-1"
           >
             <button
+              {...(omitRunId ? {} : { 'data-tour': 'find-trade-option' })}
               type="button"
               role="menuitem"
               onClick={() => {
@@ -167,6 +182,7 @@ export default function QuantActionBar({
             </button>
 
             <button
+              {...(omitRunId ? {} : { 'data-tour': 'verify-trade-option' })}
               type="button"
               role="menuitem"
               onClick={() => {
