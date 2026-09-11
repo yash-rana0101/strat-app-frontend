@@ -75,10 +75,10 @@ export default function QuantActionBar({
       {...(omitRunId
         ? {}
         : {
-            'data-tour': 'deep-quant-actions',
-            'data-analysis-mode': mode,
-            'data-analysis-state': analysisState,
-          })}
+          'data-tour': 'deep-quant-actions',
+          'data-analysis-mode': mode,
+          'data-analysis-state': analysisState,
+        })}
       className="relative"
     >
       <div className="flex items-center gap-0">
@@ -97,14 +97,13 @@ export default function QuantActionBar({
             relative flex-grow flex ${h} items-center justify-center gap-1.5
             rounded-l-md px-3 ${textSize} font-bold uppercase tracking-wider
             transition-all duration-300 ease-out border border-r-0
-            ${
-              !dataReady && !isAnalyzing
-                ? 'bg-elevated/40 text-text-muted/50 border-border-default opacity-50 cursor-not-allowed'
-                : isStarting
-                  ? 'bg-emerald-600/80 text-white border-emerald-600 cursor-wait'
-                  : isAnalyzing
-                    ? 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700 hover:border-rose-700 active:scale-[0.99] cursor-pointer'
-                    : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 active:scale-[0.99]'
+            ${!dataReady && !isAnalyzing
+              ? 'bg-elevated/40 text-text-muted/50 border-border-default opacity-50 cursor-not-allowed'
+              : isStarting
+                ? 'bg-emerald-600/80 text-white border-emerald-600 cursor-wait'
+                : isAnalyzing
+                  ? 'bg-rose-600 text-white border-rose-600 hover:bg-rose-700 hover:border-rose-700 active:scale-[0.99] cursor-pointer'
+                  : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 active:scale-[0.99]'
             }
           `}
         >
@@ -135,10 +134,9 @@ export default function QuantActionBar({
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={`
             ${h} w-8 rounded-r-md border transition-all duration-300 flex items-center justify-center
-            ${
-              isAnalyzing
-                ? 'bg-elevated/40 border-border-default text-text-muted/50 cursor-not-allowed'
-                : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 border-l-emerald-700/50'
+            ${isAnalyzing
+              ? 'bg-elevated/40 border-border-default text-text-muted/50 cursor-not-allowed'
+              : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-600 hover:border-emerald-500 border-l-emerald-700/50'
             }
           `}
         >

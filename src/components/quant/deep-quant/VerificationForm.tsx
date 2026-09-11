@@ -61,22 +61,20 @@ export default function VerificationForm({
         <button
           type="button"
           onClick={() => setSide('BUY')}
-          className={`flex-grow py-1 rounded text-[10px] font-bold transition-all ${
-            side === 'BUY'
+          className={`flex-grow py-1 rounded text-[10px] font-bold transition-all ${side === 'BUY'
               ? 'bg-emerald-500/15 text-emerald-500 border border-emerald-500/20'
               : 'text-text-secondary hover:text-text-primary'
-          }`}
+            }`}
         >
           BUY / LONG
         </button>
         <button
           type="button"
           onClick={() => setSide('SELL')}
-          className={`flex-grow py-1 rounded text-[10px] font-bold transition-all ${
-            side === 'SELL'
+          className={`flex-grow py-1 rounded text-[10px] font-bold transition-all ${side === 'SELL'
               ? 'bg-rose-500/15 text-rose-500 border border-rose-500/20'
               : 'text-text-secondary hover:text-text-primary'
-          }`}
+            }`}
         >
           SELL / SHORT
         </button>
@@ -112,17 +110,15 @@ export default function VerificationForm({
               setStopLoss(e.target.value);
               setHasManuallySetSL(true);
             }}
-            className={`w-full bg-elevated border rounded-md px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${
-              side === 'BUY'
+            className={`w-full bg-elevated border rounded-md px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${side === 'BUY'
                 ? 'border-border-default focus:border-rose-500'
                 : 'border-border-default focus:border-emerald-500'
-            }`}
+              }`}
           />
           {slPercent && (
             <span
-              className={`text-[8px] self-end font-mono ${
-                parseFloat(slPercent) < 0 ? 'text-rose-500' : 'text-emerald-500'
-              }`}
+              className={`text-[8px] self-end font-mono ${parseFloat(slPercent) < 0 ? 'text-rose-500' : 'text-emerald-500'
+                }`}
             >
               {slPercent}%
             </span>
@@ -141,17 +137,15 @@ export default function VerificationForm({
               setTakeProfit(e.target.value);
               setHasManuallySetTP(true);
             }}
-            className={`w-full bg-elevated border rounded-md px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${
-              side === 'BUY'
+            className={`w-full bg-elevated border rounded-md px-2 py-1 text-xs text-text-primary font-mono focus:outline-none ${side === 'BUY'
                 ? 'border-border-default focus:border-emerald-500'
                 : 'border-border-default focus:border-rose-500'
-            }`}
+              }`}
           />
           {tpPercent && (
             <span
-              className={`text-[8px] self-end font-mono ${
-                parseFloat(tpPercent) >= 0 ? 'text-emerald-500' : 'text-rose-500'
-              }`}
+              className={`text-[8px] self-end font-mono ${parseFloat(tpPercent) >= 0 ? 'text-emerald-500' : 'text-rose-500'
+                }`}
             >
               {parseFloat(tpPercent) >= 0 ? '+' : ''}
               {tpPercent}%
@@ -192,10 +186,9 @@ export default function VerificationForm({
         onClick={onSubmit}
         className={`
           w-full flex h-8 items-center justify-center gap-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all duration-300 shadow-sm
-          ${
-            isAnalyzing || !dataReady
-              ? 'bg-elevated text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
-              : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-600 hover:border-emerald-500 active:scale-[0.98]'
+          ${isAnalyzing || !dataReady
+            ? 'bg-elevated text-text-muted/50 border border-border-default opacity-50 cursor-not-allowed'
+            : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-600 hover:border-emerald-500 active:scale-[0.98]'
           }
         `}
       >
