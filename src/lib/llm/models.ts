@@ -142,90 +142,17 @@ export const MODEL_PROVIDERS_OPENROUTER: ModelProviderGroup[] = [
   },
 ];
 
-// ── Omniroute (beta) — verified gateway model catalog ────────────────────────
-// Active working models on omniroute.premraj.online. All support structured tool calls.
-export const MODEL_PROVIDERS_OMNIROUTE: ModelProviderGroup[] = [
-  {
-    provider: 'Default',
-    models: [{ id: 'cx/gpt-5.6-sol', label: 'GPT 5.6 Sol' }],
-  },
-  {
-    provider: 'Anthropic (Claude)',
-    models: [
-      { id: 'antigravity/claude-sonnet-4-6', label: 'Claude Sonnet 4.6', recommended: true },
-      { id: 'antigravity/claude-opus-4-6-thinking', label: 'Claude Opus 4.6 (Thinking)' },
-      { id: 'auto/claude-sonnet', label: 'Claude Sonnet (Auto)' },
-      { id: 'auto/claude-opus', label: 'Claude Opus (Auto)' },
-    ],
-  },
-  {
-    provider: 'OpenAI (GPT)',
-    models: [
-      // ── GPT-5.6 Sol ──
-      { id: 'cx/gpt-5.6-sol', label: 'GPT 5.6 Sol' },
-      { id: 'cx/gpt-5.6-sol-high', label: 'GPT 5.6 Sol (High)' },
-      { id: 'cx/gpt-5.6-sol-ultra', label: 'GPT 5.6 Sol (Ultra)' },
-      { id: 'cx/gpt-5.6-sol-medium', label: 'GPT 5.6 Sol (Medium)' },
-      { id: 'cx/gpt-5.6-sol-max', label: 'GPT 5.6 Sol (Max)' },
-      { id: 'cx/gpt-5.6-sol-low', label: 'GPT 5.6 Sol (Low)' },
-      { id: 'cx/gpt-5.6-sol-xhigh', label: 'GPT 5.6 Sol (xHigh)', recommended: true },
-      // ── GPT-5.6 Terra ──
-      { id: 'cx/gpt-5.6-terra', label: 'GPT 5.6 Terra' },
-      { id: 'cx/gpt-5.6-terra-ultra', label: 'GPT 5.6 Terra (Ultra)' },
-      { id: 'cx/gpt-5.6-terra-max', label: 'GPT 5.6 Terra (Max)' },
-      { id: 'cx/gpt-5.6-terra-shigh', label: 'GPT 5.6 Terra (sHigh)' },
-      { id: 'cx/gpt-5.6-terra-high', label: 'GPT 5.6 Terra (High)' },
-      { id: 'cx/gpt-5.6-terra-medium', label: 'GPT 5.6 Terra (Medium)' },
-      { id: 'cx/gpt-5.6-terra-low', label: 'GPT 5.6 Terra (Low)' },
-      // ── GPT-5.6 Luna ──
-      { id: 'cx/gpt-5.6-luna', label: 'GPT 5.6 Luna' },
-      { id: 'cx/gpt-5.6-luna-shigh', label: 'GPT 5.6 Luna (sHigh)' },
-      { id: 'cx/gpt-5.6-luna-high', label: 'GPT 5.6 Luna (High)' },
-      { id: 'cx/gpt-5.6-luna-medium', label: 'GPT 5.6 Luna (Medium)' },
-      { id: 'cx/gpt-5.6-luna-low', label: 'GPT 5.6 Luna (Low)' },
-      { id: 'cx/gpt-5.6-luna-max', label: 'GPT 5.6 Luna (Max)' },
-      // ── GPT-5.5 ──
-      { id: 'cx/gpt-5.5', label: 'GPT 5.5' },
-      { id: 'cx/gpt-5.5-xhigh', label: 'GPT 5.5 (xHigh)' },
-      { id: 'cx/gpt-5.5-high', label: 'GPT 5.5 (High)' },
-      { id: 'cx/gpt-5.5-medium', label: 'GPT 5.5 (Medium)' },
-      { id: 'cx/gpt-5.5-low', label: 'GPT 5.5 (Low)' },
-      { id: 'cx/gpt-5.5-codex-spark', label: 'GPT 5.5 Codex Spark' },
-    ],
-  },
-  {
-    provider: 'Google (Gemini)',
-    models: [
-      {
-        id: 'antigravity/gemini-3.7-flash-high',
-        label: 'Gemini 3.7 Flash (High)',
-        recommended: true,
-      },
-      { id: 'antigravity/gemini-3.7-flash-medium', label: 'Gemini 3.7 Flash (Medium)' },
-      { id: 'antigravity/gemini-3.7-flash-low', label: 'Gemini 3.7 Flash (Low)' },
-      { id: 'antigravity/gemini-3.7-flash-tiered', label: 'Gemini 3.7 Flash (Tiered)' },
-      { id: 'antigravity/gemini-pro-agent', label: 'Gemini Pro Agent' },
-      { id: 'antigravity/gemini-3.1-pro-high', label: 'Gemini 3.1 Pro (High)' },
-      { id: 'antigravity/gemini-3.1-pro-low', label: 'Gemini 3.1 Pro (Low)' },
-      { id: 'antigravity/gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash-Lite' },
-      { id: 'antigravity/gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-      { id: 'antigravity/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-      { id: 'antigravity/gemini-2.5-flash-thinking', label: 'Gemini 2.5 Flash Thinking' },
-    ],
-  },
-];
+// Which LLM gateway this build targets: strictly 'openrouter' (per-user keys)
+export const LLM_GATEWAY: 'openrouter' = 'openrouter';
 
-// Which LLM gateway this build targets: 'openrouter' (production, per-user keys)
-// or 'omniroute' (beta, shared key). Defaults to openrouter.
-export const LLM_GATEWAY: 'openrouter' | 'omniroute' =
-  process.env.NEXT_PUBLIC_LLM_GATEWAY === 'omniroute' ? 'omniroute' : 'openrouter';
-
-// Model selection: unlocked so beta users can select models in testing env
+// Model selection is active for users
 export const MODEL_SELECTION_LOCKED = false;
 
-// Active list for this build. Defaults to openrouter; omniroute builds set
-// NEXT_PUBLIC_LLM_GATEWAY=omniroute.
-export const MODEL_PROVIDERS: ModelProviderGroup[] =
-  LLM_GATEWAY === 'omniroute' ? MODEL_PROVIDERS_OMNIROUTE : MODEL_PROVIDERS_OPENROUTER;
+// Active model providers: OpenRouter catalog
+export const MODEL_PROVIDERS: ModelProviderGroup[] = MODEL_PROVIDERS_OPENROUTER;
+
+// Backward-compatibility alias for legacy references
+export const MODEL_PROVIDERS_OMNIROUTE: ModelProviderGroup[] = MODEL_PROVIDERS_OPENROUTER;
+
 
 
