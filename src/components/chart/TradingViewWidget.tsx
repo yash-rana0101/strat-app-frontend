@@ -269,6 +269,7 @@ export default function TradingViewWidget({
       <div
         ref={containerRef}
         data-tradingview-container="true"
+        data-tour="chart"
         className={`relative flex-1 w-full h-full min-h-0 ${className}`}
         style={{ minHeight: '320px' }}
       />

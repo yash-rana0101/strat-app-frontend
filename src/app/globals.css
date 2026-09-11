@@ -219,6 +219,114 @@ body {
   font-family: var(--font-sans), sans-serif;
 }
 
+/* ── First-run Driver.js product tour ─────────────────────────────────── */
+.driver-popover.app-tour-popover {
+  min-width: min(320px, calc(100vw - 24px));
+  max-width: min(380px, calc(100vw - 24px));
+  padding: 16px;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+}
+
+.app-tour-popover .driver-popover-title {
+  padding-right: 24px;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.app-tour-popover .driver-popover-description {
+  margin-top: 7px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.app-tour-popover .driver-popover-close-btn {
+  color: var(--text-muted);
+}
+
+.app-tour-popover .driver-popover-close-btn:hover,
+.app-tour-popover .driver-popover-close-btn:focus-visible {
+  color: var(--text-primary);
+}
+
+.app-tour-popover .driver-popover-footer {
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.app-tour-popover .driver-popover-progress-text {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.app-tour-popover .driver-popover-footer-btn {
+  padding: 7px 11px;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  text-shadow: none;
+}
+
+.app-tour-popover .driver-popover-footer-btn:hover,
+.app-tour-popover .driver-popover-footer-btn:focus-visible {
+  color: var(--text-primary);
+  background: var(--hover-green);
+  border-color: var(--color-primary);
+}
+
+.app-tour-popover .driver-popover-next-btn {
+  color: #04130d;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.app-tour-popover .driver-popover-next-btn:hover,
+.app-tour-popover .driver-popover-next-btn:focus-visible {
+  color: #fff;
+  background: var(--color-primary-hover);
+}
+
+.app-tour-popover .driver-popover-arrow-side-top {
+  border-color: var(--bg-card) transparent transparent;
+}
+
+.app-tour-popover .driver-popover-arrow-side-bottom {
+  border-color: transparent transparent var(--bg-card);
+}
+
+.app-tour-popover .driver-popover-arrow-side-left {
+  border-color: transparent transparent transparent var(--bg-card);
+}
+
+.app-tour-popover .driver-popover-arrow-side-right {
+  border-color: transparent var(--bg-card) transparent transparent;
+}
+
+@media (max-width: 767px) {
+  .driver-popover.app-tour-popover {
+    padding: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .driver-overlay-animated,
+  .driver-popover.app-tour-popover {
+    transition: none !important;
+  }
+}
+
 /* Reusable panel shadow utility */
 .panel-shadow {
   box-shadow: var(--shadow-md);

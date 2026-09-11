@@ -54,7 +54,10 @@ export default function MarketTickerStrip() {
   );
 
   return (
-    <div className="relative z-20 hidden md:flex h-7 shrink-0 items-stretch overflow-hidden border-b border-border-default bg-surface select-none">
+    <div
+      data-tour="market-ticker"
+      className="relative z-20 hidden md:flex h-7 shrink-0 items-stretch overflow-hidden border-b border-border-default bg-surface select-none"
+    >
       <div className="flex items-stretch animate-marquee whitespace-nowrap will-change-transform">
         {items.map((ind) => (
           <TickerItem key={ind.key} indicator={ind} />

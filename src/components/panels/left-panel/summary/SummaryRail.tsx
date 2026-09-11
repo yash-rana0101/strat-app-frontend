@@ -45,6 +45,7 @@ export default function SummaryRail({
 }: SummaryRailProps) {
   return (
     <div
+      data-tour="analysis-summary"
       aria-label="Analysis summary"
       className="shrink-0 border-t border-border-default bg-surface pb-2"
     >

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, LogOut, CreditCard, Wallet, Zap, TrendingUp, Landmark, Layers } from 'lucide-react';
+import { LogOut, HelpCircle, Zap, TrendingUp, Landmark, Layers } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useTradeStore, type TradeProfile } from '../../store/useTradeStore';
 import { useBillingHistory, useCredit } from '../../hooks/useApi';
@@ -9,6 +9,7 @@ import { PROFILES, getInitials } from '../../utils/layoutHelpers';
 import ProfileTab from '../profile/tabs/ProfileTab';
 import SubscriptionTab from '../profile/tabs/SubscriptionTab';
 import BillingTab from '../profile/tabs/BillingTab';
+import { REPLAY_TOUR_EVENT } from '../layout/QuickStartGuide';
 
 type ProfileSection = 'workspace' | 'account' | 'subscription' | 'billing';
 
@@ -60,7 +61,7 @@ export default function MobileProfileView() {
   };
 
   return (
-    <div className="flex h-full flex-col bg-surface overflow-hidden">
+    <div data-tour="mobile-profile-view" className="flex h-full flex-col bg-surface overflow-hidden">
       {/* Header with user info */}
       <div className="flex items-center justify-between border-b border-border-default/40 p-3 bg-card">
         <div className="flex items-center gap-2.5">
@@ -74,14 +75,25 @@ export default function MobileProfileView() {
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => void logout()}
-          className="flex items-center gap-1 rounded border border-border-default/60 px-2 py-1 text-[10px] font-semibold text-red-400 hover:bg-red-500/10 cursor-pointer"
-        >
-          <LogOut size={12} />
-          <span>Exit</span>
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            data-tour="mobile-replay-tour"
+            type="button"
+            onClick={() => window.dispatchEvent(new Event(REPLAY_TOUR_EVENT))}
+            className="flex items-center gap-1 rounded border border-border-default/60 px-2 py-1 text-[10px] font-semibold text-text-secondary hover:bg-elevated hover:text-text-primary cursor-pointer"
+          >
+            <HelpCircle size={12} />
+            <span>Replay tour</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => void logout()}
+            className="flex items-center gap-1 rounded border border-border-default/60 px-2 py-1 text-[10px] font-semibold text-red-400 hover:bg-red-500/10 cursor-pointer"
+          >
+            <LogOut size={12} />
+            <span>Exit</span>
+          </button>
+        </div>
       </div>
 
       {/* Navigation sub-tabs */}
@@ -90,8 +102,8 @@ export default function MobileProfileView() {
           type="button"
           onClick={() => setActiveSection('workspace')}
           className={`flex flex-1 items-center justify-center py-2 font-medium transition-colors border-b-2 whitespace-nowrap px-2 cursor-pointer ${activeSection === 'workspace'
-              ? 'border-emerald-500 text-emerald-400 font-semibold'
-              : 'border-transparent text-text-muted hover:text-text-primary'
+            ? 'border-emerald-500 text-emerald-400 font-semibold'
+            : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
         >
           Trading Mode
@@ -100,8 +112,8 @@ export default function MobileProfileView() {
           type="button"
           onClick={() => setActiveSection('account')}
           className={`flex flex-1 items-center justify-center py-2 font-medium transition-colors border-b-2 whitespace-nowrap px-2 cursor-pointer ${activeSection === 'account'
-              ? 'border-emerald-500 text-emerald-400 font-semibold'
-              : 'border-transparent text-text-muted hover:text-text-primary'
+            ? 'border-emerald-500 text-emerald-400 font-semibold'
+            : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
         >
           Account
@@ -110,8 +122,8 @@ export default function MobileProfileView() {
           type="button"
           onClick={() => setActiveSection('subscription')}
           className={`flex flex-1 items-center justify-center py-2 font-medium transition-colors border-b-2 whitespace-nowrap px-2 cursor-pointer ${activeSection === 'subscription'
-              ? 'border-emerald-500 text-emerald-400 font-semibold'
-              : 'border-transparent text-text-muted hover:text-text-primary'
+            ? 'border-emerald-500 text-emerald-400 font-semibold'
+            : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
         >
           Credits
@@ -120,8 +132,8 @@ export default function MobileProfileView() {
           type="button"
           onClick={() => setActiveSection('billing')}
           className={`flex flex-1 items-center justify-center py-2 font-medium transition-colors border-b-2 whitespace-nowrap px-2 cursor-pointer ${activeSection === 'billing'
-              ? 'border-emerald-500 text-emerald-400 font-semibold'
-              : 'border-transparent text-text-muted hover:text-text-primary'
+            ? 'border-emerald-500 text-emerald-400 font-semibold'
+            : 'border-transparent text-text-muted hover:text-text-primary'
             }`}
         >
           Billing
@@ -145,8 +157,8 @@ export default function MobileProfileView() {
                     type="button"
                     onClick={() => setActiveProfile(key)}
                     className={`flex flex-col items-start rounded-lg border p-3 text-left transition-all cursor-pointer ${isCurrent
-                        ? 'border-emerald-500/70 bg-emerald-500/10 text-emerald-400 shadow-sm'
-                        : 'border-border-default/60 bg-elevated/40 text-text-primary hover:border-border-default'
+                      ? 'border-emerald-500/70 bg-emerald-500/10 text-emerald-400 shadow-sm'
+                      : 'border-border-default/60 bg-elevated/40 text-text-primary hover:border-border-default'
                       }`}
                   >
                     <div className="flex items-center gap-2 mb-1">

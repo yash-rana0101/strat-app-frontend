@@ -48,6 +48,7 @@ export default function MobileBottomNav({
 
   return (
     <nav
+      data-tour="mobile-nav"
       aria-label="Mobile navigation"
       className="fixed bottom-0 left-0 right-0 z-50 flex h-14 items-center justify-around border-t border-border-default bg-surface md:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
@@ -56,6 +57,7 @@ export default function MobileBottomNav({
         const isActive = activeView === key;
         return (
           <button
+            data-tour={`mobile-${key}`}
             key={key}
             type="button"
             onClick={() => onViewChange(key)}

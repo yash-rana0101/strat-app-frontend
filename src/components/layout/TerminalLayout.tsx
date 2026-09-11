@@ -126,7 +126,10 @@ export default function TerminalLayout({
   }, []);
 
   return (
-    <div className="flex h-screen h-[100dvh] max-h-[100dvh] md:max-h-none bg-background font-sans text-text-primary overflow-hidden">
+    <div
+      data-tour="terminal"
+      className="flex h-screen h-[100dvh] max-h-[100dvh] md:max-h-none bg-background font-sans text-text-primary overflow-hidden"
+    >
       {/* ── Primary Navigation Rail ─────────────────────────── */}
       <NavRail
         onOpenSearch={() => {
@@ -143,6 +146,7 @@ export default function TerminalLayout({
       <div className="flex h-full min-w-0 flex-1 flex-row min-h-0 overflow-visible bg-background p-0 gap-0">
         {/* Watchlist / Left Panel */}
         <aside
+          data-tour="watchlist-panel"
           className={`
             relative hidden md:flex shrink-0 min-h-0 flex-col border-r border-border-default rounded-none bg-surface overflow-hidden
             ${isResizing ? '' : 'transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]'}

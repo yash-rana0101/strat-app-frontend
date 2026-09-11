@@ -133,6 +133,7 @@ export default function NavRail({
     // overlaps the content instead of pushing it.
     <div className="relative shrink-0 hidden md:block" style={{ width: COLLAPSED_W }}>
       <nav
+        data-tour="nav-rail"
         aria-label="Primary navigation"
         style={{ ['--rail-w' as string]: `${EXPANDED_W}px` }}
         className="group absolute inset-y-0 left-0 z-50 flex w-14 flex-col border-r border-border-default bg-surface py-2.5 transition-[width] duration-200 ease-out hover:w-[var(--rail-w)] hover:shadow-2xl"
@@ -155,6 +156,7 @@ export default function NavRail({
             here, where they are reachable whether or not the column is open. */}
         <div className="mt-2 flex flex-col gap-1">
           <button
+            data-tour="search"
             type="button"
             onClick={onOpenSearch}
             title="Search symbol (Ctrl+K)"
@@ -167,6 +169,7 @@ export default function NavRail({
           </button>
 
           <button
+            data-tour="watchlist-toggle"
             type="button"
             onClick={onToggleLeftPanel}
             aria-pressed={leftPanelOpen}
@@ -187,7 +190,7 @@ export default function NavRail({
         </div>
 
         {/* ── Workspace Mode_Selector (primary navigation) ────── */}
-        <div className="mt-2 flex flex-1 flex-col gap-1">
+        <div data-tour="workspaces" className="mt-2 flex flex-1 flex-col gap-1">
           {PROFILES.map(({ key, label }) => {
             const Icon = PROFILE_ICONS[key];
             const isActive = activeProfile === key;
@@ -228,6 +231,7 @@ export default function NavRail({
           <NotificationBell align="rail" label="Notifications" />
 
           <button
+            data-tour="help"
             type="button"
             onClick={onOpenGuide}
             title="Quick Start Guide"
@@ -240,6 +244,7 @@ export default function NavRail({
           </button>
 
           <button
+            data-tour="theme"
             type="button"
             onClick={handleThemeToggle}
             title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
@@ -252,6 +257,7 @@ export default function NavRail({
           </button>
 
           <button
+            data-tour="account"
             type="button"
             onClick={onOpenProfile}
             title="Account Profile & Settings"

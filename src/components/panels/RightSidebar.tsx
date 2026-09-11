@@ -93,7 +93,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
   };
 
   return (
-    <div className="hidden md:flex h-full shrink-0">
+    <div data-tour="right-sidebar" className="hidden md:flex h-full shrink-0">
       {/* ── The open panel, to the LEFT of the rail ───────────────────────
           Only one is ever mounted: `renderSidebarContent` returns the AI agent
           or the active workspace's panel, never both. */}
@@ -142,6 +142,7 @@ const RightSidebar: React.FC<RightSidebarProps> = ({
           const isShowing = sidebarOpen && sidebarTab === key;
           return (
             <button
+              data-tour={key === 'deepquant' ? 'ai-agent' : 'workspace-intelligence'}
               key={key}
               type="button"
               onClick={() => activate(key)}

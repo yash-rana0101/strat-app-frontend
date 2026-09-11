@@ -100,6 +100,7 @@ export default function NotificationBell({ align = 'header', label }: Notificati
   return (
     <div className={isRail ? 'relative w-full' : 'relative'} ref={containerRef}>
       <button
+        data-tour="notifications"
         type="button"
         onClick={handleToggle}
         aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
@@ -111,16 +112,14 @@ export default function NotificationBell({ align = 'header', label }: Notificati
         }
         className={
           isRail
-            ? `flex h-11 w-full cursor-pointer items-center transition-colors ${
-                isOpen
-                  ? 'text-emerald-500 dark:text-emerald-400'
-                  : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'
-              }`
-            : `relative rounded p-1 transition-colors hover:bg-elevated/20 ${
-                isOpen
-                  ? 'text-text-primary bg-elevated/20'
-                  : 'text-text-secondary hover:text-text-primary'
-              }`
+            ? `flex h-11 w-full cursor-pointer items-center transition-colors ${isOpen
+              ? 'text-emerald-500 dark:text-emerald-400'
+              : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'
+            }`
+            : `relative rounded p-1 transition-colors hover:bg-elevated/20 ${isOpen
+              ? 'text-text-primary bg-elevated/20'
+              : 'text-text-secondary hover:text-text-primary'
+            }`
         }
       >
         {isRail ? (
@@ -154,9 +153,8 @@ export default function NotificationBell({ align = 'header', label }: Notificati
 
       {isOpen && (
         <div
-          className={`absolute z-[999] flex w-80 flex-col rounded-xl overflow-hidden border border-border-default bg-surface/95 shadow-2xl backdrop-blur-xl ${
-            isRail ? 'left-14 bottom-0 ml-1' : 'right-0 top-full mt-2'
-          }`}
+          className={`absolute z-[999] flex w-80 flex-col rounded-xl overflow-hidden border border-border-default bg-surface/95 shadow-2xl backdrop-blur-xl ${isRail ? 'left-14 bottom-0 ml-1' : 'right-0 top-full mt-2'
+            }`}
         >
           <div className="flex items-center justify-between border-b border-border-default px-3 py-2">
             <div className="flex items-center gap-2">

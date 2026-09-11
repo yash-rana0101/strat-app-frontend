@@ -310,16 +310,16 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
       {/* ── Trigger Button ── */}
       {isRail ? (
         <button
+          data-tour="quant-radar"
           type="button"
           id="quant-radar-navbar-btn"
           onClick={() => setIsOpen((p) => !p)}
           aria-label="Open Quant Radar"
           title="Open Quant Radar"
-          className={`flex h-11 w-full cursor-pointer items-center transition-colors duration-200 ${
-            isOpen
+          className={`flex h-11 w-full cursor-pointer items-center transition-colors duration-200 ${isOpen
               ? 'text-emerald-500 dark:text-emerald-400'
               : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'
-          }`}
+            }`}
         >
           <span className="relative flex w-14 shrink-0 items-center justify-center">
             <Radar size={20} className={radarIconClass} />
@@ -340,11 +340,10 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
           type="button"
           id="quant-radar-navbar-btn"
           onClick={() => setIsOpen((p) => !p)}
-          className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-sm transition-all duration-200 select-none ${
-            isOpen
+          className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-sm transition-all duration-200 select-none ${isOpen
               ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
               : 'bg-card border-border-default text-text-secondary hover:bg-elevated hover:text-text-primary'
-          }`}
+            }`}
           title="Open Quant Radar"
         >
           <div className="relative flex items-center">
@@ -362,9 +361,8 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
       {/* ── Dropdown Panel ── */}
       {isOpen && (
         <div
-          className={`absolute z-[999] flex flex-col w-[400px] max-h-[560px] rounded-xl overflow-hidden border border-border-default bg-surface/95 backdrop-blur-xl shadow-2xl ${
-            isRail ? 'left-14 bottom-0 ml-1' : 'right-0 top-full mt-2'
-          }`}
+          className={`absolute z-[999] flex flex-col w-[400px] max-h-[560px] rounded-xl overflow-hidden border border-border-default bg-surface/95 backdrop-blur-xl shadow-2xl ${isRail ? 'left-14 bottom-0 ml-1' : 'right-0 top-full mt-2'
+            }`}
         >
           {/* ── Header ── */}
           <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border-default bg-surface/80">
@@ -452,11 +450,10 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
                           handleAdd(sym);
                         }}
                         onMouseEnter={() => setSuggestIndex(i)}
-                        className={`flex w-full items-center gap-2 px-2 py-1 text-left text-[11px] transition-colors ${
-                          i === suggestIndex
+                        className={`flex w-full items-center gap-2 px-2 py-1 text-left text-[11px] transition-colors ${i === suggestIndex
                             ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                             : 'text-text-secondary hover:bg-elevated'
-                        }`}
+                          }`}
                       >
                         <CandlestickChart size={9} className="shrink-0 text-text-muted" />
                         <span className="truncate font-semibold">{sym}</span>
@@ -471,11 +468,10 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
               <button
                 type="button"
                 onClick={() => setRadarTfDropdownOpen(!radarTfDropdownOpen)}
-                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-semibold transition-all border ${
-                  radarTfDropdownOpen
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-semibold transition-all border ${radarTfDropdownOpen
                     ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.12)]'
                     : 'bg-card text-text-secondary hover:bg-elevated border-border-default hover:text-text-primary'
-                }`}
+                  }`}
                 title="Radar timeframe"
               >
                 <Clock
@@ -511,11 +507,10 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
                                   setTimeframe(item.tf as Timeframe);
                                   setRadarTfDropdownOpen(false);
                                 }}
-                                className={`flex items-center justify-between rounded-md px-2 py-1.5 text-[11px] transition-all duration-150 border ${
-                                  isActive
+                                className={`flex items-center justify-between rounded-md px-2 py-1.5 text-[11px] transition-all duration-150 border ${isActive
                                     ? 'bg-emerald-500/10 text-emerald-400 font-bold border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.08)]'
                                     : 'bg-card/40 text-text-secondary hover:bg-elevated hover:text-text-primary border-transparent hover:border-border-default'
-                                }`}
+                                  }`}
                               >
                                 <span>{item.display}</span>
                                 {isActive && (

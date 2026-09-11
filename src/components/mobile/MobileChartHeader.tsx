@@ -26,7 +26,10 @@ export default function MobileChartHeader({ onOpenSearch: propOpenSearch }: Mobi
   const handleOpenSearch = propOpenSearch ?? (() => storeOpenSearch());
 
   return (
-    <div className="flex h-10 shrink-0 items-center justify-between border-b border-border-default/40 bg-surface px-3 md:hidden">
+    <div
+      data-tour="mobile-chart-header"
+      className="flex h-10 shrink-0 items-center justify-between border-b border-border-default/40 bg-surface px-3 md:hidden"
+    >
       <button
         type="button"
         onClick={handleOpenSearch}
