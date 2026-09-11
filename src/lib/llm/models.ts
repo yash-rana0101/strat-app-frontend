@@ -15,6 +15,7 @@ export const MODEL_PROVIDERS_OPENROUTER: ModelProviderGroup[] = [
   {
     provider: 'Default',
     models: [{ id: '', label: 'Auto' }],
+    models: [{ id: 'deepseek/deepseek-v4-pro', label: 'DeepSeek V4 Pro' }],
   },
   {
     provider: 'Anthropic (Claude)',
@@ -52,6 +53,8 @@ export const MODEL_PROVIDERS_OPENROUTER: ModelProviderGroup[] = [
     provider: 'DeepSeek',
     models: [
       { id: 'deepseek/deepseek-r1', label: 'DeepSeek R1', recommended: true },
+      { id: 'deepseek/deepseek-v4-pro', label: 'DeepSeek V4 Pro', recommended: true },
+      { id: 'deepseek/deepseek-r1', label: 'DeepSeek R1' },
       { id: 'deepseek/deepseek-chat-v3.1', label: 'DeepSeek V3.1 (Chat)' },
       { id: 'deepseek/deepseek-v3.2', label: 'DeepSeek V3.2' },
     ],
@@ -155,3 +158,4 @@ export const MODEL_SELECTION_LOCKED = false;
 export const MODEL_PROVIDERS: ModelProviderGroup[] =
   LLM_GATEWAY === 'openrouter' ? MODEL_PROVIDERS_OPENROUTER : MODEL_PROVIDERS_OMNIROUTE;
   LLM_GATEWAY === 'omniroute' ? MODEL_PROVIDERS_OMNIROUTE : MODEL_PROVIDERS_OPENROUTER;
+
