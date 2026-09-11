@@ -86,7 +86,7 @@ ARG NEXT_PUBLIC_SKU_ENFORCE=
 # regulated activity, so it must be switched on deliberately and removed before
 # public launch. See the comment on skuEnforcementEnabled().
 ARG NEXT_PUBLIC_RESEARCH_BETA_OPEN=
-ARG NEXT_PUBLIC_LLM_GATEWAY=omniroute
+ARG NEXT_PUBLIC_LLM_GATEWAY=openrouter
 
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL \
     NEXT_PUBLIC_DASHBOARD_URL=$NEXT_PUBLIC_DASHBOARD_URL \
