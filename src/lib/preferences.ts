@@ -80,6 +80,7 @@ export interface TerminalPreferences {
   panes: ChartPaneState[];
   activePaneId: PaneId;
   sidebarOpen: boolean;
+  sidebarWidth?: number;
   drawingColor: string;
   magnetMode: MagnetMode;
   drawingsVisible: boolean;
@@ -197,6 +198,12 @@ function boolOf(value: unknown): boolean | undefined {
   return typeof value === 'boolean' ? value : undefined;
 }
 
+/** A pixel width bounded to a sane UI range. */
+function widthOf(value: unknown): number | undefined {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return undefined;
+  return value >= 150 && value <= 800 ? Math.round(value) : undefined;
+}
+
 /** A CSS hex colour. Anything else is dropped rather than fed to the renderer. */
 function hexColorOf(value: unknown): string | undefined {
   return typeof value === 'string' && /^#[0-9a-fA-F]{3,8}$/.test(value) ? value : undefined;
@@ -289,6 +296,7 @@ export function parsePreferences(raw: unknown): Partial<TerminalPreferences> {
   take(out, parsed, 'panes', panesOf);
   take(out, parsed, 'activePaneId', (v) => oneOf(v, PANE_IDS));
   take(out, parsed, 'sidebarOpen', boolOf);
+  take(out, parsed, 'sidebarWidth', widthOf);
   take(out, parsed, 'drawingColor', hexColorOf);
   take(out, parsed, 'magnetMode', (v) => oneOf(v, MAGNET_MODES));
   take(out, parsed, 'drawingsVisible', boolOf);
@@ -338,6 +346,10 @@ function flush(): void {
       PREFERENCES_STORAGE_KEY,
       JSON.stringify({ ...current, version: PREFERENCES_VERSION })
     );
+    // Asynchronously trigger cloud preferences sync to MongoDB
+    void import('./preferencesSync')
+      .then(({ scheduleCloudSync }) => scheduleCloudSync())
+      .catch(() => {});
   } catch {
     /* quota / private mode — the in-memory selections still apply this session */
   }
