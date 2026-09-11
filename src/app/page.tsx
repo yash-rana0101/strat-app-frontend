@@ -120,6 +120,15 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
   }, [isAuthenticated, resetFeatureAccess]);
 
+  // ── Cloud Preferences & LocalStorage Rehydration ────────────────────
+  useEffect(() => {
+    if (isAuthenticated) {
+      void import('../lib/preferencesSync').then(({ rehydrateFromCloud }) => {
+        void rehydrateFromCloud();
+      });
+    }
+  }, [isAuthenticated]);
+
   // ── WebSocket bootstrap ───────────────────────────────────────────
   // `fetchProfile` is gone from here: `checkAuth` above already loads the user
   // as part of establishing the session, so calling it too was a duplicate

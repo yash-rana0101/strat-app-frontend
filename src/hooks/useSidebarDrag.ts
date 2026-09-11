@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import { readPreferences, savePreferences } from '../lib/preferences';
 
 interface UseSidebarDragReturn {
   /** Current sidebar width (px). */
@@ -12,34 +13,36 @@ interface UseSidebarDragReturn {
 /**
  * Encapsulates resizable-sidebar pointer logic previously inlined in `Home`.
  *
- * The collapsed rail used to be a floating, vertically-draggable toggle button
- * (`rightButtonTop` / `isDraggingRight` / `handleRightButtonMouseDown`) that the
- * user had to locate and click to reopen the sidebar. `RightSidebar` now renders
- * an always-visible collapsed rail (mirroring the left NavRail), so there is no
- * button position left to drag — only the resize handle on the expanded panel
- * remains.
+ * Persists the user's customized sidebar width across reloads and syncs it
+ * to MongoDB preferences when dragging finishes.
  */
 export function useSidebarDrag(): UseSidebarDragReturn {
   // ── Resizable sidebar width ──────────────────────────────────────────
-  const [sidebarWidth, setSidebarWidth] = useState(300);
+  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
+    return readPreferences().sidebarWidth ?? 300;
+  });
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
+  const widthRef = useRef(sidebarWidth);
+  widthRef.current = sidebarWidth;
 
   const startResizingSidebar = useCallback(
     (mouseDownEvent: React.MouseEvent) => {
       mouseDownEvent.preventDefault();
       setIsResizingSidebar(true);
 
-      const startWidth = sidebarWidth;
+      const startWidth = widthRef.current;
       const startX = mouseDownEvent.clientX;
 
       const doDrag = (mouseMoveEvent: MouseEvent) => {
         const deltaX = mouseMoveEvent.clientX - startX;
         const newWidth = Math.max(200, Math.min(600, startWidth - deltaX));
+        widthRef.current = newWidth;
         setSidebarWidth(newWidth);
       };
 
       const stopDrag = () => {
         setIsResizingSidebar(false);
+        savePreferences({ sidebarWidth: widthRef.current });
         document.removeEventListener('mousemove', doDrag);
         document.removeEventListener('mouseup', stopDrag);
       };
@@ -47,7 +50,7 @@ export function useSidebarDrag(): UseSidebarDragReturn {
       document.addEventListener('mousemove', doDrag);
       document.addEventListener('mouseup', stopDrag);
     },
-    [sidebarWidth]
+    []
   );
 
   return {

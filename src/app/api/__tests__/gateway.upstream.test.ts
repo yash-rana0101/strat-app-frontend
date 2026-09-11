@@ -26,6 +26,8 @@ const KEYS = [
   'DEEP_QUANT_URL',
   'QUANT_TOOL_SERVER_URL',
   'SENTIMENT_HTTP_URL',
+  'PREFERENCES_HTTP_URL',
+  'STRATAI_PREFERENCES_URL',
 ] as const;
 
 let saved: Record<string, string | undefined>;
@@ -102,6 +104,20 @@ describe('the other upstreams keep their own conventions', () => {
   it('sentiment takes no prefix here — its route appends /sentiment itself', () => {
     process.env.SENTIMENT_HTTP_URL = 'http://sentiment:8090';
     expect(upstreamBase('sentiment')).toBe('http://sentiment:8090');
+  });
+
+  it('preferences falls back to port 8092 and respects overrides', () => {
+    expect(upstreamBase('preferences')).toBe('http://127.0.0.1:8092');
+
+    process.env.PREFERENCES_HTTP_URL = 'http://preferences:8092';
+    expect(upstreamBase('preferences')).toBe('http://preferences:8092');
+
+    process.env.PREFERENCES_HTTP_URL = 'https://stratai-preference.vercel.app/';
+    expect(upstreamBase('preferences')).toBe('https://stratai-preference.vercel.app');
+
+    delete process.env.PREFERENCES_HTTP_URL;
+    process.env.STRATAI_HTTP_BASE_URL = 'https://app-api.stratai.live';
+    expect(upstreamBase('preferences')).toBe('https://app-api.stratai.live/preferences');
   });
 
   it('prefers the per-service override over the gateway base', () => {
