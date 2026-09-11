@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useQuantStore, ChartPattern } from '../../../store/useQuantStore';
 import { useTradeStore, ChartTimeframe } from '../../../store/useTradeStore';
 import { useRadarStore } from '../../../store/useRadarStore';
-import { Sparkles, Activity, Loader2, AlertTriangle, RefreshCw, ArrowRight } from 'lucide-react';
+import { Sparkles, Activity, Loader2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { dashboardUrl, openExternalUrl } from '../../../lib/redirect';
 import {
   PATTERN_TIMEFRAMES,
@@ -23,7 +23,6 @@ interface MultiTfPatternsViewProps {
 export default function MultiTfPatternsView({ variant = 'panel' }: MultiTfPatternsViewProps = {}) {
   const inSheet = variant === 'sheet';
   const { multiTfPatterns, isFetchingPatterns, patternsError } = useQuantStore();
-  const selectedSymbol = useTradeStore((s) => s.selectedSymbol);
   const [userSelectedTf, setUserSelectedTf] = useState<string | null>(null);
 
   const timeframes = PATTERN_TIMEFRAMES;
@@ -156,24 +155,19 @@ export default function MultiTfPatternsView({ variant = 'panel' }: MultiTfPatter
                 {creditsExhausted ? 'Credits exhausted' : 'Scan unavailable'}
               </span>
             </div>
-            <p className="text-xs leading-relaxed text-amber-700/90 dark:text-amber-300/80 break-words font-sans">
+            <p className="text-xs leading-relaxed text-amber-700/90 dark:text-amber-300/80 wrap-break-word font-sans">
               {patternsError}
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                if (creditsExhausted) {
-                  void openExternalUrl(dashboardUrl());
-                } else {
-                  const sym = selectedSymbol || 'RELIANCE';
-                  void useQuantStore.getState().fetchMultiTfPatterns(sym);
-                }
-              }}
-              className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-md border border-amber-500/30 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400 transition-colors hover:bg-amber-500/10 cursor-pointer"
-            >
-              {creditsExhausted ? <ArrowRight size={9} /> : <RefreshCw size={9} />}
-              {creditsExhausted ? 'Top Up Credits' : 'Retry scan'}
-            </button>
+            {creditsExhausted && (
+              <button
+                type="button"
+                onClick={() => void openExternalUrl(dashboardUrl())}
+                className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-md border border-amber-500/30 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400 transition-colors hover:bg-amber-500/10 cursor-pointer"
+              >
+                <ArrowRight size={9} />
+                Top Up Credits
+              </button>
+            )}
           </div>
         ) : patterns.length === 0 ? (
           <div

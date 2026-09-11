@@ -51,6 +51,11 @@ export async function resolveCreditAvailability(req: Request): Promise<CreditAva
 export async function denyIfCreditsExhausted(req: Request): Promise<Response | null> {
   if ((await resolveCreditAvailability(req)) !== 'exhausted') return null;
 
+  return creditsExhaustedResponse();
+}
+
+/** The one HTTP contract used by both preflight and protected upstream routes. */
+export function creditsExhaustedResponse(): Response {
   return Response.json(
     { error: CREDIT_EXHAUSTED_MESSAGE },
     { status: 402, headers: { 'Cache-Control': 'no-store' } }

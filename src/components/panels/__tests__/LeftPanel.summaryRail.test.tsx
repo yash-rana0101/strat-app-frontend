@@ -11,9 +11,9 @@
  *   the watchlist is. The rail is `shrink-0` precisely so it cannot be scrolled
  *   out of reach — and it is the only way into the detail sheet, so losing it
  *   would strand the analyses entirely.
- * - The fetches still fire on symbol change with the sheet closed. The strips
- *   need data before anything is opened, so the effects have to stay in the panel
- *   rather than moving into the sheet.
+ * - Symbol changes may restore cached technical consensus, but must not launch
+ *   sentiment or pattern computation. Those requests belong exclusively to a
+ *   credit-approved Find Trade run.
  */
 
 import React from 'react';
@@ -110,7 +110,7 @@ describe('LeftPanel summary rail', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('refetches consensus when the charted symbol changes', async () => {
+  it('restores cached consensus when the charted symbol changes', async () => {
     const loadSentimentForSymbol = vi.fn();
     const loadConsensusForSymbol = vi.fn();
     useQuantStore.setState({ loadSentimentForSymbol, loadConsensusForSymbol });
@@ -126,10 +126,7 @@ describe('LeftPanel summary rail', () => {
     expect(loadSentimentForSymbol).not.toHaveBeenCalled();
   });
 
-  it('holds the pattern scan until the chart cache has enough candles', async () => {
-    // The guard exists because the Rust engine otherwise sees 0–1 candles and
-    // returns "Insufficient data". Firing the scan early produced a failure the
-    // user then had to interpret, so the panel waits instead.
+  it('does not start a pattern scan when chart history changes', async () => {
     const fetchMultiTfPatterns = vi.fn();
     useQuantStore.setState({ fetchMultiTfPatterns });
     useTradeStore.setState({ historicalCache: {} });
@@ -141,7 +138,8 @@ describe('LeftPanel summary rail', () => {
     );
     expect(fetchMultiTfPatterns).not.toHaveBeenCalled();
 
-    // 30 candles is the documented threshold in the panel's guard.
+    // Even enough candles for a scan must not bypass the Find Trade credit
+    // preflight merely because chart history arrived.
     useTradeStore.setState({
       historicalCache: {
         'RELIANCE::10m': Array.from({ length: 30 }, (_, i) => ({
@@ -157,6 +155,9 @@ describe('LeftPanel summary rail', () => {
       },
     });
 
-    await waitFor(() => expect(fetchMultiTfPatterns).toHaveBeenCalledWith('RELIANCE'));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Patterns/ })).toBeInTheDocument();
+    });
+    expect(fetchMultiTfPatterns).not.toHaveBeenCalled();
   });
 });

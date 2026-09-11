@@ -59,6 +59,16 @@ async function apiJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 /**
+ * Authoritative preflight for the whole Find Trade support bundle.
+ *
+ * This controls request ordering only. Each protected route checks credits again
+ * immediately before forwarding, so bypassing this client check grants nothing.
+ */
+async function assertFindTradeCredits(): Promise<void> {
+  await apiJson('/api/credits/availability');
+}
+
+/**
  * Rewrite a `/api/kite/*` path onto `NEXT_PUBLIC_KITE_PROXY_ORIGIN` when set —
  * the SAME knob `lib/kiteFetch.ts` uses — so local dev can send Kite REST calls
  * to a deployment that actually reaches the aggregator (e.g.
@@ -330,20 +340,6 @@ async function relayAgentStream(
   return outcome;
 }
 
-/** Pre-run consensus, matching `run_deep_quant_agent`'s emit before POST /run. */
-async function emitPreRunConsensus(symbol: string, timeframe: string): Promise<void> {
-  try {
-    const report = await apiJson<unknown>(
-      '/api/tools/get_consensus',
-      postJson({ symbol, timeframe, limit: 200 })
-    );
-    if (looksLikeConsensus(report)) emitBridgeEvent('quant-consensus', report);
-  } catch (err) {
-    // Non-fatal on desktop too — the run proceeds, the HUD just stays as-is.
-    console.warn('[bridge] pre-run consensus unavailable:', err);
-  }
-}
-
 /**
  * Start a SESSION-scoped agent run.
  *
@@ -385,13 +381,15 @@ async function startSessionRun(args: Args): Promise<string> {
     client_msg_id: optStr(args, 'client_msg_id') ?? optStr(args, 'clientMsgId') ?? null,
   };
 
+  // Preflight before POST /run so the store can launch sentiment, consensus, and
+  // patterns only after this same Find Trade press has been credit-approved.
+  await assertFindTradeCredits();
+
   const controller = new AbortController();
   activeRuns.set(sessionId, controller);
 
-  void emitPreRunConsensus(symbol, optStr(args, 'timeframe') ?? '10m');
-
-  // Deliberately not awaited: the caller transitions into its streaming state immediately,
-  // as it did before.
+  // Deliberately not awaited after preflight: the caller transitions into its
+  // streaming state immediately, as it did before.
   void (async () => {
     try {
       const res = await agentFetch('/api/deepquant/run', {
@@ -475,16 +473,6 @@ async function startAgentRun(args: Args): Promise<string> {
   // Same id format as the Rust command, so persisted Python threads look alike.
   const threadId = `thread_${symbol}_${Date.now()}`;
 
-  // Fire-and-forget, deliberately NOT awaited.
-  //
-  // This is a non-streaming proxy call bounded by the 30s PROXY_TIMEOUT_MS. When
-  // the tool-server is slow or unreachable, awaiting it meant `POST /run` was not
-  // even issued for up to 30 seconds after the user pressed "Find Quant Trade" —
-  // the press looked like it did nothing. The consensus only populates the
-  // technical HUD; the agent stream is the primary result and must not wait on
-  // it. `emitPreRunConsensus` already swallows its own failures.
-  void emitPreRunConsensus(symbol, timeframe ?? '10m');
-
   const message =
     mode === 'VERIFY' && manualTrade
       ? `Verify the following proposed trade setup for the trading ticker symbol '${symbol}':\n` +
@@ -509,6 +497,9 @@ async function startAgentRun(args: Args): Promise<string> {
     manual_trade: manualTrade ?? null,
     user_id: optStr(args, 'user_id') ?? optStr(args, 'userId') ?? null,
   };
+
+  // The support bundle is started by the store only after this resolves.
+  await assertFindTradeCredits();
 
   const controller = new AbortController();
   activeRuns.set(threadId, controller);

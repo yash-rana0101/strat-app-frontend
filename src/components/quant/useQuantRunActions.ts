@@ -28,7 +28,7 @@ export interface QuantRunActions {
   /** Enough to run, but thin enough that the caller should say so. */
   insufficientData: boolean;
   isAnalyzing: boolean;
-  /** FIND. Resets the transcript, computes consensus alongside, starts the run. */
+  /** FIND. Resets the transcript and starts the credit-gated analysis bundle. */
   handleFind: () => void;
   /** VERIFY. Same, plus the user's own levels. Ignores a non-positive entry, as before. */
   handleVerify: (input: {
@@ -79,18 +79,7 @@ export function useQuantRunActions(): QuantRunActions {
 
   const handleFind = () => {
     useQuantStore.getState().resetTerminal();
-    // Compute the technical consensus for THIS press, alongside the agent run.
-    //
-    // Deliberately here and not on symbol change: it is a technical read the user asks for, so a
-    // watchlist click should not fire a tool-server computation per symbol, and an agent-run
-    // output should not be presented as ambient telemetry.
-    //
-    // Fired in parallel rather than awaited — the agent stream is the primary result and must not
-    // wait on the HUD. If the agent's own `get_consensus_report` tool result arrives first,
-    // `quant-consensus` sets the same state; whichever lands later simply wins with equivalent
-    // data.
-    void useQuantStore.getState().fetchConsensusForSymbol(symbol, activeTimeframe);
-    useQuantStore.getState().fetchDeepAnalysis(symbol);
+    void useQuantStore.getState().fetchDeepAnalysis(symbol);
   };
 
   const handleVerify: QuantRunActions['handleVerify'] = ({
@@ -110,11 +99,7 @@ export function useQuantRunActions(): QuantRunActions {
     }
 
     useQuantStore.getState().resetTerminal();
-    // VERIFY reads the same consensus indicators (ATR sizes the stop, RSI/MACD/EMA corroborate
-    // the user's direction), so the HUD is populated for this press too — same reasoning as
-    // handleFind above.
-    void useQuantStore.getState().fetchConsensusForSymbol(symbol, activeTimeframe);
-    useQuantStore.getState().fetchDeepAnalysis(symbol, 'VERIFY', {
+    void useQuantStore.getState().fetchDeepAnalysis(symbol, 'VERIFY', {
       side,
       entry: entryNum,
       stopLoss: slNum,

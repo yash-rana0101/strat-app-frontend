@@ -38,6 +38,14 @@ function frame(event: string, data: Record<string, unknown>): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
 
+function creditsAvailable(): Response {
+  return Response.json({ availability: 'available' });
+}
+
+function isCreditPreflight(url: unknown): boolean {
+  return String(url).startsWith('/api/credits/availability');
+}
+
 /** Calls made to a given path prefix. */
 function callsTo(fetchMock: ReturnType<typeof vi.fn>, prefix: string) {
   return fetchMock.mock.calls.filter(([url]) => String(url).startsWith(prefix));
@@ -71,6 +79,7 @@ async function settle(times = 6) {
 describe('run_deep_quant_agent — session path', () => {
   it('sends session_id and NO thread_id, and returns the session id', async () => {
     fetchMock.mockImplementation(async (url: string) => {
+      if (isCreditPreflight(url)) return creditsAvailable();
       if (String(url).includes('/api/tools/')) return new Response('{}', { status: 200 });
       return sseResponse([
         frame('RUN_STARTED', { thread_id: THREAD, session_id: SESSION, run_id: 'run_1' }),
@@ -98,6 +107,7 @@ describe('run_deep_quant_agent — session path', () => {
     // The server records the SESSION's context on the run row, but a VERIFY of specific
     // numbers must not change under the user, so the body still carries them.
     fetchMock.mockImplementation(async (url: string) => {
+      if (isCreditPreflight(url)) return creditsAvailable();
       if (String(url).includes('/api/tools/')) return new Response('{}', { status: 200 });
       return sseResponse([frame('RUN_FINISHED', { status: 'completed' })]);
     });
@@ -119,6 +129,7 @@ describe('run_deep_quant_agent — session path', () => {
 
   it('forwards a VERIFY manual trade and builds the verify prompt', async () => {
     fetchMock.mockImplementation(async (url: string) => {
+      if (isCreditPreflight(url)) return creditsAvailable();
       if (String(url).includes('/api/tools/')) return new Response('{}', { status: 200 });
       return sseResponse([frame('RUN_FINISHED', { status: 'completed' })]);
     });
@@ -146,6 +157,7 @@ describe('run_deep_quant_agent — session path', () => {
 
   it('forwards client_msg_id so a retried press cannot duplicate the turn', async () => {
     fetchMock.mockImplementation(async (url: string) => {
+      if (isCreditPreflight(url)) return creditsAvailable();
       if (String(url).includes('/api/tools/')) return new Response('{}', { status: 200 });
       return sseResponse([frame('RUN_FINISHED', { status: 'completed' })]);
     });
@@ -161,6 +173,7 @@ describe('run_deep_quant_agent — session path', () => {
 
   it('routes the streamed frames into the session, binding from RUN_STARTED', async () => {
     fetchMock.mockImplementation(async (url: string) => {
+      if (isCreditPreflight(url)) return creditsAvailable();
       if (String(url).includes('/api/tools/')) return new Response('{}', { status: 200 });
       return sseResponse([
         frame('RUN_STARTED', { thread_id: THREAD, session_id: SESSION, run_id: 'run_1' }),
@@ -185,31 +198,26 @@ describe('run_deep_quant_agent — session path', () => {
     expect(state.unroutableFrames).toBe(0);
   });
 
-  it('routes an HTTP 402 run refusal into the session with its credit message intact', async () => {
+  it('rejects an exhausted-credit preflight before POST /run', async () => {
     fetchMock.mockImplementation(async (url: string) => {
-      if (String(url).includes('/api/tools/')) return new Response('{}', { status: 200 });
-      return new Response(
-        JSON.stringify({
-          error: 'You are out of Strat AI credits. Top up your balance on the dashboard.',
-        }),
-        { status: 402, headers: { 'content-type': 'application/json' } }
-      );
+      if (isCreditPreflight(url)) {
+        return Response.json(
+          {
+            error: 'You are out of Strat AI credits. Top up your balance on the dashboard.',
+          },
+          { status: 402 }
+        );
+      }
+      return sseResponse([frame('RUN_FINISHED', { status: 'completed' })]);
     });
 
-    const { bridgeListen } = await import('../index');
-    await bridgeListen('deep-quant-stream', (evt) => {
-      useSessionStore.getState().applyFrame(evt.payload as never);
-    });
-
-    await bridgeInvoke('run_deep_quant_agent', { session_id: SESSION, symbol: 'RELIANCE' });
-    await settle(20);
-
-    const state = useSessionStore.getState();
-    expect(state.sessions[SESSION].sessionStatus).toBe('error');
-    expect(state.sessions[SESSION].analysisError).toBe(
+    await expect(
+      bridgeInvoke('run_deep_quant_agent', { session_id: SESSION, symbol: 'RELIANCE' })
+    ).rejects.toThrow(
       'HTTP 402: You are out of Strat AI credits. Top up your balance on the dashboard.'
     );
-    expect(state.unroutableFrames).toBe(0);
+    expect(callsTo(fetchMock, '/api/credits/availability')).toHaveLength(1);
+    expect(callsTo(fetchMock, '/api/deepquant/run')).toHaveLength(0);
   });
 });
 
@@ -218,6 +226,7 @@ describe('reattach', () => {
     let served = 0;
     fetchMock.mockImplementation(async (url: string) => {
       const u = String(url);
+      if (isCreditPreflight(u)) return creditsAvailable();
       if (u.includes('/api/tools/')) return new Response('{}', { status: 200 });
       if (u.startsWith('/api/deepquant/run')) {
         return sseResponse([
@@ -251,6 +260,7 @@ describe('reattach', () => {
   it('omits after_seq when nothing has been seen yet', async () => {
     fetchMock.mockImplementation(async (url: string) => {
       const u = String(url);
+      if (isCreditPreflight(u)) return creditsAvailable();
       if (u.includes('/api/tools/')) return new Response('{}', { status: 200 });
       if (u.startsWith('/api/deepquant/run')) {
         return sseResponse([
@@ -450,6 +460,7 @@ describe('cancel_deep_quant_agent', () => {
 describe('backward compatibility', () => {
   it('the legacy run path still mints a thread id and works', async () => {
     fetchMock.mockImplementation(async (url: string) => {
+      if (isCreditPreflight(url)) return creditsAvailable();
       if (String(url).includes('/api/tools/')) return new Response('{}', { status: 200 });
       return sseResponse([frame('RUN_FINISHED', { status: 'completed' })]);
     });

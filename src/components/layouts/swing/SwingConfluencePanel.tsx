@@ -10,7 +10,6 @@ import {
   Activity,
   Newspaper,
   AlertTriangle,
-  RefreshCw,
   ArrowRight,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -72,7 +71,6 @@ export default function SwingConfluencePanel() {
   const timeframeTrends = useMultiTimeframeTrend();
 
   const activeSentiment = useQuantStore((s) => s.activeSentiment);
-  const loadSentimentForSymbol = useQuantStore((s) => s.loadSentimentForSymbol);
   // The panel used to subscribe to `activeSentiment` ONLY, so a 503 from
   // /api/sentiment ("no sentiment computed yet") rendered a permanent
   // "Awaiting market sentiment signals..." with no spinner and no error — the
@@ -85,9 +83,8 @@ export default function SwingConfluencePanel() {
   const [newestId, setNewestId] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Sentiment is NOT auto-loaded on symbol switch — it is computed on demand
-  // when the user triggers Find Trade analysis. The manual refresh button below
-  // still calls loadSentimentForSymbol for explicit re-fetches.
+  // Sentiment is not loaded or retried here. It is computed only as part of a
+  // credit-approved Find Trade run.
 
   // Reset insight history when selectedSymbol changes, and append newly
   // arrived live ticks. Both are derived from props (`selectedSymbol` /
@@ -320,20 +317,16 @@ export default function SwingConfluencePanel() {
               <p className="mt-1 text-[9px] leading-normal text-amber-700/90 dark:text-amber-300/80">
                 {sentimentError}
               </p>
-              <button
-                type="button"
-                onClick={() => {
-                  if (creditsExhausted) {
-                    void openExternalUrl(dashboardUrl());
-                  } else if (selectedSymbol) {
-                    void loadSentimentForSymbol(selectedSymbol);
-                  }
-                }}
-                className="mt-1.5 inline-flex items-center gap-1 rounded border border-amber-500/30 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 transition-colors hover:bg-amber-500/10"
-              >
-                {creditsExhausted ? <ArrowRight size={8} /> : <RefreshCw size={8} />}
-                {creditsExhausted ? 'Top Up Credits' : 'Retry'}
-              </button>
+              {creditsExhausted && (
+                <button
+                  type="button"
+                  onClick={() => void openExternalUrl(dashboardUrl())}
+                  className="mt-1.5 inline-flex items-center gap-1 rounded border border-amber-500/30 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 transition-colors hover:bg-amber-500/10"
+                >
+                  <ArrowRight size={8} />
+                  Top Up Credits
+                </button>
+              )}
             </div>
           ) : (
             <div className="rounded-lg border border-dashed border-border-default/70 bg-card/50 p-2.5 text-center">

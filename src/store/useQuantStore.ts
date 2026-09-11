@@ -1220,28 +1220,6 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
   selectedModel: MODEL_PROVIDERS[0]?.models[0]?.id ?? '',
   setSelectedModel: (modelId: string) => {
     set({ selectedModel: modelId });
-    // Reset rate-limit cooldown for the current symbol so the newly selected model
-    // is not blocked by a previous model's 429 quota exhaustion.
-    const state = get();
-    const activeSym = state.activeSentiment?.symbol;
-    if (activeSym) {
-      const sym = sentimentSubject(activeSym);
-      const entry = state.sentimentCache[sym];
-      if (entry?.rateLimitedUntil || state.sentimentError) {
-        set((s) => ({
-          sentimentError: null,
-          sentimentCache: {
-            ...s.sentimentCache,
-            [sym]: {
-              ...s.sentimentCache[sym],
-              rateLimitedUntil: undefined,
-              rateLimitedModel: undefined,
-            },
-          },
-        }));
-      }
-      void state.refreshSentimentForSymbol(sym, modelId);
-    }
   },
 
   // ── Trade Q&A State ──────────────────────────────────────────────
@@ -1444,7 +1422,7 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
   },
 
   // Force-refresh: bypasses TTL cache (but still respects 429 cooldown for the same model).
-  // Called from AI Quant Analysis button and model selector.
+  // Called from the credit-approved Find Trade workflow.
   refreshSentimentForSymbol: async (requested: string, modelOverride?: string) => {
     const symbol = sentimentSubject(requested);
     const model = modelOverride ?? get().selectedModel ?? '';
@@ -1590,28 +1568,13 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
       activeViewKey: runKey,
       sessionsByKey: { ...state.sessionsByKey, [runKey]: freshSession },
       ...projectSession(freshSession),
-      // multi-TF patterns are cached per-symbol separately; clear the view while
-      // the parallel fetch below refreshes them.
+      // Pattern loading begins only when the credit-approved FIND support
+      // request starts below. A rejected preflight must not leave this spinning.
       multiTfPatterns: null,
-      isFetchingPatterns: true,
+      isFetchingPatterns: false,
       patternsError: null,
       isStartingRun: true,
     }));
-
-    // Trigger multi-timeframe chart patterns fetch in parallel (non-blocking).
-    get().fetchMultiTfPatterns(symbol);
-
-    // Refresh the frontend sentiment panel in parallel — do NOT await it. The
-    // agent fetches its own news via get_news_context, so blocking the run start
-    // on the frontend sentiment refresh only delayed the first SSE events from
-    // appearing after the user hit "Find Quant Trade". Fire-and-forget instead so
-    // the agent is invoked immediately and the glass-box transcript streams in
-    // with minimal latency.
-    get()
-      .refreshSentimentForSymbol(symbol, get().selectedModel)
-      .catch(() => {
-        console.warn('[QuantStore] Sentiment refresh failed, continuing with analysis...');
-      });
 
     debugLog(
       `[QuantStore] → AI context: timeframe=${activeTimeframe} profile=${activeProfile} fnoExpiry=${fnoExpiry || '(nearest)'}`
@@ -1664,6 +1627,15 @@ export const useQuantStore = create<QuantStore>((set, get) => ({
         // which keeps the legacy path byte-identical.
         session_id: runSessionId,
       });
+
+      // `run_deep_quant_agent` performs the authoritative preflight before it
+      // resolves. The supporting bundle belongs to Find Trade only: VERIFY runs
+      // the requested validation without independently recomputing these panels.
+      if (activeMode === 'FIND') {
+        void get().fetchConsensusForSymbol(symbol, activeTimeframe);
+        void get().fetchMultiTfPatterns(symbol);
+        void get().refreshSentimentForSymbol(symbol, get().selectedModel);
+      }
 
       // On the SESSION path this return value is the `session_id`, not a thread id — the server mints
       // the thread inside `POST /run` and reports it on `RUN_STARTED`, which `applyFrame` uses to bind

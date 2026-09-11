@@ -1,6 +1,6 @@
-// The Find/Verify workflow launches these tool requests in parallel with the
-// agent. Each protected route therefore needs its own authoritative refusal;
-// relying on `/deepquant/run` to fail first still lets quant-core do the work.
+// Find Trade launches these supporting requests only after its shared preflight.
+// Each protected route still needs its own authoritative refusal so a direct
+// request cannot bypass the account-credit boundary.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 

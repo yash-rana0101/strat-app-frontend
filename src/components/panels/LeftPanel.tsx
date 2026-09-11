@@ -27,7 +27,6 @@ export default function LeftPanel() {
   const isFetchingPatterns = useQuantStore((s) => s.isFetchingPatterns);
   const multiTfPatterns = useQuantStore((s) => s.multiTfPatterns);
   const patternsError = useQuantStore((s) => s.patternsError);
-  const fetchMultiTfPatterns = useQuantStore((s) => s.fetchMultiTfPatterns);
 
   const activeSentiment = useQuantStore((s) => s.activeSentiment);
   const isFetchingSentiment = useQuantStore((s) => s.isFetchingSentiment);
@@ -44,25 +43,6 @@ export default function LeftPanel() {
       loadConsensusForSymbol(selectedSymbol);
     }
   }, [selectedSymbol, loadConsensusForSymbol]);
-
-  // Load multi-timeframe chart-pattern detection, but only once the chart
-  // datafeed has populated historicalCache for this symbol. Without this guard
-  // the Tauri command fires before get_historical_view has triggered the Kite
-  // backfill into QuestDB, so the Rust engine sees 0–1 candles and returns
-  // "Insufficient data / 1 candle available".
-  const historicalCache = useTradeStore((s) => s.historicalCache);
-  const symUpper = selectedSymbol?.toUpperCase() ?? '';
-  const hasCacheForSymbol = symUpper
-    ? Object.keys(historicalCache).some(
-        (k) => k.startsWith(`${symUpper}::`) && historicalCache[k].length >= 30
-      )
-    : false;
-
-  useEffect(() => {
-    if (selectedSymbol && hasCacheForSymbol) {
-      fetchMultiTfPatterns(selectedSymbol);
-    }
-  }, [selectedSymbol, hasCacheForSymbol, fetchMultiTfPatterns]);
 
   return (
     <div className="flex h-full flex-col select-none">
