@@ -77,8 +77,8 @@ export function gatewayCredentialsMissing(): boolean {
   return p === '';
 }
 
-/** One of the five upstream services this tier proxies to. */
-export type Upstream = 'kite' | 'questdb' | 'deepquant' | 'tools' | 'sentiment';
+/** One of the six upstream services this tier proxies to. */
+export type Upstream = 'kite' | 'questdb' | 'deepquant' | 'tools' | 'sentiment' | 'preferences';
 
 /**
  * Base URL for an upstream service.
@@ -86,7 +86,7 @@ export type Upstream = 'kite' | 'questdb' | 'deepquant' | 'tools' | 'sentiment';
  * Priority per service: explicit override env → `{httpBase}/{path}` when the
  * gateway is configured → direct `http://{host}:{port}`. This is exactly the
  * ladder in `server.rs` (`kite_url`, `questdb_http_url`, `deep_quant_url`),
- * extended to the two services the website additionally needs.
+ * extended to the three services the website additionally needs.
  */
 export function upstreamBase(target: Upstream): string {
   const base = httpBase();
@@ -133,6 +133,15 @@ export function upstreamBase(target: Upstream): string {
       if (override) return override.replace(/\/+$/, '');
       if (base) return `${base}/sentiment`;
       return `http://${host()}:8090`;
+    }
+    case 'preferences': {
+      const override = resolveEnv(
+        process.env.PREFERENCES_HTTP_URL || process.env.STRATAI_PREFERENCES_URL,
+        ''
+      );
+      if (override) return override.replace(/\/+$/, '');
+      if (base) return `${base}/preferences`;
+      return `http://${host()}:8092`;
     }
   }
 }
