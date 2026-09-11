@@ -40,6 +40,11 @@ function meOk(id: string) {
   return { ok: true, json: async () => ({ success: true, data: { id } }) } as unknown as Response;
 }
 
+/** An api-web `/credit/` success envelope. */
+function creditOk(credits: number) {
+  return { ok: true, json: async () => ({ success: true, data: { credits } }) } as unknown as Response;
+}
+
 let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
@@ -62,14 +67,25 @@ afterEach(() => {
   __resetIdentityCache();
 });
 
-/** Route `fetch` by URL: the auth API vs the deep-quant upstream. */
-function routeFetch(opts: { userId?: string | null; authFails?: boolean } = {}) {
+/** Route `fetch` by URL: the account API vs the deep-quant upstream. */
+function routeFetch(
+  opts: {
+    userId?: string | null;
+    authFails?: boolean;
+    credits?: number;
+    creditFails?: boolean;
+  } = {}
+) {
   fetchMock.mockImplementation(async (input: string | URL | Request) => {
     const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
     if (url.includes('/users/me')) {
       if (opts.authFails) throw new Error('auth api unreachable');
       if (opts.userId == null) return { ok: false, json: async () => ({}) } as unknown as Response;
       return meOk(opts.userId);
+    }
+    if (url.includes('/credit/')) {
+      if (opts.creditFails) throw new Error('credit api unreachable');
+      return creditOk(opts.credits ?? 100);
     }
     return upstreamOk();
   });
@@ -79,7 +95,14 @@ function routeFetch(opts: { userId?: string | null; authFails?: boolean } = {}) 
 function upstreamCall() {
   return fetchMock.mock.calls.find(([input]) => {
     const url = typeof input === 'string' ? input : ((input as Request).url ?? String(input));
-    return !url.includes('/users/me');
+    return !url.includes('/users/me') && !url.includes('/credit/');
+  });
+}
+
+function creditCall() {
+  return fetchMock.mock.calls.find(([input]) => {
+    const url = typeof input === 'string' ? input : ((input as Request).url ?? String(input));
+    return url.includes('/credit/');
   });
 }
 
@@ -177,6 +200,70 @@ describe('deepquant route — staged enforcement', () => {
     );
     expect(res.status).toBe(401);
     expect(upstreamCall()).toBeUndefined();
+  });
+});
+
+describe('deepquant route — account credits', () => {
+  it.each([
+    ['run', ['run']],
+    ['qa', ['qa']],
+  ])('402s /%s and NEVER contacts deep-quant when the balance is exhausted', async (_label, segments) => {
+    routeFetch({ userId: 'user_42', credits: 0 });
+    const res = await POST(
+      req(`https://app.stratai.live/api/deepquant/${segments.join('/')}`, {
+        cookie: 'access_token=tok',
+      }),
+      ctx(segments)
+    );
+
+    expect(res.status).toBe(402);
+    expect(await res.json()).toEqual({
+      error:
+        'You are out of Strat AI credits. Top up your balance on the dashboard to continue using Find Trade and other AI actions.',
+    });
+    expect(creditCall()).toBeDefined();
+    expect(upstreamCall()).toBeUndefined();
+  });
+
+  it('forwards a chargeable action when the balance is positive', async () => {
+    routeFetch({ userId: 'user_42', credits: 0.5 });
+    const res = await POST(
+      req('https://app.stratai.live/api/deepquant/run', { cookie: 'access_token=tok' }),
+      ctx(['run'])
+    );
+
+    expect(res.status).toBe(200);
+    expect(creditCall()).toBeDefined();
+    expect(upstreamCall()).toBeDefined();
+  });
+
+  it('fails open when the credit API is unavailable instead of claiming exhaustion', async () => {
+    routeFetch({ userId: 'user_42', creditFails: true });
+    const res = await POST(
+      req('https://app.stratai.live/api/deepquant/run', { cookie: 'access_token=tok' }),
+      ctx(['run'])
+    );
+
+    expect(res.status).toBe(200);
+    expect(upstreamCall()).toBeDefined();
+  });
+
+  it.each([
+    ['stream reattachment', 'GET', ['stream', 'thread_x']],
+    ['cancellation', 'POST', ['cancel']],
+    ['session creation', 'POST', ['sessions']],
+  ])('does not check credits for %s', async (_label, method, segments) => {
+    routeFetch({ userId: 'user_42', credits: 0 });
+    const request = req(
+      `https://app.stratai.live/api/deepquant/${segments.join('/')}`,
+      { cookie: 'access_token=tok' },
+      method
+    );
+    const res = method === 'GET' ? await GET(request, ctx(segments)) : await POST(request, ctx(segments));
+
+    expect(res.status).toBe(200);
+    expect(creditCall()).toBeUndefined();
+    expect(upstreamCall()).toBeDefined();
   });
 });
 

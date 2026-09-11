@@ -425,7 +425,13 @@ async function startSessionRun(args: Args): Promise<string> {
       if (controller.signal.aborted) return;
       emitBridgeEvent('deep-quant-stream', {
         event: 'ERROR',
-        data: { error: err instanceof Error ? err.message : String(err) },
+        // A rejected POST /run has no server-minted thread yet. Name the session
+        // directly so the strict multi-session router can deliver the failure
+        // instead of dropping it and leaving the terminal stuck on "running".
+        data: {
+          session_id: sessionId,
+          error: err instanceof Error ? err.message : String(err),
+        },
       });
     } finally {
       activeRuns.delete(sessionId);

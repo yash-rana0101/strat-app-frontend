@@ -12,6 +12,7 @@
 // `ReadableStream` through untouched with `no-transform` and no timeout.
 
 import { assertFeatureEnabled } from '../../_featureSwitches';
+import { resolveCreditAvailability } from '../../_credits';
 import { proxyError } from '../../_gateway';
 import { identityHeaders, unauthenticated } from '../../_identity';
 import { proxyRequest, resolveCatchAll } from '../../_proxy';
@@ -62,6 +63,13 @@ export function isAgentPath(segments: string[]): boolean {
   );
 }
 
+/** User-triggered actions that can consume account credits. */
+export function isChargeableAction(req: Request, segments: string[]): boolean {
+  if (req.method.toUpperCase() !== 'POST') return false;
+  const first = (segments[0] ?? '').toLowerCase();
+  return first === 'run' || first === 'qa';
+}
+
 async function handle(req: Request, ctx: Ctx): Promise<Response> {
   const { path } = await ctx.params;
   const segments = (path ?? []).filter((s) => s.length > 0);
@@ -92,6 +100,20 @@ async function handle(req: Request, ctx: Ctx): Promise<Response> {
     const asserted = await identityHeaders(req);
     if (asserted === null) return unauthenticated();
     extraHeaders = asserted;
+
+    // The account API owns the balance, so enforce its current value here rather
+    // than trusting the browser's cached credit badge. Only chargeable POSTs are
+    // checked: stream reattachment, cancellation, and session reads/writes must
+    // remain available even after the balance reaches zero.
+    if (isChargeableAction(req, segments)) {
+      const availability = await resolveCreditAvailability(req);
+      if (availability === 'exhausted') {
+        return proxyError(
+          402,
+          'You are out of Strat AI credits. Top up your balance on the dashboard to continue using Find Trade and other AI actions.'
+        );
+      }
+    }
   }
 
   return proxyRequest(req, 'deepquant', {

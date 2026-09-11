@@ -184,6 +184,33 @@ describe('run_deep_quant_agent — session path', () => {
     expect(state.sessions[SESSION].sessionStatus).toBe('complete');
     expect(state.unroutableFrames).toBe(0);
   });
+
+  it('routes an HTTP 402 run refusal into the session with its credit message intact', async () => {
+    fetchMock.mockImplementation(async (url: string) => {
+      if (String(url).includes('/api/tools/')) return new Response('{}', { status: 200 });
+      return new Response(
+        JSON.stringify({
+          error: 'You are out of Strat AI credits. Top up your balance on the dashboard.',
+        }),
+        { status: 402, headers: { 'content-type': 'application/json' } }
+      );
+    });
+
+    const { bridgeListen } = await import('../index');
+    await bridgeListen('deep-quant-stream', (evt) => {
+      useSessionStore.getState().applyFrame(evt.payload as never);
+    });
+
+    await bridgeInvoke('run_deep_quant_agent', { session_id: SESSION, symbol: 'RELIANCE' });
+    await settle(20);
+
+    const state = useSessionStore.getState();
+    expect(state.sessions[SESSION].sessionStatus).toBe('error');
+    expect(state.sessions[SESSION].analysisError).toBe(
+      'HTTP 402: You are out of Strat AI credits. Top up your balance on the dashboard.'
+    );
+    expect(state.unroutableFrames).toBe(0);
+  });
 });
 
 describe('reattach', () => {
