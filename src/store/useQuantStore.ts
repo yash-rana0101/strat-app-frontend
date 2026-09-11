@@ -517,10 +517,12 @@ const STREAM_IDLE_TIMEOUT_MS = 300_000;
 // A run parked at `watch_price_condition` is waiting for a price that may be
 // hours away, so silence there is EXPECTED and the run-idle window does not
 // apply. What is not expected is the heartbeat going quiet: the tool-server
-// watcher pulses a /resume every OPPORTUNITY_HEARTBEAT_CADENCE_SECS (200s by
-// default), and each pulse streams events. Two missed pulses plus slack means
-// the watcher is gone — previously nothing monitored this at all, so a dead
-// watcher left the panel "watching" forever with no activity and no feedback.
+// watcher pulses a /resume every OPPORTUNITY_HEARTBEAT_CADENCE_SECS (30s by
+// default), and each pulse streams events. Heartbeats and Q&A turns are
+// deliberately serialized on one LangGraph checkpoint thread, so an active
+// reasoning-model Q&A can delay the next pulse well beyond two cadence windows.
+// Keep this at least as wide as the normal stream stall budget plus pulse slack;
+// otherwise a healthy watcher is falsely marked dead while its pulse is queued.
 const WATCH_IDLE_TIMEOUT_MS = 520_000;
 
 const streamWatchdogs = new Map<string, ReturnType<typeof setTimeout>>();
@@ -1088,10 +1090,10 @@ export function applyStreamEvent(session: QuantSession, payload: StreamEventPayl
       const steps =
         isWatching || isCancel
           ? session.reasoningSteps.map((s) =>
-              s.toolName === 'watch_price_condition' && !s.superseded
-                ? { ...s, superseded: true }
-                : s
-            )
+            s.toolName === 'watch_price_condition' && !s.superseded
+              ? { ...s, superseded: true }
+              : s
+          )
           : session.reasoningSteps;
       return {
         ...session,
