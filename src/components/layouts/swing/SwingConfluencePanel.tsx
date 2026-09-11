@@ -11,6 +11,7 @@ import {
   Newspaper,
   AlertTriangle,
   RefreshCw,
+  ArrowRight,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { MarketInsight, useTradeStore } from '../../../store/useTradeStore';
@@ -19,6 +20,8 @@ import { useQuantStore, sentimentSubject } from '../../../store/useQuantStore';
 import ClockIcon from '../ClockIcon';
 import InsightCard from './InsightCard';
 import { staggerContainer, fadeInUp } from '../../../lib/motionVariants';
+import { dashboardUrl, openExternalUrl } from '../../../lib/redirect';
+import { classifyAgentError } from '../../quant/deep-quant/agentErrorClassifier';
 
 function getBiasTheme(bias: TrendBias) {
   switch (bias) {
@@ -140,6 +143,8 @@ export default function SwingConfluencePanel() {
   }, [activeSentiment, selectedSymbol]);
 
   const score = sentimentPayload ? Math.round((sentimentPayload.score + 100) / 2) : null;
+  const creditsExhausted =
+    !!sentimentError && classifyAgentError(sentimentError).kind === 'credits-exhausted';
 
   return (
     <div
@@ -318,12 +323,16 @@ export default function SwingConfluencePanel() {
               <button
                 type="button"
                 onClick={() => {
-                  if (selectedSymbol) void loadSentimentForSymbol(selectedSymbol);
+                  if (creditsExhausted) {
+                    void openExternalUrl(dashboardUrl());
+                  } else if (selectedSymbol) {
+                    void loadSentimentForSymbol(selectedSymbol);
+                  }
                 }}
                 className="mt-1.5 inline-flex items-center gap-1 rounded border border-amber-500/30 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 transition-colors hover:bg-amber-500/10"
               >
-                <RefreshCw size={8} />
-                Retry
+                {creditsExhausted ? <ArrowRight size={8} /> : <RefreshCw size={8} />}
+                {creditsExhausted ? 'Top Up Credits' : 'Retry'}
               </button>
             </div>
           ) : (

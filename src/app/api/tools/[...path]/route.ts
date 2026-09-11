@@ -7,6 +7,7 @@
 // chart patterns, support/resistance, prediction, consensus, candles — rather
 // than a reimplementation that could drift.
 
+import { denyIfCreditsExhausted } from '../../_credits';
 import { proxyError } from '../../_gateway';
 import { proxyRequest, resolveCatchAll } from '../../_proxy';
 
@@ -15,10 +16,26 @@ export const dynamic = 'force-dynamic';
 
 type Ctx = { params: Promise<{ path?: string[] }> };
 
+const CREDIT_PROTECTED_TOOLS = new Set(['get_consensus', 'get_multi_tf_chart_patterns']);
+
+/** AI-workflow side computations that must not run after credits reach zero. */
+export function isCreditProtectedTool(req: Request, path?: string[]): boolean {
+  return (
+    req.method.toUpperCase() === 'POST' &&
+    CREDIT_PROTECTED_TOOLS.has((path?.[0] ?? '').toLowerCase())
+  );
+}
+
 async function handle(req: Request, ctx: Ctx): Promise<Response> {
   const { path } = await ctx.params;
   const resolved = resolveCatchAll(path, req);
   if (!resolved) return proxyError(400, 'tools: a path segment is required');
+
+  if (isCreditProtectedTool(req, path)) {
+    const deniedForCredits = await denyIfCreditsExhausted(req);
+    if (deniedForCredits) return deniedForCredits;
+  }
+
   return proxyRequest(req, 'tools', { path: resolved });
 }
 

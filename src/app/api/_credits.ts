@@ -10,6 +10,9 @@ import { readCookie } from './_identity';
 /** A valid account response can answer yes/no; every other outcome is unknown. */
 export type CreditAvailability = 'available' | 'exhausted' | 'unknown';
 
+export const CREDIT_EXHAUSTED_MESSAGE =
+  'You are out of Strat AI credits. Top up your balance on the dashboard to continue using Find Trade and other AI actions.';
+
 /**
  * Resolve whether the caller has a positive Strat AI credit balance.
  *
@@ -42,4 +45,14 @@ export async function resolveCreditAvailability(req: Request): Promise<CreditAva
   } catch {
     return 'unknown';
   }
+}
+
+/** Return the shared 402 refusal when the authoritative balance is exhausted. */
+export async function denyIfCreditsExhausted(req: Request): Promise<Response | null> {
+  if ((await resolveCreditAvailability(req)) !== 'exhausted') return null;
+
+  return Response.json(
+    { error: CREDIT_EXHAUSTED_MESSAGE },
+    { status: 402, headers: { 'Cache-Control': 'no-store' } }
+  );
 }

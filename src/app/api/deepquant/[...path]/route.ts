@@ -12,7 +12,7 @@
 // `ReadableStream` through untouched with `no-transform` and no timeout.
 
 import { assertFeatureEnabled } from '../../_featureSwitches';
-import { resolveCreditAvailability } from '../../_credits';
+import { denyIfCreditsExhausted } from '../../_credits';
 import { proxyError } from '../../_gateway';
 import { identityHeaders, unauthenticated } from '../../_identity';
 import { proxyRequest, resolveCatchAll } from '../../_proxy';
@@ -106,13 +106,8 @@ async function handle(req: Request, ctx: Ctx): Promise<Response> {
     // checked: stream reattachment, cancellation, and session reads/writes must
     // remain available even after the balance reaches zero.
     if (isChargeableAction(req, segments)) {
-      const availability = await resolveCreditAvailability(req);
-      if (availability === 'exhausted') {
-        return proxyError(
-          402,
-          'You are out of Strat AI credits. Top up your balance on the dashboard to continue using Find Trade and other AI actions.'
-        );
-      }
+      const deniedForCredits = await denyIfCreditsExhausted(req);
+      if (deniedForCredits) return deniedForCredits;
     }
   }
 

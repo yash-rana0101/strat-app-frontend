@@ -30,6 +30,7 @@ import {
   upstreamBase,
   PROXY_TIMEOUT_MS,
 } from '../_gateway';
+import { denyIfCreditsExhausted } from '../_credits';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -103,20 +104,20 @@ export function toSentimentPayload(symbol: string, verdict: StrategicVerdict): S
 
   const articles: SentimentArticle[] = Array.isArray(verdict.articles)
     ? verdict.articles
-        .filter(
-          (a): a is NonNullable<typeof a> =>
-            !!a && (typeof a.title === 'string' || typeof a.url === 'string')
-        )
-        .map((a) => ({
-          title: typeof a.title === 'string' ? a.title.trim() : '',
-          url: typeof a.url === 'string' && a.url.trim() ? a.url.trim() : undefined,
-          source: typeof a.source === 'string' && a.source.trim() ? a.source.trim() : undefined,
-          published_at:
-            typeof a.published_at === 'string' && a.published_at.trim()
-              ? a.published_at.trim()
-              : undefined,
-        }))
-        .filter((a) => a.title.length > 0 || !!a.url)
+      .filter(
+        (a): a is NonNullable<typeof a> =>
+          !!a && (typeof a.title === 'string' || typeof a.url === 'string')
+      )
+      .map((a) => ({
+        title: typeof a.title === 'string' ? a.title.trim() : '',
+        url: typeof a.url === 'string' && a.url.trim() ? a.url.trim() : undefined,
+        source: typeof a.source === 'string' && a.source.trim() ? a.source.trim() : undefined,
+        published_at:
+          typeof a.published_at === 'string' && a.published_at.trim()
+            ? a.published_at.trim()
+            : undefined,
+      }))
+      .filter((a) => a.title.length > 0 || !!a.url)
     : [];
 
   return {
@@ -138,6 +139,9 @@ export async function GET(req: Request): Promise<Response> {
   const symbol = (urlObj.searchParams.get('symbol') ?? '').trim().toUpperCase();
   const model = (urlObj.searchParams.get('model') ?? '').trim();
   if (!symbol) return proxyError(400, 'sentiment: a symbol query parameter is required');
+
+  const deniedForCredits = await denyIfCreditsExhausted(req);
+  if (deniedForCredits) return deniedForCredits;
 
   const upstreamParams = new URLSearchParams({ symbol });
   if (model) upstreamParams.set('model', model);

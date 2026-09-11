@@ -4,7 +4,8 @@ import React, { useState, useMemo } from 'react';
 import { useQuantStore, ChartPattern } from '../../../store/useQuantStore';
 import { useTradeStore, ChartTimeframe } from '../../../store/useTradeStore';
 import { useRadarStore } from '../../../store/useRadarStore';
-import { Sparkles, Activity, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Sparkles, Activity, Loader2, AlertTriangle, RefreshCw, ArrowRight } from 'lucide-react';
+import { dashboardUrl, openExternalUrl } from '../../../lib/redirect';
 import {
   PATTERN_TIMEFRAMES,
   bestPatternTimeframe,
@@ -13,6 +14,7 @@ import {
 } from '../../panels/left-panel/patternsSummary';
 import PatternTimeframeTabs from './PatternTimeframeTabs';
 import PatternCard from './PatternCard';
+import { classifyAgentError } from './agentErrorClassifier';
 
 interface MultiTfPatternsViewProps {
   variant?: 'panel' | 'sheet';
@@ -32,6 +34,8 @@ export default function MultiTfPatternsView({ variant = 'panel' }: MultiTfPatter
   const patterns = currentTfData?.patterns || [];
   const getPatternCount = (tf: string) => patternCountFor(multiTfPatterns, tf);
   const totalPatterns = useMemo(() => totalPatternCount(multiTfPatterns), [multiTfPatterns]);
+  const creditsExhausted =
+    !!patternsError && classifyAgentError(patternsError).kind === 'credits-exhausted';
 
   const handlePatternClick = (p: ChartPattern) => {
     const symbol = useTradeStore.getState().selectedSymbol || 'RELIANCE';
@@ -117,11 +121,10 @@ export default function MultiTfPatternsView({ variant = 'panel' }: MultiTfPatter
 
       {/* ── Patterns List ── */}
       <div
-        className={`mt-2 ${
-          inSheet
+        className={`mt-2 ${inSheet
             ? 'flex flex-col gap-2.5 px-4'
             : 'max-h-47.5 overflow-y-auto scrollbar-thin flex flex-col gap-2 px-3'
-        }`}
+          }`}
       >
         {isFetchingPatterns ? (
           <div className="space-y-2 py-1">
@@ -150,7 +153,7 @@ export default function MultiTfPatternsView({ variant = 'panel' }: MultiTfPatter
             <div className="flex items-center gap-1.5">
               <AlertTriangle size={12} className="shrink-0 text-amber-500 dark:text-amber-400" />
               <span className="text-[9.5px] font-black uppercase tracking-widest text-amber-500 dark:text-amber-400">
-                Scan unavailable
+                {creditsExhausted ? 'Credits exhausted' : 'Scan unavailable'}
               </span>
             </div>
             <p className="text-xs leading-relaxed text-amber-700/90 dark:text-amber-300/80 break-words font-sans">
@@ -159,20 +162,23 @@ export default function MultiTfPatternsView({ variant = 'panel' }: MultiTfPatter
             <button
               type="button"
               onClick={() => {
-                const sym = selectedSymbol || 'RELIANCE';
-                void useQuantStore.getState().fetchMultiTfPatterns(sym);
+                if (creditsExhausted) {
+                  void openExternalUrl(dashboardUrl());
+                } else {
+                  const sym = selectedSymbol || 'RELIANCE';
+                  void useQuantStore.getState().fetchMultiTfPatterns(sym);
+                }
               }}
               className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-md border border-amber-500/30 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-amber-500 dark:text-amber-400 transition-colors hover:bg-amber-500/10 cursor-pointer"
             >
-              <RefreshCw size={9} />
-              Retry scan
+              {creditsExhausted ? <ArrowRight size={9} /> : <RefreshCw size={9} />}
+              {creditsExhausted ? 'Top Up Credits' : 'Retry scan'}
             </button>
           </div>
         ) : patterns.length === 0 ? (
           <div
-            className={`flex flex-col items-center justify-center text-center rounded-xl border border-border-default/40 bg-elevated/10 ${
-              inSheet ? 'py-10' : 'py-5'
-            }`}
+            className={`flex flex-col items-center justify-center text-center rounded-xl border border-border-default/40 bg-elevated/10 ${inSheet ? 'py-10' : 'py-5'
+              }`}
           >
             <Activity size={inSheet ? 18 : 14} className="text-text-muted mb-1 opacity-60" />
             <span className="text-xs font-semibold text-text-secondary">No patterns forming</span>

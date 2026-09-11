@@ -164,3 +164,27 @@ describe('GET — a missing verdict reports which kind of missing it is', () => 
     expect(((await res.json()) as { error: string }).error).toContain('try again shortly');
   });
 });
+
+describe('GET — account credits', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('402s and never contacts sentiment when the balance is exhausted', async () => {
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: async () => ({ success: true, data: { credits: 0 } }),
+    } as Response);
+
+    const res = await GET(
+      new Request('http://localhost/api/sentiment?symbol=RELIANCE', {
+        headers: { cookie: 'access_token=tok' },
+      })
+    );
+
+    expect(res.status).toBe(402);
+    expect(((await res.json()) as { error: string }).error).toContain('Top up');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(String(fetchMock.mock.calls[0][0])).toContain('/credit/');
+  });
+});

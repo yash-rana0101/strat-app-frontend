@@ -1,8 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Newspaper, Loader2 } from 'lucide-react';
+import { ArrowRight, Newspaper, Loader2 } from 'lucide-react';
+import { dashboardUrl, openExternalUrl } from '../../../lib/redirect';
 import type { SentimentPayload } from '../../../store/useQuantStore';
+import { classifyAgentError } from '../../quant/deep-quant/agentErrorClassifier';
 import SentimentSkeleton from './SentimentSkeleton';
 import SentimentHeroCard from './sentiment/SentimentHeroCard';
 import SentimentNewsList from './sentiment/SentimentNewsList';
@@ -43,12 +45,13 @@ export default function SentimentBlock({
   const subject = sentiment?.symbol?.trim() ?? '';
   const subjectDiffers =
     !!subject && !!symbol?.trim() && subject.toUpperCase() !== symbol.trim().toUpperCase();
+  const creditsExhausted =
+    !!error && classifyAgentError(error).kind === 'credits-exhausted';
 
   return (
     <div
-      className={`flex flex-col gap-3 ${
-        inSheet ? 'p-4' : 'px-3 py-2.5 border-b border-border-default'
-      }`}
+      className={`flex flex-col gap-3 ${inSheet ? 'p-4' : 'px-3 py-2.5 border-b border-border-default'
+        }`}
     >
       {/* ── Subheader ────────────────────────────────────────────── */}
       <div className="flex items-center gap-1.5">
@@ -71,9 +74,8 @@ export default function SentimentBlock({
         {isLoading && <Loader2 size={10} className="ml-auto animate-spin text-text-muted" />}
         {sentiment && !isLoading && (
           <span
-            className={`ml-auto ${
-              inSheet ? 'text-[11px]' : 'text-[8px]'
-            } text-text-muted tabular-nums`}
+            className={`ml-auto ${inSheet ? 'text-[11px]' : 'text-[8px]'
+              } text-text-muted tabular-nums`}
           >
             {sentiment.headlines.length} headlines
           </span>
@@ -84,18 +86,29 @@ export default function SentimentBlock({
         <SentimentSkeleton />
       ) : error ? (
         <div
-          className={`flex items-center gap-2 rounded-lg py-2.5 px-3 bg-rose-500/10 border border-rose-500/25`}
+          className="flex flex-col items-start gap-2 rounded-lg py-2.5 px-3 bg-rose-500/10 border border-rose-500/25"
         >
-          <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-rose-400" />
-          {/* In the sheet the message wraps instead of truncating: this is the
-              only place the failure is explained in full. */}
-          <p
-            className={`text-xs text-rose-300/90 font-medium ${
-              inSheet ? 'break-words' : 'truncate'
-            }`}
-          >
-            {error}
-          </p>
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-rose-400" />
+            {/* In the sheet the message wraps instead of truncating: this is the
+                only place the failure is explained in full. */}
+            <p
+              className={`text-xs text-rose-300/90 font-medium ${inSheet ? 'break-words' : 'truncate'
+                }`}
+            >
+              {error}
+            </p>
+          </div>
+          {creditsExhausted && (
+            <button
+              type="button"
+              onClick={() => void openExternalUrl(dashboardUrl())}
+              className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-2 py-1 text-[9px] font-bold uppercase tracking-wider text-emerald-300 transition-colors hover:bg-emerald-500/20"
+            >
+              Top Up Credits
+              <ArrowRight size={9} />
+            </button>
+          )}
         </div>
       ) : sentiment ? (
         <div className="flex flex-col gap-3.5">
