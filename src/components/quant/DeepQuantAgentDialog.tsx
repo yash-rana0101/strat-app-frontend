@@ -1,7 +1,7 @@
 'use client';
 
 // components/quant/DeepQuantAgentDialog.tsx
-// The Agent View: the full Deep Quant analysis in a centered dialog over the terminal.
+// The Agent View: the full Strat AI Agent analysis in a centered dialog over the terminal.
 // Renders transcript, progress timeline, detail column, Q&A composer, and right-side session history.
 
 import React from 'react';
@@ -140,11 +140,10 @@ export default function DeepQuantAgentDialog({
                   aria-expanded={historyOpen}
                   aria-label="Session history"
                   title="Session history"
-                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                    historyOpen
+                  className={`flex items-center gap-1 rounded-md border px-2 py-1 text-[9px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${historyOpen
                       ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-600 dark:text-emerald-400 shadow-xs'
                       : 'border-border-default/60 bg-elevated/40 text-text-muted hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-500/10'
-                  }`}
+                    }`}
                 >
                   <History size={11} aria-hidden="true" />
                   <span>History</span>

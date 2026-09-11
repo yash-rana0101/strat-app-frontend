@@ -189,7 +189,7 @@ export default function FnoSection() {
   // rather than a guess. Preference order: the underlying of whatever is already
   // charted (the user's evident interest), then NIFTY as the liquid default, then
   // whatever is first. This lives in `FnoSection` rather than the sidebar because
-  // the sidebar is not always mounted — selecting the Deep Quant tab unmounts it,
+  // the sidebar is not always mounted — selecting the Strat AI Agent tab unmounts it,
   // and the workspace would then wait for an underlying forever.
   useEffect(() => {
     if (fnoUnderlying) return;

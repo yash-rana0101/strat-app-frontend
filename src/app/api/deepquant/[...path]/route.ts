@@ -71,7 +71,7 @@ async function handle(req: Request, ctx: Ctx): Promise<Response> {
   let extraHeaders: Record<string, string> | undefined;
 
   if (isAgentPath(segments)) {
-    const denied = assertFeatureEnabled('deepseekGlm', 'Deep Quant AI analysis');
+    const denied = assertFeatureEnabled('deepseekGlm', 'Strat AI Agent analysis');
     if (denied) return denied;
 
     // THE AUTHENTICATION BOUNDARY for the agent surface.

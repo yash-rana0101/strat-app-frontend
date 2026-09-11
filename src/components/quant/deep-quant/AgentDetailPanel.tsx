@@ -56,7 +56,7 @@ export default function AgentDetailPanel({
           <Layers size={20} className="text-text-muted" />
         </div>
         <p className="max-w-64 text-xs font-semibold text-text-primary">
-          Deep Quant Visual Inspector
+          Strat AI Agent Visual Inspector
         </p>
         <p className="max-w-64 text-[11px] leading-relaxed text-text-muted mt-1">
           Analysis is underway. Final trade setup and risk guards will appear here once synthesized.

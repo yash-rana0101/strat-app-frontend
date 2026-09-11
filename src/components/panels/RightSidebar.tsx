@@ -34,7 +34,7 @@ interface RightSidebarProps {
  * `INTRADAY | AI AGENT` tab bar. So the switcher existed twice in two different
  * shapes, and both of the things it switched between were permanently ~62px
  * shorter than the column they sat in. The panels are self-identifying (the order
- * book opens on its Price/Size/Total head, Deep Quant on its FIND QUANT TRADE
+ * book opens on its Price/Size/Total head, Strat AI Agent on its FIND QUANT TRADE
  * control, F&O on its underlying and expiry selectors), so the header was
  * spending that height on a label the content already carried.
  */

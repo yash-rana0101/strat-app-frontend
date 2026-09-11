@@ -45,7 +45,7 @@ import type { AccessFlags } from './api/types';
 export type Sku = 'TERMINAL' | 'RESEARCH';
 
 /**
- * Agent modes accepted by the Deep Quant service.
+ * Agent modes accepted by the Strat AI Agent service.
  *
  * FIND / VERIFY are user-selectable in `DeepQuantPanel`. QA is reached through
  * the separate `ask_trade_question` IPC command. DEBATE is routable on the

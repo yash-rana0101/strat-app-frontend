@@ -71,7 +71,7 @@ export default function SummaryStrip({
           ? (emptyMessage ?? 'No data')
           : (valueText ?? '');
 
-  const isEmptyCta = state === 'empty' && emptyMessage === 'Run Deep Quant';
+  const isEmptyCta = state === 'empty' && emptyMessage === 'Run Strat AI Agent';
 
   return (
     <button
@@ -135,11 +135,10 @@ export default function SummaryStrip({
           </span>
         ) : (
           <span
-            className={`self-start rounded-md px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-wider ${
-              isEmptyCta
+            className={`self-start rounded-md px-2 py-0.5 text-[8.5px] font-bold uppercase tracking-wider ${isEmptyCta
                 ? 'bg-primary/10 border border-primary/30 text-primary'
                 : 'bg-elevated/80 border border-border-default text-text-muted'
-            }`}
+              }`}
           >
             {emptyMessage ?? 'No data'}
           </span>

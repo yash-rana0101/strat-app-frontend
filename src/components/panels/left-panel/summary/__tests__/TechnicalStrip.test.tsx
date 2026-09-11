@@ -48,7 +48,7 @@ describe('TechnicalStrip', () => {
         consensus={report({ trend_score: 61 })}
         computedAt={NOW - 30_000}
         now={NOW}
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 
@@ -56,18 +56,18 @@ describe('TechnicalStrip', () => {
     expect(screen.getByText('STRONG BULL')).toBeInTheDocument();
   });
 
-  it('renders the Deep Quant call to action when nothing has been computed', () => {
+  it('renders the Strat AI Agent call to action when nothing has been computed', () => {
     render(
       <TechnicalStrip
         symbol="RELIANCE"
         consensus={null}
         computedAt={null}
         now={NOW}
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 
-    expect(screen.getByText('Run Deep Quant')).toBeInTheDocument();
+    expect(screen.getByText('Run Strat AI Agent')).toBeInTheDocument();
     expect(screen.queryByText('NEUTRAL')).not.toBeInTheDocument();
   });
 
@@ -78,13 +78,13 @@ describe('TechnicalStrip', () => {
         consensus={report({ symbol: 'RELIANCE', trend_score: 61 })}
         computedAt={NOW - 30_000}
         now={NOW}
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 
     expect(screen.queryByText('+61')).not.toBeInTheDocument();
     expect(screen.queryByText('STRONG BULL')).not.toBeInTheDocument();
-    expect(screen.getByText('Run Deep Quant')).toBeInTheDocument();
+    expect(screen.getByText('Run Strat AI Agent')).toBeInTheDocument();
   });
 
   it('treats a matching symbol case-insensitively', () => {
@@ -94,7 +94,7 @@ describe('TechnicalStrip', () => {
         consensus={report({ trend_score: -20 })}
         computedAt={NOW - 30_000}
         now={NOW}
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 
@@ -109,7 +109,7 @@ describe('TechnicalStrip', () => {
         consensus={report()}
         computedAt={NOW - (CONSENSUS_STALE_AFTER_MS - 1_000)}
         now={NOW}
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 
@@ -124,7 +124,7 @@ describe('TechnicalStrip', () => {
         consensus={report()}
         computedAt={NOW - 3 * 60 * 60 * 1000}
         now={NOW}
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 
@@ -143,7 +143,7 @@ describe('TechnicalStrip', () => {
         consensus={report({ trend_score: 0 })}
         computedAt={null}
         now={NOW}
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 

@@ -198,7 +198,7 @@ describe('AnalysisSheet', () => {
     const dialog = await screen.findByRole('dialog');
     expect(dialog).not.toHaveTextContent('+61');
     expect(dialog).toHaveTextContent(/No technical reading for/);
-    expect(dialog).toHaveTextContent(/Run Deep Quant Analysis/);
+    expect(dialog).toHaveTextContent(/Run Strat AI Agent/);
   });
 
   it.each([

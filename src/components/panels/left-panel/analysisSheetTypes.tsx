@@ -40,7 +40,7 @@ export function EmptyTechnical({ symbol }: { symbol?: string }) {
         <span className="font-extrabold text-primary">{symbol || 'this symbol'}</span>
       </p>
       <p className="max-w-70 text-[11px] leading-relaxed text-text-secondary">
-        Run Deep Quant Analysis to compute the technical consensus, patterns and active strategies
+        Run Strat AI Agent to compute the technical consensus, patterns and active strategies
         for this instrument.
       </p>
     </div>
@@ -64,12 +64,11 @@ export function TabBadge({
       className={`
         flex h-3.5 min-w-3.5 items-center justify-center rounded-sm border px-1
         text-[8px] font-black tabular-nums transition-colors
-        ${
-          tone === 'warn'
-            ? 'border-neutral/40 bg-neutral/15 text-neutral'
-            : active
-              ? 'border-primary/40 bg-primary/15 text-primary'
-              : 'border-border-default bg-elevated/60 text-text-muted'
+        ${tone === 'warn'
+          ? 'border-neutral/40 bg-neutral/15 text-neutral'
+          : active
+            ? 'border-primary/40 bg-primary/15 text-primary'
+            : 'border-border-default bg-elevated/60 text-text-muted'
         }
       `}
     >

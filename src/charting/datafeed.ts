@@ -1078,7 +1078,7 @@ export function createDatafeed(): IBasicDatafeed {
         });
 
         // ── Mirror bars into the Zustand historicalCache ──────────────
-        // The Deep Quant / Consensus pipeline gates on
+        // The Strat AI Agent / Consensus pipeline gates on
         // `useTradeStore.historicalCache` (via symbolCandleCount) to know a
         // symbol has data. Each scroll-back page is MERGED with the existing
         // cache so pages accumulate rather than overwrite.

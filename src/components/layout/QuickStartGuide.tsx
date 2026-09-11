@@ -115,12 +115,12 @@ function tradeActionSteps(
     {
       ...step(
         triggerSelector,
-        'Deep Quant AI Agent',
+        'Strat AI Agent',
         'Open the AI workspace to find a new setup or verify your own trade thesis. Runs stream their reasoning, can watch price conditions, and accept follow-up Q&A when available. Plan access and credits may apply.',
         side
       ),
       popover: {
-        title: 'Deep Quant AI Agent',
+        title: 'Strat AI Agent',
         description:
           'Open the AI workspace to find a new setup or verify your own trade thesis. Runs stream their reasoning, can watch price conditions, and accept follow-up Q&A when available. Plan access and credits may apply.',
         side,

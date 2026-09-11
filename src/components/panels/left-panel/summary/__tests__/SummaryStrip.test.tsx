@@ -35,7 +35,7 @@ describe('SummaryStrip', () => {
         valueText="Bullish, score +42"
         value={<span>+42</span>}
         detail={<span>Order book at record high</span>}
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 
@@ -56,7 +56,7 @@ describe('SummaryStrip', () => {
         label="Patterns"
         valueText="4 patterns"
         value={<span>4</span>}
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 
@@ -96,7 +96,7 @@ describe('SummaryStrip', () => {
         // win, because showing it would present a stale number as current.
         value={<span>+42</span>}
         valueText="Bullish, score +42"
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 
@@ -116,7 +116,7 @@ describe('SummaryStrip', () => {
         state="loading"
         loadingMessage="Scanning"
         value={<span>4</span>}
-        onClick={() => {}}
+        onClick={() => { }}
       />
     );
 
@@ -130,12 +130,12 @@ describe('SummaryStrip', () => {
         icon={<Newspaper size={10} />}
         label="Technical Consensus"
         state="empty"
-        emptyMessage="Run Deep Quant"
-        onClick={() => {}}
+        emptyMessage="Run Strat AI Agent"
+        onClick={() => { }}
       />
     );
 
-    expect(screen.getByText('Run Deep Quant')).toBeInTheDocument();
+    expect(screen.getByText('Run Strat AI Agent')).toBeInTheDocument();
     expect(screen.queryByText(/neutral/i)).not.toBeInTheDocument();
     // Still clickable: the sheet explains what to run and why.
     expect(screen.getByRole('button')).toBeEnabled();

@@ -1,7 +1,7 @@
 // useQuantStore.ts — V3 Quant Dashboard Zustand Store.
 //
 // Manages consensus data, AI execution plan state, simulated positions,
-// and the Deep Quant Analysis pipeline trigger.
+// and the Strat AI Agent analysis pipeline trigger.
 
 import { create } from 'zustand';
 import { useAuthStore } from './useAuthStore';
@@ -229,7 +229,7 @@ export interface MultiTfChartPatterns {
   patterns: ChartPattern[];
 }
 
-// ── Deep Quant SSE stream event payload ─────────────────────────────────
+// ── Strat AI Agent SSE stream event payload ─────────────────────────────
 // Shape emitted by the Rust `deep-quant-stream` Tauri event bridge.
 export interface StreamEventPayload {
   event: string;
@@ -307,7 +307,7 @@ export interface SentimentPayload {
 
 interface QuantStore {
   consensusData: ConsensusReport | null;
-  /** Per-symbol consensus cache — retains results from previous Deep Quant runs */
+  /** Per-symbol consensus cache — retains results from previous Strat AI Agent runs */
   consensusCache: Record<string, ConsensusReport>;
   /**
    * When the currently-displayed consensus was computed (epoch ms), or null when
@@ -489,7 +489,7 @@ const SENTIMENT_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const SENTIMENT_429_COOL = 5 * 60 * 1000; // 5 minutes cooldown after 429
 
 // ── Multi-timeframe chart-pattern cache + in-flight dedup ────────────────
-// fetchMultiTfPatterns is auto-triggered on EVERY Deep Quant run, and the
+// fetchMultiTfPatterns is auto-triggered on EVERY Strat AI Agent run, and the
 // underlying command fans out a DB fetch + forming-pattern detection across
 // 7 timeframes. Without a cache, repeatedly analyzing the same symbol re-did
 // all of that work each time. A short TTL keeps intraday patterns fresh while
@@ -719,7 +719,7 @@ export function mergeFinalPlan(
 // ── Store ───────────────────────────────────────────────────────────────
 
 // ── Per-symbol analysis session ─────────────────────────────────────────
-// The Deep Quant terminal state used to be a single slot, so switching the
+// The Strat AI Agent terminal state used to be a single slot, so switching the
 // active chart symbol (or starting a new run) wiped the reasoning transcript,
 // tool calls, decision, and Q&A of the symbol you were on. We now keep one
 // QuantSession PER SYMBOL in `sessionsByKey`, route streaming events to the

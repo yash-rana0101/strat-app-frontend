@@ -51,7 +51,7 @@ export default function TechnicalStrip({
         icon={<TrendingUp size={16} />}
         label="Technical Consensus"
         state="empty"
-        emptyMessage="Run Deep Quant"
+        emptyMessage="Run Strat AI Agent"
         onClick={onClick}
       />
     );
@@ -80,13 +80,12 @@ export default function TechnicalStrip({
           </span>
         ) : null
       }
-      valueText={`${verdict}, score ${score > 0 ? 'plus ' : score < 0 ? 'minus ' : ''}${Math.abs(score)}${
-        isStale && ageMs !== null
+      valueText={`${verdict}, score ${score > 0 ? 'plus ' : score < 0 ? 'minus ' : ''}${Math.abs(score)}${isStale && ageMs !== null
           ? `, previous reading from ${formatAge(ageMs)}`
           : ageMs !== null
             ? `, measured ${formatAge(ageMs)}`
             : ''
-      }`}
+        }`}
       value={
         <div className="flex items-center justify-between w-full">
           <span className={`text-sm font-black tabular-nums ${trendColor(score)}`}>

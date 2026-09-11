@@ -122,21 +122,21 @@ describe('assertFeatureEnabled', () => {
     vi.stubEnv('FEATURE_ENFORCEMENT', 'true');
     vi.stubEnv('ENABLE_DEEPSEEK_GLM', '');
 
-    const denied = assertFeatureEnabled('deepseekGlm', 'Deep Quant AI analysis');
+    const denied = assertFeatureEnabled('deepseekGlm', 'Strat AI Agent analysis');
     expect(denied).not.toBeNull();
     expect(denied!.status).toBe(403);
 
     const body = (await denied!.json()) as { error: string };
     // The message must name the feature and say who controls the switch — a bare
     // 403 on an SSE endpoint is otherwise indistinguishable from a crash.
-    expect(body.error).toContain('Deep Quant AI analysis');
+    expect(body.error).toContain('Strat AI Agent analysis');
     expect(body.error).toMatch(/operator controls this switch/);
   });
 
   it('allows when enforcing and the switch is on', () => {
     vi.stubEnv('FEATURE_ENFORCEMENT', 'true');
     vi.stubEnv('ENABLE_DEEPSEEK_GLM', 'true');
-    expect(assertFeatureEnabled('deepseekGlm', 'Deep Quant AI analysis')).toBeNull();
+    expect(assertFeatureEnabled('deepseekGlm', 'Strat AI Agent analysis')).toBeNull();
   });
 
   it('gates each feature independently', () => {

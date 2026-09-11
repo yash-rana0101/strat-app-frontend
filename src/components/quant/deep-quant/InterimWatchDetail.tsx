@@ -63,7 +63,7 @@ export default function InterimWatchDetail({
 
   const setupValidation =
     bestCurrentRead?.why_standing_aside ||
-    'Deep Quant watcher is actively monitoring order flow and price action against trigger conditions.';
+    'Strat AI Agent watcher is actively monitoring order flow and price action against trigger conditions.';
   const executionPlan =
     'Active price watcher engaged. Upon trigger boundary match, the model synthesizes and executes order setup.';
 
