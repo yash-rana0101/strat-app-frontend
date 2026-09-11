@@ -140,13 +140,18 @@ export const MODEL_PROVIDERS_OMNIROUTE: ModelProviderGroup[] = [
 
 // Which LLM gateway this build targets: 'openrouter' (production, per-user keys)
 // or 'omniroute' (beta, shared key). Defaults to omniroute.
+// or 'omniroute' (beta, shared key). Defaults to openrouter.
 export const LLM_GATEWAY: 'openrouter' | 'omniroute' =
   process.env.NEXT_PUBLIC_LLM_GATEWAY === 'openrouter' ? 'openrouter' : 'omniroute';
+  process.env.NEXT_PUBLIC_LLM_GATEWAY === 'omniroute' ? 'omniroute' : 'openrouter';
 
 // Model selection: unlocked so beta users can select models in testing env
 export const MODEL_SELECTION_LOCKED = false;
 
 // Active list for this build. Defaults to omniroute (beta); production builds set
 // NEXT_PUBLIC_LLM_GATEWAY=openrouter.
+// Active list for this build. Defaults to openrouter; omniroute builds set
+// NEXT_PUBLIC_LLM_GATEWAY=omniroute.
 export const MODEL_PROVIDERS: ModelProviderGroup[] =
   LLM_GATEWAY === 'openrouter' ? MODEL_PROVIDERS_OPENROUTER : MODEL_PROVIDERS_OMNIROUTE;
+  LLM_GATEWAY === 'omniroute' ? MODEL_PROVIDERS_OMNIROUTE : MODEL_PROVIDERS_OPENROUTER;

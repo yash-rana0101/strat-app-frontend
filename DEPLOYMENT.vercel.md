@@ -62,6 +62,7 @@ changing one needs a redeploy, not a restart. The rest are read per request.
 | `NEXT_PUBLIC_WS_URL`             | `wss://app-api.stratai.live/ws/aggregator`  |
 | `NEXT_PUBLIC_PROD`               | `true`                                      |
 | `NEXT_PUBLIC_LLM_GATEWAY`        | `omniroute`                                 |
+| `NEXT_PUBLIC_LLM_GATEWAY`        | `openrouter`                                |
 | `NEXT_PUBLIC_RESEARCH_BETA_OPEN` | `true` only for the closed beta — see below |
 
 All WS URLs must be `wss://`; an https page cannot open `ws://`.
