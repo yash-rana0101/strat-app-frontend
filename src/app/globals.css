@@ -220,6 +220,14 @@ body {
 }
 
 /* ── First-run Driver.js product tour ─────────────────────────────────── */
+html:not(.light) .driver-active-element {
+  outline: 2px solid rgba(52, 211, 153, 0.92);
+  outline-offset: 4px;
+  box-shadow:
+    0 0 0 6px rgba(16, 185, 129, 0.2),
+    0 0 28px rgba(16, 185, 129, 0.28);
+}
+
 .driver-popover.app-tour-popover {
   min-width: min(320px, calc(100vw - 24px));
   max-width: min(380px, calc(100vw - 24px));
