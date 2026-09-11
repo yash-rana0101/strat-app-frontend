@@ -20,7 +20,7 @@ vi.mock('@/lib/env', async (importOriginal) => ({
 vi.mock('@/lib/bridge', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/bridge')>()),
   bridgeInvoke: invokeSpy,
-  bridgeListen: vi.fn(async () => () => {}),
+  bridgeListen: vi.fn(async () => () => { }),
 }));
 
 import { useQuantStore } from '@/store/useQuantStore';

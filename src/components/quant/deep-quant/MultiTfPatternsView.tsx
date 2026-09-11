@@ -121,8 +121,8 @@ export default function MultiTfPatternsView({ variant = 'panel' }: MultiTfPatter
       {/* ── Patterns List ── */}
       <div
         className={`mt-2 ${inSheet
-            ? 'flex flex-col gap-2.5 px-4'
-            : 'max-h-47.5 overflow-y-auto scrollbar-thin flex flex-col gap-2 px-3'
+          ? 'flex flex-col gap-2.5 px-4'
+          : 'max-h-47.5 overflow-y-auto scrollbar-thin flex flex-col gap-2 px-3'
           }`}
       >
         {isFetchingPatterns ? (
