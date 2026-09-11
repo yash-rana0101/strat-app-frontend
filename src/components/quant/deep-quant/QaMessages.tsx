@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { User, Copy, Check, ThumbsUp, ThumbsDown, Share2 } from 'lucide-react';
+import { User, Copy, Check, ThumbsUp, ThumbsDown, Share2, ArrowRight } from 'lucide-react';
 import { QaChatMessage } from '../../../store/useQuantStore';
+import { dashboardUrl, openExternalUrl } from '../../../lib/redirect';
 import { useFqQaMessages } from '../useFqSession';
+import { classifyAgentError } from './agentErrorClassifier';
 import MarkdownRenderer from './MarkdownRenderer';
 import StratAiLogo from '../../brand/StratAiLogo';
 import ToolCallStatusRow, { type ToolCallStatus } from './ToolCallStatusRow';
@@ -108,6 +110,8 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
   const [liked, setLiked] = useState(false);
   const [disliked, setDisliked] = useState(false);
   const toolActivity = React.useMemo(() => parseToolActivity(msg.activity ?? []), [msg.activity]);
+  const classifiedError = msg.error ? classifyAgentError(msg.content) : null;
+  const creditsExhausted = classifiedError?.kind === 'credits-exhausted';
 
   return (
     <div className="w-full my-3 animate-fade-in font-sans flex items-start gap-2.5 sm:gap-3">
@@ -152,7 +156,22 @@ function AssistantMessageRow({ msg }: { msg: QaChatMessage }) {
           </div>
         )}
 
-        {msg.content ? (
+        {creditsExhausted ? (
+          <div className="w-full rounded border border-amber-500/30 bg-amber-500/5 p-2.5 text-[11px]">
+            <p className="font-bold text-amber-400">{classifiedError.title}</p>
+            <p className="mt-1 leading-relaxed text-text-secondary">
+              {classifiedError.explanation}
+            </p>
+            <button
+              type="button"
+              onClick={() => void openExternalUrl(dashboardUrl())}
+              className="mt-2 flex items-center gap-1.5 rounded border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-400 transition-colors hover:bg-emerald-500/20"
+            >
+              Top Up Credits
+              <ArrowRight size={11} />
+            </button>
+          </div>
+        ) : msg.content ? (
           <div
             className={`w-full text-[11px] leading-relaxed ${msg.error ? 'text-rose-400' : 'text-text-primary'
               }`}

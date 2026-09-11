@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { Loader2, AlertTriangle, Lock } from 'lucide-react';
+import { Loader2, AlertTriangle, ArrowRight, Lock } from 'lucide-react';
 import { isActionableTrade } from '../../store/useQuantStore';
+import { dashboardUrl, openExternalUrl } from '../../lib/redirect';
 import {
   useFqAnalysisError,
   useFqFinalTrade,
@@ -157,24 +158,27 @@ export default function AgentTerminal({
         {sessionStatus === 'error' &&
           (() => {
             const err = classifyAgentError(analysisError);
-            const isFault = err.kind !== 'research-locked' && err.kind !== 'feature-disabled';
+            const isFault =
+              err.kind !== 'research-locked' &&
+              err.kind !== 'feature-disabled' &&
+              err.kind !== 'credits-exhausted';
             const tone = isFault
               ? {
-                  wrap: 'bg-rose-500/5 border-rose-500/30',
-                  badge: 'bg-rose-500/15 text-rose-400 border border-rose-500/25',
-                  title: 'text-rose-400',
-                  body: 'text-text-secondary',
-                  detail: 'text-rose-400 bg-black/40 border-rose-500/20',
-                  glyph: <AlertTriangle size={12} />,
-                }
+                wrap: 'bg-rose-500/5 border-rose-500/30',
+                badge: 'bg-rose-500/15 text-rose-400 border border-rose-500/25',
+                title: 'text-rose-400',
+                body: 'text-text-secondary',
+                detail: 'text-rose-400 bg-black/40 border-rose-500/20',
+                glyph: <AlertTriangle size={12} />,
+              }
               : {
-                  wrap: 'bg-amber-500/5 border-amber-500/30',
-                  badge: 'bg-amber-500/15 text-amber-400 border border-amber-500/25',
-                  title: 'text-amber-400',
-                  body: 'text-text-secondary',
-                  detail: 'text-amber-400 bg-black/40 border-amber-500/20',
-                  glyph: <Lock size={12} />,
-                };
+                wrap: 'bg-amber-500/5 border-amber-500/30',
+                badge: 'bg-amber-500/15 text-amber-400 border border-amber-500/25',
+                title: 'text-amber-400',
+                body: 'text-text-secondary',
+                detail: 'text-amber-400 bg-black/40 border-amber-500/20',
+                glyph: <Lock size={12} />,
+              };
 
             return (
               <div
@@ -191,6 +195,16 @@ export default function AgentTerminal({
                 <span className={`text-[10px] pl-7 leading-relaxed ${tone.body}`}>
                   {err.explanation}
                 </span>
+                {err.kind === 'credits-exhausted' && (
+                  <button
+                    type="button"
+                    onClick={() => void openExternalUrl(dashboardUrl())}
+                    className="ml-7 flex w-fit items-center gap-1.5 rounded border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-400 transition-colors hover:bg-emerald-500/20"
+                  >
+                    Top Up Credits
+                    <ArrowRight size={11} />
+                  </button>
+                )}
                 {err.detail && (
                   <details className="pl-7 mt-0.5">
                     <summary className="text-[9px] text-text-muted hover:text-text-secondary cursor-pointer select-none">

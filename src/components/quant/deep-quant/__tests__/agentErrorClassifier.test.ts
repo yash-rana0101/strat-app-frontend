@@ -31,6 +31,15 @@ describe('classifyAgentError', () => {
     expect(err.retryable).toBe(false);
   });
 
+  it('routes application credit exhaustion to the Strat AI top-up flow', () => {
+    for (const msg of ['HTTP 402: quota exceeded', 'Strat AI credits exhausted']) {
+      const err = classifyAgentError(msg);
+      expect(err.kind, msg).toBe('credits-exhausted');
+      expect(err.retryable).toBe(false);
+      expect(err.explanation).toMatch(/top up.*dashboard/i);
+    }
+  });
+
   it('blames the LLM provider ONLY on quota/billing evidence', () => {
     for (const msg of [
       'HTTP 429 rate limit exceeded',

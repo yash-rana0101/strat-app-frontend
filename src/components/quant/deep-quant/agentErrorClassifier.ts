@@ -31,6 +31,7 @@
 /** What actually went wrong, as far as the evidence supports. */
 export type AgentErrorKind =
   | 'research-locked'
+  | 'credits-exhausted'
   | 'llm-quota'
   | 'llm-auth'
   | 'upstream-unreachable'
@@ -83,6 +84,17 @@ const RULES: Array<{
       explanation:
         'Strat AI Agent analysis is switched off server-side. Your plan is not the ' +
         'limitation — the operator controls this switch.',
+      retryable: false,
+    },
+    {
+      // The same-origin API uses Payment Required for the user's Strat AI balance.
+      // Keep this before provider quota: the fixes are different dashboards.
+      kind: 'credits-exhausted',
+      match: /\bHTTP 402\b|credits? exhausted|out of (?:Strat AI )?credits|not enough (?:Strat AI )?credits/i,
+      title: 'Credits exhausted',
+      explanation:
+        'You are out of Strat AI credits. Top up your balance on the dashboard to ' +
+        'continue using Find Trade and other AI actions.',
       retryable: false,
     },
     {

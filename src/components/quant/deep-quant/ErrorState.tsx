@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
-import { AlertTriangle, RotateCcw } from 'lucide-react';
+import { AlertTriangle, ArrowRight, RotateCcw } from 'lucide-react';
+import { dashboardUrl, openExternalUrl } from '../../../lib/redirect';
+import { classifyAgentError } from './agentErrorClassifier';
 
 interface ErrorStateProps {
   error: string;
@@ -19,6 +21,8 @@ export default function ErrorState({
   onRetryVerify,
 }: ErrorStateProps) {
   const [showDetail, setShowDetail] = React.useState(false);
+  const classified = classifyAgentError(error);
+  const creditsExhausted = classified.kind === 'credits-exhausted';
 
   const handleRetry = () => {
     if (activeMode === 'FIND') {
@@ -36,8 +40,13 @@ export default function ErrorState({
 
       <div className="text-center">
         <p className="text-[12px] font-bold uppercase tracking-wider text-rose-400 font-mono">
-          Analysis Interrupted
+          {creditsExhausted ? classified.title : 'Analysis Interrupted'}
         </p>
+        {creditsExhausted && (
+          <p className="mt-1 max-w-70 text-[10px] leading-relaxed text-text-secondary">
+            {classified.explanation}
+          </p>
+        )}
         <button
           type="button"
           onClick={() => setShowDetail(!showDetail)}
@@ -48,22 +57,32 @@ export default function ErrorState({
       </div>
 
       {showDetail && (
-        <div className="max-w-[260px] p-2.5 rounded bg-black/40 border border-rose-500/20 text-[9.5px] font-mono text-rose-300/90 leading-relaxed text-left break-all select-text">
+        <div className="max-w-65 p-2.5 rounded bg-black/40 border border-rose-500/20 text-[9.5px] font-mono text-rose-300/90 leading-relaxed text-left break-all select-text">
           {error}
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={handleRetry}
-        disabled={!dataReady}
-        className={`flex items-center gap-2 rounded-md px-4 py-2 text-[11px] font-semibold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 transition-all shadow-sm ${
-          !dataReady ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
-        }`}
-      >
-        <RotateCcw size={12} />
-        Retry Pipeline
-      </button>
+      {creditsExhausted ? (
+        <button
+          type="button"
+          onClick={() => void openExternalUrl(dashboardUrl())}
+          className="flex items-center gap-2 rounded-md px-4 py-2 text-[11px] font-semibold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 transition-all shadow-sm active:scale-95"
+        >
+          Top Up Credits
+          <ArrowRight size={12} />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={handleRetry}
+          disabled={!dataReady}
+          className={`flex items-center gap-2 rounded-md px-4 py-2 text-[11px] font-semibold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 transition-all shadow-sm ${!dataReady ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer active:scale-95'
+            }`}
+        >
+          <RotateCcw size={12} />
+          Retry Pipeline
+        </button>
+      )}
     </div>
   );
 }

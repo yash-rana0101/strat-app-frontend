@@ -31,7 +31,7 @@ import {
 // ── HTTP helpers ────────────────────────────────────────────────────────────
 
 /**
- * A failed proxy call, carrying the upstream's `{ error }` message.
+ * A failed proxy call, carrying the upstream's `{ error }` or `{ detail }` message.
  *
  * Rust commands reject with a plain `String`, and the UI renders that string
  * (e.g. `useQuantStore.sentimentError`). Throwing an `Error` whose `message` is
@@ -40,11 +40,15 @@ import {
 async function failure(res: Response, fallback: string): Promise<Error> {
   let message = fallback;
   try {
-    const body = await res.json();
-    if (body && typeof body.error === 'string' && body.error.trim()) message = body.error;
+    const body = (await res.json()) as { error?: unknown; detail?: unknown } | null;
+    const detail = body?.error ?? body?.detail;
+    if (typeof detail === 'string' && detail.trim()) message = detail;
   } catch {
     /* non-JSON body — keep the fallback */
   }
+  // Run and Q&A failures become string-only SSE events below. Keep 402 in that string so
+  // account-credit exhaustion cannot be mistaken for an LLM provider quota failure.
+  if (res.status === 402 && !/\bHTTP 402\b/i.test(message)) message = `HTTP 402: ${message}`;
   return new Error(message);
 }
 
@@ -181,13 +185,13 @@ interface InstrumentRow {
 export type SearchResult =
   | { kind: 'EQ'; symbol: string; name: string; exchange: string; segment?: string }
   | {
-      kind: 'FNO';
-      tradingsymbol: string;
-      underlying: string;
-      expiry: string;
-      strike: number | null;
-      optionType: string;
-    };
+    kind: 'FNO';
+    tradingsymbol: string;
+    underlying: string;
+    expiry: string;
+    strike: number | null;
+    optionType: string;
+  };
 
 /**
  * Map aggregator instrument rows onto `SearchResult`.
@@ -439,13 +443,13 @@ function buildRunMessage(
 ): string {
   return mode === 'VERIFY' && manualTrade
     ? `Verify the following proposed trade setup for the trading ticker symbol '${symbol}':\n` +
-        `- Side: ${manualTrade.side}\n` +
-        `- Entry Price: ${manualTrade.entry}\n` +
-        `- Stop Loss: ${manualTrade.stop_loss ?? manualTrade.stopLoss}\n` +
-        `- Target/Take Profit: ${manualTrade.take_profit ?? manualTrade.takeProfit}\n` +
-        `- My Trade Logic/Analysis: '${manualTrade.user_analysis ?? manualTrade.userAnalysis}'\n` +
-        `Please evaluate this setup against recent candlestick data and technical consensus, ` +
-        `validate the risk-reward profile, and recommend whether to execute, adjust, or reject the trade.`
+    `- Side: ${manualTrade.side}\n` +
+    `- Entry Price: ${manualTrade.entry}\n` +
+    `- Stop Loss: ${manualTrade.stop_loss ?? manualTrade.stopLoss}\n` +
+    `- Target/Take Profit: ${manualTrade.take_profit ?? manualTrade.takeProfit}\n` +
+    `- My Trade Logic/Analysis: '${manualTrade.user_analysis ?? manualTrade.userAnalysis}'\n` +
+    `Please evaluate this setup against recent candlestick data and technical consensus, ` +
+    `validate the risk-reward profile, and recommend whether to execute, adjust, or reject the trade.`
     : `Analyze the trading ticker symbol '${symbol}' and recommend a setup.`;
 }
 
@@ -478,13 +482,13 @@ async function startAgentRun(args: Args): Promise<string> {
   const message =
     mode === 'VERIFY' && manualTrade
       ? `Verify the following proposed trade setup for the trading ticker symbol '${symbol}':\n` +
-        `- Side: ${manualTrade.side}\n` +
-        `- Entry Price: ${manualTrade.entry}\n` +
-        `- Stop Loss: ${manualTrade.stop_loss ?? manualTrade.stopLoss}\n` +
-        `- Target/Take Profit: ${manualTrade.take_profit ?? manualTrade.takeProfit}\n` +
-        `- My Trade Logic/Analysis: '${manualTrade.user_analysis ?? manualTrade.userAnalysis}'\n` +
-        `Please evaluate this setup against recent candlestick data and technical consensus, ` +
-        `validate the risk-reward profile, and recommend whether to execute, adjust, or reject the trade.`
+      `- Side: ${manualTrade.side}\n` +
+      `- Entry Price: ${manualTrade.entry}\n` +
+      `- Stop Loss: ${manualTrade.stop_loss ?? manualTrade.stopLoss}\n` +
+      `- Target/Take Profit: ${manualTrade.take_profit ?? manualTrade.takeProfit}\n` +
+      `- My Trade Logic/Analysis: '${manualTrade.user_analysis ?? manualTrade.userAnalysis}'\n` +
+      `Please evaluate this setup against recent candlestick data and technical consensus, ` +
+      `validate the risk-reward profile, and recommend whether to execute, adjust, or reject the trade.`
       : `Analyze the trading ticker symbol '${symbol}' and recommend a setup.`;
 
   const payload = {
@@ -611,7 +615,7 @@ async function questdbRows(query: string): Promise<unknown[][]> {
 async function nearestExpiryFor(underlying: string): Promise<string | null> {
   const rows = await questdbRows(
     `SELECT DISTINCT expiry FROM option_chain_snapshots ` +
-      `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()}`
+    `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()}`
   );
   return nearestExpiry(rows.map(([e]) => String(e)));
 }
@@ -628,8 +632,8 @@ async function chainRows(underlying: string, expiry: string): Promise<ChainRow[]
   const where = `${underlyingClause(underlying)} AND expiry = ${quote(expiry)}`;
   const rows = await questdbRows(
     `SELECT strike, option_type, symbol, open_interest FROM option_chain_snapshots ` +
-      `WHERE ${where} AND snapshot_ts = (SELECT max(snapshot_ts) FROM option_chain_snapshots WHERE ${where}) ` +
-      `ORDER BY strike ASC`
+    `WHERE ${where} AND snapshot_ts = (SELECT max(snapshot_ts) FROM option_chain_snapshots WHERE ${where}) ` +
+    `ORDER BY strike ASC`
   );
   return rows.flatMap(([strike, optionType, symbol, oi]) => {
     const s = Number(strike);
@@ -662,12 +666,12 @@ async function resolveContract(
   const picked = pickContract(rows, atm);
   return picked
     ? {
-        tradingsymbol: picked.symbol,
-        underlying,
-        expiry,
-        strike: picked.strike,
-        option_type: picked.optionType,
-      }
+      tradingsymbol: picked.symbol,
+      underlying,
+      expiry,
+      strike: picked.strike,
+      option_type: picked.optionType,
+    }
     : null;
 }
 
@@ -677,7 +681,7 @@ async function readSpot(underlying: string): Promise<number | null> {
   if (names.length === 0) return null;
   const rows = await questdbRows(
     `SELECT last_traded_price FROM live_ticks WHERE symbol IN (${names.map(quote).join(',')}) ` +
-      `ORDER BY timestamp DESC LIMIT 1`
+    `ORDER BY timestamp DESC LIMIT 1`
   );
   const price = Number(rows[0]?.[0]);
   return Number.isFinite(price) && price > 0 ? price : null;
@@ -820,18 +824,18 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     // only ever mean the second one.
     const payload = sessionId
       ? {
-          session_id: sessionId,
-          context_run_id: optStr(args, 'context_run_id') ?? optStr(args, 'contextRunId') ?? null,
-          question,
-          model: optStr(args, 'model') ?? null,
-          client_msg_id: optStr(args, 'client_msg_id') ?? optStr(args, 'clientMsgId') ?? null,
-        }
+        session_id: sessionId,
+        context_run_id: optStr(args, 'context_run_id') ?? optStr(args, 'contextRunId') ?? null,
+        question,
+        model: optStr(args, 'model') ?? null,
+        client_msg_id: optStr(args, 'client_msg_id') ?? optStr(args, 'clientMsgId') ?? null,
+      }
       : {
-          thread_id: reqThreadId(args, 'ask_trade_question'),
-          question,
-          model: optStr(args, 'model') ?? null,
-          user_id: optStr(args, 'user_id') ?? optStr(args, 'userId') ?? null,
-        };
+        thread_id: reqThreadId(args, 'ask_trade_question'),
+        question,
+        model: optStr(args, 'model') ?? null,
+        user_id: optStr(args, 'user_id') ?? optStr(args, 'userId') ?? null,
+      };
     // A session id is NOT a thread id.
     //
     // This used to be `sessionId ?? payload.thread_id`, which stamped the session id into the
@@ -925,7 +929,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
   fno_list_chains: async () => {
     const rows = await questdbRows(
       `SELECT DISTINCT underlying, expiry FROM option_chain_snapshots ` +
-        `WHERE ${liveExpiryClause()} ORDER BY underlying, expiry`
+      `WHERE ${liveExpiryClause()} ORDER BY underlying, expiry`
     );
     // Group under one canonical name per underlying, so `NIFTY` and `NIFTY 50`
     // rows do not present as two separate selector entries.
@@ -949,7 +953,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     if (!underlying) return []; // Rust returns an empty list, not an error.
     const rows = await questdbRows(
       `SELECT DISTINCT expiry FROM option_chain_snapshots ` +
-        `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()} ORDER BY expiry ASC`
+      `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()} ORDER BY expiry ASC`
     );
     return rows.map(([e]) => String(e)).filter(Boolean);
   },
@@ -963,7 +967,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     if (!underlying) return false;
     const rows = await questdbRows(
       `SELECT count() FROM option_chain_snapshots ` +
-        `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()}`
+      `WHERE ${underlyingClause(underlying)} AND ${liveExpiryClause()}`
     );
     return Number(rows[0]?.[0] ?? 0) > 0;
   },
@@ -996,7 +1000,7 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     if (!symbol || !isSafeName(symbol)) return false;
     const rows = await questdbRows(
       `SELECT count() FROM option_chain_snapshots ` +
-        `WHERE symbol = ${quote(symbol.trim().toUpperCase())} AND ${liveExpiryClause()}`
+      `WHERE symbol = ${quote(symbol.trim().toUpperCase())} AND ${liveExpiryClause()}`
     );
     return Number(rows[0]?.[0] ?? 0) > 0;
   },
@@ -1046,12 +1050,12 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     const picked = pickContract(rows, atm);
     return picked
       ? ({
-          tradingsymbol: picked.symbol,
-          underlying,
-          expiry,
-          strike: picked.strike,
-          option_type: picked.optionType,
-        } satisfies ResolvedContract)
+        tradingsymbol: picked.symbol,
+        underlying,
+        expiry,
+        strike: picked.strike,
+        option_type: picked.optionType,
+      } satisfies ResolvedContract)
       : null;
   },
 

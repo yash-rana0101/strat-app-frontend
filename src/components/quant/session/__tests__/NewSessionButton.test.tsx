@@ -161,7 +161,7 @@ describe('failure', () => {
     expect(useSessionStore.getState().activeSessionId).toBeNull();
   });
 
-  it('surfaces the reason the server gave', async () => {
+  it('offers a dashboard top-up when the server reports exhausted credits', async () => {
     // "Could not start a session" hides the difference between being out of credit and the service
     // being down — one the user can fix, one they cannot.
     fetchMock.mockResolvedValue(json({ detail: 'quota exceeded' }, 402));
@@ -169,7 +169,8 @@ describe('failure', () => {
 
     await clickNew();
 
-    expect((await screen.findByRole('alert')).textContent).toMatch(/quota exceeded/);
+    expect((await screen.findByRole('alert')).textContent).toMatch(/out of Strat AI credits/i);
+    expect(screen.getByRole('button', { name: /Top Up Credits/i })).toBeTruthy();
   });
 
   it('survives a transport failure without an unhandled rejection', async () => {
