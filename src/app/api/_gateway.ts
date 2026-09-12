@@ -78,7 +78,7 @@ export function gatewayCredentialsMissing(): boolean {
 }
 
 /** One of the six upstream services this tier proxies to. */
-export type Upstream = 'kite' | 'questdb' | 'deepquant' | 'tools' | 'sentiment' | 'preferences';
+export type Upstream = 'kite' | 'questdb' | 'deepquant' | 'tools' | 'sentiment';
 
 /**
  * Base URL for an upstream service.
@@ -133,15 +133,6 @@ export function upstreamBase(target: Upstream): string {
       if (override) return override.replace(/\/+$/, '');
       if (base) return `${base}/sentiment`;
       return `http://${host()}:8090`;
-    }
-    case 'preferences': {
-      const override = resolveEnv(
-        process.env.PREFERENCES_HTTP_URL || process.env.STRATAI_PREFERENCES_URL,
-        ''
-      );
-      if (override) return override.replace(/\/+$/, '');
-      if (base) return base.replace(/\/+$/, '');
-      return `http://${host()}:8092`;
     }
   }
 }

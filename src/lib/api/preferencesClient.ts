@@ -142,12 +142,28 @@ export interface UserPreferencesRecord {
   isNew?: boolean;
 }
 
-const BASE_URL = '/api/preferences';
+export function getPreferencesBaseUrl(): string {
+  if (typeof process !== 'undefined') {
+    const override =
+      process.env.NEXT_PUBLIC_PREFERENCES_API_URL ||
+      process.env.NEXT_PUBLIC_STRATAI_PREFERENCES_URL;
+    if (override && override.trim()) {
+      return override.trim().replace(/\/+$/, '');
+    }
+  }
+  if (typeof window !== 'undefined' && window.location.hostname.includes('stratai.live')) {
+    return 'https://stratai-preference.vercel.app';
+  }
+  return 'http://127.0.0.1:8092';
+}
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T | null> {
+  const baseUrl = getPreferencesBaseUrl();
   const cleanPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
-  const url = `${BASE_URL}${cleanPath}`;
+  const prefix = cleanPath === '/health' || cleanPath === '/ready' ? '' : '/preferences';
+  const url = `${baseUrl}${prefix}${cleanPath}`;
   const userId = typeof window !== 'undefined' ? useAuthStore.getState().user?.id : undefined;
+
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -175,6 +191,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T | 
     console.warn(`[preferencesClient] Network error for ${url}:`, err);
     return null;
   }
+}
 }
 
 // ── Unified Preferences ─────────────────────────────────────────────────────
