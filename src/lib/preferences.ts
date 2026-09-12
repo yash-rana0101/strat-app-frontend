@@ -124,7 +124,7 @@ const _timeframesCoverUnion: CoversUnion<ChartTimeframe, (typeof TIMEFRAMES)[num
 const GHOST_LINE_MODES = ['linear', 'volume', 'curved', 'forecast'] as const;
 const _ghostModesCoverUnion: CoversUnion<GhostLineMode, (typeof GHOST_LINE_MODES)[number]> = true;
 
-const CHART_MODES = ['STANDARD', 'VOLUME_PROFILE', 'FOOTPRINT'] as const;
+const CHART_MODES = ['STANDARD', 'VOLUME_PROFILE'] as const;
 const _chartModesCoverUnion: CoversUnion<ChartMode, (typeof CHART_MODES)[number]> = true;
 
 const MAGNET_MODES = ['off', 'weak', 'strong'] as const;
@@ -349,7 +349,7 @@ function flush(): void {
     // Asynchronously trigger cloud preferences sync to MongoDB
     void import('./preferencesSync')
       .then(({ scheduleCloudSync }) => scheduleCloudSync())
-      .catch(() => {});
+      .catch(() => { });
   } catch {
     /* quota / private mode — the in-memory selections still apply this session */
   }

@@ -676,12 +676,13 @@ function startLiveSubscription(
   // The WS feeds land in `useTradeStore.ohlcCandles` (see the socket bootstrap in
   // `app/page.tsx`), so watching the store is how live bars reach the chart.
   //
-  // This callback runs on EVERY store write — including the large
-  // `setHistoricalCache` writes the datafeed itself makes — and each run scans the
-  // whole `ohlcCandles` array (capped at 3 000), so loading history triggers
-  // full-array scans in the tick path. Worth revisiting if tick latency regresses;
-  // a symbol-keyed selector would avoid the scan.
+  // This callback runs on every store write, so ignore writes that did not
+  // replace the live-candle array before scanning its capped 3,000 entries.
+  let previousCandles = useTradeStore.getState().ohlcCandles;
   const unsub = useTradeStore.subscribe((state) => {
+    if (state.ohlcCandles === previousCandles) return;
+    previousCandles = state.ohlcCandles;
+
     // Pick the NEWEST bar for this symbol, not the array-last one.
     //
     // `ohlcCandles` is appended in ARRIVAL order, so a bar that reaches the

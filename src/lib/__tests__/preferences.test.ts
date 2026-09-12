@@ -30,7 +30,7 @@ function validBlob(overrides: Record<string, unknown> = {}): string {
     selectedSymbol: 'RELIANCE26SEP1290CE',
     activeTimeframe: '15m',
     activeRange: '2Y',
-    chartMode: 'FOOTPRINT',
+    chartMode: 'VOLUME_PROFILE',
     fnoUnderlying: 'RELIANCE',
     fnoExpiry: '2026-09-29',
     symbolByProfile: {
@@ -75,7 +75,7 @@ describe('parsePreferences — a good blob restores every selection', () => {
       selectedSymbol: 'RELIANCE26SEP1290CE',
       activeTimeframe: '15m',
       activeRange: '2Y',
-      chartMode: 'FOOTPRINT',
+      chartMode: 'VOLUME_PROFILE',
       fnoUnderlying: 'RELIANCE',
       fnoExpiry: '2026-09-29',
       symbolByProfile: {
@@ -146,6 +146,7 @@ describe('parsePreferences — a rejected field is indistinguishable from an abs
       ['activeTimeframe', '7m'],
       ['activeRange', '10Y'],
       ['chartMode', 'HEATMAP'],
+      ['chartMode', 'FOOTPRINT'],
       ['chartType', 'spaghetti'],
       ['ghostLineMode', 'psychic'],
       ['magnetMode', 'magnetic'],

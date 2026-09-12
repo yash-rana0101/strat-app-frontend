@@ -4,9 +4,8 @@
 //
 // ChartSurface — the host for the TradingView Advanced Charts widget.
 //
-// Now renders the TV widget for ALL chart modes including Volume Footprint,
-// TPO (Market Profile), Session Volume Profile, and Volume Candle — all
-// natively supported by TradingView Advanced Charts v31.
+// Renders the TradingView widget for all supported chart modes. Additional
+// TradingView-native styles remain available through its chart type selector.
 //
 // The user can switch between chart types via TV's built-in chart type
 // dropdown in the header bar.
@@ -34,8 +33,7 @@ export interface ChartSurfaceProps {
 
 /**
  * The chart surface shell. Renders the TradingView Advanced Charts widget for
- * ALL chart views. Volume Footprint, TPO, SVP, and Volume Candle are now
- * available natively through TV's chart type selector.
+ * all chart views.
  *
  * All chart UI (drawing tools, indicators, chart types, timeframe selection) is
  * delegated to the TradingView widget's native interface.

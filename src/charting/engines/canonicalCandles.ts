@@ -6,8 +6,8 @@
 // `useTradeStore.ohlcCandles` buffer and every pure charting engine. The store
 // receives historical candles plus live OHLC ticks that can arrive out of
 // order or repeat a timestamp (a live update replacing the in-progress
-// candle). Engines (chart-type transforms, indicators, footprint, profile,
-// strategies) assume a clean series; this selector enforces that contract:
+// candle). Engines (chart-type transforms, indicators, profile, strategies)
+// assume a clean series; this selector enforces that contract:
 //
 //   - filtered to the active symbol,
 //   - mapped to the shared `ChartCandle` shape (time in seconds),

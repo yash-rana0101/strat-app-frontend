@@ -91,7 +91,6 @@ export function getTvWidgetOptions({
       'chart_style_kagi',
       'chart_style_pnf',
       'chart_style_line_break',
-      'chart_style_vol_footprint',
       'chart_style_tpo',
       'chart_style_svp',
       'chart_style_vol_candle',

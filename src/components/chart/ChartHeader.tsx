@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTradeStore } from '../../store/useTradeStore';
-import { useFeature } from '../../store/useFeatureStore';
 import { ChevronDown } from 'lucide-react';
 import { SlChart } from 'react-icons/sl';
 
@@ -13,16 +12,12 @@ export interface ChartModeToggleProps {
 export default function ChartModeToggle({ noText = false }: ChartModeToggleProps) {
   const chartMode = useTradeStore((s) => s.chartMode);
   const setChartMode = useTradeStore((s) => s.setChartMode);
-  const footprintEnabled = useFeature('footprint');
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const modes = [
     { mode: 'STANDARD' as const, label: 'Standard', icon: SlChart },
     { mode: 'VOLUME_PROFILE' as const, label: 'Vol Profile', icon: SlChart },
-    ...(footprintEnabled
-      ? [{ mode: 'FOOTPRINT' as const, label: 'Footprint', icon: SlChart }]
-      : []),
   ];
 
   const currentMode = modes.find((m) => m.mode === chartMode) || modes[0];
@@ -48,16 +43,14 @@ export default function ChartModeToggle({ noText = false }: ChartModeToggleProps
         title={noText ? `Chart Mode: ${currentMode.label}` : undefined}
         className={
           noText
-            ? `flex h-7 w-7 items-center justify-center rounded-sm transition-all ${
-                isOpen
-                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : 'bg-transparent text-text-secondary hover:bg-elevated hover:text-text-primary'
-              }`
-            : `flex h-full items-center gap-1.5 px-2.5 text-[11px] font-semibold transition-all border-r border-border-default ${
-                isOpen
-                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : 'bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary'
-              }`
+            ? `flex h-7 w-7 items-center justify-center rounded-sm transition-all ${isOpen
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+              : 'bg-transparent text-text-secondary hover:bg-elevated hover:text-text-primary'
+            }`
+            : `flex h-full items-center gap-1.5 px-2.5 text-[11px] font-semibold transition-all border-r border-border-default ${isOpen
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+              : 'bg-surface text-text-secondary hover:bg-elevated hover:text-text-primary'
+            }`
         }
       >
         <CurrentIcon
@@ -75,9 +68,8 @@ export default function ChartModeToggle({ noText = false }: ChartModeToggleProps
 
       {isOpen && (
         <div
-          className={`absolute right-0 z-50 mt-px w-40 rounded-none border border-border-default bg-surface shadow-2xl p-1.5 animate-in fade-in slide-in-from-top-2 duration-200 ${
-            noText ? 'top-[32px]' : 'top-full'
-          }`}
+          className={`absolute right-0 z-50 mt-px w-40 rounded-none border border-border-default bg-surface shadow-2xl p-1.5 animate-in fade-in slide-in-from-top-2 duration-200 ${noText ? 'top-[32px]' : 'top-full'
+            }`}
         >
           {modes.map(({ mode, label, icon: Icon }) => {
             const isActive = chartMode === mode;
@@ -90,11 +82,10 @@ export default function ChartModeToggle({ noText = false }: ChartModeToggleProps
                   setChartMode(mode);
                   setIsOpen(false);
                 }}
-                className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-[11px] transition-all duration-150 border border-transparent ${
-                  isActive
+                className={`flex w-full items-center gap-2 rounded-none px-2.5 py-1.5 text-left text-[11px] transition-all duration-150 border border-transparent ${isActive
                     ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border-emerald-500/30'
                     : 'text-text-secondary hover:bg-elevated hover:text-text-primary'
-                }`}
+                  }`}
               >
                 <Icon
                   size={16}

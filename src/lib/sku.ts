@@ -11,8 +11,8 @@
  *
  * The product therefore splits into two SKUs:
  *
- *   TERMINAL  Unregulated analytics. Charts, Ghost Lines, footprint, volume
- *             profile, indicators, regime, VWEPR, S/R, patterns, and the VERIFY
+ *   TERMINAL  Unregulated analytics. Charts, Ghost Lines, volume profile,
+ *             indicators, regime, VWEPR, S/R, patterns, and the VERIFY
  *             validator. Sellable today, no registration required.
  *
  *   RESEARCH  Regulated research output. FIND, DEBATE, conviction score, the

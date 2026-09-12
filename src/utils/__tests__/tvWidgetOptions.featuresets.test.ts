@@ -62,7 +62,7 @@ function passedFeaturesets(): string[] {
  *     simply not enumerate every legacy name, and the app relies on it for chart
  *     persistence. Removing it on the strength of this parse would be a guess.
  *   · the `chart_style_*` entries other than `hilo` name chart types (Renko, Kagi,
- *     P&F, Line Break, TPO, SVP, volume candles, volume footprint) that this build
+ *     P&F, Line Break, TPO, SVP, volume candles) that this build
  *     declares no featureset for at all — only `chart_style_hilo` and
  *     `chart_style_hilo_last_price` exist. Those are very likely doing nothing.
  *
@@ -77,7 +77,6 @@ const KNOWN_UNDECLARED = new Set([
   'chart_style_kagi',
   'chart_style_pnf',
   'chart_style_line_break',
-  'chart_style_vol_footprint',
   'chart_style_tpo',
   'chart_style_svp',
   'chart_style_vol_candle',

@@ -16,7 +16,6 @@ const ACCESS_FLAG_LABELS: { key: keyof AccessFlags; label: string }[] = [
   { key: 'canAccessDeepseekGLM', label: 'DeepSeek GLM' },
   { key: 'canAccessMultiModel', label: 'Multi-Model' },
   { key: 'canAccessGhostline', label: 'Ghostline' },
-  { key: 'canAccessFootprint', label: 'Footprint' },
   { key: 'canAccessTopup', label: 'Credit Top-up' },
   { key: 'canSeeInstantNewsSantiments', label: 'Instant News' },
   { key: 'canGetAdvanceChartAccess', label: 'Advanced Charts' },

@@ -46,7 +46,6 @@ function readSwitchEnv(): Record<FeatureId, string | undefined> {
     deepseekGlm: process.env.ENABLE_DEEPSEEK_GLM,
     multiModel: process.env.ENABLE_MULTI_MODEL,
     ghostline: process.env.ENABLE_GHOSTLINE,
-    footprint: process.env.ENABLE_FOOTPRINT,
     topup: process.env.ENABLE_TOPUP,
     instantNews: process.env.ENABLE_INSTANT_NEWS,
     advanceChart: process.env.ENABLE_ADVANCE_CHART,
@@ -56,10 +55,8 @@ function readSwitchEnv(): Record<FeatureId, string | undefined> {
 /**
  * Whether an env value means "on".
  *
- * Accepts `true`/`1`/`yes`/`on` case-insensitively. The old implementation
- * accepted only the exact string `'true'`, which made `ENABLE_FOOTPRINT=1` look
- * like a disabled feature instead of a typo — a silent misconfiguration on a
- * value an operator sets by hand.
+ * Accepts `true`/`1`/`yes`/`on` case-insensitively so common operator-entered
+ * forms do not silently disable a feature.
  */
 export function envSwitchOn(raw: string | undefined): boolean {
   const v = (raw ?? '').trim().toLowerCase();

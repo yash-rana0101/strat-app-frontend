@@ -3,8 +3,8 @@
 // Shared value types for the Professional Charting Suite.
 //
 // These types are the typed vocabulary shared by the pure charting engines
-// (chart-type transforms, indicator math, footprint/profile aggregation,
-// strategy evaluation, drawing geometry, validation) and the rendering
+// (chart-type transforms, indicator math, profile aggregation, strategy
+// evaluation, drawing geometry, validation) and the rendering
 // adapters that consume their output. They are intentionally framework-free
 // and side-effect-free so the engines remain deterministic and testable.
 

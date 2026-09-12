@@ -15,7 +15,7 @@ export type TradeProfile = 'INTRADAY' | 'SWING' | 'INVESTOR' | 'FNO';
  * covers the whole union; an inline union at each use site made that assertion
  * vacuous and let the three declarations drift.
  */
-export type ChartMode = 'STANDARD' | 'VOLUME_PROFILE' | 'FOOTPRINT';
+export type ChartMode = 'STANDARD' | 'VOLUME_PROFILE';
 
 /**
  * Chart timeframe options. The backend predictive ML engine operates
@@ -368,8 +368,8 @@ function wsUrlIsUsable(url: string, label: string): boolean {
   if (window.location.protocol !== 'https:' || url.startsWith('wss://')) return true;
   console.warn(
     `[useTradeStore] ${label} WS not connected: ${url} is insecure (ws://) but this ` +
-      `page is HTTPS, so the browser would block it. Point the matching ` +
-      `NEXT_PUBLIC_*_WS_URL at a wss:// gateway route.`
+    `page is HTTPS, so the browser would block it. Point the matching ` +
+    `NEXT_PUBLIC_*_WS_URL at a wss:// gateway route.`
   );
   return false;
 }
@@ -798,12 +798,8 @@ export const useTradeStore = create<TradeStore>((set) => {
     },
 
     setActiveTimeframe: (tf: ChartTimeframe) => {
-      // BUG-1/BUG-7 fix: Just flush live ticks and update the timeframe.
-      // The useHistoricalData hook now has `effectiveTimeframe` in its
-      // fetchData deps, so it will automatically re-evaluate the cache
-      // (cache hit → instant re-aggregate, cache miss → fresh Kite fetch).
-      // We deliberately keep historicalCache intact so the cross-interval
-      // fallback can serve existing data when the Kite API is unavailable.
+      // Flush live ticks while retaining the TradingView history cache, which
+      // keeps already-fetched intervals available when the user switches back.
       set({ activeTimeframe: tf, ohlcCandles: [], predictiveSignals: [] });
     },
 

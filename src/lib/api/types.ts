@@ -18,7 +18,6 @@ export interface AccessFlags {
   canAccessDeepseekGLM: boolean;
   canAccessMultiModel: boolean;
   canAccessGhostline: boolean;
-  canAccessFootprint: boolean;
   canAccessTopup: boolean;
   canSeeInstantNewsSantiments: boolean;
   canGetAdvanceChartAccess: boolean;
@@ -93,7 +92,6 @@ export interface Plan {
   canAccessDeepseekGLM: boolean;
   canAccessMultiModel: boolean;
   canAccessGhostline: boolean;
-  canAccessFootprint: boolean;
   canAccessTopup: boolean;
   canSeeInstantNewsSantiments: boolean;
   canGetAdvanceChartAccess: boolean;

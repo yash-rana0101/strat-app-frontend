@@ -231,7 +231,7 @@ function desktopSteps(tradeState: TradeTourState): DriveStep[] {
     step(
       '[data-tradingview-container="true"]',
       'Advanced chart workspace',
-      'Use the chart for candles, timeframes, drawings, indicators, layouts, volume profile, footprint, and Ghostline projections when enabled. Its toolbar runs inside the chart itself, so this tour highlights it as one workspace.',
+      'Use the chart for candles, timeframes, drawings, indicators, layouts, volume profile, and Ghostline projections when enabled. Its toolbar runs inside the chart itself, so this tour highlights it as one workspace.',
       'bottom'
     ),
     step(
@@ -290,7 +290,7 @@ function mobileSteps(tradeState: TradeTourState): DriveStep[] {
     step(
       '[data-tradingview-container="true"]',
       'Advanced chart',
-      'Study candles, drawings, indicators, layouts, volume profile, footprint, and Ghostline projections when enabled. Chart tools live inside this workspace.',
+      'Study candles, drawings, indicators, layouts, volume profile, and Ghostline projections when enabled. Chart tools live inside this workspace.',
       'bottom'
     ),
     step(

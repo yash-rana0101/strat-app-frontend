@@ -142,9 +142,9 @@ describe('assertFeatureEnabled', () => {
   it('gates each feature independently', () => {
     vi.stubEnv('FEATURE_ENFORCEMENT', '1');
     vi.stubEnv('ENABLE_DEEPSEEK_GLM', 'true');
-    vi.stubEnv('ENABLE_FOOTPRINT', 'false');
+    vi.stubEnv('ENABLE_GHOSTLINE', 'false');
     expect(featureEnabled('deepseekGlm')).toBe(true);
-    expect(featureEnabled('footprint')).toBe(false);
+    expect(featureEnabled('ghostline')).toBe(false);
   });
 });
 

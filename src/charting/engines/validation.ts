@@ -10,7 +10,6 @@
 //  - chart-type params (range 1..999,999)                       Req 1.6
 //  - indicator params (period 1..5,000, BB multiplier 0.1..10.0) Req 2.3, 2.5
 //  - strategy params                                            Req 8.6
-//  - footprint tick size (> 0)                                  Req 6.9
 //  - volume-profile rows (1..1000) and percent (1..100)         Req 7.2
 //
 // Everything here is pure and side-effect-free so it is a direct PBT target.

@@ -5,10 +5,9 @@
 // WHY THIS EXISTS
 // ---------------
 // `DeepQuantPanel` disables the FIND button until `dataReady`, which counts candles in
-// `useTradeStore.historicalCache`. Those candles come from QuestDB via `useHistoricalData` or the
-// TradingView datafeed. The e2e fixture runs neither — no QuestDB, and the charting library is not loaded —
-// so nothing ever populates the cache and the button stays disabled. Intercepting the HTTP response does not
-// help, because no request is made.
+// `useTradeStore.historicalCache`. Those candles come from the TradingView datafeed. The e2e fixture does
+// not load the charting library, so nothing ever populates the cache and the button stays disabled.
+// Intercepting the HTTP response does not help, because no request is made.
 //
 // Three options were considered (see the migration plan): seed the store from the test, drive the real chart
 // path, or relax the `dataReady` gate under a flag. The third was rejected because it stops the test

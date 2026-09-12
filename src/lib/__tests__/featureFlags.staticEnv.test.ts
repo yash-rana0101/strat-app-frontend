@@ -69,7 +69,6 @@ const SERVER_SWITCH_ENV = [
   'ENABLE_DEEPSEEK_GLM',
   'ENABLE_MULTI_MODEL',
   'ENABLE_GHOSTLINE',
-  'ENABLE_FOOTPRINT',
   'ENABLE_TOPUP',
   'ENABLE_INSTANT_NEWS',
   'ENABLE_ADVANCE_CHART',
@@ -151,14 +150,14 @@ describe('computeFeatureAccess', () => {
   it('requires both the deployment switch and the plan flag when enforcing', () => {
     const config = {
       enforced: true,
-      switches: { ...ALL_SWITCHES_OFF, footprint: true, ghostline: true },
+      switches: { ...ALL_SWITCHES_OFF, multiModel: true, ghostline: true },
     };
-    // Plan grants footprint only; the deployment enables footprint + ghostline.
+    // Plan grants multi-model only; the deployment enables multi-model + ghostline.
     const map = computeFeatureAccess(
-      { canAccessFootprint: true } as Parameters<typeof computeFeatureAccess>[0],
+      { canAccessMultiModel: true } as Parameters<typeof computeFeatureAccess>[0],
       config
     );
-    expect(map.footprint).toBe(true);
+    expect(map.multiModel).toBe(true);
     expect(map.ghostline).toBe(false); // switch on, plan flag missing
     expect(map.topup).toBe(false); // neither
   });
@@ -182,9 +181,9 @@ describe('parseFeatureConfig fails closed', () => {
   it('treats every non-true switch value as off', () => {
     const parsed = parseFeatureConfig({
       enforced: true,
-      switches: { footprint: 'true', ghostline: 1, topup: true },
+      switches: { multiModel: 'true', ghostline: 1, topup: true },
     });
-    expect(parsed.switches.footprint).toBe(false); // string, not boolean
+    expect(parsed.switches.multiModel).toBe(false); // string, not boolean
     expect(parsed.switches.ghostline).toBe(false); // number, not boolean
     expect(parsed.switches.topup).toBe(true);
   });
@@ -196,7 +195,7 @@ describe('parseFeatureConfig fails closed', () => {
   });
 
   it('yields a switch entry for every feature id, ignoring unknown keys', () => {
-    const parsed = parseFeatureConfig({ switches: { footprint: true, bogusFeature: true } });
+    const parsed = parseFeatureConfig({ switches: { multiModel: true, bogusFeature: true } });
     expect(Object.keys(parsed.switches).sort()).toEqual([...FEATURE_IDS].sort());
   });
 });

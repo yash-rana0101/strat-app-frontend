@@ -6,7 +6,7 @@
 // three terminal layouts (Swing / Investor / Intraday). It now hosts the
 // engine-driven {@link ChartSurface} shell, which wires the full suite together
 // end-to-end:
-//   - the pure engines (chart-type, indicator, footprint, volume-profile,
+//   - the pure engines (chart-type, indicator, volume-profile,
 //     strategy) feed the renderer through the canonical candle selector
 //     consumed by ChartRenderer (Requirement 9.1 — live data via the canonical
 //     selector);
@@ -16,11 +16,8 @@
 //   - workspace persistence is wired inside ChartRenderer (Requirement 11.1);
 //   - the crosshair controller and pane manager are composed by ChartRenderer.
 //
-// ChartSurface owns chart mode (Standard / Volume Profile / Footprint) and the
-// active timeframe (read from useTradeStore.activeTimeframe), so it also renders
-// the footprint surface itself when chartMode === 'FOOTPRINT'. MainTerminalChart
-// therefore does NOT mount FootprintChart separately — that would double-mount
-// the footprint surface.
+// ChartSurface owns chart mode (Standard / Volume Profile) and the active
+// timeframe (read from useTradeStore.activeTimeframe).
 //
 // The {@link AlphaPredictiveChartProps} signature is preserved so the existing
 // layout call sites (SwingLayout, InvestorLayout, IntradayLayout) keep working

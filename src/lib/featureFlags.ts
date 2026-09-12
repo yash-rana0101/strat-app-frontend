@@ -5,7 +5,6 @@ export type FeatureId =
   | 'deepseekGlm'
   | 'multiModel'
   | 'ghostline'
-  | 'footprint'
   | 'topup'
   | 'instantNews'
   | 'advanceChart';
@@ -31,8 +30,8 @@ export type FeatureId =
  *   capability itself — see `app/api/_featureSwitches.ts::assertFeatureEnabled`,
  *   applied today to the deep-quant agent lifecycle (`/api/deepquant/{run,qa,
  *   resume,stream,cancel}`). Only features whose UI gate has a matching
- *   server-side capability can be enforced that way; `footprint` and `ghostline`
- *   are computed in the browser and have no such capability to gate.
+ *   server-side capability can be enforced that way; `ghostline` is computed
+ *   in the browser and has no such capability to gate.
  */
 export type FeatureKillSwitches = Record<FeatureId, boolean>;
 
@@ -56,7 +55,6 @@ const ACCESS_FLAG_BY_FEATURE: Record<FeatureId, keyof AccessFlags> = {
   deepseekGlm: 'canAccessDeepseekGLM',
   multiModel: 'canAccessMultiModel',
   ghostline: 'canAccessGhostline',
-  footprint: 'canAccessFootprint',
   topup: 'canAccessTopup',
   instantNews: 'canSeeInstantNewsSantiments',
   advanceChart: 'canGetAdvanceChartAccess',
@@ -73,7 +71,6 @@ export const FEATURE_LABELS: Record<FeatureId, string> = {
   deepseekGlm: 'DeepSeek GLM',
   multiModel: 'Multi-Model',
   ghostline: 'Ghostline',
-  footprint: 'Footprint',
   topup: 'Credit Top-up',
   instantNews: 'Instant News',
   advanceChart: 'Advanced Charts',
@@ -86,7 +83,6 @@ export const ALL_SWITCHES_OFF: FeatureKillSwitches = {
   deepseekGlm: false,
   multiModel: false,
   ghostline: false,
-  footprint: false,
   topup: false,
   instantNews: false,
   advanceChart: false,

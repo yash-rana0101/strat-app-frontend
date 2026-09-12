@@ -35,7 +35,7 @@ import { useTradeStore, type TradeProfile, type ChartTimeframe } from '@/store/u
 
 const PROFILES: TradeProfile[] = ['INTRADAY', 'SWING', 'INVESTOR', 'FNO'];
 const TIMEFRAMES: ChartTimeframe[] = ['1m', '5m', '10m', '15m', '1h', '1D', '1W'];
-const CHART_MODES = ['STANDARD', 'VOLUME_PROFILE', 'FOOTPRINT'] as const;
+const CHART_MODES = ['STANDARD', 'VOLUME_PROFILE'] as const;
 const SYMBOLS = ['RELIANCE', 'TCS', 'INFY', 'NIFTY 50', 'BANKNIFTY'];
 
 function store() {

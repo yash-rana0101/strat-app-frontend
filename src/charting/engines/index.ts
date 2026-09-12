@@ -1,9 +1,9 @@
 // Feature: professional-charting-suite
 //
 // Barrel for the pure charting engines. Engine modules (chartTypeEngine,
-// indicatorEngine, footprintEngine, volumeProfileEngine, strategyEngine,
-// drawingEngine, validation) are added by subsequent tasks and re-exported
-// here so consumers import from a single `charting/engines` entry point.
+// indicatorEngine, volumeProfileEngine, strategyEngine, drawingEngine,
+// validation) are re-exported here so consumers import from a single
+// `charting/engines` entry point.
 
 export { backingStoreLength } from './rendering';
 
@@ -11,16 +11,6 @@ export { validateNumeric, validateParams } from './validation';
 
 export { canonicalCandles, applyLatestCandleUpdate } from './canonicalCandles';
 export type { LatestCandleUpdateKind, LatestCandleUpdateResult } from './canonicalCandles';
-
-export {
-  buildFootprint,
-  cumulativeDelta,
-  detectImbalances,
-  DEFAULT_IMBALANCE_RATIO,
-  MIN_IMBALANCE_RATIO,
-  MAX_IMBALANCE_RATIO,
-} from './footprintEngine';
-export type { FootprintCell, FootprintCandle, BuildFootprintOptions } from './footprintEngine';
 
 export {
   INDICATOR_REGISTRY,

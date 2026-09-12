@@ -2,7 +2,7 @@
 //
 // Pure rendering math shared by the canvas overlays.
 //
-// Canvas-backed overlays (volume profile, footprint) must size their backing
+// Canvas-backed overlays must size their backing
 // store to the display's device pixel ratio so text and lines stay crisp on
 // high-DPI screens for ratios 1.0–4.0 (Requirement 12.6). The CSS box is laid
 // out in logical pixels; the backing store must hold `cssLength * dpr` physical
