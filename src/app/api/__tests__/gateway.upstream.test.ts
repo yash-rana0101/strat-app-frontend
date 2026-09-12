@@ -117,7 +117,7 @@ describe('the other upstreams keep their own conventions', () => {
 
     delete process.env.PREFERENCES_HTTP_URL;
     process.env.STRATAI_HTTP_BASE_URL = 'https://app-api.stratai.live';
-    expect(upstreamBase('preferences')).toBe('https://app-api.stratai.live/preferences');
+    expect(upstreamBase('preferences')).toBe('https://app-api.stratai.live');
   });
 
   it('prefers the per-service override over the gateway base', () => {

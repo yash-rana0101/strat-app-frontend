@@ -14,9 +14,11 @@ export const dynamic = 'force-dynamic';
 
 async function handle(req: Request): Promise<Response> {
   const userId = await resolveUserId(req);
+  const clientUserId = req.headers.get('x-user-id');
+  const targetUserId = userId || clientUserId;
   const extraHeaders: Record<string, string> = {};
-  if (userId) {
-    extraHeaders['X-User-Id'] = userId;
+  if (targetUserId) {
+    extraHeaders['X-User-Id'] = targetUserId;
   }
 
   // Pass-through to upstream preferences service at /preferences

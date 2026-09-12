@@ -10,13 +10,14 @@ import {
   syncLocalStorageToBackend,
   rehydrateLocalStorageFromBackend,
   updateUserPreferences,
+  replaceUserPreferences,
   type UserPreferencesRecord,
 } from './api/preferencesClient';
 import { useAuthStore } from '../store/useAuthStore';
 import { useTradeStore, type WatchlistItem } from '../store/useTradeStore';
 import { useChartUIStore } from '../store/useChartUIStore';
 import { useRadarStore } from '../store/useRadarStore';
-import { PREFERENCES_STORAGE_KEY, parsePreferences } from './preferences';
+import { PREFERENCES_STORAGE_KEY, parsePreferences, readPreferences, PREFERENCES_VERSION } from './preferences';
 
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 const SYNC_DEBOUNCE_MS = 2000; // 2s debounce for cloud sync
@@ -71,6 +72,13 @@ export function scheduleCloudSync(): void {
   syncTimer = setTimeout(async () => {
     syncTimer = null;
     try {
+      // 1. Send PUT request with active terminal preferences
+      const activePrefs = readPreferences();
+      if (activePrefs && Object.keys(activePrefs).length > 0) {
+        await replaceUserPreferences(activePrefs);
+      }
+
+      // 2. Mirror localStorage items
       const items = collectLocalStorage();
       if (Object.keys(items).length > 0) {
         await syncLocalStorageToBackend(items, false);
@@ -116,9 +124,10 @@ export async function rehydrateFromCloud(): Promise<boolean> {
     }
 
     // 2. Rehydrate Terminal Preferences (symbol, timeframe, layout, chartType)
-    const rawPrefs = window.localStorage.getItem(PREFERENCES_STORAGE_KEY);
-    if (!rawPrefs && cloudRecord.window) {
-      const parsed = parsePreferences(JSON.stringify(cloudRecord.preferences || {}));
+    if (cloudRecord.preferences && !cloudRecord.isNew) {
+      const parsed = parsePreferences(
+        JSON.stringify({ ...cloudRecord.preferences, version: PREFERENCES_VERSION })
+      );
       if (parsed.selectedSymbol) {
         useTradeStore.getState().setSelectedSymbol(parsed.selectedSymbol);
       }
@@ -130,6 +139,13 @@ export async function rehydrateFromCloud(): Promise<boolean> {
       }
       if (parsed.chartType) {
         useChartUIStore.getState().setChartType(parsed.chartType);
+      }
+      if (parsed.sidebarWidth) {
+        // Also persist updated preferences locally
+        try {
+          const merged = { ...readPreferences(), ...parsed, version: PREFERENCES_VERSION };
+          window.localStorage.setItem(PREFERENCES_STORAGE_KEY, JSON.stringify(merged));
+        } catch {}
       }
     }
 

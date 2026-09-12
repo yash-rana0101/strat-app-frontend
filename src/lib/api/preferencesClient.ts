@@ -1,3 +1,4 @@
+import { useAuthStore } from '../../store/useAuthStore';
 // lib/api/preferencesClient.ts — Client API for StratAI-preference microservice.
 //
 // Communicates with same-origin /api/preferences/* endpoints (proxied to MongoDB + Prisma).
@@ -144,15 +145,19 @@ export interface UserPreferencesRecord {
 const BASE_URL = '/api/preferences';
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T | null> {
-  const url = `${BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+  const cleanPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
+  const url = `${BASE_URL}${cleanPath}`;
+  const userId = typeof window !== 'undefined' ? useAuthStore.getState().user?.id : undefined;
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...(userId ? { 'X-User-Id': userId } : {}),
+      ...((options.headers as Record<string, string>) || {}),
+    };
     const res = await fetch(url, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        ...(options.headers || {}),
-      },
+      headers,
       credentials: 'include',
     });
 
