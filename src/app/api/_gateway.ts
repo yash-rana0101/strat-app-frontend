@@ -140,7 +140,7 @@ export function upstreamBase(target: Upstream): string {
         ''
       );
       if (override) return override.replace(/\/+$/, '');
-      if (base) return `${base}/preferences`;
+      if (base) return base.replace(/\/+$/, '');
       return `http://${host()}:8092`;
     }
   }
