@@ -55,21 +55,21 @@ interface SearchInstrument {
   exchange: string;
 }
 
-// Tauri `search_instruments` returns a tagged union (EQ | FNO). We accept
-// either that shape or the legacy flat `SearchInstrument` shape so the panel
-// keeps working no matter which backend is reachable.
-type TauriSearchResult =
+// The bridge returns a tagged union so equities and derivative contracts retain
+// the metadata their respective result rows need.
+type BridgeSearchResult =
   | { kind: 'EQ'; symbol: string; name: string; exchange: string }
   | {
-      kind: 'FNO';
-      tradingsymbol: string;
-      underlying: string;
-      expiry: string;
-      strike: number | null;
-      optionType: 'CE' | 'PE' | 'FUT';
-    };
+    kind: 'FNO';
+    tradingsymbol: string;
+    underlying: string;
+    expiry: string;
+    strike: number | null;
+    optionType: 'CE' | 'PE' | 'FUT';
+    exchange?: string;
+  };
 
-function toSearchInstrument(r: TauriSearchResult): SearchInstrument {
+function toSearchInstrument(r: BridgeSearchResult): SearchInstrument {
   if (r.kind === 'EQ') {
     return {
       tradingsymbol: r.symbol,
@@ -86,7 +86,7 @@ function toSearchInstrument(r: TauriSearchResult): SearchInstrument {
     tradingsymbol: r.tradingsymbol,
     name: desc,
     instrument_type: r.optionType,
-    exchange: 'NFO',
+    exchange: r.exchange || 'NFO',
   };
 }
 
@@ -98,6 +98,7 @@ export default function WatchlistPanel() {
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchRequestRef = useRef(0);
   const quoteIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -144,8 +145,9 @@ export default function WatchlistPanel() {
     };
   }, []);
 
-  // ── Debounced search via Tauri IPC (local SQLite) ──────────────
+  // ── Debounced search through the browser bridge ────────────────
   const handleSearch = useCallback(async (searchQuery: string) => {
+    const requestId = ++searchRequestRef.current;
     const normalized = searchQuery.trim();
     if (normalized.length < 2) {
       setSearchResults([]);
@@ -158,40 +160,47 @@ export default function WatchlistPanel() {
     setShowDropdown(true);
 
     try {
-      const results = await bridgeInvoke<TauriSearchResult[]>('search_instruments', {
+      const results = await bridgeInvoke<BridgeSearchResult[]>('search_instruments', {
         query: normalized,
       });
+      if (requestId !== searchRequestRef.current) return;
       // The command returns EQ + Index + FNO rows in a single flat list — one
-      // global search across NSE / BSE / NFO. Map each row to the flat
+      // global search across NSE / BSE / NFO / BFO. Map each row to the flat
       // `SearchInstrument` shape this panel already renders.
       setSearchResults((results || []).map(toSearchInstrument));
     } catch (err) {
+      if (requestId !== searchRequestRef.current) return;
       console.error('[Watchlist] search_instruments failed:', err);
       setSearchResults([]);
     } finally {
-      setIsSearching(false);
+      if (requestId === searchRequestRef.current) setIsSearching(false);
     }
   }, []);
 
   const handleInputChange = (value: string) => {
+    searchRequestRef.current += 1;
     setQuery(value);
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
     if (!value.trim() || value.trim().length < 2) {
       setSearchResults([]);
       setShowDropdown(false);
+      setIsSearching(false);
       return;
     }
 
     searchTimeoutRef.current = setTimeout(() => {
       handleSearch(value);
-    }, 400); // 400ms debounce
+    }, 150);
   };
 
   const clearSearch = () => {
+    searchRequestRef.current += 1;
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     setQuery('');
     setSearchResults([]);
     setShowDropdown(false);
+    setIsSearching(false);
   };
 
   // Close dropdown on outside click
@@ -208,6 +217,7 @@ export default function WatchlistPanel() {
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
+      searchRequestRef.current += 1;
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
   }, []);
@@ -352,17 +362,15 @@ export default function WatchlistPanel() {
                   variants={fadeInUp}
                   type="button"
                   onClick={() => setSelectedSymbol(stock.symbol)}
-                  className={`group relative flex w-full items-center justify-between gap-1 px-3 py-2 text-xs text-left cursor-pointer transition-all duration-200 ease-out ${
-                    isActive
+                  className={`group relative flex w-full items-center justify-between gap-1 px-3 py-2 text-xs text-left cursor-pointer transition-all duration-200 ease-out ${isActive
                       ? 'bg-gradient-to-r from-emerald-500/[0.08] via-emerald-500/[0.03] to-transparent text-text-primary'
                       : 'hover:bg-emerald-500/[0.035] text-text-secondary hover:text-text-primary'
-                  }`}
+                    }`}
                 >
                   {/* Active accent pill (thin, smooth floating indicator) */}
                   <span
-                    className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2.5px] rounded-r-full bg-emerald-500 transition-all duration-200 ease-out ${
-                      isActive ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-50'
-                    }`}
+                    className={`absolute left-0 top-1/2 -translate-y-1/2 h-5 w-[2.5px] rounded-r-full bg-emerald-500 transition-all duration-200 ease-out ${isActive ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-50'
+                      }`}
                   />
                   {/* Left: Symbol + Name */}
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">

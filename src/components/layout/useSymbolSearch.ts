@@ -80,6 +80,7 @@ export function useSymbolSearch({ onClose }: UseSymbolSearchOptions) {
   const [showExchangeMenu, setShowExchangeMenu] = useState(false);
 
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchRequestRef = useRef(0);
 
   const addToWatchlist = useTradeStore((s) => s.addToWatchlist);
   const setSelectedSymbol = useTradeStore((s) => s.setSelectedSymbol);
@@ -90,6 +91,7 @@ export function useSymbolSearch({ onClose }: UseSymbolSearchOptions) {
   const setFnoUnderlying = useTradeStore((s) => s.setFnoUnderlying);
 
   const handleSearch = useCallback(async (searchQuery: string) => {
+    const requestId = ++searchRequestRef.current;
     const normalized = searchQuery.trim();
     if (normalized.length < 2) {
       setSearchResults([]);
@@ -103,28 +105,32 @@ export function useSymbolSearch({ onClose }: UseSymbolSearchOptions) {
       const results = await bridgeInvoke<SearchResult[]>('search_instruments', {
         query: normalized,
       });
+      if (requestId !== searchRequestRef.current) return;
       setSearchResults(results || []);
       setSelectedIndex(results && results.length > 0 ? 0 : -1);
     } catch (err) {
+      if (requestId !== searchRequestRef.current) return;
       console.error('[SymbolSearchModal] search failed:', err);
       setSearchResults([]);
       setSearchError('Search failed — please try again');
     } finally {
-      setIsSearching(false);
+      if (requestId === searchRequestRef.current) setIsSearching(false);
     }
   }, []);
 
   const handleInputChange = useCallback(
     (value: string) => {
+      searchRequestRef.current += 1;
       setQuery(value);
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
       if (!value.trim() || value.trim().length < 2) {
         setSearchResults([]);
+        setIsSearching(false);
         setSearchError(null);
         setSelectedIndex(-1);
         return;
       }
-      searchTimeoutRef.current = setTimeout(() => handleSearch(value), 300);
+      searchTimeoutRef.current = setTimeout(() => handleSearch(value), 150);
     },
     [handleSearch]
   );
@@ -163,7 +169,7 @@ export function useSymbolSearch({ onClose }: UseSymbolSearchOptions) {
               const month = date.toLocaleString('en-US', { month: 'short' });
               expiryFormatted = `${day} ${month}`;
             }
-          } catch (e) {}
+          } catch (e) { }
         }
         if (r.optionType === 'FUT') {
           displayName = `${r.underlying} FUT (${expiryFormatted})`;
@@ -235,6 +241,7 @@ export function useSymbolSearch({ onClose }: UseSymbolSearchOptions) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      searchRequestRef.current += 1;
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
   }, []);

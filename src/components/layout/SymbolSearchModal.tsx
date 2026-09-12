@@ -32,7 +32,6 @@ export default function SymbolSearchModal({
     showExchangeMenu,
     setShowExchangeMenu,
     filteredResults,
-    handleSearch,
     handleInputChange,
     handleSelectResult,
   } = useSymbolSearch({ onClose });
@@ -49,12 +48,11 @@ export default function SymbolSearchModal({
         inputRef.current?.select();
         const q = initialQuery || '';
         handleInputChange(q);
-        if (q) handleSearch(q);
         setSelectedIndex(-1);
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, initialQuery, handleSearch, handleInputChange, setSelectedIndex]);
+  }, [isOpen, initialQuery, handleInputChange, setSelectedIndex]);
 
   // Close exchange menu on outside click
   useEffect(() => {
@@ -159,11 +157,10 @@ export default function SymbolSearchModal({
                 setActiveTab(tab);
                 setSelectedIndex(0);
               }}
-              className={`rounded-lg px-3.5 py-1 text-xs font-bold uppercase tracking-wider transition-all ${
-                activeTab === tab
+              className={`rounded-lg px-3.5 py-1 text-xs font-bold uppercase tracking-wider transition-all ${activeTab === tab
                   ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 shadow-xs'
                   : 'bg-elevated/40 text-text-muted hover:text-text-primary hover:bg-elevated/70 border border-border-default/30'
-              }`}
+                }`}
             >
               {tab}
             </button>
@@ -229,11 +226,10 @@ export default function SymbolSearchModal({
                   key={sym + index}
                   onClick={() => handleSelectResult(r)}
                   onMouseEnter={() => setSelectedIndex(index)}
-                  className={`flex justify-between items-center px-4 py-2.5 cursor-pointer transition-colors ${
-                    isSelected
+                  className={`flex justify-between items-center px-4 py-2.5 cursor-pointer transition-colors ${isSelected
                       ? 'bg-emerald-500/10 dark:bg-emerald-500/15 text-text-primary font-medium'
                       : 'hover:bg-elevated/40 text-text-secondary'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <InstrumentLogo symbol={sym} name={r.name} size={24} className="shrink-0" />

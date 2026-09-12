@@ -201,6 +201,7 @@ export type SearchResult =
     expiry: string;
     strike: number | null;
     optionType: string;
+    exchange: string;
   };
 
 /**
@@ -225,6 +226,7 @@ export function rowsToSearchResults(rows: InstrumentRow[]): SearchResult[] {
         // strikes; mirror that rather than emitting a misleading 0.
         strike: typeof r.strike === 'number' && r.strike > 0 ? r.strike : null,
         optionType: type,
+        exchange: r.exchange,
       });
     } else {
       out.push({
@@ -237,20 +239,6 @@ export function rowsToSearchResults(rows: InstrumentRow[]): SearchResult[] {
     }
   }
   return out;
-}
-
-async function searchExchange(query: string, exchange: string): Promise<InstrumentRow[]> {
-  try {
-    const data = await apiJson<{ results?: InstrumentRow[] }>(
-      kiteApiUrl(`/api/kite/instruments?q=${encodeURIComponent(query)}&exchange=${exchange}`)
-    );
-    return data.results ?? [];
-  } catch (err) {
-    // One leg failing must not blank the other. `search_in_db` errors only when
-    // BOTH tables are missing; this is the transport analogue.
-    console.warn(`[bridge] instrument search on ${exchange} failed:`, err);
-    return [];
-  }
 }
 
 // ── Deep-quant agent streaming ──────────────────────────────────────────────
@@ -693,8 +681,10 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
   search_instruments: async (args) => {
     const query = (args.query as string | undefined)?.trim() ?? '';
     if (!query) return [];
-    // `search_in_db` queries `instruments` then `nfo_instruments` and returns
-    // equities first; parallel exchange calls reproduce that ordering.
+    // One request searches NSE, BSE, NFO and BFO server-side in that order. This
+    // keeps the equity-first result contract while avoiding four browser → Next
+    // → aggregator round trips for every debounced keystroke. The aggregator
+    // tolerates one unavailable exchange and returns rows from the others.
     //
     // BSE is searched as well as NSE, which it previously was not — and that is
     // why SENSEX could never be found. SENSEX is a BSE index (segment `INDICES`,
@@ -706,13 +696,10 @@ export const WEB_ADAPTERS: Record<string, WebAdapter> = {
     // BFO is the derivative half of the same split: SENSEX and BANKEX contracts
     // (`SENSEX2690376900CE`, segment `BFO-OPT`) exist only there, so an NFO-only
     // search could find no SENSEX option at all.
-    const [nse, bse, fno, bfo] = await Promise.all([
-      searchExchange(query, 'NSE'),
-      searchExchange(query, 'BSE'),
-      searchExchange(query, 'NFO'),
-      searchExchange(query, 'BFO'),
-    ]);
-    return rowsToSearchResults([...nse, ...bse, ...fno, ...bfo]);
+    const data = await apiJson<{ results?: InstrumentRow[] }>(
+      kiteApiUrl(`/api/kite/instruments?q=${encodeURIComponent(query)}&exchange=ALL`)
+    );
+    return rowsToSearchResults(data.results ?? []);
   },
 
   fetch_questdb: async (args) => {

@@ -37,13 +37,13 @@ const SECTOR_COLORS: Record<string, string> = {
 type SearchResult =
   | { kind: 'EQ'; symbol: string; name: string; exchange: string }
   | {
-      kind: 'FNO';
-      tradingsymbol: string;
-      underlying: string;
-      expiry: string;
-      strike: number | null;
-      optionType: 'CE' | 'PE' | 'FUT';
-    };
+    kind: 'FNO';
+    tradingsymbol: string;
+    underlying: string;
+    expiry: string;
+    strike: number | null;
+    optionType: 'CE' | 'PE' | 'FUT';
+  };
 
 const resultSymbol = (r: SearchResult): string => (r.kind === 'EQ' ? r.symbol : r.tradingsymbol);
 
@@ -82,6 +82,7 @@ export default function SymbolSearchBlock() {
     useState<string[]>(DEFAULT_FNO_UNDERLYINGS);
 
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchRequestRef = useRef(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const setSelectedSymbol = useTradeStore((s) => s.setSelectedSymbol);
@@ -111,6 +112,7 @@ export default function SymbolSearchBlock() {
   }, []);
 
   const handleSearch = useCallback(async (searchQuery: string) => {
+    const requestId = ++searchRequestRef.current;
     const normalized = searchQuery.trim();
     if (normalized.length < 2) {
       setSearchResults([]);
@@ -126,17 +128,20 @@ export default function SymbolSearchBlock() {
       const results = await bridgeInvoke<SearchResult[]>('search_instruments', {
         query: normalized,
       });
+      if (requestId !== searchRequestRef.current) return;
       setSearchResults(results || []);
     } catch (err) {
+      if (requestId !== searchRequestRef.current) return;
       console.error('[SymbolSearchBlock] search_instruments failed:', err);
       setSearchResults([]);
       setSearchError('Search failed — please try again');
     } finally {
-      setIsSearching(false);
+      if (requestId === searchRequestRef.current) setIsSearching(false);
     }
   }, []);
 
   const handleInputChange = (value: string) => {
+    searchRequestRef.current += 1;
     setQuery(value);
     setFnoUnderlyingFilter(null);
     setFnoExpiryFilter(null);
@@ -145,16 +150,20 @@ export default function SymbolSearchBlock() {
     if (!value.trim() || value.trim().length < 2) {
       setSearchResults([]);
       setShowDropdown(false);
+      setIsSearching(false);
       setSearchError(null);
       return;
     }
-    searchTimeoutRef.current = setTimeout(() => handleSearch(value), 400);
+    searchTimeoutRef.current = setTimeout(() => handleSearch(value), 150);
   };
 
   const clearSearch = () => {
+    searchRequestRef.current += 1;
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     setQuery('');
     setSearchResults([]);
     setShowDropdown(false);
+    setIsSearching(false);
     setSearchError(null);
     setFnoUnderlyingFilter(null);
     setFnoExpiryFilter(null);
@@ -215,7 +224,7 @@ export default function SymbolSearchBlock() {
               const month = date.toLocaleString('en-US', { month: 'short' });
               expiryFormatted = `${day} ${month}`;
             }
-          } catch (e) {}
+          } catch (e) { }
         }
         if (r.optionType === 'FUT') {
           displayName = `${r.underlying} FUT (${expiryFormatted})`;
@@ -300,6 +309,7 @@ export default function SymbolSearchBlock() {
 
   useEffect(() => {
     return () => {
+      searchRequestRef.current += 1;
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
     };
   }, []);
@@ -445,11 +455,10 @@ export default function SymbolSearchBlock() {
                     key={`u:${u}`}
                     type="button"
                     onClick={() => setFnoUnderlyingFilter(fnoUnderlyingFilter === u ? null : u)}
-                    className={`rounded-none px-1.5 py-px text-[8px] font-semibold uppercase tracking-wider transition-colors ${
-                      fnoUnderlyingFilter === u
+                    className={`rounded-none px-1.5 py-px text-[8px] font-semibold uppercase tracking-wider transition-colors ${fnoUnderlyingFilter === u
                         ? 'bg-primary/20 text-text-primary'
                         : 'bg-elevated text-text-muted hover:text-text-secondary'
-                    }`}
+                      }`}
                   >
                     {u}
                   </button>
@@ -459,11 +468,10 @@ export default function SymbolSearchBlock() {
                     key={`e:${ex}`}
                     type="button"
                     onClick={() => setFnoExpiryFilter(fnoExpiryFilter === ex ? null : ex)}
-                    className={`rounded-none px-1.5 py-px text-[8px] font-semibold uppercase tracking-wider transition-colors ${
-                      fnoExpiryFilter === ex
+                    className={`rounded-none px-1.5 py-px text-[8px] font-semibold uppercase tracking-wider transition-colors ${fnoExpiryFilter === ex
                         ? 'bg-primary/20 text-text-primary'
                         : 'bg-elevated text-text-muted hover:text-text-secondary'
-                    }`}
+                      }`}
                   >
                     {ex}
                   </button>
@@ -473,11 +481,10 @@ export default function SymbolSearchBlock() {
                     key={`t:${t}`}
                     type="button"
                     onClick={() => setFnoTypeFilter(fnoTypeFilter === t ? null : t)}
-                    className={`rounded-none px-1.5 py-px text-[8px] font-semibold uppercase tracking-wider transition-colors ${
-                      fnoTypeFilter === t
+                    className={`rounded-none px-1.5 py-px text-[8px] font-semibold uppercase tracking-wider transition-colors ${fnoTypeFilter === t
                         ? (SECTOR_COLORS[t] ?? 'bg-primary/20 text-text-primary')
                         : 'bg-elevated text-text-muted hover:text-text-secondary'
-                    }`}
+                      }`}
                   >
                     {t}
                   </button>

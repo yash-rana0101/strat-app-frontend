@@ -110,29 +110,17 @@ describe('adapters that talk HTTP', () => {
     await expect(bridgeInvoke('get_pool_status')).resolves.toBe(true);
   });
 
-  it('queries every exchange for instrument search and survives one failing', async () => {
-    fetchMock.mockImplementation((url: string) =>
-      url.includes('NFO')
-        ? Promise.reject(new Error('NFO cache cold'))
-        : url.includes('BSE') || url.includes('BFO')
-          ? Promise.resolve(jsonRes({ results: [] }))
-          : Promise.resolve(
-              jsonRes({
-                results: [
-                  { tradingsymbol: 'TCS', name: 'TCS', exchange: 'NSE', instrument_type: 'EQ' },
-                ],
-              })
-            )
+  it('uses one global instrument request and maps its partial results', async () => {
+    fetchMock.mockResolvedValue(
+      jsonRes({
+        results: [
+          { tradingsymbol: 'TCS', name: 'TCS', exchange: 'NSE', instrument_type: 'EQ' },
+        ],
+      })
     );
     const out = (await bridgeInvoke('search_instruments', { query: 'TCS' })) as unknown[];
-    // All four segments India actually has. BSE was the first missing leg — no BSE
-    // index (SENSEX, BANKEX) could be found without it — and BFO is its derivative
-    // half, without which no SENSEX option could be found either.
-    expect(fetchMock).toHaveBeenCalledTimes(4);
-    const exchangesQueried = fetchMock.mock.calls.map(
-      (c: unknown[]) => String(c[0]).match(/exchange=(\w+)/)?.[1]
-    );
-    expect(exchangesQueried).toEqual(expect.arrayContaining(['NSE', 'BSE', 'NFO', 'BFO']));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe('/api/kite/instruments?q=TCS&exchange=ALL');
     expect(out).toEqual([
       { kind: 'EQ', symbol: 'TCS', name: 'TCS', exchange: 'NSE', segment: undefined },
     ]);
@@ -142,22 +130,18 @@ describe('adapters that talk HTTP', () => {
     // SENSEX is a BSE index (segment INDICES, token 265). NSE's master carries
     // only the ETFs that track it, so an NSE-only search returned SENSEXETF and
     // friends and never the index — the reported "SENSEX is not in search".
-    fetchMock.mockImplementation((url: string) =>
-      url.includes('exchange=BSE')
-        ? Promise.resolve(
-            jsonRes({
-              results: [
-                {
-                  tradingsymbol: 'SENSEX',
-                  name: 'SENSEX',
-                  exchange: 'BSE',
-                  instrument_type: 'EQ',
-                  segment: 'INDICES',
-                },
-              ],
-            })
-          )
-        : Promise.resolve(jsonRes({ results: [] }))
+    fetchMock.mockResolvedValue(
+      jsonRes({
+        results: [
+          {
+            tradingsymbol: 'SENSEX',
+            name: 'SENSEX',
+            exchange: 'BSE',
+            instrument_type: 'EQ',
+            segment: 'INDICES',
+          },
+        ],
+      })
     );
 
     const out = (await bridgeInvoke('search_instruments', { query: 'SENSEX' })) as Array<
@@ -172,25 +156,21 @@ describe('adapters that talk HTTP', () => {
     // The derivative half of the same exchange split. SENSEX contracts are listed
     // in the BFO master (`SENSEX2690376900CE`, segment BFO-OPT, lot 20); an
     // NFO-only search returns nothing for them.
-    fetchMock.mockImplementation((url: string) =>
-      url.includes('exchange=BFO')
-        ? Promise.resolve(
-            jsonRes({
-              results: [
-                {
-                  tradingsymbol: 'SENSEX2690376900CE',
-                  name: 'SENSEX',
-                  exchange: 'BFO',
-                  instrument_type: 'CE',
-                  segment: 'BFO-OPT',
-                  expiry: '2026-09-03',
-                  strike: 76900,
-                  lot_size: 20,
-                },
-              ],
-            })
-          )
-        : Promise.resolve(jsonRes({ results: [] }))
+    fetchMock.mockResolvedValue(
+      jsonRes({
+        results: [
+          {
+            tradingsymbol: 'SENSEX2690376900CE',
+            name: 'SENSEX',
+            exchange: 'BFO',
+            instrument_type: 'CE',
+            segment: 'BFO-OPT',
+            expiry: '2026-09-03',
+            strike: 76900,
+            lot_size: 20,
+          },
+        ],
+      })
     );
 
     const out = (await bridgeInvoke('search_instruments', { query: 'SENSEX 76900 CE' })) as Array<
@@ -198,7 +178,11 @@ describe('adapters that talk HTTP', () => {
     >;
 
     expect(out).toHaveLength(1);
-    expect(out[0]).toMatchObject({ kind: 'FNO', tradingsymbol: 'SENSEX2690376900CE' });
+    expect(out[0]).toMatchObject({
+      kind: 'FNO',
+      tradingsymbol: 'SENSEX2690376900CE',
+      exchange: 'BFO',
+    });
   });
 
   it('short-circuits an empty search without a request', async () => {

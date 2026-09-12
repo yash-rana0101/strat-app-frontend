@@ -98,6 +98,7 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
   const [suggestIndex, setSuggestIndex] = useState(-1);
   const [suggestLoading, setSuggestLoading] = useState(false);
   const suggestTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suggestRequestRef = useRef(0);
 
   const symbols = useRadarStore((s) => s.symbols);
   const scans = useRadarStore((s) => s.scans);
@@ -170,17 +171,21 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
     (override?: string) => {
       const sym = (override ?? input).trim().toUpperCase();
       if (!sym) return;
+      suggestRequestRef.current += 1;
+      if (suggestTimeoutRef.current) clearTimeout(suggestTimeoutRef.current);
       addSymbol(sym);
       setInput('');
       setSuggestions([]);
       setSuggestOpen(false);
       setSuggestIndex(-1);
+      setSuggestLoading(false);
     },
     [input, addSymbol]
   );
 
   // Fetch suggestions for the current query (debounced by the caller).
   const runSuggest = useCallback(async (query: string) => {
+    const requestId = ++suggestRequestRef.current;
     const normalized = query.trim();
     if (normalized.length < 2) {
       setSuggestions([]);
@@ -193,6 +198,7 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
       const results = await bridgeInvoke<SearchResult[]>('search_instruments', {
         query: normalized,
       });
+      if (requestId !== suggestRequestRef.current) return;
       // The radar scans a single tradable ticker, so flatten the EQ/FNO union
       // down to the symbol string each branch carries.
       const tickers = (results ?? [])
@@ -203,27 +209,30 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
       setSuggestOpen(tickers.length > 0);
       setSuggestIndex(tickers.length > 0 ? 0 : -1);
     } catch (err) {
+      if (requestId !== suggestRequestRef.current) return;
       // A failed lookup must not block adding a symbol the user knows is valid —
       // fall back to free text rather than trapping them.
       console.warn('[Radar] search_instruments failed:', err);
       setSuggestions([]);
       setSuggestOpen(false);
     } finally {
-      setSuggestLoading(false);
+      if (requestId === suggestRequestRef.current) setSuggestLoading(false);
     }
   }, []);
 
   const handleInputChange = useCallback(
     (value: string) => {
+      suggestRequestRef.current += 1;
       setInput(value);
       if (suggestTimeoutRef.current) clearTimeout(suggestTimeoutRef.current);
       if (value.trim().length < 2) {
         setSuggestions([]);
         setSuggestOpen(false);
         setSuggestIndex(-1);
+        setSuggestLoading(false);
         return;
       }
-      suggestTimeoutRef.current = setTimeout(() => void runSuggest(value), 300);
+      suggestTimeoutRef.current = setTimeout(() => void runSuggest(value), 150);
     },
     [runSuggest]
   );
@@ -231,6 +240,7 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
   // Drop a pending debounce on unmount so it can't fire into a dead component.
   useEffect(
     () => () => {
+      suggestRequestRef.current += 1;
       if (suggestTimeoutRef.current) clearTimeout(suggestTimeoutRef.current);
     },
     []
@@ -317,8 +327,8 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
           aria-label="Open Quant Radar"
           title="Open Quant Radar"
           className={`flex h-11 w-full cursor-pointer items-center transition-colors duration-200 ${isOpen
-              ? 'text-emerald-500 dark:text-emerald-400'
-              : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'
+            ? 'text-emerald-500 dark:text-emerald-400'
+            : 'text-text-secondary hover:text-emerald-500 dark:hover:text-emerald-400'
             }`}
         >
           <span className="relative flex w-14 shrink-0 items-center justify-center">
@@ -341,8 +351,8 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
           id="quant-radar-navbar-btn"
           onClick={() => setIsOpen((p) => !p)}
           className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-sm transition-all duration-200 select-none ${isOpen
-              ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
-              : 'bg-card border-border-default text-text-secondary hover:bg-elevated hover:text-text-primary'
+            ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+            : 'bg-card border-border-default text-text-secondary hover:bg-elevated hover:text-text-primary'
             }`}
           title="Open Quant Radar"
         >
@@ -451,8 +461,8 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
                         }}
                         onMouseEnter={() => setSuggestIndex(i)}
                         className={`flex w-full items-center gap-2 px-2 py-1 text-left text-[11px] transition-colors ${i === suggestIndex
-                            ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
-                            : 'text-text-secondary hover:bg-elevated'
+                          ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                          : 'text-text-secondary hover:bg-elevated'
                           }`}
                       >
                         <CandlestickChart size={9} className="shrink-0 text-text-muted" />
@@ -469,8 +479,8 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
                 type="button"
                 onClick={() => setRadarTfDropdownOpen(!radarTfDropdownOpen)}
                 className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-semibold transition-all border ${radarTfDropdownOpen
-                    ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.12)]'
-                    : 'bg-card text-text-secondary hover:bg-elevated border-border-default hover:text-text-primary'
+                  ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40 shadow-[0_0_10px_rgba(16,185,129,0.12)]'
+                  : 'bg-card text-text-secondary hover:bg-elevated border-border-default hover:text-text-primary'
                   }`}
                 title="Radar timeframe"
               >
@@ -508,8 +518,8 @@ export default function QuantRadar({ align = 'header', label }: QuantRadarProps)
                                   setRadarTfDropdownOpen(false);
                                 }}
                                 className={`flex items-center justify-between rounded-md px-2 py-1.5 text-[11px] transition-all duration-150 border ${isActive
-                                    ? 'bg-emerald-500/10 text-emerald-400 font-bold border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.08)]'
-                                    : 'bg-card/40 text-text-secondary hover:bg-elevated hover:text-text-primary border-transparent hover:border-border-default'
+                                  ? 'bg-emerald-500/10 text-emerald-400 font-bold border-emerald-500/30 shadow-[0_0_8px_rgba(16,185,129,0.08)]'
+                                  : 'bg-card/40 text-text-secondary hover:bg-elevated hover:text-text-primary border-transparent hover:border-border-default'
                                   }`}
                               >
                                 <span>{item.display}</span>

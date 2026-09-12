@@ -50,6 +50,8 @@ export interface FnoResult {
   /** Strike is present for options (CE/PE) and null for futures (FUT). */
   strike: number | null;
   optionType: OptionType;
+  /** `NFO` for NSE derivatives, `BFO` for BSE derivatives. */
+  exchange?: string;
 }
 
 /**
@@ -90,7 +92,8 @@ export function isFnoResult(x: unknown): x is FnoResult {
     isNonEmptyString(r.underlying) &&
     isNonEmptyString(r.expiry) &&
     (r.strike === null || (typeof r.strike === 'number' && Number.isFinite(r.strike))) &&
-    isOptionType(r.optionType)
+    isOptionType(r.optionType) &&
+    (r.exchange === undefined || isNonEmptyString(r.exchange))
   );
 }
 
